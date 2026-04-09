@@ -33,6 +33,7 @@ data/*.db.backup_*
 
 # IDE
 .idea/
+.vscode/
 *.swp
 *.swo
 *~
