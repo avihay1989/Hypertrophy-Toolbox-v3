@@ -32,7 +32,7 @@ def get_volume_label(total_sets):
     elif total_sets < 30:
         return "High Volume"
     else:
-        return "Ultra Volume"
+        return "Excessive Volume"
 
 
 def get_effective_volume_label(effective_sets):
@@ -53,7 +53,6 @@ def get_volume_tooltip(volume_label, total_sets):
         'Low Volume': 'Below 10 sets',
         'Medium Volume': '10-19 sets',
         'High Volume': '20-29 sets',
-        'Ultra Volume': '30+ sets',
         'Excessive Volume': '30+ sets',
     }
     return f"{volume_label}: {ranges.get(volume_label, 'Unknown')} (Current: {total_sets:.1f} sets)"
@@ -100,4 +99,4 @@ def get_subcategory_tooltip(category, subcategory):
             'Pull': 'Exercises involving pulling motions toward body'
         }
     }
-    return tooltips.get(category, {}).get(subcategory, '') 
+    return tooltips.get(category, {}).get(subcategory, '')

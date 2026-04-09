@@ -1,5 +1,9 @@
 import sqlite3
-import utils.config  # Dynamic import for test support
+
+from utils.database import DatabaseHandler
+from utils.logger import get_logger
+
+logger = get_logger()
 
 
 def get_user_selection():
@@ -31,48 +35,22 @@ def get_user_selection():
     JOIN exercises e ON us.exercise = e.exercise_name;
     """
     try:
-        connection = sqlite3.connect(utils.config.DB_FILE)
-        connection.row_factory = sqlite3.Row
-        cursor = connection.cursor()
-        cursor.execute(query)
-        results = cursor.fetchall()
-        connection.close()
+        with DatabaseHandler() as db:
+            results = db.fetch_all(query)
 
         if not results:
-            print("DEBUG: No user selection data found.")  # Debugging log
+            logger.debug("No user selection data found.")
+        else:
+            logger.debug("User selection data retrieved successfully.")
 
-        # Format results into a list of dictionaries for easier handling
-        user_selection = [
-            {
-                "id": row["id"],
-                "routine": row["routine"],
-                "exercise": row["exercise"],
-                "sets": row["sets"],
-                "min_rep_range": row["min_rep_range"],
-                "max_rep_range": row["max_rep_range"],
-                "rir": row["rir"],
-                "weight": row["weight"],
-                "superset_group": row["superset_group"],
-                "primary_muscle_group": row["primary_muscle_group"],
-                "secondary_muscle_group": row["secondary_muscle_group"],
-                "tertiary_muscle_group": row["tertiary_muscle_group"],
-                "advanced_isolated_muscles": row["advanced_isolated_muscles"],
-                "utility": row["utility"],
-                "grips": row["grips"],
-                "stabilizers": row["stabilizers"],
-                "synergists": row["synergists"],
-            }
-            for row in results
-        ]
-        print("DEBUG: User selection data retrieved successfully.")  # Debugging log
-        return user_selection
+        return results
 
     except sqlite3.OperationalError as oe:
-        print(f"Operational error in database: {oe}")
+        logger.warning("Operational error in database: %s", oe)
         return []
     except sqlite3.Error as e:
-        print(f"Database error: {e}")
+        logger.exception("Database error while fetching user selection: %s", e)
         return []
     except Exception as ex:
-        print(f"Unexpected error: {ex}")
+        logger.exception("Unexpected error while fetching user selection: %s", ex)
         return []

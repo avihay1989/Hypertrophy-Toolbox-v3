@@ -183,6 +183,17 @@ export async function waitForPageReady(page: Page): Promise<void> {
 }
 
 /**
+ * Reset workout-plan state between tests to avoid cross-test duplication drift.
+ */
+export async function resetWorkoutPlan(page: Page): Promise<void> {
+  const response = await page.request.post('/clear_workout_plan', {
+    failOnStatusCode: false,
+  });
+
+  expect(response.ok(), 'expected /clear_workout_plan to succeed during E2E setup').toBeTruthy();
+}
+
+/**
  * Assert toast notification appears with expected message
  */
 export async function expectToast(page: Page, expectedText: string | RegExp): Promise<void> {

@@ -262,37 +262,23 @@ After an erase operation, if an auto-backup was created, the UI shows a dismissi
 - "Restore Now" button to immediately restore the backup
 - Banner can be dismissed if user doesn't want to restore
 
-## Tests
+## Verification
 
-### Test File: `tests/test_program_backup.py`
+### Automated Coverage Status
 
-#### Test Coverage
+Primary automated coverage lives in `tests/test_program_backup.py`.
 
-1. **Create backup saves active program data**
-   - Verify backup metadata is correct
-   - Verify item count matches
-   - Verify all fields are captured correctly
+That suite covers:
 
-2. **Restore backup (replace mode)**
-   - Create backup → Mutate active program → Restore
-   - Verify active program matches backup snapshot
+1. Create backup flows and stored metadata
+2. Restore-in-replace-mode behavior
+3. Missing-exercise skip handling during restore
+4. Backup deletion and cascade cleanup
+5. Erase/reset integration and auto-backup behavior
 
-3. **Restore skips missing exercises**
-   - Create backup with exercises
-   - Delete one exercise from catalog
-   - Restore should succeed with fewer items
-   - Response includes skipped exercise list
+This document keeps the automated status separate from manual QA. The checklist below is intentionally left as manual verification work until a human run confirms those scenarios.
 
-4. **Delete backup removes it**
-   - Create backup → Delete → Verify gone
-   - Verify items are also cascade-deleted
-
-5. **Erase/reset integration**
-   - Verify auto-backup created when program has data
-   - Verify auto-backup skipped when program empty
-   - Verify backups survive erase operation
-
-### Running Tests
+### Running Automated Tests
 ```bash
 # Run all backup tests
 pytest tests/test_program_backup.py -v
@@ -304,7 +290,9 @@ pytest tests/test_program_backup.py::TestProgramBackup -v
 pytest tests/test_program_backup.py --cov=utils.program_backup --cov=routes.program_backup -v
 ```
 
-## Manual QA Checklist
+## Manual Verification Checklist
+
+Status note: unchecked items below are not auto-promoted to done by test coverage alone.
 
 ### Basic Operations
 - [ ] Create a backup with name and optional note

@@ -7,7 +7,40 @@
  * - Volume legend display
  * - Table rendering
  */
+import type { Page } from '@playwright/test';
 import { test, expect, ROUTES, SELECTORS, waitForPageReady } from './fixtures';
+
+function unwrapApiData(payload: unknown) {
+  if (
+    payload &&
+    typeof payload === 'object' &&
+    !Array.isArray(payload) &&
+    'data' in payload
+  ) {
+    return (payload as { data: unknown }).data;
+  }
+
+  return payload;
+}
+
+async function expectSharedLegendSwatches(page: Page) {
+  await expect(page.locator('.volume-legend .volume-indicator.low-volume')).toHaveCSS(
+    'background-color',
+    'rgb(220, 53, 69)'
+  );
+  await expect(page.locator('.volume-legend .volume-indicator.medium-volume')).toHaveCSS(
+    'background-color',
+    'rgb(253, 126, 20)'
+  );
+  await expect(page.locator('.volume-legend .volume-indicator.high-volume')).toHaveCSS(
+    'background-color',
+    'rgb(25, 135, 84)'
+  );
+  await expect(page.locator('.volume-legend .volume-indicator.ultra-volume')).toHaveCSS(
+    'background-color',
+    'rgb(111, 66, 193)'
+  );
+}
 
 test.describe('Weekly Summary Page', () => {
   test.beforeEach(async ({ page, consoleErrors }) => {
@@ -22,7 +55,7 @@ test.describe('Weekly Summary Page', () => {
 
   test('page loads with correct structure', async ({ page }) => {
     // Check page title
-    await expect(page.locator('h1')).toContainText('Weekly Summary');
+    await expect(page.locator('h1')).toContainText(/(Weekly|Plan Volume) Summary/i);
 
     // Check summary container
     await expect(page.locator(SELECTORS.PAGE_WEEKLY_SUMMARY)).toBeVisible();
@@ -57,6 +90,10 @@ test.describe('Weekly Summary Page', () => {
     await expect(legend).toContainText('Medium Volume');
     await expect(legend).toContainText('High Volume');
     await expect(legend).toContainText('Excessive Volume');
+  });
+
+  test('legend swatches use shared volume classification colors', async ({ page }) => {
+    await expectSharedLegendSwatches(page);
   });
 
   test('weekly summary table has correct headers', async ({ page }) => {
@@ -109,6 +146,46 @@ test.describe('Weekly Summary Page', () => {
     await page.waitForTimeout(500);
     await expect(contributionMode).toHaveValue('total');
   });
+
+  test('fetch-backed weekly summary updates use explicit JSON intent', async ({ page }) => {
+    const [countingResponse] = await Promise.all([
+      page.waitForResponse((response) =>
+        response.url().includes('/weekly_summary?') &&
+        response.request().method() === 'GET' &&
+        response.request().headers()['x-requested-with'] === 'XMLHttpRequest'
+      ),
+      page.locator('#counting-mode').selectOption('raw'),
+    ]);
+
+    expect(countingResponse.ok()).toBeTruthy();
+    const countingResponsePayload = await countingResponse.json();
+    expect(countingResponsePayload.ok).toBe(true);
+    expect(countingResponsePayload.status).toBe('success');
+    const countingPayload = unwrapApiData(countingResponsePayload) as Record<string, unknown>;
+    expect(Array.isArray(countingPayload.weekly_summary)).toBe(true);
+    expect(Array.isArray(countingPayload.categories)).toBe(true);
+    expect(countingPayload).toHaveProperty('isolated_muscles');
+    expect(countingPayload).toHaveProperty('modes');
+    await expect(page.locator('#volume-formula-text')).toContainText('Raw Sets');
+    await expect(page.locator('#weekly-summary-table tr').first()).toBeVisible();
+
+    const [contributionResponse] = await Promise.all([
+      page.waitForResponse((response) =>
+        response.url().includes('/weekly_summary?') &&
+        response.request().method() === 'GET' &&
+        response.request().headers()['x-requested-with'] === 'XMLHttpRequest'
+      ),
+      page.locator('#contribution-mode').selectOption('direct'),
+    ]);
+
+    expect(contributionResponse.ok()).toBeTruthy();
+    const contributionResponsePayload = await contributionResponse.json();
+    expect(contributionResponsePayload.ok).toBe(true);
+    expect(contributionResponsePayload.status).toBe('success');
+    const contributionPayload = unwrapApiData(contributionResponsePayload) as Record<string, unknown>;
+    expect(Array.isArray(contributionPayload.weekly_summary)).toBe(true);
+    await expect(page.locator('#weekly-summary-table tr').first()).toBeVisible();
+  });
 });
 
 test.describe('Session Summary Page', () => {
@@ -148,6 +225,10 @@ test.describe('Session Summary Page', () => {
     await expect(legend).toContainText('Volume Classification');
   });
 
+  test('session legend swatches use shared volume classification colors', async ({ page }) => {
+    await expectSharedLegendSwatches(page);
+  });
+
   test('session summary table has correct headers', async ({ page }) => {
     const table = page.locator('#session-summary-container table');
     await expect(table).toBeVisible();
@@ -171,6 +252,46 @@ test.describe('Session Summary Page', () => {
     const formTexts = methodSelector.locator('.form-text');
     await expect(formTexts.first()).toBeVisible();
   });
+
+  test('fetch-backed session summary updates use explicit JSON intent', async ({ page }) => {
+    const [countingResponse] = await Promise.all([
+      page.waitForResponse((response) =>
+        response.url().includes('/session_summary?') &&
+        response.request().method() === 'GET' &&
+        response.request().headers()['x-requested-with'] === 'XMLHttpRequest'
+      ),
+      page.locator('#counting-mode').selectOption('raw'),
+    ]);
+
+    expect(countingResponse.ok()).toBeTruthy();
+    const countingResponsePayload = await countingResponse.json();
+    expect(countingResponsePayload.ok).toBe(true);
+    expect(countingResponsePayload.status).toBe('success');
+    const countingPayload = unwrapApiData(countingResponsePayload) as Record<string, unknown>;
+    expect(Array.isArray(countingPayload.session_summary)).toBe(true);
+    expect(Array.isArray(countingPayload.categories)).toBe(true);
+    expect(countingPayload).toHaveProperty('isolated_muscles');
+    expect(countingPayload).toHaveProperty('modes');
+    await expect(page.locator('#volume-formula-text')).toContainText('Raw Sets');
+    await expect(page.locator('#session-summary-table tr').first()).toBeVisible();
+
+    const [contributionResponse] = await Promise.all([
+      page.waitForResponse((response) =>
+        response.url().includes('/session_summary?') &&
+        response.request().method() === 'GET' &&
+        response.request().headers()['x-requested-with'] === 'XMLHttpRequest'
+      ),
+      page.locator('#contribution-mode').selectOption('direct'),
+    ]);
+
+    expect(contributionResponse.ok()).toBeTruthy();
+    const contributionResponsePayload = await contributionResponse.json();
+    expect(contributionResponsePayload.ok).toBe(true);
+    expect(contributionResponsePayload.status).toBe('success');
+    const contributionPayload = unwrapApiData(contributionResponsePayload) as Record<string, unknown>;
+    expect(Array.isArray(contributionPayload.session_summary)).toBe(true);
+    await expect(page.locator('#session-summary-table tr').first()).toBeVisible();
+  });
 });
 
 test.describe('Pattern Coverage Analysis (v1.5.0)', () => {
@@ -185,7 +306,7 @@ test.describe('Pattern Coverage Analysis (v1.5.0)', () => {
   });
 
   test('pattern coverage API returns valid structure', async ({ request }) => {
-    const response = await request.get('http://localhost:5000/api/pattern_coverage');
+    const response = await request.get('http://127.0.0.1:5000/api/pattern_coverage');
     expect(response.ok()).toBeTruthy();
     
     const data = await response.json();
@@ -198,7 +319,7 @@ test.describe('Pattern Coverage Analysis (v1.5.0)', () => {
   });
 
   test('pattern coverage warnings are actionable', async ({ request }) => {
-    const response = await request.get('http://localhost:5000/api/pattern_coverage');
+    const response = await request.get('http://127.0.0.1:5000/api/pattern_coverage');
     expect(response.ok()).toBeTruthy();
     
     const data = await response.json();
@@ -220,7 +341,7 @@ test.describe('Pattern Coverage Analysis (v1.5.0)', () => {
   });
 
   test('pattern coverage tracks movement patterns', async ({ request }) => {
-    const response = await request.get('http://localhost:5000/api/pattern_coverage');
+    const response = await request.get('http://127.0.0.1:5000/api/pattern_coverage');
     expect(response.ok()).toBeTruthy();
     
     const data = await response.json();
@@ -242,7 +363,7 @@ test.describe('Pattern Coverage Analysis (v1.5.0)', () => {
   });
 
   test('sets_per_routine reports session volume', async ({ request }) => {
-    const response = await request.get('http://localhost:5000/api/pattern_coverage');
+    const response = await request.get('http://127.0.0.1:5000/api/pattern_coverage');
     expect(response.ok()).toBeTruthy();
     
     const data = await response.json();
@@ -259,7 +380,7 @@ test.describe('Pattern Coverage Analysis (v1.5.0)', () => {
   });
 
   test('ideal_sets_range provides guidance', async ({ request }) => {
-    const response = await request.get('http://localhost:5000/api/pattern_coverage');
+    const response = await request.get('http://127.0.0.1:5000/api/pattern_coverage');
     expect(response.ok()).toBeTruthy();
     
     const data = await response.json();
@@ -273,5 +394,22 @@ test.describe('Pattern Coverage Analysis (v1.5.0)', () => {
     // v1.5.0 recommends 15-24 sets per session
     expect(idealRange.min).toBeGreaterThanOrEqual(10);
     expect(idealRange.max).toBeLessThanOrEqual(30);
+  });
+
+  test('weekly summary page renders pattern coverage from the live fetch', async ({ page }) => {
+    const [response] = await Promise.all([
+      page.waitForResponse((networkResponse) =>
+        networkResponse.url().includes('/api/pattern_coverage') &&
+        networkResponse.request().headers()['x-requested-with'] === 'XMLHttpRequest'
+      ),
+      page.reload(),
+    ]);
+
+    expect(response.ok()).toBeTruthy();
+    const payload = unwrapApiData(await response.json()) as Record<string, unknown>;
+    expect(payload).toHaveProperty('warnings');
+    expect(payload).toHaveProperty('total');
+    await expect(page.locator('#pattern-coverage-container .spinner-border')).toHaveCount(0);
+    await expect(page.locator('#pattern-coverage-container')).not.toContainText('Loading');
   });
 });

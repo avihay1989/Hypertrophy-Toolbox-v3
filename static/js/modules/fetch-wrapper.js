@@ -5,6 +5,8 @@
 
 import { showToast } from './toast.js';
 
+const HANDLED_UI_ERROR_CODES = new Set(['VALIDATION_ERROR', 'NOT_FOUND', 'NO_DATA']);
+
 /**
  * Global loading indicator counter
  */
@@ -47,6 +49,11 @@ function generateRequestId() {
  * Normalize error response to a consistent format
  */
 function normalizeError(error, requestId) {
+    // Already normalized (has code + message) — return as-is to prevent double-normalization
+    if (error && error.code && error.message && !(error instanceof Error)) {
+        return error;
+    }
+
     // Check if error response has our standard format
     if (error.ok === false && error.error) {
         return {
@@ -55,7 +62,7 @@ function normalizeError(error, requestId) {
             requestId: error.error.requestId || requestId
         };
     }
-    
+
     // Handle network errors or non-JSON responses
     if (error instanceof Error) {
         return {
@@ -64,13 +71,30 @@ function normalizeError(error, requestId) {
             requestId: requestId
         };
     }
-    
+
     // Fallback for unexpected error formats
     return {
         code: 'UNKNOWN_ERROR',
         message: typeof error === 'string' ? error : 'An unexpected error occurred',
         requestId: requestId
     };
+}
+
+/**
+ * Errors that map to an expected user-facing flow should not be treated like
+ * uncaught runtime failures in the browser console.
+ */
+export function isHandledApiError(error) {
+    return Boolean(error && typeof error === 'object' && HANDLED_UI_ERROR_CODES.has(error.code));
+}
+
+/**
+ * Keep unexpected failures loud while downgrading handled validation/no-data
+ * responses to warnings.
+ */
+export function logApiError(context, error) {
+    const logger = isHandledApiError(error) ? console.warn : console.error;
+    logger(context, error);
 }
 
 /**
@@ -112,6 +136,8 @@ export async function apiFetch(url, options = {}) {
     // Default headers
     const defaultHeaders = {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
         'X-Request-ID': requestId,
     };
     
@@ -148,9 +174,9 @@ export async function apiFetch(url, options = {}) {
                 if (contentType && contentType.includes('application/json')) {
                     data = await response.json();
                 } else {
-                    // Handle non-JSON responses
+                    // Preserve the real HTTP success state even for legacy HTML/redirect responses.
                     const text = await response.text();
-                    data = { ok: !response.ok, data: text };
+                    data = { ok: response.ok, data: text };
                 }
                 
                 // Add request ID to response
@@ -235,4 +261,3 @@ export const api = {
  * Export for direct fetch wrapper usage
  */
 export default apiFetch;
-

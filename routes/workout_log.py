@@ -248,69 +248,6 @@ def export_workout_log():
         logger.exception("Error exporting workout log")
         return error_response("INTERNAL_ERROR", "Failed to export workout log", 500)
 
-@workout_log_bp.route('/export_to_workout_log', methods=['POST'])
-def export_to_workout_log():
-    try:
-        with DatabaseHandler() as db:
-            query = """
-            SELECT 
-                us.routine,
-                us.exercise,
-                us.sets,
-                us.min_rep_range,
-                us.max_rep_range,
-                us.rir,
-                us.rpe,
-                us.weight
-            FROM user_selection us
-            """
-            workout_plans = db.fetch_all(query)
-            
-            if not workout_plans:
-                return error_response("NOT_FOUND", "No workout plans found to export", 404)
-            
-            # Insert each entry into workout_log
-            exported_count = 0
-            for plan in workout_plans:
-                insert_query = """
-                INSERT INTO workout_log (
-                    routine,
-                    exercise,
-                    planned_sets,
-                    planned_min_reps,
-                    planned_max_reps,
-                    planned_rir,
-                    planned_rpe,
-                    planned_weight,
-                    created_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """
-                
-                params = (
-                    plan['routine'],
-                    plan['exercise'],
-                    plan['sets'],
-                    plan['min_rep_range'],
-                    plan['max_rep_range'],
-                    plan['rir'],
-                    plan['rpe'],
-                    plan['weight'],
-                    datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                )
-                
-                db.execute_query(insert_query, params)
-                exported_count += 1
-            
-            logger.info(f"Exported {exported_count} exercises to workout log")
-            return jsonify(success_response(
-                message=f"Successfully exported {exported_count} exercises to workout log"
-            ))
-            
-    except Exception as e:
-        logger.exception("Error exporting to workout log")
-        return error_response("INTERNAL_ERROR", "Failed to export to workout log", 500)
-
-
 @workout_log_bp.route('/clear_workout_log', methods=['POST'])
 def clear_workout_log():
     """Clear all entries from the workout log."""

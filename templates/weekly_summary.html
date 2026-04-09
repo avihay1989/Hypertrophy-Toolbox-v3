@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
-{% block title %}Weekly Summary - Hypertrophy Toolbox{% endblock %}
+{% block title %}Plan Volume Summary - Hypertrophy Toolbox{% endblock %}
 
 {% block page_css %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/session_summary.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_volume.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/session_summary.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_frames.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_muscle_groups.css') }}">
 {% endblock %}
@@ -12,7 +12,7 @@
 {% block content %}
 <div class="container-fluid px-4">
     <div class="page-header text-center">
-        <h1>Weekly Summary</h1>
+        <h1>Plan Volume Summary</h1>
         <div class="header-underline"></div>
     </div>
 
@@ -68,27 +68,56 @@
                     </div>
                 </div>
                 <div class="mt-2 small text-muted">
-                    <strong>Effective Sets</strong> = Raw Sets × Effort Factor (RIR/RPE) × Rep Range Factor
+                    <strong>Effective Sets</strong> = Raw Sets &times; Effort Factor (RIR/RPE) &times; Rep Range Factor
                 </div>
+                <details class="mt-2 small">
+                    <summary class="text-muted" style="cursor: pointer;"><strong>How it's calculated</strong> (click to expand)</summary>
+                    <div class="mt-2 ps-2">
+                        <p class="mb-1"><strong>Effort Factor</strong> (based on RIR — Reps In Reserve):</p>
+                        <ul class="mb-2">
+                            <li>RIR 0–1 (near failure): <strong>100%</strong></li>
+                            <li>RIR 2–3: <strong>85%</strong></li>
+                            <li>RIR 4–5: <strong>70%</strong></li>
+                            <li>RIR 6+: <strong>55%</strong></li>
+                            <li>Not set: <strong>100%</strong> (neutral default)</li>
+                        </ul>
+                        <p class="mb-1"><strong>Rep Range Factor</strong> (based on average of min/max reps):</p>
+                        <ul class="mb-2">
+                            <li>1–5 reps: <strong>85%</strong></li>
+                            <li>6–20 reps (hypertrophy optimal): <strong>100%</strong></li>
+                            <li>21–30 reps: <strong>85%</strong></li>
+                            <li>31+ reps: <strong>70%</strong></li>
+                        </ul>
+                        <p class="mb-1"><strong>Muscle Contribution Weights</strong> (Total mode):</p>
+                        <ul class="mb-0">
+                            <li>Primary muscle: <strong>100%</strong></li>
+                            <li>Secondary muscle: <strong>50%</strong></li>
+                            <li>Tertiary muscle: <strong>25%</strong></li>
+                            <li>Direct Only mode: only primary counted at 100%</li>
+                        </ul>
+                    </div>
+                </details>
             </div>
         </div>
 
         <!-- Tables in frame -->
         <div class="summary-tables">
-            <!-- Weekly Summary Table -->
+            <!-- Plan Volume Summary Table -->
             <!-- AGENT:START B-3 PRIORITY-CLASSES -->
             <div class="summary-section">
                 <div id="weekly-summary-container" class="table-container">
-                    <div class="tbl-wrap tbl-wrap--full" role="region" aria-label="Weekly summary table">
-                        <table class="table table-striped tbl tbl--responsive" 
-                               role="table" 
-                               aria-label="Weekly muscle group summary">
+                    <div class="tbl-wrap tbl-wrap--full" role="region" aria-label="Plan volume summary table">
+                        <table class="table table-striped tbl tbl--responsive"
+                               role="table"
+                               aria-label="Plan muscle group volume summary">
                             <thead>
                                 <tr>
                                     <th scope="col" class="col--high" data-label="Muscle Group">Muscle Group</th>
                                     <th scope="col" class="col--high is-num" data-label="Effective Sets">Effective Sets</th>
                                     <th scope="col" class="col--med is-num" data-label="Raw Sets">Raw Sets</th>
-                                    <th scope="col" class="col--med is-num" data-label="Frequency">Frequency</th>
+                                    <th scope="col" class="col--med is-num" data-label="Routines"
+                                        data-bs-toggle="tooltip"
+                                        title="Number of routines in your plan that train this muscle (not weekly session count)">Routines</th>
                                     <th scope="col" class="col--med is-num" data-label="Total Volume">Total Volume</th>
                                     <th scope="col" class="col--high" data-label="Volume Classification">Volume Classification</th>
                                 </tr>
@@ -139,8 +168,10 @@
             </div>
 
             <!-- Advanced Isolated Muscles Statistics -->
+            {% if isolated_muscles %}
             <div class="summary-section">
                 <h3 class="text-center">Advanced Isolated Muscles Statistics</h3>
+                <p class="text-center text-muted small mb-2">This table uses raw (unweighted) sets regardless of counting mode.</p>
                 <div class="tbl-wrap tbl-wrap--full" role="region" aria-label="Isolated muscles statistics table">
                     <table class="table table-striped tbl tbl--responsive" 
                            role="table" 
@@ -178,6 +209,7 @@
                     </table>
                 </div>
             </div>
+            {% endif %}
             <!-- AGENT:END B-3 PRIORITY-CLASSES -->
         </div>
 
@@ -196,14 +228,15 @@
             </div>
         </div>
 
-        <!-- Volume Formula Explanation -->
-        <div class="alert alert-info mt-4 mb-4">
-            <strong>Training Volume Formula:</strong> Total Volume = Sets × Reps × Weight
+        <!-- Volume Formula Explanation (updated dynamically by JS based on counting mode) -->
+        <div class="alert alert-info mt-4 mb-4" id="volume-formula">
+            <strong>Training Volume Formula:</strong>
+            <span id="volume-formula-text">Total Volume = Effective Sets × Avg Reps × Weight</span>
         </div>
 
         <!-- Export Button -->
         <div class="export-section mt-3 text-center">
-            <button type="button" class="btn btn-export-excel" onclick="exportToExcel()" aria-label="Export weekly summary to Excel">
+            <button type="button" class="btn btn-export-excel" onclick="exportToExcel()" aria-label="Export plan summary to Excel">
                 <i class="fas fa-file-excel"></i> Export All Tables
             </button>
         </div>
@@ -261,18 +294,68 @@ function formatPatternName(pattern) {
     return nameMap[pattern] || pattern.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 }
 
+function isWrappedApiResponse(payload) {
+    return Boolean(
+        payload &&
+        typeof payload === 'object' &&
+        !Array.isArray(payload) &&
+        'data' in payload &&
+        (payload.ok === true || payload.status === 'success' || payload.success === true)
+    );
+}
+
+function isApiFailure(payload) {
+    return Boolean(
+        payload &&
+        typeof payload === 'object' &&
+        (payload.ok === false || payload.success === false)
+    );
+}
+
+function unwrapApiPayload(payload) {
+    return isWrappedApiResponse(payload) ? payload.data : payload;
+}
+
+function getApiErrorMessage(payload, fallbackMessage) {
+    if (!payload || typeof payload !== 'object') {
+        return fallbackMessage;
+    }
+
+    if (payload.error && typeof payload.error === 'object' && typeof payload.error.message === 'string') {
+        return payload.error.message;
+    }
+
+    if (typeof payload.error === 'string') {
+        return payload.error;
+    }
+
+    if (typeof payload.message === 'string' && payload.message.trim()) {
+        return payload.message;
+    }
+
+    return fallbackMessage;
+}
+
 // Function to fetch and display pattern coverage
 async function updatePatternCoverage() {
     const container = document.getElementById('pattern-coverage-container');
     
     try {
-        const response = await fetch('/api/pattern_coverage');
-        if (!response.ok) throw new Error('Failed to fetch pattern coverage');
-        
+        const response = await fetch('/api/pattern_coverage', {
+            headers: {
+                "Accept": "application/json",
+                "X-Requested-With": "XMLHttpRequest"
+            }
+        });
         const result = await response.json();
-        if (!result.success || !result.data) throw new Error('Invalid response');
-        
-        const data = result.data;
+        if (!response.ok || isApiFailure(result)) {
+            throw new Error(getApiErrorMessage(result, 'Failed to fetch pattern coverage'));
+        }
+
+        const data = unwrapApiPayload(result);
+        if (!data || typeof data !== 'object') {
+            throw new Error('Invalid response');
+        }
         const hasData = Object.keys(data.total || {}).length > 0;
         
         if (!hasData) {
@@ -398,37 +481,57 @@ async function updateWeeklySummary() {
             </td>
         </tr>`;
 
+    // Update formula text based on counting mode
+    const formulaText = document.getElementById('volume-formula-text');
+    if (formulaText) {
+        formulaText.textContent = countingMode === 'raw'
+            ? 'Total Volume = Raw Sets × Avg Reps × Weight'
+            : 'Total Volume = Effective Sets × Avg Reps × Weight';
+    }
+
     try {
         const response = await fetch(`/weekly_summary?counting_mode=${countingMode}&contribution_mode=${contributionMode}`, {
-            headers: { "Accept": "application/json" }
+            headers: {
+                "Accept": "application/json",
+                "X-Requested-With": "XMLHttpRequest"
+            }
         });
 
-        if (!response.ok) throw new Error("Failed to fetch weekly summary.");
+        const result = await response.json();
+        if (!response.ok || isApiFailure(result)) {
+            throw new Error(getApiErrorMessage(result, "Failed to fetch weekly summary."));
+        }
 
-        const data = await response.json();
+        const data = unwrapApiPayload(result) || {};
+        const weeklySummary = Array.isArray(data.weekly_summary) ? data.weekly_summary : [];
+        const categories = Array.isArray(data.categories) ? data.categories : [];
 
         // Update weekly summary table
-        if (data.weekly_summary.length === 0) {
+        if (weeklySummary.length === 0) {
             tableBody.innerHTML = `
                 <tr>
                     <td colspan="6" class="text-center text-muted">No data available.</td>
                 </tr>`;
         } else {
             // Populate the table with fetched data
-            tableBody.innerHTML = data.weekly_summary.map(row => {
+            tableBody.innerHTML = weeklySummary.map(row => {
                 const effectiveSets = row.effective_sets || row.total_sets;
                 const rawSets = row.raw_sets || row.total_sets;
-                const frequency = row.frequency || 0;
+                const routines = row.frequency || 0;
                 const volume = getVolumeDetails(effectiveSets);
                 // Transform muscle group name based on view mode
                 const muscleDisplay = window.FilterViewMode?.transformMuscleDisplay(row.muscle_group) || row.muscle_group || "N/A";
+                // Use raw or effective volume based on counting mode
+                const displayVolume = countingMode === 'raw'
+                    ? (row.raw_total_volume ?? row.total_volume ?? row.total_weight ?? 0)
+                    : (row.total_volume ?? row.total_weight ?? 0);
                 return `
                     <tr>
                         <td data-label="Muscle Group" data-raw-value="${row.muscle_group || ''}">${muscleDisplay}</td>
                         <td data-label="Effective Sets" class="is-num">${effectiveSets.toFixed(1)}</td>
                         <td data-label="Raw Sets" class="is-num">${rawSets.toFixed(1)}</td>
-                        <td data-label="Frequency" class="is-num">${frequency}</td>
-                        <td data-label="Total Volume" class="is-num">${(row.total_volume || row.total_weight || 0).toFixed(0)}</td>
+                        <td data-label="Routines" class="is-num">${routines}</td>
+                        <td data-label="Total Volume" class="is-num">${displayVolume.toFixed(0)}</td>
                         <td data-label="Volume Classification">
                             <div class="volume-classification" 
                                  data-bs-toggle="tooltip"
@@ -444,13 +547,13 @@ async function updateWeeklySummary() {
         }
 
         // Update categories table
-        if (data.categories.length === 0) {
+        if (categories.length === 0) {
             categoryTableBody.innerHTML = `
                 <tr>
                     <td colspan="3" class="text-center text-muted">No categories data available.</td>
                 </tr>`;
         } else {
-            categoryTableBody.innerHTML = data.categories.map(cat => `
+            categoryTableBody.innerHTML = categories.map(cat => `
                 <tr>
                     <td>
                         <span data-bs-toggle="tooltip" 

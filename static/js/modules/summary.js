@@ -126,7 +126,7 @@ function getVolumeClass(sets) {
 }
 
 function getVolumeLabel(sets) {
-    if (sets >= 30) return 'Ultra Volume';
+    if (sets >= 30) return 'Excessive Volume';
     if (sets >= 20) return 'High Volume';
     if (sets >= 10) return 'Medium Volume';
     return 'Low Volume';

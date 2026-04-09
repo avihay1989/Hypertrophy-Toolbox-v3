@@ -1,5 +1,5 @@
 import { showToast } from './toast.js';
-import { api } from './fetch-wrapper.js';
+import { api, isHandledApiError, logApiError } from './fetch-wrapper.js';
 
 export function initializeWorkoutLog() {
     console.log('Initializing workout log');
@@ -117,8 +117,8 @@ export async function importFromWorkoutPlan() {
         }, 1000);
 
     } catch (error) {
-        console.error('Error importing workout plan:', error);
-        showToast('error', error.message || 'Failed to import workout plan');
+        logApiError('Error importing workout plan:', error);
+        showToast(isHandledApiError(error) ? 'warning' : 'error', error.message || 'Failed to import workout plan');
         
         // Re-enable button on error
         const importBtn = document.getElementById('import-from-plan-btn');

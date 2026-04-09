@@ -43,7 +43,7 @@ All notable changes to Hypertrophy Toolbox v3.
 - Total test coverage: 294 tests passing
 
 ### Documentation
-- New `docs/PLAN_GENERATOR_IMPLEMENTATION.md` tracking document
+- New `docs/archive/PLAN_GENERATOR_IMPLEMENTATION.md` tracking document
 - Documents Phase 1 (complete) and Phase 2 features
 
 ---
@@ -119,4 +119,3 @@ All notable changes to Hypertrophy Toolbox v3.
 - Enhanced accessibility (ARIA labels, keyboard navigation)
 - Dark mode and reduced motion support
 - Container queries for responsive card layouts
-

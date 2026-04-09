@@ -1,4 +1,7 @@
 from .database import DatabaseHandler
+from .logger import get_logger
+
+logger = get_logger()
 
 def get_workout_logs():
     """Fetch all workout log entries."""
@@ -27,7 +30,7 @@ def get_workout_logs():
         with DatabaseHandler() as db:
             return db.fetch_all(query)
     except Exception as e:
-        print(f"Error fetching workout logs: {e}")
+        logger.exception("Error fetching workout logs: %s", e)
         return []
 
 def check_progression(log_entry):

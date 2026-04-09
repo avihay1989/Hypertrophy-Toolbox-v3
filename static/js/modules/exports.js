@@ -1,4 +1,5 @@
 import { showToast } from './toast.js';
+import { api, isHandledApiError, logApiError } from './fetch-wrapper.js';
 
 /**
  * Check if the workout plan table has any exercises
@@ -95,19 +96,8 @@ export async function exportToWorkoutLog() {
             showToast('warning', 'No exercises to export. Add exercises to your workout plan first.');
             return;
         }
-        
-        const response = await fetch('/export_to_workout_log', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
 
-        const data = await response.json();
-        
-        if (!response.ok) {
-            throw new Error(data.error || 'Failed to export to workout log');
-        }
+        await api.post('/export_to_workout_log', {}, { showLoading: false, showErrorToast: false });
 
         showToast('success', 'Successfully exported to workout log');
         
@@ -116,8 +106,8 @@ export async function exportToWorkoutLog() {
             window.location.href = '/workout_log';
         }, 1500);
     } catch (error) {
-        console.error('Error exporting to workout log:', error);
-        showToast('error', 'Failed to export to workout log');
+        logApiError('Error exporting to workout log:', error);
+        showToast(isHandledApiError(error) ? 'warning' : 'error', error.message || 'Failed to export to workout log');
     }
 }
 

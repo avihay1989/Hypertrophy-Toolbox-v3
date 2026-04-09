@@ -8,7 +8,7 @@
  * - Empty filter results
  * - Empty table displays
  */
-import { test, expect, ROUTES, SELECTORS, waitForPageReady, expectToast } from './fixtures';
+import { test, expect, ROUTES, SELECTORS, waitForPageReady, resetWorkoutPlan } from './fixtures';
 
 /**
  * Helper to select a complete routine
@@ -31,33 +31,9 @@ async function selectRoutine(page: import('@playwright/test').Page) {
  * Helper to clear all exercises from workout plan
  */
 async function clearWorkoutPlan(page: import('@playwright/test').Page) {
-  // Look for clear button
-  const clearBtn = page.locator('#clear-workout-btn, [data-action="clear"], button:has-text("Clear")');
-  
-  if (await clearBtn.isVisible().catch(() => false)) {
-    // Handle confirmation dialog
-    page.on('dialog', async dialog => {
-      await dialog.accept();
-    });
-    
-    await clearBtn.click();
-    await page.waitForTimeout(1000);
-  }
-  
-  // If no clear button, delete exercises one by one
-  const rows = await page.locator('#workout_plan_table_body tr').count();
-  for (let i = 0; i < rows; i++) {
-    const deleteBtn = page.locator('#workout_plan_table_body tr').first()
-      .locator('button[data-action="delete"], .delete-btn, .btn-danger');
-    
-    if (await deleteBtn.isVisible().catch(() => false)) {
-      page.on('dialog', async dialog => {
-        await dialog.accept();
-      });
-      await deleteBtn.click();
-      await page.waitForTimeout(500);
-    }
-  }
+  await resetWorkoutPlan(page);
+  await page.reload();
+  await waitForPageReady(page);
 }
 
 test.describe('Empty Workout Plan - Export', () => {
@@ -341,11 +317,16 @@ test.describe('Empty Progression Plan', () => {
     const exerciseSelector = page.locator('#exerciseSelect');
     
     if (await exerciseSelector.isVisible()) {
-      const options = await exerciseSelector.locator('option').allInnerTexts();
-      const exercise = options.find(opt => opt && opt.trim() !== '' && !opt.includes('Choose'));
-      
-      if (exercise) {
-        await exerciseSelector.selectOption(exercise);
+      const options = exerciseSelector.locator('option');
+      const optionCount = await options.count();
+      let exerciseValue: string | null = null;
+
+      if (optionCount > 1) {
+        exerciseValue = await options.nth(1).getAttribute('value');
+      }
+
+      if (exerciseValue) {
+        await exerciseSelector.selectOption(exerciseValue);
         await page.waitForTimeout(500);
         
         // Should show suggestions or empty state
@@ -374,12 +355,6 @@ test.describe('Empty Volume Splitter', () => {
     const calculateBtn = page.locator(SELECTORS.CALCULATE_VOLUME_BTN);
     
     if (await calculateBtn.isVisible()) {
-      // Clear any existing values
-      const trainingDays = page.locator(SELECTORS.TRAINING_DAYS);
-      if (await trainingDays.isVisible()) {
-        await trainingDays.fill('');
-      }
-      
       await calculateBtn.click();
       await page.waitForTimeout(500);
       

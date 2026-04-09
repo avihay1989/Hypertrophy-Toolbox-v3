@@ -161,6 +161,16 @@ WORKOUT_PLAN_COLUMNS = {
 }
 
 
+def _weekly_summary_to_rows(summary_dict):
+    """Convert weekly summary dict {muscle: stats} to list of row dicts for export."""
+    if isinstance(summary_dict, list):
+        return summary_dict
+    return [
+        {"muscle_group": muscle, **stats}
+        for muscle, stats in summary_dict.items()
+    ]
+
+
 def transform_muscle_value(value, view_mode):
     """
     Transform a muscle name value based on view mode.
@@ -248,7 +258,7 @@ def calculate_volume_for_category(category, muscle_group):
             result = db.fetch_one(query, (muscle_group, muscle_group, muscle_group, muscle_group))
             return result['total_volume'] if result and result['total_volume'] else 0
     except Exception as e:
-        print(f"Error calculating volume: {e}")
+        logger.exception("Error calculating volume for muscle_group=%s: %s", muscle_group, e)
         return 0
 
 def calculate_frequency_for_category(category, muscle_group):
@@ -275,7 +285,7 @@ def calculate_frequency_for_category(category, muscle_group):
             result = db.fetch_one(query, (muscle_group, muscle_group, muscle_group, muscle_group))
             return result['frequency'] if result and result['frequency'] else 0
     except Exception as e:
-        print(f"Error calculating frequency: {e}")
+        logger.exception("Error calculating frequency for muscle_group=%s: %s", muscle_group, e)
         return 0
 
 # Test route to verify blueprint is working
@@ -498,8 +508,9 @@ def export_to_excel():
 
             # Export Weekly Summary
             logger.info("Calculating weekly summary")
-            weekly_summary = calculate_weekly_summary('Total')
-            if weekly_summary:
+            weekly_summary_raw = calculate_weekly_summary('Total')
+            if weekly_summary_raw:
+                weekly_summary = _weekly_summary_to_rows(weekly_summary_raw)
                 sheets_data['Weekly Summary'] = weekly_summary
                 logger.info(f"Generated {len(weekly_summary)} weekly summary rows")
 
@@ -639,7 +650,7 @@ def export_to_workout_log():
         
         with DatabaseHandler() as db:
             workout_plan = db.fetch_all(query)
-            
+
             if not workout_plan:
                 logger.warning("No exercises found in workout plan to export")
                 return error_response(
@@ -647,9 +658,19 @@ def export_to_workout_log():
                     "No exercises to export",
                     400
                 )
-            
+
             exported_count = 0
+            skipped_count = 0
             for exercise in workout_plan:
+                # Check if this exercise already exists in the workout log
+                existing = db.fetch_one(
+                    "SELECT id FROM workout_log WHERE workout_plan_id = ?",
+                    (exercise["id"],)
+                )
+                if existing:
+                    skipped_count += 1
+                    continue
+
                 params = (
                     exercise["id"], exercise["routine"], exercise["exercise"],
                     exercise["sets"], exercise["min_rep_range"], exercise["max_rep_range"],
@@ -657,8 +678,14 @@ def export_to_workout_log():
                 )
                 db.execute_query(insert_query, params)
                 exported_count += 1
-            
-            logger.info(f"Successfully exported {exported_count} exercises to workout log")
+
+            if exported_count == 0 and skipped_count > 0:
+                logger.info(f"All {skipped_count} exercises already in workout log")
+                return success_response(
+                    message=f"All exercises already exist in the workout log ({skipped_count} skipped)"
+                )
+
+            logger.info(f"Successfully exported {exported_count} exercises to workout log (skipped {skipped_count} duplicates)")
         
         return success_response(
             message=f"Workout plan exported successfully ({exported_count} exercises)"
@@ -688,8 +715,9 @@ def export_summary():
         
         # Export Weekly Summary
         logger.info("Calculating weekly summary")
-        weekly_data = calculate_weekly_summary(method)
-        if weekly_data:
+        weekly_data_raw = calculate_weekly_summary(method)
+        if weekly_data_raw:
+            weekly_data = _weekly_summary_to_rows(weekly_data_raw)
             sheets_data['Weekly Summary'] = weekly_data
             logger.info(f"Generated {len(weekly_data)} weekly summary rows")
         
@@ -781,9 +809,9 @@ def export_large_dataset():
                 if export_type == 'all':
                     # Add summary sheets
                     logger.info("Generating summary sheets")
-                    weekly = calculate_weekly_summary('Total')
-                    if weekly:
-                        yield ('Weekly Summary', weekly)
+                    weekly_raw = calculate_weekly_summary('Total')
+                    if weekly_raw:
+                        yield ('Weekly Summary', _weekly_summary_to_rows(weekly_raw))
                     
                     categories = calculate_exercise_categories()
                     if categories:

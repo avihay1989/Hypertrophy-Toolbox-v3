@@ -153,17 +153,27 @@ def add_exercise():
             weight=data.get('weight'),
             rpe=data.get('rpe')
         )
-        
-        if result and "Error" in result:
+
+        if result != "Exercise added successfully.":
+            message = result or "Failed to add exercise"
+            message_lower = message.lower()
+            is_validation_error = (
+                message_lower.startswith("error:")
+                or "missing required fields" in message_lower
+                or "already exists" in message_lower
+            )
+            error_code = "VALIDATION_ERROR" if is_validation_error else "INTERNAL_ERROR"
+            status_code = 400 if is_validation_error else 500
             logger.warning(
                 "Failed to add exercise",
                 extra={
                     'routine': data.get('routine'),
                     'exercise': data.get('exercise'),
-                    'error': result
+                    'error': message,
+                    'status_code': status_code
                 }
             )
-            return error_response("VALIDATION_ERROR", result, 400)
+            return error_response(error_code, message, status_code)
         
         logger.info(
             "Exercise added successfully",

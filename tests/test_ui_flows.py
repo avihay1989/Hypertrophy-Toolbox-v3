@@ -473,9 +473,26 @@ class TestVolumeCalculationFlow:
     def test_calculate_volume_api(self, client):
         """Test volume calculation API endpoint."""
         response = client.post('/api/calculate_volume', json={
-            "muscle_group": "Chest",
-            "weekly_sets": 20,
-            "frequency": 2
+            "mode": "basic",
+            "training_days": 2,
+            "volumes": {
+                "Chest": 20
+            },
+            "ranges": {
+                "Chest": {
+                    "min": 12,
+                    "max": 18
+                }
+            }
         })
         assert response.status_code == 200
-
+        payload = response.get_json()
+        assert payload["ok"] is True
+        assert payload["status"] == "success"
+        assert set(payload["data"].keys()) == {"results", "suggestions", "ranges"}
+        assert payload["data"]["results"]["Chest"]["weekly_sets"] == 20.0
+        assert payload["data"]["results"]["Chest"]["sets_per_session"] == 10.0
+        assert payload["data"]["results"]["Chest"]["status"] == "high"
+        assert payload["data"]["ranges"]["Chest"]["min"] == 12
+        assert payload["data"]["ranges"]["Chest"]["max"] == 18
+        assert isinstance(payload["data"]["suggestions"], list)

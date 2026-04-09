@@ -9,6 +9,19 @@
  */
 import { test, expect, ROUTES, SELECTORS, waitForPageReady } from './fixtures';
 
+function unwrapProgressionApiData(payload: unknown) {
+  if (
+    payload &&
+    typeof payload === 'object' &&
+    !Array.isArray(payload) &&
+    'data' in payload
+  ) {
+    return (payload as { data: unknown }).data;
+  }
+
+  return payload;
+}
+
 test.describe('Progression Plan Page', () => {
   test.beforeEach(async ({ page, consoleErrors }) => {
     consoleErrors.startCollecting();
@@ -263,7 +276,7 @@ test.describe('Progression Goal Management', () => {
     const modal = page.locator('#deleteGoalModal');
     
     // Open modal programmatically if there's a delete button
-    const deleteBtn = page.locator('[data-action="delete-goal"], .delete-goal-btn').first();
+    const deleteBtn = page.locator('.delete-goal').first();
     
     if (await deleteBtn.count() > 0) {
       await deleteBtn.click();
@@ -280,6 +293,86 @@ test.describe('Progression Goal Management', () => {
         await page.keyboard.press('Escape');
       }
     }
+  });
+});
+
+test.describe('Progression Goal Lifecycle Smoke', () => {
+  test.beforeEach(async ({ page, consoleErrors }) => {
+    consoleErrors.startCollecting();
+  });
+
+  test.afterEach(async ({ consoleErrors }) => {
+    consoleErrors.assertNoErrors();
+  });
+
+  test('goal can be saved and completed through the progression page', async ({ page }) => {
+    await page.goto(ROUTES.PROGRESSION);
+    await waitForPageReady(page);
+
+    const exerciseSelector = page.locator('#exerciseSelect');
+    let optionCount = await exerciseSelector.locator('option').count();
+
+    if (optionCount <= 1) {
+      await page.goto(ROUTES.WORKOUT_PLAN);
+      await waitForPageReady(page);
+
+      await page.locator(SELECTORS.ROUTINE_ENV).selectOption('GYM');
+      await page.waitForFunction(() => {
+        const select = document.getElementById('routine-program') as HTMLSelectElement;
+        return !!select && select.options.length > 1;
+      });
+      await page.locator(SELECTORS.ROUTINE_PROGRAM).selectOption('Push Pull Legs');
+      await page.waitForFunction(() => {
+        const select = document.getElementById('routine-day') as HTMLSelectElement;
+        return !!select && select.options.length > 1;
+      });
+      await page.locator(SELECTORS.ROUTINE_DAY).selectOption('Push 1');
+      await page.waitForFunction(() => {
+        const select = document.getElementById('exercise') as HTMLSelectElement;
+        return !!select && select.options.length > 1;
+      });
+
+      const exerciseOptions = page.locator(SELECTORS.EXERCISE_SEARCH).locator('option');
+      const firstExerciseValue = await exerciseOptions.nth(1).getAttribute('value');
+      expect(firstExerciseValue).toBeTruthy();
+      await page.locator(SELECTORS.EXERCISE_SEARCH).selectOption(firstExerciseValue!);
+      await page.locator(SELECTORS.ADD_EXERCISE_BTN).click();
+
+      await page.goto(ROUTES.PROGRESSION);
+      await waitForPageReady(page);
+      optionCount = await exerciseSelector.locator('option').count();
+    }
+
+    expect(optionCount).toBeGreaterThan(1);
+
+    const initialRowCount = await page.locator('.current-goals tbody tr').count();
+    const selectedValue = await exerciseSelector.locator('option').nth(1).getAttribute('value');
+    expect(selectedValue).toBeTruthy();
+    await exerciseSelector.selectOption(selectedValue!);
+
+    await expect(page.locator('#suggestionsContainer')).toBeVisible();
+    const firstGoalButton = page.locator('.set-goal-btn').first();
+    await expect(firstGoalButton).toBeVisible();
+    await firstGoalButton.click();
+
+    const goalModal = page.locator('#goalSettingModal');
+    await expect(goalModal).toBeVisible();
+    await page.locator('#goalDate').fill('31-12-2099');
+    await page.locator('#saveGoal').click();
+
+    await expect.poll(async () => {
+      await page.waitForLoadState('networkidle');
+      return page.locator('.current-goals tbody tr').count();
+    }).toBe(initialRowCount + 1);
+
+    const savedRow = page.locator('.current-goals tbody tr').last();
+    await expect(savedRow).toContainText(selectedValue!);
+    await savedRow.locator('.complete-goal').click();
+    await expect(savedRow.locator('.badge')).toContainText('Completed');
+
+    await page.reload();
+    await waitForPageReady(page);
+    await expect.poll(async () => page.locator('.current-goals tbody tr').count()).toBe(initialRowCount);
   });
 });
 
@@ -483,7 +576,7 @@ test.describe('Double Progression Logic (v1.5.0)', () => {
 
   test('API returns proper suggestion structure', async ({ page, request }) => {
     // Test the API directly using Playwright's request context
-    const response = await request.post('http://localhost:5000/get_exercise_suggestions', {
+    const response = await request.post('http://127.0.0.1:5000/get_exercise_suggestions', {
       data: {
         exercise: 'Bench Press (Barbell)',
         is_novice: true
@@ -491,11 +584,14 @@ test.describe('Double Progression Logic (v1.5.0)', () => {
     });
     
     expect(response.ok()).toBeTruthy();
-    const suggestions = await response.json();
+    const rawPayload = await response.json();
+    expect(rawPayload.ok).toBe(true);
+    expect(rawPayload.status).toBe('success');
+    const suggestions = unwrapProgressionApiData(rawPayload);
     expect(Array.isArray(suggestions)).toBe(true);
     
     // Verify suggestion structure matches v1.5.0 double progression format
-    if (suggestions.length > 0) {
+    if (Array.isArray(suggestions) && suggestions.length > 0) {
       const suggestion = suggestions[0];
       expect(suggestion).toHaveProperty('type');
       expect(suggestion).toHaveProperty('title');

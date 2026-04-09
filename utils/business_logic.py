@@ -1,4 +1,7 @@
 from utils.database import DatabaseHandler
+from utils.logger import get_logger
+
+logger = get_logger()
 
 
 class BusinessLogic:
@@ -26,10 +29,10 @@ class BusinessLogic:
             results = self.db_handler.fetch_all(query)
             return results
         except ValueError as ve:
-            print(f"ValueError in calculate_weekly_summary: {ve}")
+            logger.warning("ValueError in calculate_weekly_summary: %s", ve)
             return []
         except Exception as e:
-            print(f"Unexpected error in calculate_weekly_summary: {e}")
+            logger.exception("Unexpected error in calculate_weekly_summary: %s", e)
             return []
         finally:
             if self.db_handler:

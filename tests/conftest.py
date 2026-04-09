@@ -2,11 +2,9 @@
 Pytest configuration and fixtures for Priority 0 security tests.
 """
 import pytest
-import sqlite3
-import tempfile
 import os
 from pathlib import Path
-from flask import Flask
+from flask import Flask, jsonify
 from utils.database import DatabaseHandler, add_progression_goals_table, add_volume_tracking_tables
 from utils.db_initializer import initialize_database
 from routes.workout_plan import workout_plan_bp, initialize_exercise_order
@@ -20,43 +18,53 @@ from routes.progression_plan import progression_plan_bp
 from routes.volume_splitter import volume_splitter_bp
 from routes.program_backup import program_backup_bp
 from utils.program_backup import initialize_backup_tables
-import sys
+from utils.errors import success_response, error_response
+import utils.config
 
 
 # Override config before importing app
 os.environ['TESTING'] = '1'
-TEST_DB_PATH = os.path.join(tempfile.gettempdir(), 'test_hypertrophy_toolbox.db')
+TEST_DB_FILENAME = "test_hypertrophy_toolbox.db"
 
 
-@pytest.fixture(scope='session')
-def test_db_path():
-    """Create a temporary database file for testing."""
-    # Remove test DB if it exists
-    if os.path.exists(TEST_DB_PATH):
-        os.remove(TEST_DB_PATH)
-    
-    yield TEST_DB_PATH
-    
-    # Cleanup
-    if os.path.exists(TEST_DB_PATH):
-        os.remove(TEST_DB_PATH)
+def _initialize_test_database() -> None:
+    """Create the full test schema for the active database path."""
+    initialize_database(force=True)
+    add_progression_goals_table()
+    add_volume_tracking_tables()
+    initialize_exercise_order()
+    initialize_backup_tables()
 
 
-@pytest.fixture(scope='session')
+def _cleanup_database_files(database_path: str) -> None:
+    """Best-effort cleanup for SQLite database sidecar files."""
+    candidates = [Path(database_path)]
+    candidates.extend(Path(f"{database_path}{suffix}") for suffix in ("-wal", "-shm", "-journal"))
+    for candidate in candidates:
+        try:
+            candidate.unlink(missing_ok=True)
+        except OSError:
+            # Some tests intentionally exercise open connections; leave best-effort cleanup non-fatal.
+            pass
+
+
+@pytest.fixture
+def test_db_path(tmp_path):
+    """Create a unique temporary database file path per test."""
+    return str(tmp_path / TEST_DB_FILENAME)
+
+
+@pytest.fixture
 def app(test_db_path):
     """Create Flask app with test configuration."""
-    # Override DB_FILE in config
-    import utils.config
     original_db_file = utils.config.DB_FILE
     utils.config.DB_FILE = test_db_path
-    
-    # Create test app
+
     app = Flask(__name__)
     app.config['TESTING'] = True
     app.config['WTF_CSRF_ENABLED'] = False
     app.url_map.strict_slashes = False
-    
-    # Register blueprints
+
     app.register_blueprint(main_bp)
     app.register_blueprint(workout_log_bp)
     app.register_blueprint(weekly_summary_bp)
@@ -67,11 +75,7 @@ def app(test_db_path):
     app.register_blueprint(progression_plan_bp)
     app.register_blueprint(volume_splitter_bp)
     app.register_blueprint(program_backup_bp)
-    
-    # Add erase-data endpoint (defined in app.py, not a blueprint)
-    from flask import jsonify
-    from utils.errors import success_response, error_response
-    
+
     @app.route('/erase-data', methods=['POST'])
     def erase_data():
         try:
@@ -88,76 +92,48 @@ def app(test_db_path):
                 ]
                 for table in tables:
                     db.execute_query(f"DROP TABLE IF EXISTS {table}")
-            
-            # Reinitialize database
-            initialize_database(force=True)
-            add_progression_goals_table()
-            add_volume_tracking_tables()
-            initialize_exercise_order()
-            initialize_backup_tables()
-            
+
+            _initialize_test_database()
+
             return jsonify(success_response(
                 data=None,
                 message='All data has been erased and tables reinitialized successfully.'
             ))
-        except Exception as e:
+        except Exception:
             return error_response("INTERNAL_ERROR", "Failed to erase data", 500)
-    
-    # Initialize test database
+
     with app.app_context():
-        initialize_database()
-        add_progression_goals_table()
-        add_volume_tracking_tables()
-        initialize_exercise_order()
-        initialize_backup_tables()
-    
-    # Restore original DB_FILE
-    utils.config.DB_FILE = original_db_file
-    
-    yield app
-    
-    # Cleanup
-    if os.path.exists(test_db_path):
-        os.remove(test_db_path)
+        _initialize_test_database()
+
+    try:
+        yield app
+    finally:
+        utils.config.DB_FILE = original_db_file
+        _cleanup_database_files(test_db_path)
 
 
-@pytest.fixture(scope='function')
-def client(app, test_db_path):
+@pytest.fixture
+def client(app):
     """Flask test client."""
-    # Override DB_FILE for each test
-    import utils.config
-    original_db_file = utils.config.DB_FILE
-    utils.config.DB_FILE = test_db_path
-    
     with app.test_client() as client:
         yield client
-    
-    # Restore original DB_FILE
-    utils.config.DB_FILE = original_db_file
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture
 def db_handler(app, test_db_path):
     """Database handler with test DB and foreign keys enabled."""
-    import utils.config
-    original_db_file = utils.config.DB_FILE
-    utils.config.DB_FILE = test_db_path
-    
-    # Pass explicit path to ensure we use test database
     handler = DatabaseHandler(test_db_path)
-    
-    # Verify foreign keys are enabled
+
     with handler.connection:
         result = handler.fetch_one("PRAGMA foreign_keys;")
         assert result['foreign_keys'] == 1, "Foreign keys must be enabled"
-    
+
     yield handler
-    
+
     handler.close()
-    utils.config.DB_FILE = original_db_file
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture
 def clean_db(db_handler):
     """Clean database before each test."""
     # Delete all data but keep tables

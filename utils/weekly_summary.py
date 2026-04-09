@@ -14,6 +14,7 @@ from utils.effective_sets import (
     MUSCLE_CONTRIBUTION_WEIGHTS,
     DEFAULT_MULTIPLIER,
 )
+from utils.logger import get_logger
 
 
 STATUS_MAP = {
@@ -30,6 +31,7 @@ EFFECTIVE_STATUS_MAP = {
     'high': 'high',
     'excessive': 'excessive',
 }
+logger = get_logger()
 
 
 def calculate_weekly_summary(
@@ -96,7 +98,9 @@ def calculate_weekly_summary(
         if min_rep is not None and max_rep is not None:
             avg_reps = (min_rep + max_rep) / 2.0
         
-        # Calculate effective sets using the new module
+        # Effective totals are always computed with effective-mode weighting.
+        # The counting_mode toggle only changes which aggregate is presented
+        # as the primary `weekly_sets` metric.
         eff_result = calculate_effective_sets(
             sets=sets,
             rir=rir,
@@ -106,7 +110,7 @@ def calculate_weekly_summary(
             primary_muscle=row.get('primary_muscle_group'),
             secondary_muscle=row.get('secondary_muscle_group'),
             tertiary_muscle=row.get('tertiary_muscle_group'),
-            counting_mode=counting_mode,
+            counting_mode=CountingMode.EFFECTIVE,
             contribution_mode=contribution_mode,
         )
         
@@ -282,7 +286,7 @@ def calculate_isolated_muscles_stats() -> List[Dict[str, Any]]:
         with DatabaseHandler() as db:
             return db.fetch_all(query)
     except Exception as e:
-        print(f"Error calculating isolated muscles stats: {e}")
+        logger.exception("Error calculating isolated muscles stats: %s", e)
         return []
 
 
@@ -316,7 +320,7 @@ def calculate_pattern_coverage() -> Dict[str, Any]:
         with DatabaseHandler() as db:
             rows = db.fetch_all(query)
     except Exception as e:
-        print(f"Error calculating pattern coverage: {e}")
+        logger.exception("Error calculating pattern coverage: %s", e)
         return {"per_routine": {}, "total": {}, "warnings": [], "sets_per_routine": {}}
     
     # Core movement patterns that should be present in a balanced program

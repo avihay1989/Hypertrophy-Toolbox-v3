@@ -260,6 +260,74 @@ def _initialize_workout_log_table(db: DatabaseHandler) -> None:
     )
 
 
+def _backfill_workout_log_plan_ids(db: DatabaseHandler) -> None:
+    """Backfill NULL workout_plan_id in workout_log by matching plan fields.
+
+    Legacy rows were inserted without the FK.  We match on the full set of
+    planned fields (routine, exercise, sets, rep range, weight, rir, rpe)
+    to avoid linking a stale log to a modified plan row.  Ambiguous or
+    unmatched rows are left as NULL and a warning is logged with the count.
+    """
+    try:
+        null_count_row = db.fetch_one(
+            "SELECT COUNT(*) AS cnt FROM workout_log WHERE workout_plan_id IS NULL"
+        )
+        null_count = int(null_count_row["cnt"]) if null_count_row else 0
+        if null_count == 0:
+            return
+
+        logger.info(f"Backfilling workout_plan_id for {null_count} workout_log rows")
+
+        # Update where exactly one user_selection row matches on ALL planned fields.
+        # Using COALESCE so that NULL = NULL comparisons don't silently fail.
+        db.execute_query(
+            """
+            UPDATE workout_log
+            SET workout_plan_id = (
+                SELECT us.id
+                FROM user_selection us
+                WHERE us.routine       = workout_log.routine
+                  AND us.exercise      = workout_log.exercise
+                  AND us.sets          = workout_log.planned_sets
+                  AND us.min_rep_range = workout_log.planned_min_reps
+                  AND us.max_rep_range = workout_log.planned_max_reps
+                  AND COALESCE(us.weight, -1) = COALESCE(workout_log.planned_weight, -1)
+                  AND COALESCE(us.rir, -1)    = COALESCE(workout_log.planned_rir, -1)
+                  AND COALESCE(us.rpe, -1)    = COALESCE(workout_log.planned_rpe, -1)
+            )
+            WHERE workout_plan_id IS NULL
+              AND (
+                SELECT COUNT(*)
+                FROM user_selection us
+                WHERE us.routine       = workout_log.routine
+                  AND us.exercise      = workout_log.exercise
+                  AND us.sets          = workout_log.planned_sets
+                  AND us.min_rep_range = workout_log.planned_min_reps
+                  AND us.max_rep_range = workout_log.planned_max_reps
+                  AND COALESCE(us.weight, -1) = COALESCE(workout_log.planned_weight, -1)
+                  AND COALESCE(us.rir, -1)    = COALESCE(workout_log.planned_rir, -1)
+                  AND COALESCE(us.rpe, -1)    = COALESCE(workout_log.planned_rpe, -1)
+              ) = 1
+            """
+        )
+
+        still_null_row = db.fetch_one(
+            "SELECT COUNT(*) AS cnt FROM workout_log WHERE workout_plan_id IS NULL"
+        )
+        still_null = int(still_null_row["cnt"]) if still_null_row else 0
+        matched = null_count - still_null
+        logger.info(
+            f"Backfill complete: {matched} rows matched, {still_null} rows unmatched"
+        )
+        if still_null > 0:
+            logger.warning(
+                f"{still_null} workout_log rows could not be matched to a plan row "
+                "(ambiguous or deleted plan entries)"
+            )
+    except Exception:
+        logger.exception("Error during workout_log FK backfill")
+
+
 def _seed_exercises_from_backup_if_needed(db: DatabaseHandler) -> None:
     """Populate the exercises catalogue from the canonical backup when empty."""
     if os.getenv("TESTING") == "1":
@@ -463,6 +531,7 @@ def initialize_database(force: bool = False) -> None:
             _initialize_isolated_muscles_table(db)
             _initialize_user_selection_table(db)
             _initialize_workout_log_table(db)
+            _backfill_workout_log_plan_ids(db)
             _seed_exercises_from_backup_if_needed(db)
             _normalize_equipment_values(db)
             _normalize_muscle_group_values(db)

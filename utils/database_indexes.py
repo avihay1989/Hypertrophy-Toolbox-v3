@@ -1,6 +1,6 @@
 """Database index management for performance optimization."""
 import sqlite3
-from utils.database import DatabaseHandler, get_db_connection
+from utils.database import DatabaseHandler, get_db_connection, _DB_LOCK
 from utils.logger import get_logger
 
 logger = get_logger()
@@ -47,18 +47,30 @@ def create_performance_indexes():
                 continue
 
 def optimize_database():
-    """Run SQLite optimization commands."""
-    conn = get_db_connection()
+    """Run SQLite maintenance commands under the global DB lock.
+
+    ``ANALYZE`` and ``PRAGMA optimize`` are not currently classified as
+    write operations by ``DatabaseHandler``. Keep the maintenance path on the
+    raw connection helper for now, but hold ``_DB_LOCK`` explicitly so these
+    long-running operations do not overlap with concurrent writes.
+    """
+    conn = None
+    _DB_LOCK.acquire()
     try:
+        conn = get_db_connection()
         conn.execute("ANALYZE")
         logger.info("Database analyzed successfully")
         conn.execute("PRAGMA optimize")
         logger.info("Database optimized successfully")
         conn.commit()
     except sqlite3.Error as e:
+        if conn is not None:
+            conn.rollback()
         logger.error(f"Error optimizing database: {e}", exc_info=True)
     finally:
-        conn.close()
+        if conn is not None:
+            conn.close()
+        _DB_LOCK.release()
 
 def analyze_query_plan(query, params=None):
     """Analyze query execution plan."""

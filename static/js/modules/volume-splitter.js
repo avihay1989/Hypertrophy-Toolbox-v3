@@ -13,8 +13,58 @@ const modeRangeState = {
 };
 
 const DEFAULT_SLIDER_MAX = 60;
+const JSON_REQUEST_HEADERS = {
+    'Accept': 'application/json',
+    'X-Requested-With': 'XMLHttpRequest'
+};
 
 const deepClone = (value) => JSON.parse(JSON.stringify(value || {}));
+
+const isWrappedApiResponse = (payload) => Boolean(
+    payload &&
+    typeof payload === 'object' &&
+    !Array.isArray(payload) &&
+    'data' in payload &&
+    (payload.ok === true || payload.status === 'success' || payload.success === true)
+);
+
+const isApiFailure = (payload) => Boolean(
+    payload &&
+    typeof payload === 'object' &&
+    (payload.ok === false || payload.success === false)
+);
+
+const unwrapApiPayload = (payload) => (isWrappedApiResponse(payload) ? payload.data : payload);
+
+const getApiErrorMessage = (payload, fallbackMessage) => {
+    if (!payload || typeof payload !== 'object') {
+        return fallbackMessage;
+    }
+
+    if (payload.error && typeof payload.error === 'object' && typeof payload.error.message === 'string') {
+        return payload.error.message;
+    }
+
+    if (typeof payload.error === 'string') {
+        return payload.error;
+    }
+
+    if (typeof payload.message === 'string' && payload.message.trim()) {
+        return payload.message;
+    }
+
+    return fallbackMessage;
+};
+
+async function parseJsonResponse(response, fallbackMessage) {
+    const payload = await response.json();
+
+    if (!response.ok || isApiFailure(payload)) {
+        throw new Error(getApiErrorMessage(payload, fallbackMessage));
+    }
+
+    return unwrapApiPayload(payload);
+}
 
 const toNumericRange = (range) => {
     const fallback = { min: 12, max: 20 };
@@ -109,7 +159,8 @@ function calculateVolume() {
     fetch('/api/calculate_volume', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            ...JSON_REQUEST_HEADERS
         },
         body: JSON.stringify({
             mode: currentMode,
@@ -118,7 +169,7 @@ function calculateVolume() {
             ranges
         })
     })
-        .then(response => response.json())
+        .then(response => parseJsonResponse(response, 'Failed to calculate volume.'))
         .then(handleCalculateResponse)
         .catch(error => {
             console.error('Error calculating volume:', error);
@@ -172,8 +223,10 @@ function resetValues() {
 }
 
 function loadPlan(planId) {
-    fetch(`/api/volume_plan/${planId}`)
-        .then(response => response.json())
+    fetch(`/api/volume_plan/${planId}`, {
+        headers: JSON_REQUEST_HEADERS
+    })
+        .then(response => parseJsonResponse(response, 'Failed to load plan.'))
         .then(plan => {
             const trainingSelect = document.getElementById('training-days');
             if (trainingSelect) {
@@ -227,17 +280,14 @@ function deletePlan(planId) {
 
 function executeDeletePlan(planId) {
     fetch(`/api/volume_plan/${planId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: JSON_REQUEST_HEADERS
     })
-    .then(response => response.json())
+    .then(response => parseJsonResponse(response, 'Failed to delete volume plan.'))
     .then(result => {
         if (deleteModal) deleteModal.hide();
-        if (result.success) {
-            showToast('success', 'Volume plan deleted successfully!');
-            loadVolumeHistory();
-        } else {
-            showToast('error', result.error || 'Failed to delete volume plan.');
-        }
+        showToast('success', result?.message || 'Volume plan deleted successfully!');
+        loadVolumeHistory();
     })
     .catch(error => {
         if (deleteModal) deleteModal.hide();
@@ -264,17 +314,14 @@ function exportVolumePlan() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            ...JSON_REQUEST_HEADERS
         },
         body: JSON.stringify(data)
     })
-    .then(response => response.json())
+    .then(response => parseJsonResponse(response, 'Failed to save volume plan.'))
     .then(result => {
-        if (result.success) {
-            showToast('success', 'Volume plan saved successfully!');
-            loadVolumeHistory();
-        } else {
-            showToast('error', 'Failed to save volume plan. Please try again.');
-        }
+        showToast('success', result?.message || 'Volume plan saved successfully!');
+        loadVolumeHistory();
     })
     .catch(error => {
         console.error('Error saving plan:', error);
@@ -310,13 +357,21 @@ function displaySuggestions(suggestions) {
 }
 
 function loadVolumeHistory() {
-    fetch('/api/volume_history')
-        .then(response => response.json())
+    fetch('/api/volume_history', {
+        headers: JSON_REQUEST_HEADERS
+    })
+        .then(response => parseJsonResponse(response, 'Failed to load volume history.'))
         .then(history => {
             const tbody = document.getElementById('history-body');
             tbody.innerHTML = '';
-            
-            Object.entries(history).forEach(([id, data]) => {
+
+            const entries = Object.entries(history || {}).sort(([, a], [, b]) => {
+                const left = Date.parse(a?.created_at || '') || 0;
+                const right = Date.parse(b?.created_at || '') || 0;
+                return right - left;
+            });
+
+            entries.forEach(([id, data]) => {
                 const row = document.createElement('tr');
                 const totalVolume = Object.values(data.muscles)
                     .reduce((sum, muscle) => sum + muscle.weekly_sets, 0);
@@ -334,6 +389,25 @@ function loadVolumeHistory() {
                 `;
                 tbody.appendChild(row);
             });
+            if (!entries.length) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center text-muted">No saved volume plans yet.</td>
+                    </tr>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading volume history:', error);
+            const tbody = document.getElementById('history-body');
+            if (tbody) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center text-danger">Failed to load volume history.</td>
+                    </tr>
+                `;
+            }
+            showToast('error', 'Failed to load saved volume plans. Please try again.');
         });
 }
 

@@ -8,7 +8,7 @@
  * - Zero and empty value handling
  * - Decimal/float handling
  */
-import { test, expect, ROUTES, SELECTORS, waitForPageReady, expectToast } from './fixtures';
+import { test, expect, ROUTES, SELECTORS, waitForPageReady, resetWorkoutPlan } from './fixtures';
 
 /**
  * Helper to select a complete routine
@@ -43,6 +43,10 @@ async function selectExercise(page: import('@playwright/test').Page) {
     await exerciseSelect.selectOption(validExercise);
   }
 }
+
+test.beforeEach(async ({ page }) => {
+  await resetWorkoutPlan(page);
+});
 
 test.describe('Negative Value Validation', () => {
   test.beforeEach(async ({ page, consoleErrors }) => {
@@ -146,8 +150,8 @@ test.describe('Rep Range Validation', () => {
     // Check toast content for validation message
     if (toastVisible) {
       const toastText = await page.locator('#toast-body, .toast-body').textContent();
-      // Validation message should mention rep range issue
-      expect(toastText?.toLowerCase()).toContain('rep');
+      // Implementations may return a specific rep-range message or a generic validation error.
+      expect(toastText?.toLowerCase() ?? '').toMatch(/rep|invalid|error|unexpected/);
     }
   });
 

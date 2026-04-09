@@ -74,10 +74,10 @@ class TestGetVolumeLabel:
         assert get_volume_label(25) == "High Volume"
         assert get_volume_label(29) == "High Volume"
 
-    def test_ultra_volume_label(self):
-        """Sets >= 30 should return 'Ultra Volume'."""
-        assert get_volume_label(30) == "Ultra Volume"
-        assert get_volume_label(50) == "Ultra Volume"
+    def test_excessive_volume_label(self):
+        """Sets >= 30 should return 'Excessive Volume'."""
+        assert get_volume_label(30) == "Excessive Volume"
+        assert get_volume_label(50) == "Excessive Volume"
 
 
 class TestGetEffectiveVolumeLabel:
@@ -118,8 +118,7 @@ class TestGetVolumeTooltip:
         assert "Below 10 sets" in get_volume_tooltip("Low Volume", 5)
         assert "10-19 sets" in get_volume_tooltip("Medium Volume", 15)
         assert "20-29 sets" in get_volume_tooltip("High Volume", 25)
-        assert "30+ sets" in get_volume_tooltip("Ultra Volume", 35)
-        assert "30+ sets" in get_volume_tooltip("Excessive Volume", 40)
+        assert "30+ sets" in get_volume_tooltip("Excessive Volume", 35)
 
     def test_tooltip_unknown_label(self):
         """Unknown label should show 'Unknown'."""
@@ -255,10 +254,10 @@ class TestVolumeClassificationConsistency:
             assert "High" in get_volume_label(sets)
 
     def test_class_and_label_align_ultra(self):
-        """Ultra volume class and label should align."""
+        """Ultra/Excessive volume class and label should align at 30+ sets."""
         for sets in [30, 40, 50]:
             assert "ultra" in get_volume_class(sets)
-            assert "Ultra" in get_volume_label(sets)
+            assert "Excessive" in get_volume_label(sets)
 
 
 class TestBoundaryConditions:
@@ -275,9 +274,9 @@ class TestBoundaryConditions:
         assert get_volume_label(20) == "High Volume"
 
     def test_exact_boundary_30(self):
-        """Exactly 30 sets should be ultra volume."""
+        """Exactly 30 sets should be ultra/excessive volume."""
         assert get_volume_class(30) == "ultra-volume"
-        assert get_volume_label(30) == "Ultra Volume"
+        assert get_volume_label(30) == "Excessive Volume"
 
     def test_just_below_boundaries(self):
         """Values just below boundaries should be in lower category."""

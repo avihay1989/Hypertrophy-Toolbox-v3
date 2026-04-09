@@ -11,6 +11,9 @@
  */
 import { test, expect, ROUTES, SELECTORS, waitForPageReady, expectToast } from './fixtures';
 
+const BASE_URL = 'http://127.0.0.1:5000';
+const TEST_ROUTINE = 'GYM - Full Body - Workout A';
+
 /**
  * Helper to select a complete routine
  */
@@ -28,11 +31,106 @@ async function selectRoutine(page: import('@playwright/test').Page) {
   await page.locator(SELECTORS.ROUTINE_DAY).selectOption('Workout A');
 }
 
+function extractExerciseName(entry: unknown): string | null {
+  if (typeof entry === 'string') {
+    return entry.trim() || null;
+  }
+  if (!entry || typeof entry !== 'object') {
+    return null;
+  }
+  const candidate = entry as Record<string, unknown>;
+  const raw =
+    candidate.exercise ??
+    candidate.exercise_name ??
+    candidate.name ??
+    candidate.value;
+  return typeof raw === 'string' && raw.trim() ? raw.trim() : null;
+}
+
+function extractRoutineName(entry: unknown): string | null {
+  if (!entry || typeof entry !== 'object') {
+    return null;
+  }
+  const candidate = entry as Record<string, unknown>;
+  const raw = candidate.routine;
+  return typeof raw === 'string' && raw.trim() ? raw.trim() : null;
+}
+
+function extractDataRows(payload: unknown): unknown[] {
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+  if (!payload || typeof payload !== 'object') {
+    return [];
+  }
+  const candidate = payload as Record<string, unknown>;
+  return Array.isArray(candidate.data) ? candidate.data : [];
+}
+
+async function ensureRoutineHasExercises(
+  page: import('@playwright/test').Page,
+  request: import('@playwright/test').APIRequestContext,
+  minimumCount: number
+) {
+  await selectRoutine(page);
+
+  const rowLocator = page.locator('#workout_plan_table_body tr');
+  let currentCount = await rowLocator.count();
+  if (currentCount >= minimumCount) {
+    return;
+  }
+
+  const planResponse = await request.get(`${BASE_URL}/get_workout_plan`);
+  const planPayload = await planResponse.json().catch(() => ({}));
+  const routineRows = extractDataRows(planPayload).filter(
+    (row) => extractRoutineName(row) === TEST_ROUTINE
+  );
+  const existingNames = new Set(
+    routineRows.map(extractExerciseName).filter((name): name is string => Boolean(name))
+  );
+  currentCount = routineRows.length;
+
+  const allResponse = await request.get(`${BASE_URL}/get_all_exercises`);
+  const allPayload = await allResponse.json().catch(() => ({}));
+  const allRows = extractDataRows(allPayload);
+
+  const addCandidates = allRows
+    .map(extractExerciseName)
+    .filter((name): name is string => Boolean(name))
+    .filter((name) => !existingNames.has(name));
+
+  for (const exerciseName of addCandidates) {
+    if (currentCount >= minimumCount) {
+      break;
+    }
+    const addResponse = await request.post(`${BASE_URL}/add_exercise`, {
+      data: {
+        routine: TEST_ROUTINE,
+        exercise: exerciseName,
+        sets: 3,
+        min_rep_range: 8,
+        max_rep_range: 12,
+        weight: 100,
+        rir: 2,
+      },
+    });
+    if (addResponse.ok()) {
+      currentCount += 1;
+      existingNames.add(exerciseName);
+    }
+  }
+
+  await page.reload();
+  await waitForPageReady(page);
+  await selectRoutine(page);
+}
+
 test.describe('Exercise Delete Functionality', () => {
-  test.beforeEach(async ({ page, consoleErrors }) => {
+  test.beforeEach(async ({ page, request, consoleErrors }) => {
     consoleErrors.startCollecting();
     await page.goto(ROUTES.WORKOUT_PLAN);
     await waitForPageReady(page);
+    await ensureRoutineHasExercises(page, request, 1);
   });
 
   test.afterEach(async ({ consoleErrors }) => {
@@ -103,10 +201,11 @@ test.describe('Exercise Delete Functionality', () => {
 });
 
 test.describe('Replace Exercise Functionality', () => {
-  test.beforeEach(async ({ page, consoleErrors }) => {
+  test.beforeEach(async ({ page, request, consoleErrors }) => {
     consoleErrors.startCollecting();
     await page.goto(ROUTES.WORKOUT_PLAN);
     await waitForPageReady(page);
+    await ensureRoutineHasExercises(page, request, 1);
   });
 
   test.afterEach(async ({ consoleErrors }) => {
@@ -155,10 +254,11 @@ test.describe('Replace Exercise Functionality', () => {
 });
 
 test.describe('Superset Functionality', () => {
-  test.beforeEach(async ({ page, consoleErrors }) => {
+  test.beforeEach(async ({ page, request, consoleErrors }) => {
     consoleErrors.startCollecting();
     await page.goto(ROUTES.WORKOUT_PLAN);
     await waitForPageReady(page);
+    await ensureRoutineHasExercises(page, request, 2);
   });
 
   test.afterEach(async ({ consoleErrors }) => {
@@ -257,10 +357,11 @@ test.describe('Superset Functionality', () => {
 });
 
 test.describe('Exercise Inline Editing', () => {
-  test.beforeEach(async ({ page, consoleErrors }) => {
+  test.beforeEach(async ({ page, request, consoleErrors }) => {
     consoleErrors.startCollecting();
     await page.goto(ROUTES.WORKOUT_PLAN);
     await waitForPageReady(page);
+    await ensureRoutineHasExercises(page, request, 1);
   });
 
   test.afterEach(async ({ consoleErrors }) => {
@@ -331,10 +432,11 @@ test.describe('Exercise Inline Editing', () => {
 });
 
 test.describe('Exercise Details Modal', () => {
-  test.beforeEach(async ({ page, consoleErrors }) => {
+  test.beforeEach(async ({ page, request, consoleErrors }) => {
     consoleErrors.startCollecting();
     await page.goto(ROUTES.WORKOUT_PLAN);
     await waitForPageReady(page);
+    await ensureRoutineHasExercises(page, request, 1);
   });
 
   test.afterEach(async ({ consoleErrors }) => {
@@ -389,6 +491,8 @@ test.describe('Exercise Filter Application', () => {
   });
 
   test('applying filter updates exercise dropdown', async ({ page }) => {
+    await selectRoutine(page);
+
     // Get initial option count
     const exerciseSelect = page.locator(SELECTORS.EXERCISE_SEARCH);
     await page.waitForFunction(() => {
@@ -446,10 +550,11 @@ test.describe('Exercise Filter Application', () => {
 });
 
 test.describe('Routine Tab Navigation', () => {
-  test.beforeEach(async ({ page, consoleErrors }) => {
+  test.beforeEach(async ({ page, request, consoleErrors }) => {
     consoleErrors.startCollecting();
     await page.goto(ROUTES.WORKOUT_PLAN);
     await waitForPageReady(page);
+    await ensureRoutineHasExercises(page, request, 1);
   });
 
   test.afterEach(async ({ consoleErrors }) => {

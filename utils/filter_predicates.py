@@ -4,7 +4,10 @@ Single source of truth for all exercise filtering logic.
 """
 
 from utils.database import DatabaseHandler
+from utils.logger import get_logger
 from typing import Dict, List, Optional, Tuple
+
+logger = get_logger()
 
 
 class FilterPredicates:
@@ -123,7 +126,7 @@ class FilterPredicates:
                     return [row["exercise_name"] for row in results if row.get("exercise_name")]
                 return []
         except Exception as e:
-            print(f"Error filtering exercises: {e}")
+            logger.exception("Error filtering exercises: %s", e)
             return []
     
     @classmethod
@@ -188,4 +191,3 @@ def build_filter_query(
 ) -> Tuple[str, List[str]]:
     """Build a SQL query with filter conditions."""
     return FilterPredicates.build_filter_query(filters, base_query)
-

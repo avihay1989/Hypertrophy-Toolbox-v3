@@ -33,16 +33,35 @@ class ExerciseManager:
             logger.warning("Rejecting add_exercise due to missing fields")
             return "Error: Missing required fields."
 
+        if int(min_rep_range) > int(max_rep_range):
+            logger.warning("Rejecting add_exercise: min_rep_range (%s) > max_rep_range (%s)", min_rep_range, max_rep_range)
+            return "Error: Min rep range cannot exceed max rep range."
+
+        if rir is not None and int(rir) < 0:
+            logger.warning("Rejecting add_exercise: negative RIR (%s)", rir)
+            return "Error: RIR cannot be negative."
+
+        if float(weight) < 0:
+            logger.warning("Rejecting add_exercise: negative weight (%s)", weight)
+            return "Error: Weight cannot be negative."
+
+        if float(weight) > 1000:
+            logger.warning("Rejecting add_exercise: unreasonable weight (%s)", weight)
+            return "Error: Weight exceeds maximum allowed value (1000)."
+
         duplicate_check_query = (
             "SELECT COUNT(*) AS count FROM user_selection WHERE routine = ? AND exercise = ?"
         )
-        max_order_query = (
-            "SELECT COALESCE(MAX(exercise_order), 0) AS max_order FROM user_selection"
-        )
-        insert_query = (
+        max_order_query = "SELECT COALESCE(MAX(exercise_order), 0) AS max_order FROM user_selection"
+        insert_query_with_order = (
             "INSERT INTO user_selection "
             "(routine, exercise, sets, min_rep_range, max_rep_range, rir, weight, rpe, exercise_order) "
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        )
+        insert_query_without_order = (
+            "INSERT INTO user_selection "
+            "(routine, exercise, sets, min_rep_range, max_rep_range, rir, weight, rpe) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
         )
 
         try:
@@ -52,15 +71,33 @@ class ExerciseManager:
                     logger.info("Duplicate exercise rejected for routine=%s exercise=%s", routine, exercise)
                     return "Exercise already exists in this routine."
 
-                # Get the next order value (max + 1) to place new exercise at the bottom
-                max_order_result = db.fetch_one(max_order_query)
-                next_order = (max_order_result.get("max_order", 0) or 0) + 1
+                columns = db.fetch_all("PRAGMA table_info(user_selection)")
+                has_exercise_order = any(row.get("name") == "exercise_order" for row in columns)
 
-                db.execute_query(
-                    insert_query,
-                    (routine, exercise, sets, min_rep_range, max_rep_range, rir, weight, rpe, next_order),
-                )
-                logger.debug("Inserted exercise '%s' into routine '%s' with order %d", exercise, routine, next_order)
+                if has_exercise_order:
+                    # Place new rows at the bottom when exercise_order exists.
+                    max_order_result = db.fetch_one(max_order_query)
+                    next_order = (max_order_result.get("max_order", 0) or 0) + 1
+                    db.execute_query(
+                        insert_query_with_order,
+                        (routine, exercise, sets, min_rep_range, max_rep_range, rir, weight, rpe, next_order),
+                    )
+                    logger.debug(
+                        "Inserted exercise '%s' into routine '%s' with order %d",
+                        exercise,
+                        routine,
+                        next_order,
+                    )
+                else:
+                    # Backward-compatible insert for legacy schemas.
+                    db.execute_query(
+                        insert_query_without_order,
+                        (routine, exercise, sets, min_rep_range, max_rep_range, rir, weight, rpe),
+                    )
+                    logger.warning(
+                        "Inserted exercise '%s' without exercise_order (legacy schema detected)",
+                        exercise,
+                    )
                 return "Exercise added successfully."
         except Exception as exc:  # pragma: no cover - logged for observability
             logger.exception("Database error while adding exercise")

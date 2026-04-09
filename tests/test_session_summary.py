@@ -22,7 +22,7 @@ from utils.effective_sets import CountingMode, ContributionMode, VolumeWarningLe
 class TestCalculateSessionSummaryBasic:
     """Basic tests for calculate_session_summary function."""
     
-    def test_empty_database_returns_empty_dict(self, app):
+    def test_empty_database_returns_empty_dict(self, app, clean_db):
         """Should return empty dict when no exercises in plan."""
         with app.app_context():
             result = calculate_session_summary()
@@ -165,6 +165,35 @@ class TestCountingModes:
             # weekly_sets should match effective_sets in EFFECTIVE mode
             assert stats['weekly_sets'] == stats['effective_sets']
             assert stats['counting_mode'] == 'effective'
+
+    def test_effective_sets_invariant_across_counting_modes(self, app, exercise_factory, workout_plan_factory):
+        """effective_sets should remain weighted even when counting_mode is RAW."""
+        with app.app_context():
+            exercise_name = exercise_factory(
+                "Incline Press",
+                primary_muscle_group="Chest",
+                secondary_muscle_group=None,
+                tertiary_muscle_group=None
+            )
+
+            workout_plan_factory(
+                exercise_name=exercise_name,
+                routine="Seed Routine",
+                sets=12,
+                min_rep_range=8,
+                max_rep_range=10,
+                rir=2,
+                weight=100.0
+            )
+
+            eff_mode = calculate_session_summary(counting_mode=CountingMode.EFFECTIVE)
+            raw_mode = calculate_session_summary(counting_mode=CountingMode.RAW)
+
+            eff_sets = eff_mode["Seed Routine"]["Chest"]["effective_sets"]
+            raw_sets = raw_mode["Seed Routine"]["Chest"]["effective_sets"]
+            expected = 12 * 0.85 * 1.0
+            assert eff_sets == pytest.approx(expected)
+            assert raw_sets == pytest.approx(expected)
 
 
 class TestContributionModes:
@@ -336,8 +365,8 @@ class TestRoutineFiltering:
 class TestVolumeWarnings:
     """Tests for volume warning levels."""
     
-    def test_low_volume_ok_warning(self, app, exercise_factory, workout_plan_factory):
-        """Low volume should have OK warning level."""
+    def test_low_volume_no_data_warning_without_logs(self, app, exercise_factory, workout_plan_factory):
+        """Without logged sessions, warning_level should be 'no_data'."""
         with app.app_context():
             exercise_name = exercise_factory(
                 "Curl",
@@ -345,24 +374,28 @@ class TestVolumeWarnings:
                 secondary_muscle_group=None,
                 tertiary_muscle_group=None
             )
-            
-            # Low volume: 2 sets
+
+            # Low volume: 2 sets, but no logged sessions
             workout_plan_factory(
                 exercise_name=exercise_name,
                 sets=2,
                 rir=2,
                 weight=20.0
             )
-            
+
             result = calculate_session_summary()
-            
+
             routine = list(result.keys())[0]
             stats = result[routine]["Biceps"]
-            
-            assert stats['warning_level'] == 'ok'
+
+            # No logged sessions → no_data state
+            assert stats['warning_level'] == 'no_data'
+            assert stats['has_logged_sessions'] is False
+            assert stats['sets_per_session'] is None
+            assert stats['effective_per_session'] is None
             assert stats['is_borderline'] is False
             assert stats['is_excessive'] is False
-    
+
     def test_warning_level_in_response(self, app, exercise_factory, workout_plan_factory):
         """Warning level should always be present in response."""
         with app.app_context():
@@ -372,16 +405,103 @@ class TestVolumeWarnings:
                 secondary_muscle_group=None,
                 tertiary_muscle_group=None
             )
-            
+
             workout_plan_factory(exercise_name=exercise_name, sets=3, weight=100.0)
-            
+
             result = calculate_session_summary()
-            
+
             routine = list(result.keys())[0]
             stats = result[routine]["Chest"]
-            
+
             assert 'warning_level' in stats
-            assert stats['warning_level'] in ['ok', 'borderline', 'excessive']
+            assert stats['warning_level'] in ['ok', 'borderline', 'excessive', 'no_data']
+
+
+class TestSessionLogAggregation:
+    """Regression tests for workout_log join behavior."""
+
+    def test_workout_log_rows_do_not_multiply_plan_totals(
+        self,
+        app,
+        exercise_factory,
+        workout_plan_factory,
+        db_handler,
+    ):
+        """Adding multiple logs should only affect session_count metrics, not totals."""
+        with app.app_context():
+            exercise_name = exercise_factory(
+                "Seed Bench",
+                primary_muscle_group="Chest",
+                secondary_muscle_group=None,
+                tertiary_muscle_group=None,
+            )
+            plan_id = workout_plan_factory(
+                exercise_name=exercise_name,
+                routine="Seed Routine",
+                sets=12,
+                min_rep_range=8,
+                max_rep_range=10,
+                rir=2,
+                weight=100.0,
+            )
+
+            baseline = calculate_session_summary(counting_mode=CountingMode.EFFECTIVE)
+            baseline_stats = baseline["Seed Routine"]["Chest"]
+            assert baseline_stats["effective_sets"] == pytest.approx(10.2)
+            assert baseline_stats["session_count"] == 0
+
+            session_dates = (
+                "2026-02-01 09:00:00",
+                "2026-02-03 09:00:00",
+                "2026-02-05 09:00:00",
+                "2026-02-07 09:00:00",
+            )
+            for created_at in session_dates:
+                db_handler.execute_query(
+                    """
+                    INSERT INTO workout_log (
+                        workout_plan_id,
+                        routine,
+                        exercise,
+                        planned_sets,
+                        planned_min_reps,
+                        planned_max_reps,
+                        planned_rir,
+                        planned_rpe,
+                        planned_weight,
+                        scored_weight,
+                        scored_min_reps,
+                        scored_max_reps,
+                        scored_rir,
+                        scored_rpe,
+                        created_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        plan_id,
+                        "Seed Routine",
+                        "Seed Bench",
+                        12,
+                        8,
+                        10,
+                        2,
+                        8.0,
+                        100.0,
+                        100.0,
+                        8,
+                        10,
+                        2,
+                        8.0,
+                        created_at,
+                    ),
+                )
+
+            with_logs = calculate_session_summary(counting_mode=CountingMode.EFFECTIVE)
+            stats = with_logs["Seed Routine"]["Chest"]
+
+            assert stats["effective_sets"] == pytest.approx(10.2)
+            assert stats["session_count"] == 4
+            assert stats["effective_per_session"] == pytest.approx(2.55)
 
 
 class TestVolumeClassification:
@@ -463,6 +583,8 @@ class TestResponseStructure:
                 'raw_sets',
                 'effective_sets',
                 'effective_per_session',
+                'session_count',
+                'has_logged_sessions',
                 'warning_level',
                 'is_borderline',
                 'is_excessive',

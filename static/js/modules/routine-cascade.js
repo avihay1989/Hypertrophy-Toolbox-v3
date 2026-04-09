@@ -51,6 +51,9 @@ let cascadeState = {
     routine: ''
 };
 
+// Stateless mode: always reset routine cascade when page is shown.
+let hasPageShowResetListener = false;
+
 /**
  * Initialize the routine cascade selector
  */
@@ -74,9 +77,36 @@ export function initializeRoutineCascade() {
     if (routineSelect) {
         routineSelect.addEventListener('change', handleRoutineChange);
     }
-    
-    // Initial state: only environment is enabled
-    updateCascadeState();
+
+    // Stateless behavior:
+    // - Initial load should start blank
+    // - Browser back/forward (pageshow) should also reset to blank
+    ensurePageShowResetListener();
+    applyStatelessCascadeReset();
+}
+
+/**
+ * Ensure routine cascade is reset whenever the page is shown (including BFCache restores).
+ */
+function ensurePageShowResetListener() {
+    if (hasPageShowResetListener) return;
+    window.addEventListener('pageshow', () => {
+        applyStatelessCascadeReset();
+    });
+    hasPageShowResetListener = true;
+}
+
+/**
+ * Apply stateless reset and notify enhanced dropdown wrappers to sync UI labels.
+ */
+function applyStatelessCascadeReset() {
+    resetCascadeSelector();
+    ['routine-env', 'routine-program', 'routine-day'].forEach(id => {
+        const select = document.getElementById(id);
+        if (select) {
+            select.dispatchEvent(new Event('wpdd-rebuild'));
+        }
+    });
 }
 
 /**

@@ -1,5 +1,7 @@
 from flask import Blueprint, render_template, jsonify, request, send_file
-from utils.database import get_db_connection, DatabaseHandler
+from utils.database import DatabaseHandler
+from utils.errors import error_response, success_response
+from utils.logger import get_logger
 from utils.volume_export import export_volume_plan
 from utils.volume_ai import generate_volume_suggestions
 from openpyxl import Workbook
@@ -7,6 +9,7 @@ from io import BytesIO
 import datetime
 
 volume_splitter_bp = Blueprint('volume_splitter', __name__)
+logger = get_logger()
 
 # --- NEW: mode-specific muscle sets ---
 BASIC_MUSCLE_GROUPS = [
@@ -102,154 +105,161 @@ def volume_splitter():
 
 @volume_splitter_bp.route('/api/calculate_volume', methods=['POST'])
 def calculate_volume():
-    data = request.get_json() or {}
-    mode = (data.get('mode') or 'basic').lower()
-
     try:
+        data = request.get_json() or {}
+        mode = (data.get('mode') or 'basic').lower()
+
         training_days = int(data.get('training_days', 3))
     except (TypeError, ValueError):
         training_days = 3
-    training_days = max(training_days, 1)
+    except Exception as e:
+        logger.exception('Error calculating volume: %s', e)
+        return error_response('INTERNAL_ERROR', 'Failed to calculate volume', 500)
 
-    volumes = data.get('volumes', {}) or {}
+    try:
+        training_days = max(training_days, 1)
 
-    active_muscles = get_muscle_list_for_mode(mode)
-    valid_muscles = set(active_muscles)
-    requested_ranges = data.get('ranges') or {}
-    ranges = parse_requested_ranges(requested_ranges, active_muscles)
+        volumes = data.get('volumes', {}) or {}
 
-    results = {}
-    for muscle, weekly_sets in volumes.items():
-        if muscle not in valid_muscles:
-            continue
+        active_muscles = get_muscle_list_for_mode(mode)
+        valid_muscles = set(active_muscles)
+        requested_ranges = data.get('ranges') or {}
+        ranges = parse_requested_ranges(requested_ranges, active_muscles)
 
-        try:
-            weekly_sets_value = float(weekly_sets or 0)
-        except (TypeError, ValueError):
-            weekly_sets_value = 0.0
+        results = {}
+        for muscle, weekly_sets in volumes.items():
+            if muscle not in valid_muscles:
+                continue
 
-        sets_per_session = round(weekly_sets_value / training_days, 1)
-        status = 'optimal'
+            try:
+                weekly_sets_value = float(weekly_sets or 0)
+            except (TypeError, ValueError):
+                weekly_sets_value = 0.0
 
-        if weekly_sets_value < ranges[muscle]['min']:
-            status = 'low'
-        elif weekly_sets_value > ranges[muscle]['max']:
-            status = 'high'
+            sets_per_session = round(weekly_sets_value / training_days, 1)
+            status = 'optimal'
 
-        if sets_per_session > 10:
-            status = 'excessive'
+            if weekly_sets_value < ranges[muscle]['min']:
+                status = 'low'
+            elif weekly_sets_value > ranges[muscle]['max']:
+                status = 'high'
 
-        results[muscle] = {
-            'weekly_sets': weekly_sets_value,
-            'sets_per_session': sets_per_session,
-            'status': status
-        }
+            if sets_per_session > 10:
+                status = 'excessive'
 
-    suggestions = generate_volume_suggestions(training_days, results, mode=mode)
+            results[muscle] = {
+                'weekly_sets': weekly_sets_value,
+                'sets_per_session': sets_per_session,
+                'status': status
+            }
 
-    return jsonify({'results': results, 'suggestions': suggestions, 'ranges': ranges})
+        suggestions = generate_volume_suggestions(training_days, results, mode=mode)
+
+        return jsonify(success_response(data={
+            'results': results,
+            'suggestions': suggestions,
+            'ranges': ranges
+        }))
+    except Exception as e:
+        logger.exception('Error calculating volume: %s', e)
+        return error_response('INTERNAL_ERROR', 'Failed to calculate volume', 500)
 
 @volume_splitter_bp.route('/api/volume_history')
 def get_volume_history():
-    conn = get_db_connection()
     try:
-        cursor = conn.cursor()
-        cursor.execute('''
-            SELECT vp.id, vp.training_days, vp.created_at,
-                   mv.muscle_group, mv.weekly_sets, mv.sets_per_session, mv.status
-            FROM volume_plans vp
-            JOIN muscle_volumes mv ON vp.id = mv.plan_id
-            ORDER BY vp.created_at DESC
-            LIMIT 100
-        ''')
-        history = cursor.fetchall()
-        
-        # Format the data for frontend
+        with DatabaseHandler() as db:
+            history = db.fetch_all('''
+                SELECT vp.id, vp.training_days, vp.created_at,
+                       mv.muscle_group, mv.weekly_sets, mv.sets_per_session, mv.status
+                FROM volume_plans vp
+                JOIN muscle_volumes mv ON vp.id = mv.plan_id
+                ORDER BY vp.created_at DESC
+                LIMIT 100
+            ''')
+
         formatted_history = {}
         for row in history:
-            plan_id = row[0]
+            plan_id = row['id']
             if plan_id not in formatted_history:
                 formatted_history[plan_id] = {
-                    'training_days': row[1],
-                    'created_at': row[2],
+                    'training_days': row['training_days'],
+                    'created_at': row['created_at'],
                     'muscles': {}
                 }
-            formatted_history[plan_id]['muscles'][row[3]] = {
-                'weekly_sets': row[4],
-                'sets_per_session': row[5],
-                'status': row[6]
+            formatted_history[plan_id]['muscles'][row['muscle_group']] = {
+                'weekly_sets': row['weekly_sets'],
+                'sets_per_session': row['sets_per_session'],
+                'status': row['status']
             }
-        
-        return jsonify(formatted_history)
-        
-    finally:
-        conn.close()
+
+        return jsonify(success_response(data=formatted_history))
+    except Exception as e:
+        logger.exception('Error loading volume history: %s', e)
+        return error_response('INTERNAL_ERROR', 'Failed to load volume history', 500)
 
 @volume_splitter_bp.route('/api/save_volume_plan', methods=['POST'])
 def save_volume_plan():
-    data = request.get_json()
-    plan_id = export_volume_plan(data)
-    
-    if plan_id:
-        return jsonify({'success': True, 'plan_id': plan_id})
-    return jsonify({'success': False, 'error': 'Failed to save plan'}), 500 
+    try:
+        data = request.get_json() or {}
+        plan_id = export_volume_plan(data)
+
+        if plan_id:
+            return jsonify(success_response(
+                data={'plan_id': plan_id},
+                message='Volume plan saved successfully'
+            ))
+        return error_response('INTERNAL_ERROR', 'Failed to save plan', 500)
+    except Exception as e:
+        logger.exception('Error saving volume plan: %s', e)
+        return error_response('INTERNAL_ERROR', 'Failed to save plan', 500)
 
 @volume_splitter_bp.route('/api/volume_plan/<int:plan_id>')
 def get_volume_plan(plan_id):
-    conn = get_db_connection()
     try:
-        cursor = conn.cursor()
-        # Get plan details
-        cursor.execute('''
-            SELECT vp.*, mv.muscle_group, mv.weekly_sets, mv.sets_per_session, mv.status
-            FROM volume_plans vp
-            JOIN muscle_volumes mv ON vp.id = mv.plan_id
-            WHERE vp.id = ?
-        ''', (plan_id,))
-        
-        rows = cursor.fetchall()
+        with DatabaseHandler() as db:
+            rows = db.fetch_all('''
+                SELECT vp.*, mv.muscle_group, mv.weekly_sets, mv.sets_per_session, mv.status
+                FROM volume_plans vp
+                JOIN muscle_volumes mv ON vp.id = mv.plan_id
+                WHERE vp.id = ?
+            ''', (plan_id,))
+
         if not rows:
-            return jsonify({'error': 'Plan not found'}), 404
-            
+            return error_response('NOT_FOUND', 'Plan not found', 404)
+
         plan = {
-            'training_days': rows[0][1],
-            'created_at': rows[0][2],
+            'training_days': rows[0]['training_days'],
+            'created_at': rows[0]['created_at'],
             'volumes': {}
         }
-        
+
         for row in rows:
-            plan['volumes'][row[3]] = {
-                'weekly_sets': row[4],
-                'sets_per_session': row[5],
-                'status': row[6]
+            plan['volumes'][row['muscle_group']] = {
+                'weekly_sets': row['weekly_sets'],
+                'sets_per_session': row['sets_per_session'],
+                'status': row['status']
             }
-            
-        return jsonify(plan)
-        
-    finally:
-        conn.close() 
+
+        return jsonify(success_response(data=plan))
+    except Exception as e:
+        logger.exception('Error loading volume plan %s: %s', plan_id, e)
+        return error_response('INTERNAL_ERROR', 'Failed to load volume plan', 500)
 
 @volume_splitter_bp.route('/api/volume_plan/<int:plan_id>', methods=['DELETE'])
 def delete_volume_plan(plan_id):
-    conn = get_db_connection()
     try:
-        cursor = conn.cursor()
-        # Check if plan exists
-        cursor.execute('SELECT id FROM volume_plans WHERE id = ?', (plan_id,))
-        if not cursor.fetchone():
-            return jsonify({'success': False, 'error': 'Plan not found'}), 404
-        
-        # Delete the plan (muscle_volumes will cascade delete)
-        cursor.execute('DELETE FROM volume_plans WHERE id = ?', (plan_id,))
-        conn.commit()
-        
-        return jsonify({'success': True})
-        
+        with DatabaseHandler() as db:
+            existing_plan = db.fetch_one('SELECT id FROM volume_plans WHERE id = ?', (plan_id,))
+            if not existing_plan:
+                return error_response('NOT_FOUND', 'Plan not found', 404)
+
+            db.execute_query('DELETE FROM volume_plans WHERE id = ?', (plan_id,))
+
+        return jsonify(success_response(message='Volume plan deleted successfully'))
+
     except Exception as e:
-        conn.rollback()
-        return jsonify({'success': False, 'error': str(e)}), 500
-    finally:
-        conn.close()
+        logger.exception('Error deleting volume plan %s: %s', plan_id, e)
+        return error_response('INTERNAL_ERROR', 'Failed to delete volume plan', 500)
 
 @volume_splitter_bp.route('/api/export_volume_excel', methods=['POST'])
 def export_volume_excel():

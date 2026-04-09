@@ -1,4 +1,6 @@
-/* Volume Indicators */
+/* Shared volume status tokens, badges, and legend content.
+   Summary pages and the volume splitter can both depend on this file
+   without redefining the indicator colors or badge chrome locally. */
 .volume-indicator {
     width: clamp(16px, 1.5vw, 20px);
     height: clamp(16px, 1.5vw, 20px);
@@ -76,6 +78,12 @@
 /* Dark mode for volume legend */
 [data-theme='dark'] .volume-legend {
     color: #e0e0e0;
+}
+
+[data-theme='dark'] .volume-legend h5,
+[data-theme='dark'] .volume-legend .text-muted,
+[data-theme='dark'] .volume-legend span {
+    color: #e0e0e0 !important;
 }
 
 [data-theme='dark'] .volume-legend .legend-item span {

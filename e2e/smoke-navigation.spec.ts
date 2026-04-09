@@ -77,7 +77,7 @@ test.describe('Global Smoke and Navigation', () => {
     await expect(page).toHaveURL(/\/weekly_summary/);
     const summaryPage = page.locator(SELECTORS.PAGE_WEEKLY_SUMMARY);
     await expect(summaryPage).toBeVisible();
-    await expect(page.locator('h1')).toContainText('Weekly Summary');
+    await expect(page.locator('h1')).toContainText(/(Weekly|Plan Volume) Summary/i);
   });
 
   test('navigate to Session Summary via navbar', async ({ page }) => {

@@ -24,6 +24,21 @@ def client(app):
     return app.test_client()
 
 
+def assert_success_payload(payload):
+    assert payload["ok"] is True
+    assert payload["status"] == "success"
+    assert "data" in payload
+    return payload["data"]
+
+
+def assert_error_payload(payload, code, message):
+    assert payload["ok"] is False
+    assert payload["status"] == "error"
+    assert payload["message"] == message
+    assert payload["error"]["code"] == code
+    assert payload["error"]["message"] == message
+
+
 class TestParseCountingMode:
     """Tests for _parse_counting_mode helper function."""
 
@@ -103,7 +118,29 @@ class TestSessionSummaryEndpoint:
         )
         
         assert response.status_code == 200
-        data = response.get_json()
+        data = assert_success_payload(response.get_json())
+        assert 'session_summary' in data
+        assert 'categories' in data
+        assert 'isolated_muscles' in data
+        assert 'modes' in data
+
+    @patch('routes.session_summary.calculate_isolated_muscles_stats')
+    @patch('routes.session_summary.calculate_exercise_categories')
+    @patch('routes.session_summary.calculate_session_summary')
+    def test_json_response_uses_xhr_detection(self, mock_calc, mock_cats, mock_iso, client):
+        """XHR callers should receive JSON even without an exact Accept header match."""
+        mock_calc.return_value = {}
+        mock_cats.return_value = []
+        mock_iso.return_value = {}
+
+        response = client.get(
+            '/session_summary',
+            headers={'X-Requested-With': 'XMLHttpRequest', 'Accept': 'text/html'}
+        )
+
+        assert response.status_code == 200
+        assert response.is_json is True
+        data = assert_success_payload(response.get_json())
         assert 'session_summary' in data
         assert 'categories' in data
         assert 'isolated_muscles' in data
@@ -123,7 +160,7 @@ class TestSessionSummaryEndpoint:
             headers={'Accept': 'application/json'}
         )
         
-        data = response.get_json()
+        data = assert_success_payload(response.get_json())
         assert data['modes']['counting_mode'] == 'raw'
         assert data['modes']['contribution_mode'] == 'direct'
 
@@ -141,7 +178,7 @@ class TestSessionSummaryEndpoint:
             headers={'Accept': 'application/json'}
         )
         
-        data = response.get_json()
+        data = assert_success_payload(response.get_json())
         assert data['modes']['counting_mode'] == 'effective'
         assert data['modes']['contribution_mode'] == 'total'
 
@@ -261,7 +298,7 @@ class TestSessionSummaryEndpoint:
             headers={'Accept': 'application/json'}
         )
         
-        data = response.get_json()
+        data = assert_success_payload(response.get_json())
         assert len(data['session_summary']) == 1
         item = data['session_summary'][0]
         
@@ -298,8 +335,11 @@ class TestSessionSummaryErrorHandling:
         )
         
         assert response.status_code == 500
-        data = response.get_json()
-        assert 'error' in data
+        assert_error_payload(
+            response.get_json(),
+            "INTERNAL_ERROR",
+            "Unable to fetch session summary",
+        )
 
     @patch('routes.session_summary.calculate_session_summary')
     @patch('routes.session_summary.render_template')
@@ -396,7 +436,7 @@ class TestSessionSummaryDataTransformation:
             headers={'Accept': 'application/json'}
         )
         
-        data = response.get_json()
+        data = assert_success_payload(response.get_json())
         assert len(data['session_summary']) == 2
         routines = [item['routine'] for item in data['session_summary']]
         assert 'Push' in routines
@@ -421,7 +461,7 @@ class TestSessionSummaryDataTransformation:
             headers={'Accept': 'application/json'}
         )
         
-        data = response.get_json()
+        data = assert_success_payload(response.get_json())
         item = data['session_summary'][0]
         assert item['total_sets'] == item['weekly_sets']
 
@@ -445,6 +485,6 @@ class TestSessionSummaryDataTransformation:
             headers={'Accept': 'application/json'}
         )
         
-        data = response.get_json()
+        data = assert_success_payload(response.get_json())
         item = data['session_summary'][0]
         assert item['effective_sets'] == 15  # Fallback to weekly_sets

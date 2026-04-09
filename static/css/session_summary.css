@@ -45,34 +45,8 @@
     background-color: #ffffff !important;
 }
 
-.volume-indicator {
-    width: 20px;
-    height: 20px;
-    border-radius: 4px;
-}
-
-.volume-badge {
-    padding: 4px 8px;
-    border-radius: 4px;
-    color: white;
-    font-weight: bold;
-}
-
-.low-volume {
-    background-color: #dc3545; /* Red */
-}
-
-.medium-volume {
-    background-color: #fd7e14; /* Orange */
-}
-
-.high-volume {
-    background-color: #198754; /* Green */
-}
-
-.ultra-volume {
-    background-color: #6f42c1; /* Purple */
-}
+/* Shared volume badges, indicators, and classification colors now live in
+   styles_volume.css so session and weekly summary stay on the same tokens. */
 
 /* ============================================
    DARK MODE STYLES FOR SUMMARY TABLES
@@ -161,17 +135,6 @@
     font-size: 0.9rem;
 }
 
-[data-theme='dark'] .volume-legend {
-    background-color: #2d2d2d;
-    border-color: #404040;
-    color: #e0e0e0;
-}
-
-[data-theme='dark'] .volume-legend h5,
-[data-theme='dark'] .volume-legend span {
-    color: #e0e0e0 !important;
-}
-
 /* Dark mode summary frame */
 [data-theme='dark'] .summary-frame {
     background-color: #1a1a1a !important;
@@ -186,9 +149,4 @@
 
 [data-theme='dark'] .method-selector .form-text {
     color: #b0b0b0 !important;
-}
-
-/* Dark mode volume indicator border */
-[data-theme='dark'] .volume-indicator {
-    border: 1px solid #404040;
 }

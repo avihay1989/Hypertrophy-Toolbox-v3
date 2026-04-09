@@ -4,6 +4,22 @@ import { api } from './fetch-wrapper.js';
 // Store flatpickr instance
 let goalDatePicker = null;
 
+function unwrapProgressionResponseData(response) {
+    if (response && typeof response === 'object' && 'data' in response) {
+        return response.data;
+    }
+
+    return response;
+}
+
+function getProgressionSuccessMessage(response, fallbackMessage) {
+    if (response && typeof response === 'object' && typeof response.message === 'string' && response.message.trim()) {
+        return response.message;
+    }
+
+    return fallbackMessage;
+}
+
 export function initializeProgressionPlan() {
     const exerciseSelect = document.getElementById('exerciseSelect');
     const suggestionsContainer = document.getElementById('suggestionsContainer');
@@ -155,10 +171,10 @@ export function initializeProgressionPlan() {
                             { showLoading: false, showErrorToast: false }
                         );
                         
-                        const data = response.data !== undefined ? response.data : response;
+                        const data = unwrapProgressionResponseData(response);
                         console.log('Received current value data:', data);
                         
-                        if (data.error) {
+                        if (data && typeof data === 'object' && data.error) {
                             throw new Error(data.error);
                         }
                         
@@ -263,10 +279,10 @@ export function initializeProgressionPlan() {
             
             console.log('Saving goal:', formData);
             
-            await api.post('/save_progression_goal', formData, { showErrorToast: false });
+            const response = await api.post('/save_progression_goal', formData, { showErrorToast: false });
             
             goalModal.hide();
-            showToast('Goal saved successfully');
+            showToast('success', getProgressionSuccessMessage(response, 'Goal saved successfully'));
             setTimeout(() => {
                 location.reload();
             }, 300);
@@ -296,8 +312,7 @@ export function initializeProgressionPlan() {
             
             console.log('Response received:', response);
             
-            // Extract suggestions array from response
-            const suggestions = response.data !== undefined ? response.data : response;
+            const suggestions = unwrapProgressionResponseData(response);
             console.log('Suggestions data:', suggestions);
             
             if (!Array.isArray(suggestions)) {
@@ -409,10 +424,10 @@ export function initializeProgressionPlan() {
         if (!pendingDeleteGoalId) return;
         
         try {
-            await api.delete(`/delete_progression_goal/${pendingDeleteGoalId}`, { showErrorToast: false });
+            const response = await api.delete(`/delete_progression_goal/${pendingDeleteGoalId}`, { showErrorToast: false });
             
             deleteModal.hide();
-            showToast('Goal deleted successfully');
+            showToast('success', getProgressionSuccessMessage(response, 'Goal deleted successfully'));
             // Remove the row from the table
             if (pendingDeleteButton) {
                 pendingDeleteButton.closest('tr').remove();
@@ -434,9 +449,9 @@ export function initializeProgressionPlan() {
             const goalId = button.dataset.goalId;
             
             try {
-                await api.post(`/complete_progression_goal/${goalId}`, {}, { showErrorToast: false });
+                const response = await api.post(`/complete_progression_goal/${goalId}`, {}, { showErrorToast: false });
                 
-                showToast('Goal marked as completed!');
+                showToast('success', getProgressionSuccessMessage(response, 'Goal marked as completed!'));
                 // Update the row to show completed status
                 const row = button.closest('tr');
                 const statusCell = row.querySelector('.badge');

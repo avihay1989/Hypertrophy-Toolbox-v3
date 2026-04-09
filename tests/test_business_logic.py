@@ -320,7 +320,7 @@ class TestCalculateWeeklySummaryDirect:
 class TestCalculateWeeklySummaryEdgeCases:
     """Tests for edge cases and error handling."""
     
-    def test_empty_database_returns_empty_list(self, app):
+    def test_empty_database_returns_empty_list(self, app, clean_db):
         """Should return empty list when no exercises are in the plan."""
         with app.app_context():
             bl = BusinessLogic()

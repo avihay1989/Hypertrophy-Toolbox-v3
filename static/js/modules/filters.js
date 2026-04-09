@@ -59,7 +59,6 @@ export async function filterExercises(preserveSelection = false) {
                 const exercises = response.data !== undefined ? response.data : response;
                 if (exerciseDropdown && Array.isArray(exercises)) {
                     updateExerciseDropdown(exercises, preserveSelection);
-                    showToast(`Showing all ${exercises.length} exercises`);
                 }
             } catch (e) {
                 console.error("Error fetching all exercises:", e);

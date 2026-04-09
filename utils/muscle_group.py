@@ -1,4 +1,7 @@
 from utils.database import DatabaseHandler
+from utils.logger import get_logger
+
+logger = get_logger()
 
 
 class MuscleGroupHandler:
@@ -18,10 +21,10 @@ class MuscleGroupHandler:
         try:
             with DatabaseHandler() as db:
                 results = db.fetch_all(query)
-                print(f"DEBUG: Retrieved Exercises -> {results}")
+                logger.debug("Retrieved exercises: %s", results)
                 return [row["exercise_name"] for row in results if "exercise_name" in row]
         except Exception as e:
-            print(f"Error fetching exercise names: {e}")
+            logger.exception("Error fetching exercise names: %s", e)
             return []
 
     def get_muscle_groups(self, exercise_name):
@@ -38,14 +41,14 @@ class MuscleGroupHandler:
         try:
             with DatabaseHandler() as db:
                 result = db.fetch_one(query, (exercise_name,))
-                print(f"DEBUG: Muscle groups for {exercise_name} -> {result}")
+                logger.debug("Muscle groups for %s -> %s", exercise_name, result)
                 return (
                     result["primary_muscle_group"],
                     result["secondary_muscle_group"],
                     result["tertiary_muscle_group"],
                 ) if result else (None, None, None)
         except Exception as e:
-            print(f"Error fetching muscle groups for exercise '{exercise_name}': {e}")
+            logger.exception("Error fetching muscle groups for exercise '%s': %s", exercise_name, e)
             return None, None, None
 
     def fetch_muscle_groups_summary(self):
@@ -63,13 +66,13 @@ class MuscleGroupHandler:
         try:
             with DatabaseHandler() as db:
                 results = db.fetch_all(query)
-                print(f"DEBUG: Muscle group summary -> {results}")
+                logger.debug("Muscle group summary: %s", results)
                 return [
                     {"muscle_group": row["primary_muscle_group"], "exercise_count": row["exercise_count"]}
                     for row in results
                 ]
         except Exception as e:
-            print(f"Error fetching muscle group summary: {e}")
+            logger.exception("Error fetching muscle group summary: %s", e)
             return []
 
     def fetch_full_muscle_data(self, exercise_name):
@@ -88,10 +91,10 @@ class MuscleGroupHandler:
         try:
             with DatabaseHandler() as db:
                 result = db.fetch_one(query, (exercise_name,))
-                print(f"DEBUG: Full muscle data for {exercise_name} -> {result}")
+                logger.debug("Full muscle data for %s -> %s", exercise_name, result)
                 return result if result else {}
         except Exception as e:
-            print(f"Error fetching full muscle data for exercise '{exercise_name}': {e}")
+            logger.exception("Error fetching full muscle data for exercise '%s': %s", exercise_name, e)
             return {}
 
     MUSCLE_GROUPS = {

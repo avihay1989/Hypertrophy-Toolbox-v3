@@ -1,4 +1,7 @@
 from .database import DatabaseHandler
+from .logger import get_logger
+
+logger = get_logger()
 
 def initialize_workout_log_table():
     """Create the workout_log table if it doesn't exist."""
@@ -25,6 +28,6 @@ def initialize_workout_log_table():
     try:
         with DatabaseHandler() as db:
             db.execute_query(query)
-            print("Workout log table initialized successfully")
+            logger.info("Workout log table initialized successfully")
     except Exception as e:
-        print(f"Error initializing workout log table: {e}") 
+        logger.exception("Error initializing workout log table: %s", e) 

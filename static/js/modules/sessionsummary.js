@@ -42,14 +42,14 @@ function getVolumeDetails(totalSets) {
         volumeLabel = 'High Volume';
     } else {
         volumeClass = 'ultra-volume';
-        volumeLabel = 'Ultra Volume';
+        volumeLabel = 'Excessive Volume';
     }
 
     const ranges = {
         'Low Volume': 'Below 10 sets',
         'Medium Volume': '10-19 sets',
         'High Volume': '20-29 sets',
-        'Ultra Volume': '30+ sets'
+        'Excessive Volume': '30+ sets'
     };
 
     return {

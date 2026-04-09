@@ -75,7 +75,7 @@ def test_session_summary_uses_canonical_muscles(client, normalized_plan):  # noq
     response = client.get("/session_summary", headers={"Accept": "application/json"})
     assert response.status_code == 200
     payload = response.get_json()
-    muscles = _extract_muscles_from_summary(payload["session_summary"], "muscle_group")
+    muscles = _extract_muscles_from_summary(payload["data"]["session_summary"], "muscle_group")
     assert "Rear-Shoulder" in muscles
     assert "rear delts" not in muscles
 
@@ -84,7 +84,7 @@ def test_weekly_summary_uses_canonical_muscles(client, normalized_plan):  # noqa
     response = client.get("/weekly_summary", headers={"Accept": "application/json"})
     assert response.status_code == 200
     payload = response.get_json()
-    muscles = _extract_muscles_from_summary(payload["weekly_summary"], "muscle_group")
+    muscles = _extract_muscles_from_summary(payload["data"]["weekly_summary"], "muscle_group")
     assert "Rear-Shoulder" in muscles
     assert "rear delts" not in muscles
 

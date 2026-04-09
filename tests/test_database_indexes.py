@@ -138,6 +138,29 @@ class TestOptimizeDatabase:
         
         mock_conn.close.assert_called_once()
 
+    @patch('utils.database_indexes._DB_LOCK')
+    @patch('utils.database_indexes.get_db_connection')
+    def test_uses_global_lock_for_maintenance_commands(self, mock_get_conn, mock_lock):
+        """Should hold the shared DB lock while running maintenance commands."""
+        mock_conn = MagicMock()
+        mock_get_conn.return_value = mock_conn
+
+        optimize_database()
+
+        mock_lock.acquire.assert_called_once()
+        mock_lock.release.assert_called_once()
+
+    @patch('utils.database_indexes.get_db_connection')
+    def test_rolls_back_on_error(self, mock_get_conn):
+        """Should roll back maintenance work if SQLite raises an error."""
+        mock_conn = MagicMock()
+        mock_conn.execute.side_effect = sqlite3.Error("Optimization error")
+        mock_get_conn.return_value = mock_conn
+
+        optimize_database()
+
+        mock_conn.rollback.assert_called_once()
+
 
 class TestAnalyzeQueryPlan:
     """Tests for analyze_query_plan function."""

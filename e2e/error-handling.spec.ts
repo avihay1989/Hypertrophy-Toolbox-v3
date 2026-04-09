@@ -7,7 +7,7 @@
  * - Double-click prevention (debounce)
  * - Timeout handling
  */
-import { test, expect, ROUTES, SELECTORS, waitForPageReady, expectToast } from './fixtures';
+import { test, expect, ROUTES, SELECTORS, waitForPageReady, resetWorkoutPlan } from './fixtures';
 
 /**
  * Helper to select a complete routine
@@ -47,6 +47,10 @@ async function fillExerciseForm(page: import('@playwright/test').Page) {
   await page.fill('#max_rep_range', '12');
   await page.fill('#weight', '100');
 }
+
+test.beforeEach(async ({ page }) => {
+  await resetWorkoutPlan(page);
+});
 
 test.describe('Server Error Handling', () => {
   test.beforeEach(async ({ page, consoleErrors }) => {

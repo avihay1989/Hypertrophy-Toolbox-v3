@@ -1,5 +1,5 @@
 import { showToast } from './toast.js';
-import { api } from './fetch-wrapper.js';
+import { api, isHandledApiError, logApiError } from './fetch-wrapper.js';
 
 /**
  * Transform muscle display value based on current view mode (Simple/Advanced)
@@ -102,6 +102,7 @@ async function handleApiResponse(response) {
 // Module-level state for routine tabs
 let currentRoutineTabFilter = 'all';
 let allExercisesCache = [];
+let isExerciseSubmissionPending = false;
 
 // Superset selection state
 let selectedExerciseIds = new Set();
@@ -1001,6 +1002,10 @@ function validateRequiredSelections() {
 
 export function handleAddExercise(e) {
     if (e) e.preventDefault();
+
+    if (isExerciseSubmissionPending) {
+        return;
+    }
     
     // First, validate required selection fields (Routine and Exercise) with visual feedback
     if (!validateRequiredSelections()) {
@@ -1057,21 +1062,49 @@ export function handleAddExercise(e) {
         rpe: rpe ? parseFloat(rpe) : null
     };
 
-        workoutPlanDebugLog('Sending exercise data:', exerciseData);
-    sendExerciseData(exerciseData);
+    workoutPlanDebugLog('Sending exercise data:', exerciseData);
+    void sendExerciseData(exerciseData);
+}
+
+function setAddExerciseButtonLoading(isLoading) {
+    const addExerciseBtn = document.getElementById('add_exercise_btn');
+    if (!addExerciseBtn) {
+        return;
+    }
+
+    if (!addExerciseBtn.dataset.defaultHtml) {
+        addExerciseBtn.dataset.defaultHtml = addExerciseBtn.innerHTML;
+    }
+
+    addExerciseBtn.disabled = isLoading;
+    addExerciseBtn.classList.toggle('loading', isLoading);
+    addExerciseBtn.setAttribute('aria-busy', String(isLoading));
+    addExerciseBtn.innerHTML = isLoading
+        ? '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Adding...'
+        : addExerciseBtn.dataset.defaultHtml;
 }
 
 async function sendExerciseData(exerciseData) {
+    if (isExerciseSubmissionPending) {
+        return;
+    }
+
+    isExerciseSubmissionPending = true;
+    setAddExerciseButtonLoading(true);
+
     try {
         const data = await api.post('/add_exercise', exerciseData, { showErrorToast: false });
         const message = data.message || data.data?.message || 'Exercise added successfully';
         
-        showToast(message);
+        showToast('success', message);
         fetchWorkoutPlan(); // Refresh the table
         resetFormFields();
     } catch (error) {
-        console.error('Error:', error);
-        showToast(error.message || 'Failed to add exercise', true);
+        logApiError('Error adding exercise:', error);
+        showToast(isHandledApiError(error) ? 'warning' : 'error', error.message || 'Failed to add exercise');
+    } finally {
+        isExerciseSubmissionPending = false;
+        setAddExerciseButtonLoading(false);
     }
 }
 

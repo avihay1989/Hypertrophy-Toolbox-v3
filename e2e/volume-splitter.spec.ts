@@ -9,7 +9,26 @@
  * - Calculate and reset buttons
  * - Export to Excel
  */
-import { test, expect, ROUTES, SELECTORS, waitForPageReady } from './fixtures';
+import { test, expect, ROUTES, SELECTORS, waitForPageReady, expectToast } from './fixtures';
+
+async function setVolumeSlider(page, muscle: string, value: number) {
+  const slider = page.locator(`#sliders input.volume-slider[data-muscle="${muscle}"]`);
+  await expect(slider).toBeVisible();
+  await slider.evaluate((element, nextValue) => {
+    const input = element as HTMLInputElement;
+    input.value = String(nextValue);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+  }, value);
+}
+
+async function expectVolumeSliderValue(page, muscle: string, expectedValue: number) {
+  const slider = page.locator(`#sliders input.volume-slider[data-muscle="${muscle}"]`);
+  const valueBadge = page.locator(`.current-value[data-muscle="${muscle}"]`);
+
+  await expect(slider).toHaveValue(String(expectedValue));
+  await expect(valueBadge).toHaveText(String(expectedValue));
+}
 
 test.describe('Volume Splitter Page', () => {
   test.beforeEach(async ({ page, consoleErrors }) => {
@@ -199,6 +218,83 @@ test.describe('Volume Splitter Page', () => {
     if (download) {
       const filename = download.suggestedFilename();
       expect(filename.toLowerCase()).toContain('xlsx');
+    }
+  });
+
+  test('saved plans can be restored and deleted through volume history', async ({ page }) => {
+    const trainingDays = '7';
+    const chestVolume = 59;
+    const bicepsVolume = 47;
+    const totalVolume = chestVolume + bicepsVolume;
+    const historyRows = page.locator('#history-body tr');
+    const historyCountBefore = await historyRows.count();
+    const historyWasEmpty = historyCountBefore === 1 &&
+      await historyRows.first().locator('td[colspan="4"]').getByText(/No saved volume plans yet\./i).count().catch(() => 0) > 0;
+    const expectedCountAfterSave = historyWasEmpty ? 1 : Math.min(historyCountBefore + 1, 100);
+    const expectedCountAfterDelete = historyWasEmpty ? 1 : historyCountBefore;
+
+    await page.locator(SELECTORS.TRAINING_DAYS).selectOption(trainingDays);
+    await setVolumeSlider(page, 'Chest', chestVolume);
+    await setVolumeSlider(page, 'Biceps', bicepsVolume);
+    await page.locator(SELECTORS.CALCULATE_VOLUME_BTN).click();
+
+    await expect(page.locator('.results-section')).not.toHaveClass(/d-none/);
+    await expect(page.locator('#results-body tr').filter({ hasText: 'Chest' }).first()).toContainText('59');
+    await expect(page.locator('#results-body tr').filter({ hasText: 'Biceps' }).first()).toContainText('47');
+
+    await Promise.all([
+      page.waitForResponse((response) =>
+        response.url().includes('/api/save_volume_plan') &&
+        response.request().method() === 'POST' &&
+        response.ok()
+      ),
+      page.locator('#export-volume').click(),
+    ]);
+
+    await expectToast(page, /Volume plan saved successfully!/i);
+    await expect(historyRows).toHaveCount(expectedCountAfterSave);
+
+    const newestHistoryRow = historyRows.first();
+    await expect(newestHistoryRow).toContainText(`${trainingDays} days`);
+    await expect(newestHistoryRow).toContainText(`${totalVolume} sets`);
+
+    await page.locator(SELECTORS.TRAINING_DAYS).selectOption('2');
+    await setVolumeSlider(page, 'Chest', 3);
+    await setVolumeSlider(page, 'Biceps', 4);
+    await page.locator(SELECTORS.CALCULATE_VOLUME_BTN).click();
+    await expectVolumeSliderValue(page, 'Chest', 3);
+    await expectVolumeSliderValue(page, 'Biceps', 4);
+
+    await Promise.all([
+      page.waitForResponse((response) =>
+        /\/api\/volume_plan\/\d+$/.test(response.url()) &&
+        response.request().method() === 'GET' &&
+        response.ok()
+      ),
+      newestHistoryRow.locator('button.load-plan').click(),
+    ]);
+
+    await expect(page.locator(SELECTORS.TRAINING_DAYS)).toHaveValue(trainingDays);
+    await expectVolumeSliderValue(page, 'Chest', chestVolume);
+    await expectVolumeSliderValue(page, 'Biceps', bicepsVolume);
+    await expect(page.locator('#results-body tr').filter({ hasText: 'Chest' }).first()).toContainText('8.4');
+
+    await newestHistoryRow.locator('button.delete-plan').click();
+    await expect(page.locator('#deleteVolumePlanModal')).toBeVisible();
+
+    await Promise.all([
+      page.waitForResponse((response) =>
+        /\/api\/volume_plan\/\d+$/.test(response.url()) &&
+        response.request().method() === 'DELETE' &&
+        response.ok()
+      ),
+      page.locator('#confirmDeleteVolumePlan').click(),
+    ]);
+
+    await expectToast(page, /Volume plan deleted successfully/i);
+    await expect(historyRows).toHaveCount(expectedCountAfterDelete);
+    if (historyWasEmpty) {
+      await expect(historyRows.first()).toContainText(/No saved volume plans yet\./i);
     }
   });
 

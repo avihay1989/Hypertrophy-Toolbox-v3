@@ -141,6 +141,46 @@ def test_weekly_summary_raw_mode(db_handler):
 
 
 @pytest.mark.usefixtures('clean_db')
+def test_weekly_summary_effective_sets_invariant_across_modes(db_handler):
+    """effective_weekly_sets should not change when display mode switches to RAW."""
+    save_exercise(
+        {
+            'exercise_name': 'Incline Press',
+            'primary_muscle_group': 'Chest',
+            'secondary_muscle_group': None,
+            'tertiary_muscle_group': None,
+            'advanced_isolated_muscles': None,
+            'utility': 'basic',
+            'grips': 'overhand',
+            'stabilizers': None,
+            'synergists': None,
+            'force': 'push',
+            'equipment': 'barbell',
+            'mechanic': 'compound',
+            'difficulty': 'intermediate',
+        }
+    )
+
+    add_exercise(
+        routine='Push Day',
+        exercise='Incline Press',
+        sets=12,
+        min_rep_range=8,
+        max_rep_range=10,
+        rir=2,
+        weight=100.0,
+        rpe=8.0,
+    )
+
+    effective_mode = calculate_weekly_summary(counting_mode=CountingMode.EFFECTIVE)
+    raw_mode = calculate_weekly_summary(counting_mode=CountingMode.RAW)
+
+    expected_effective_sets = 12 * 0.85 * 1.0  # RIR 2 + 8-10 reps
+    assert effective_mode['Chest']['effective_weekly_sets'] == pytest.approx(expected_effective_sets)
+    assert raw_mode['Chest']['effective_weekly_sets'] == pytest.approx(expected_effective_sets)
+
+
+@pytest.mark.usefixtures('clean_db')
 def test_weekly_summary_direct_only_mode(db_handler):
     """Test weekly summary in DIRECT_ONLY contribution mode."""
     save_exercise(

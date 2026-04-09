@@ -26,6 +26,11 @@ from utils.effective_sets import (
     # Aggregation functions
     aggregate_session_volumes,
     aggregate_weekly_volumes,
+    # Formatting functions
+    format_volume_summary,
+    # Data classes
+    EffectiveSetResult,
+    SessionVolumeResult,
     # Utility functions
     rpe_to_rir,
     rir_to_rpe,
@@ -493,3 +498,280 @@ class TestIntegration:
         
         # But different effective values
         assert raw_result.effective_sets > eff_result.effective_sets
+
+
+# =============================================================================
+# Aggregate Session Volumes Tests
+# =============================================================================
+
+class TestAggregateSessionVolumes:
+    """Tests for aggregate_session_volumes function."""
+
+    def test_empty_list_returns_empty_result(self):
+        """Empty exercise list should return empty session result."""
+        result = aggregate_session_volumes([])
+        assert result.routine == ''
+        assert result.muscle_volumes == {}
+        assert result.raw_muscle_volumes == {}
+        assert result.warnings == {}
+
+    def test_single_exercise_aggregation(self):
+        """Single exercise should produce correct muscle volumes."""
+        ex_result = calculate_effective_sets(
+            sets=4, rir=0,
+            min_rep_range=8, max_rep_range=12,
+            primary_muscle='Chest',
+            secondary_muscle='Triceps',
+        )
+        result = aggregate_session_volumes([('Push', ex_result)])
+
+        assert result.routine == 'Push'
+        assert result.muscle_volumes['Chest'] == pytest.approx(4.0)
+        assert result.muscle_volumes['Triceps'] == pytest.approx(2.0)
+
+    def test_multiple_exercises_same_muscle_summed(self):
+        """Multiple exercises targeting same muscle should sum volumes."""
+        ex1 = calculate_effective_sets(
+            sets=3, rir=0,
+            min_rep_range=8, max_rep_range=12,
+            primary_muscle='Chest',
+        )
+        ex2 = calculate_effective_sets(
+            sets=3, rir=0,
+            min_rep_range=8, max_rep_range=12,
+            primary_muscle='Chest',
+        )
+        result = aggregate_session_volumes([('Push', ex1), ('Push', ex2)])
+
+        assert result.muscle_volumes['Chest'] == pytest.approx(6.0)
+
+    def test_warnings_generated_per_muscle(self):
+        """Warnings should be generated for each muscle."""
+        ex_result = calculate_effective_sets(
+            sets=12, rir=0,
+            min_rep_range=8, max_rep_range=12,
+            primary_muscle='Chest',
+        )
+        result = aggregate_session_volumes([('Push', ex_result)])
+
+        assert result.warnings['Chest'] == VolumeWarningLevel.EXCESSIVE
+
+    def test_raw_muscle_volumes_tracked(self):
+        """Raw muscle volumes should be tracked alongside effective."""
+        ex_result = calculate_effective_sets(
+            sets=4, rir=3,  # 0.85 effort factor
+            min_rep_range=8, max_rep_range=12,
+            primary_muscle='Chest',
+        )
+        result = aggregate_session_volumes([('Push', ex_result)])
+
+        # Raw should be higher than effective
+        assert result.raw_muscle_volumes['Chest'] > result.muscle_volumes['Chest']
+        assert result.raw_muscle_volumes['Chest'] == pytest.approx(4.0)
+
+    def test_routine_name_from_first_exercise(self):
+        """Routine name should come from first exercise tuple."""
+        ex = calculate_effective_sets(sets=3, rir=0, primary_muscle='Chest')
+        result = aggregate_session_volumes([('Workout A', ex)])
+        assert result.routine == 'Workout A'
+
+    def test_ok_warning_for_low_volume(self):
+        """Low volume muscle should get OK warning level."""
+        ex = calculate_effective_sets(
+            sets=3, rir=0,
+            min_rep_range=8, max_rep_range=12,
+            primary_muscle='Biceps',
+        )
+        result = aggregate_session_volumes([('Pull', ex)])
+        assert result.warnings['Biceps'] == VolumeWarningLevel.OK
+
+
+# =============================================================================
+# Aggregate Weekly Volumes Tests
+# =============================================================================
+
+class TestAggregateWeeklyVolumes:
+    """Tests for aggregate_weekly_volumes function."""
+
+    def test_empty_sessions_returns_empty(self):
+        """No sessions should return empty weekly result."""
+        result = aggregate_weekly_volumes([])
+        assert result.muscle_volumes == {}
+        assert result.frequency == {}
+        assert result.volume_class == {}
+
+    def test_single_session_aggregation(self):
+        """Single session should produce correct weekly totals."""
+        ex = calculate_effective_sets(
+            sets=4, rir=0,
+            min_rep_range=8, max_rep_range=12,
+            primary_muscle='Chest',
+        )
+        session = aggregate_session_volumes([('Push', ex)])
+        result = aggregate_weekly_volumes([session])
+
+        assert result.muscle_volumes['Chest'] == pytest.approx(4.0)
+        assert result.frequency['Chest'] == 1
+        assert result.volume_class['Chest'] == 'low'
+
+    def test_multiple_sessions_summed(self):
+        """Multiple sessions should sum weekly volumes."""
+        ex1 = calculate_effective_sets(
+            sets=4, rir=0,
+            min_rep_range=8, max_rep_range=12,
+            primary_muscle='Chest',
+        )
+        ex2 = calculate_effective_sets(
+            sets=4, rir=0,
+            min_rep_range=8, max_rep_range=12,
+            primary_muscle='Chest',
+        )
+        s1 = aggregate_session_volumes([('Push A', ex1)])
+        s2 = aggregate_session_volumes([('Push B', ex2)])
+        result = aggregate_weekly_volumes([s1, s2])
+
+        assert result.muscle_volumes['Chest'] == pytest.approx(8.0)
+        assert result.frequency['Chest'] == 2
+
+    def test_frequency_ignores_negligible_sessions(self):
+        """Sessions with < 1.0 effective sets should not count for frequency."""
+        ex_high = calculate_effective_sets(
+            sets=4, rir=0,
+            min_rep_range=8, max_rep_range=12,
+            primary_muscle='Chest',
+        )
+        # Tertiary contribution only: 4 * 1.0 * 1.0 * 0.25 = 1.0 (just at threshold)
+        ex_low = calculate_effective_sets(
+            sets=1, rir=0,
+            min_rep_range=8, max_rep_range=12,
+            primary_muscle='Back',
+            tertiary_muscle='Chest',
+        )
+        s1 = aggregate_session_volumes([('A', ex_high)])
+        s2 = aggregate_session_volumes([('B', ex_low)])
+        result = aggregate_weekly_volumes([s1, s2])
+
+        # Session 1: 4.0 effective for Chest (counts)
+        # Session 2: 0.25 effective for Chest (does NOT count)
+        assert result.frequency['Chest'] == 1
+
+    def test_volume_class_classification(self):
+        """Volume class should reflect weekly totals."""
+        exercises = [
+            calculate_effective_sets(
+                sets=6, rir=0,
+                min_rep_range=8, max_rep_range=12,
+                primary_muscle='Chest',
+            )
+            for _ in range(4)
+        ]
+        sessions = [
+            aggregate_session_volumes([(f'Day {i}', ex)])
+            for i, ex in enumerate(exercises)
+        ]
+        result = aggregate_weekly_volumes(sessions)
+
+        # 6 * 4 = 24 effective sets -> high
+        assert result.volume_class['Chest'] == 'high'
+
+    def test_avg_and_max_sets_per_session(self):
+        """Should calculate correct avg and max sets per session."""
+        ex1 = calculate_effective_sets(
+            sets=4, rir=0,
+            min_rep_range=8, max_rep_range=12,
+            primary_muscle='Chest',
+        )
+        ex2 = calculate_effective_sets(
+            sets=6, rir=0,
+            min_rep_range=8, max_rep_range=12,
+            primary_muscle='Chest',
+        )
+        s1 = aggregate_session_volumes([('A', ex1)])
+        s2 = aggregate_session_volumes([('B', ex2)])
+        result = aggregate_weekly_volumes([s1, s2])
+
+        assert result.avg_sets_per_session['Chest'] == pytest.approx(5.0)
+        assert result.max_sets_per_session['Chest'] == pytest.approx(6.0)
+
+    def test_historically_trained_muscles_included(self):
+        """Muscles in all_trained_muscles list should appear even with zero volume."""
+        result = aggregate_weekly_volumes([], all_trained_muscles=['Chest', 'Back'])
+
+        assert 'Chest' in result.muscle_volumes
+        assert 'Back' in result.muscle_volumes
+        assert result.muscle_volumes['Chest'] == 0.0
+        assert result.frequency['Chest'] == 0
+        assert result.volume_class['Chest'] == 'low'
+
+    def test_raw_volumes_tracked_across_sessions(self):
+        """Raw volumes should be summed across sessions."""
+        ex = calculate_effective_sets(
+            sets=4, rir=3,  # 0.85 effort
+            min_rep_range=8, max_rep_range=12,
+            primary_muscle='Chest',
+        )
+        s1 = aggregate_session_volumes([('A', ex)])
+        s2 = aggregate_session_volumes([('B', ex)])
+        result = aggregate_weekly_volumes([s1, s2])
+
+        assert result.raw_muscle_volumes['Chest'] == pytest.approx(8.0)
+
+
+# =============================================================================
+# Format Volume Summary Tests
+# =============================================================================
+
+class TestFormatVolumeSummary:
+    """Tests for format_volume_summary function."""
+
+    def test_basic_formatting(self):
+        """Should produce dict with all expected keys."""
+        result = format_volume_summary(
+            muscle='Chest',
+            effective_sets=12.0,
+            raw_sets=15.0,
+            frequency=3,
+            volume_class='medium',
+        )
+
+        assert result['muscle_group'] == 'Chest'
+        assert result['effective_sets'] == 12.0
+        assert result['raw_sets'] == 15.0
+        assert result['frequency'] == 3
+        assert result['volume_class'] == 'medium'
+        assert result['sets_per_session'] == pytest.approx(4.0)
+
+    def test_sets_per_session_calculation(self):
+        """sets_per_session should be effective_sets / frequency."""
+        result = format_volume_summary(
+            muscle='Back',
+            effective_sets=10.0,
+            raw_sets=12.0,
+            frequency=2,
+            volume_class='medium',
+        )
+        assert result['sets_per_session'] == pytest.approx(5.0)
+
+    def test_zero_frequency_returns_zero_sets_per_session(self):
+        """Zero frequency should return 0.0 for sets_per_session."""
+        result = format_volume_summary(
+            muscle='Chest',
+            effective_sets=0.0,
+            raw_sets=0.0,
+            frequency=0,
+            volume_class='low',
+        )
+        assert result['sets_per_session'] == 0.0
+
+    def test_values_rounded_to_two_decimals(self):
+        """Numeric values should be rounded to 2 decimal places."""
+        result = format_volume_summary(
+            muscle='Chest',
+            effective_sets=3.33333,
+            raw_sets=4.66666,
+            frequency=3,
+            volume_class='low',
+        )
+        assert result['effective_sets'] == 3.33
+        assert result['raw_sets'] == 4.67
+        assert result['sets_per_session'] == pytest.approx(1.11)

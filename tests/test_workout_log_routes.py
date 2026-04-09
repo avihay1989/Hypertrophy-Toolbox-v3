@@ -249,11 +249,11 @@ class TestExportToWorkoutLog:
     """Tests for POST /export_to_workout_log endpoint."""
 
     def test_export_to_workout_log_empty(self, client, clean_db):
-        """Should return 404 when no workout plans exist."""
+        """Should return 400 when no workout plans exist."""
         resp = client.post("/export_to_workout_log")
-        assert resp.status_code == 404
+        assert resp.status_code == 400
         data = resp.get_json()
-        assert data["error"]["code"] == "NOT_FOUND"
+        assert data["error"]["code"] == "NO_DATA"
 
     def test_export_to_workout_log_success(self, client, clean_db, workout_plan_entry):
         """Should export workout plan entries to workout log."""

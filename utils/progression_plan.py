@@ -350,8 +350,8 @@ def generate_progression_suggestions(
     
     return suggestions
 
-def save_progression_goal(data):
-    """Save a new progression goal to the database."""
+def save_progression_goal(data: Dict[str, Any]) -> int:
+    """Save a new progression goal to the database and return its id."""
     query = """
     INSERT INTO progression_goals (
         exercise,
@@ -373,4 +373,5 @@ def save_progression_goal(data):
     )
     
     with DatabaseHandler() as db:
-        db.execute_query(query, params) 
+        db.execute_query(query, params)
+        return db.cursor.lastrowid

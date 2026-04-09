@@ -76,6 +76,35 @@ class TestAddExercise:
         })
         assert resp.status_code == 200
 
+    def test_add_exercise_duplicate_returns_400(self, client, clean_db, exercise_factory):
+        """Duplicate exercise in same routine should return validation error."""
+        exercise_factory("Bench Press")
+
+        first = client.post("/add_exercise", json={
+            "routine": "Push",
+            "exercise": "Bench Press",
+            "sets": 3,
+            "min_rep_range": 8,
+            "max_rep_range": 12,
+            "rir": 2,
+            "weight": 80.0
+        })
+        assert first.status_code == 200
+
+        duplicate = client.post("/add_exercise", json={
+            "routine": "Push",
+            "exercise": "Bench Press",
+            "sets": 4,
+            "min_rep_range": 6,
+            "max_rep_range": 10,
+            "rir": 3,
+            "weight": 82.5
+        })
+        assert duplicate.status_code == 400
+        payload = duplicate.get_json()
+        assert payload["ok"] is False
+        assert payload["error"]["code"] == "VALIDATION_ERROR"
+
 
 class TestGetExerciseDetails:
     """Tests for GET /get_exercise_details/<id> endpoint."""

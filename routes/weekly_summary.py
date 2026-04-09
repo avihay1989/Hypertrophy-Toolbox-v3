@@ -14,8 +14,11 @@ from utils.volume_classifier import (
     get_subcategory_tooltip
 )
 from utils.effective_sets import CountingMode, ContributionMode
+from utils.logger import get_logger
+from utils.errors import error_response, is_xhr_request, success_response
 
 weekly_summary_bp = Blueprint('weekly_summary', __name__)
+logger = get_logger()
 
 
 def _parse_counting_mode(value: str) -> CountingMode:
@@ -59,6 +62,8 @@ def weekly_summary():
                 'total_reps': data['total_reps'],
                 'total_volume': data['total_volume'],
                 'total_weight': data['total_volume'],  # Legacy alias
+                'raw_total_reps': data.get('raw_total_reps', data['total_reps']),
+                'raw_total_volume': data.get('raw_total_volume', data['total_volume']),
                 'frequency': data.get('frequency', 0),
                 'sets_per_session': data['sets_per_session'],
                 'avg_sets_per_session': data.get('avg_sets_per_session', data['sets_per_session']),
@@ -74,8 +79,8 @@ def weekly_summary():
         category_results = calculate_exercise_categories()
         isolated_muscles_stats = calculate_isolated_muscles_stats()
         
-        if request.headers.get("Accept") == "application/json":
-            return jsonify({
+        if is_xhr_request():
+            return jsonify(success_response(data={
                 "weekly_summary": results,
                 "categories": category_results,
                 "isolated_muscles": isolated_muscles_stats,
@@ -83,7 +88,7 @@ def weekly_summary():
                     "counting_mode": counting_mode.value,
                     "contribution_mode": contribution_mode.value,
                 }
-            })
+            }))
         
         return render_template(
             "weekly_summary.html",
@@ -99,9 +104,9 @@ def weekly_summary():
             get_subcategory_tooltip=get_subcategory_tooltip
         )
     except Exception as e:
-        print(f"Error in weekly_summary: {e}")
-        if request.headers.get("Accept") == "application/json":
-            return jsonify({"error": "Unable to fetch weekly summary"}), 500
+        logger.exception("Error in weekly_summary: %s", e)
+        if is_xhr_request():
+            return error_response("INTERNAL_ERROR", "Unable to fetch weekly summary", 500)
         return render_template("error.html", message="Unable to load weekly summary."), 500
 
 
@@ -130,7 +135,7 @@ def get_pattern_coverage():
             "data": coverage
         })
     except Exception as e:
-        print(f"Error in pattern_coverage: {e}")
+        logger.exception("Error in pattern_coverage: %s", e)
         return jsonify({
             "success": False,
             "error": "Unable to calculate pattern coverage"

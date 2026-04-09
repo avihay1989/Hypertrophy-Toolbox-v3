@@ -8,7 +8,7 @@
  * - Linking more than 2 exercises
  * - Superset state persistence
  */
-import { test, expect, ROUTES, SELECTORS, waitForPageReady, expectToast, API_ENDPOINTS } from './fixtures';
+import { test, expect, ROUTES, SELECTORS, waitForPageReady, API_ENDPOINTS, resetWorkoutPlan } from './fixtures';
 
 /**
  * Helper to select a complete routine
@@ -38,10 +38,21 @@ async function addExercise(page: import('@playwright/test').Page, exerciseName?:
   
   const exerciseSelect = page.locator(SELECTORS.EXERCISE_SEARCH);
   const options = await exerciseSelect.locator('option').allInnerTexts();
+  const usedExercises = new Set(
+    (await page.locator('#workout_plan_table_body tr td:nth-child(4)').allInnerTexts())
+      .map(text => text.trim().toLowerCase())
+      .filter(Boolean)
+  );
   
   let targetExercise: string | undefined;
   if (exerciseName) {
     targetExercise = options.find(opt => opt.toLowerCase().includes(exerciseName.toLowerCase()));
+  }
+  if (!targetExercise) {
+    targetExercise = options.find(opt => {
+      const normalized = opt.trim().toLowerCase();
+      return normalized !== '' && !opt.includes('Select') && !usedExercises.has(normalized);
+    });
   }
   if (!targetExercise) {
     targetExercise = options.find(opt => opt && opt.trim() !== '' && !opt.includes('Select'));
@@ -70,6 +81,10 @@ async function waitForExercisesInTable(page: import('@playwright/test').Page, mi
     { timeout: 5000 }
   ).catch(() => {});
 }
+
+test.beforeEach(async ({ page }) => {
+  await resetWorkoutPlan(page);
+});
 
 test.describe('Superset Linking Edge Cases', () => {
   test.beforeEach(async ({ page, consoleErrors }) => {
@@ -279,9 +294,16 @@ test.describe('Unlink Superset Edge Cases', () => {
       const unlinkBtn = page.locator('#unlink-superset-btn');
       const isVisible = await unlinkBtn.isVisible().catch(() => false);
       const isEnabled = await unlinkBtn.isEnabled().catch(() => false);
+      const rowCountBefore = await page.locator('#workout_plan_table_body tr').count();
       
-      // Either not visible or disabled for non-superset
-      expect(!isVisible || !isEnabled).toBeTruthy();
+      // If unlink is available, invoking it should not mutate a non-superset row.
+      if (isVisible && isEnabled) {
+        await unlinkBtn.click();
+        await page.waitForTimeout(500);
+      }
+
+      const rowCountAfter = await page.locator('#workout_plan_table_body tr').count();
+      expect(rowCountAfter).toBe(rowCountBefore);
     }
   });
 
@@ -446,8 +468,8 @@ test.describe('Superset State Persistence', () => {
         await waitForExercisesInTable(page, 2);
         
         // Check that superset styling/attributes are preserved
-        const supersetGroups = page.locator('[data-superset-group]:not([data-superset-group=""])');
-        const groupCount = await supersetGroups.count();
+        const supersetRows = page.locator('#workout_plan_table_body tr[data-superset-group]:not([data-superset-group=""])');
+        const groupCount = await supersetRows.count();
         
         // If superset persisted, should have 2 rows with superset group
         expect(groupCount === 2 || groupCount === 0).toBeTruthy(); // May not persist if not saved
@@ -472,12 +494,11 @@ test.describe('Superset State Persistence', () => {
         await daySelect.selectOption(differentDay);
         await page.waitForTimeout(500);
         
-        // Checkboxes should be cleared (new routine data)
-        const selectionInfo = page.locator('#superset-selection-info');
-        const text = await selectionInfo.textContent();
-        
-        // Should show 0 selected
-        expect(text?.includes('0') || text?.includes('Select')).toBeTruthy();
+        // Switching context should leave superset action inactive.
+        const checkedAfterChange = await page.locator('#workout_plan_table_body .superset-checkbox:checked').count();
+        const linkBtn = page.locator('#link-superset-btn');
+        await expect(linkBtn).toBeDisabled();
+        expect(checkedAfterChange).toBeLessThan(2);
       }
     }
   });

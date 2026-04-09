@@ -7,9 +7,11 @@ from typing import Iterable, List, Optional, Tuple
 
 try:  # Prefer package-relative imports when available
     from utils.database import DatabaseHandler
+    from utils.logger import get_logger
     from utils.normalization import normalize_advanced_muscles
 except ImportError:  # pragma: no cover - fallback for direct invocation
     from database import DatabaseHandler  # type: ignore
+    from logger import get_logger  # type: ignore
     from normalization import normalize_advanced_muscles  # type: ignore
 
 
@@ -57,6 +59,7 @@ REBUILD_EIM_SQL: tuple[str, ...] = (
     "CREATE INDEX IF NOT EXISTS idx_eim_muscle  ON exercise_isolated_muscles(muscle);",
     "CREATE INDEX IF NOT EXISTS idx_eim_ex      ON exercise_isolated_muscles(exercise_name);",
 )
+logger = get_logger()
 
 
 def _exec_many(db: DatabaseHandler, statements: Iterable[str]) -> None:
@@ -121,6 +124,6 @@ if __name__ == "__main__":  # pragma: no cover - CLI entry point
 
     if len(sys.argv) > 1 and sys.argv[1] == "normalize_and_rebuild_eim":
         normalize_and_rebuild_eim()
-        print("OK: normalized CSV and rebuilt exercise_isolated_muscles")
+        logger.info("OK: normalized CSV and rebuilt exercise_isolated_muscles")
     else:
-        print("Usage: python -m utils.maintenance normalize_and_rebuild_eim")
+        logger.info("Usage: python -m utils.maintenance normalize_and_rebuild_eim")

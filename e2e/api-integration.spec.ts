@@ -11,7 +11,81 @@
  */
 import { test, expect } from '@playwright/test';
 
-const BASE_URL = 'http://localhost:5000';
+const BASE_URL = 'http://127.0.0.1:5000';
+const JSON_HEADERS = {
+  'Accept': 'application/json',
+  'X-Requested-With': 'XMLHttpRequest',
+};
+
+const VALID_WORKOUT_PLAN_EXERCISE = {
+  routine: 'GYM - Full Body - Workout A',
+  sets: 3,
+  min_rep_range: 8,
+  max_rep_range: 12,
+  rir: 2,
+  weight: 100,
+};
+
+function unwrapApiData(payload: unknown) {
+  if (
+    payload &&
+    typeof payload === 'object' &&
+    !Array.isArray(payload) &&
+    'data' in payload
+  ) {
+    return (payload as { data: unknown }).data;
+  }
+
+  return payload;
+}
+
+function expectSuccessFlag(payload: Record<string, unknown>) {
+  expect(
+    payload.ok === true ||
+    payload.status === 'success' ||
+    payload.success === true
+  ).toBeTruthy();
+}
+
+async function clearWorkoutPlanState(request: import('@playwright/test').APIRequestContext) {
+  const response = await request.post(`${BASE_URL}/clear_workout_plan`);
+  expect(response.ok()).toBeTruthy();
+}
+
+async function getValidExerciseName(request: import('@playwright/test').APIRequestContext) {
+  const response = await request.get(`${BASE_URL}/get_all_exercises`);
+  expect(response.ok()).toBeTruthy();
+
+  const payload = await response.json();
+  const exercises = Array.isArray(payload)
+    ? payload
+    : Array.isArray(payload?.data)
+      ? payload.data
+      : [];
+
+  const exerciseName = exercises.find((value: unknown) =>
+    typeof value === 'string' && value.trim() !== ''
+  );
+
+  expect(typeof exerciseName === 'string' && exerciseName.trim() !== '').toBeTruthy();
+  return exerciseName as string;
+}
+
+async function seedWorkoutPlanExercise(
+  request: import('@playwright/test').APIRequestContext,
+  overrides: Partial<typeof VALID_WORKOUT_PLAN_EXERCISE> = {}
+) {
+  const exercise = overrides.exercise ?? await getValidExerciseName(request);
+  const response = await request.post(`${BASE_URL}/add_exercise`, {
+    data: {
+      ...VALID_WORKOUT_PLAN_EXERCISE,
+      exercise,
+      ...overrides,
+    }
+  });
+
+  expect(response.ok()).toBeTruthy();
+}
 
 test.describe('Workout Plan API', () => {
   test('GET /get_workout_plan returns valid response', async ({ request }) => {
@@ -82,19 +156,8 @@ test.describe('Workout Plan API', () => {
   });
 
   test('POST /add_exercise with valid data succeeds', async ({ request }) => {
-    const response = await request.post(`${BASE_URL}/add_exercise`, {
-      data: {
-        routine: 'GYM - Full Body - Workout A',
-        exercise: 'Bench Press (Barbell)',
-        planned_sets: 3,
-        planned_min_reps: 8,
-        planned_max_reps: 12,
-        planned_weight: 100
-      }
-    });
-    
-    // Either success or duplicate (both are valid responses)
-    expect([200, 400]).toContain(response.status());
+    await clearWorkoutPlanState(request);
+    await seedWorkoutPlanExercise(request);
   });
 
   test('POST /remove_exercise requires exercise_id', async ({ request }) => {
@@ -276,7 +339,7 @@ test.describe('Plan Generator API (v1.5.0)', () => {
 });
 
 test.describe('Double Progression API (v1.5.0)', () => {
-  test('POST /get_exercise_suggestions returns suggestions array', async ({ request }) => {
+  test('POST /get_exercise_suggestions returns suggestions from the live route', async ({ request }) => {
     const response = await request.post(`${BASE_URL}/get_exercise_suggestions`, {
       data: {
         exercise: 'Bench Press (Barbell)'
@@ -284,12 +347,15 @@ test.describe('Double Progression API (v1.5.0)', () => {
     });
     
     expect(response.ok()).toBeTruthy();
-    const data = await response.json();
-    expect(Array.isArray(data)).toBe(true);
+    const rawPayload = await response.json();
+    expect(rawPayload.ok).toBe(true);
+    expect(rawPayload.status).toBe('success');
+    const suggestions = unwrapApiData(rawPayload);
+    expect(Array.isArray(suggestions)).toBe(true);
     
     // Each suggestion should have the expected structure
-    if (data.length > 0) {
-      const suggestion = data[0];
+    if (Array.isArray(suggestions) && suggestions.length > 0) {
+      const suggestion = suggestions[0] as Record<string, unknown>;
       expect(suggestion).toHaveProperty('type');
       expect(suggestion).toHaveProperty('title');
       expect(suggestion).toHaveProperty('description');
@@ -306,7 +372,10 @@ test.describe('Double Progression API (v1.5.0)', () => {
     });
     
     expect(noviceResponse.ok()).toBeTruthy();
-    const noviceData = await noviceResponse.json();
+    const novicePayload = await noviceResponse.json();
+    expect(novicePayload.ok).toBe(true);
+    expect(novicePayload.status).toBe('success');
+    const noviceData = unwrapApiData(novicePayload);
     expect(Array.isArray(noviceData)).toBe(true);
     
     // Experienced mode (may suggest larger increments)
@@ -318,7 +387,10 @@ test.describe('Double Progression API (v1.5.0)', () => {
     });
     
     expect(expResponse.ok()).toBeTruthy();
-    const expData = await expResponse.json();
+    const expPayload = await expResponse.json();
+    expect(expPayload.ok).toBe(true);
+    expect(expPayload.status).toBe('success');
+    const expData = unwrapApiData(expPayload);
     expect(Array.isArray(expData)).toBe(true);
   });
 
@@ -330,7 +402,10 @@ test.describe('Double Progression API (v1.5.0)', () => {
     });
     
     expect(response.ok()).toBeTruthy();
-    const data = await response.json();
+    const rawPayload = await response.json();
+    expect(rawPayload.ok).toBe(true);
+    expect(rawPayload.status).toBe('success');
+    const data = unwrapApiData(rawPayload);
     expect(Array.isArray(data)).toBe(true);
     
     // Should return "start training" type suggestion for unknown exercise
@@ -344,8 +419,75 @@ test.describe('Double Progression API (v1.5.0)', () => {
       data: {}
     });
     
-    // May return error or empty suggestions
-    expect([200, 400, 500]).toContain(response.status());
+    expect(response.status()).toBe(400);
+    const payload = await response.json();
+    expect(payload.ok).toBe(false);
+    expect(payload.status).toBe('error');
+    expect(payload.error.code).toBe('VALIDATION_ERROR');
+    expect(payload.message).toBe('exercise is required');
+  });
+
+  test('POST /get_current_value returns a current-value payload from the live route', async ({ request }) => {
+    const response = await request.post(`${BASE_URL}/get_current_value`, {
+      data: {
+        exercise: 'Bench Press (Barbell)',
+        goal_type: 'weight',
+      }
+    });
+
+    expect(response.ok()).toBeTruthy();
+    const rawPayload = await response.json();
+    expect(rawPayload.ok).toBe(true);
+    expect(rawPayload.status).toBe('success');
+    const payload = unwrapApiData(rawPayload) as Record<string, unknown>;
+    expect(payload).toHaveProperty('current_value');
+  });
+
+  test('POST /save_progression_goal returns wrapped JSON for XHR callers', async ({ request }) => {
+    const response = await request.post(`${BASE_URL}/save_progression_goal`, {
+      headers: {
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+      data: {
+        exercise: 'Bench Press (Barbell)',
+        goal_type: 'weight',
+        current_value: 100,
+        target_value: 102.5,
+        goal_date: '2099-12-31',
+      }
+    });
+
+    expect(response.ok()).toBeTruthy();
+    const payload = await response.json();
+    expect(payload.ok).toBe(true);
+    expect(payload.status).toBe('success');
+    expect(payload.message).toBe('Goal saved successfully');
+    expect(payload.data).toHaveProperty('goal_id');
+
+    const goalId = payload.data.goal_id;
+    const cleanupResponse = await request.delete(`${BASE_URL}/delete_progression_goal/${goalId}`);
+    expect(cleanupResponse.ok()).toBeTruthy();
+    const cleanupPayload = await cleanupResponse.json();
+    expect(cleanupPayload.ok).toBe(true);
+    expect(cleanupPayload.status).toBe('success');
+    expect(cleanupPayload.message).toBe('Goal deleted successfully');
+  });
+
+  test('POST /save_progression_goal returns validation error for invalid JSON', async ({ request }) => {
+    const response = await request.post(`${BASE_URL}/save_progression_goal`, {
+      headers: {
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'Content-Type': 'application/json',
+      },
+      data: 'not json'
+    });
+
+    expect(response.status()).toBe(400);
+    const payload = await response.json();
+    expect(payload.ok).toBe(false);
+    expect(payload.error.code).toBe('VALIDATION_ERROR');
   });
 });
 
@@ -414,6 +556,9 @@ test.describe('Export API', () => {
   });
 
   test('POST /export_to_workout_log exports data', async ({ request }) => {
+    await clearWorkoutPlanState(request);
+    await seedWorkoutPlanExercise(request);
+
     const response = await request.post(`${BASE_URL}/export_to_workout_log`);
     expect(response.ok()).toBeTruthy();
   });
@@ -425,48 +570,28 @@ test.describe('Progression Plan API', () => {
     expect(response.ok()).toBeTruthy();
   });
 
-  test('GET /get_progression_goals returns goals', async ({ request }) => {
-    const response = await request.get(`${BASE_URL}/get_progression_goals`);
-    // Route may not exist
-    if (response.ok()) {
-      const data = await response.json();
-      expect(data.ok === true || data.status === 'success' || data.success === true || Array.isArray(data)).toBeTruthy();
-    } else {
-      expect([404]).toContain(response.status());
-    }
+  test('DELETE /delete_progression_goal/<id> returns a not-found response for a missing goal', async ({ request }) => {
+    const response = await request.delete(`${BASE_URL}/delete_progression_goal/999999`);
+
+    expect(response.status()).toBe(404);
+    const payload = await response.json();
+    expect(payload.ok).toBe(false);
+    expect(payload.status).toBe('error');
+    expect(payload.error.code).toBe('NOT_FOUND');
+    expect(payload.message).toBe('Goal not found');
   });
 
-  test('POST /add_progression_goal requires valid data', async ({ request }) => {
-    const response = await request.post(`${BASE_URL}/add_progression_goal`, {
+  test('POST /complete_progression_goal/<id> returns a not-found response for a missing goal', async ({ request }) => {
+    const response = await request.post(`${BASE_URL}/complete_progression_goal/999999`, {
       data: {}
     });
-    
-    // Route may not exist or may return 400 for invalid data
-    expect([400, 404]).toContain(response.status());
-  });
 
-  test('POST /add_progression_goal with valid data succeeds', async ({ request }) => {
-    const response = await request.post(`${BASE_URL}/add_progression_goal`, {
-      data: {
-        exercise: 'Bench Press (Barbell)',
-        goal_type: 'weight',
-        current_value: 100,
-        target_value: 120,
-        target_date: '2026-12-31'
-      }
-    });
-    
-    // Either success, validation error, or route not found
-    expect([200, 400, 404]).toContain(response.status());
-  });
-
-  test('POST /delete_progression_goal requires goal_id', async ({ request }) => {
-    const response = await request.post(`${BASE_URL}/delete_progression_goal`, {
-      data: {}
-    });
-    
-    // Route may not exist or may return 400 for missing goal_id
-    expect([400, 404]).toContain(response.status());
+    expect(response.status()).toBe(404);
+    const payload = await response.json();
+    expect(payload.ok).toBe(false);
+    expect(payload.status).toBe('error');
+    expect(payload.error.code).toBe('NOT_FOUND');
+    expect(payload.message).toBe('Goal not found');
   });
 });
 
@@ -476,21 +601,23 @@ test.describe('Weekly Summary API', () => {
     expect(response.ok()).toBeTruthy();
   });
 
-  test('GET /get_weekly_summary returns summary data', async ({ request }) => {
-    const response = await request.get(`${BASE_URL}/get_weekly_summary`);
-    // Route may not exist or returns data
-    if (response.ok()) {
-      const data = await response.json();
-      expect(data.ok === true || data.status === 'success' || data.success === true || typeof data === 'object').toBeTruthy();
-    } else {
-      expect([404]).toContain(response.status());
-    }
-  });
+  test('GET /weekly_summary returns live JSON summary data for explicit JSON callers', async ({ request }) => {
+    const response = await request.get(
+      `${BASE_URL}/weekly_summary?counting_mode=effective&contribution_mode=total`,
+      { headers: JSON_HEADERS }
+    );
 
-  test('GET /get_weekly_summary with parameters', async ({ request }) => {
-    const response = await request.get(`${BASE_URL}/get_weekly_summary?counting_mode=effective&contribution_mode=total`);
-    // Accept 200 or 404 (route may not exist)
-    expect([200, 404]).toContain(response.status());
+    expect(response.ok()).toBeTruthy();
+    const payload = await response.json();
+    expect(payload.ok).toBe(true);
+    expect(payload.status).toBe('success');
+    expect(payload).toHaveProperty('data');
+    const data = payload.data as Record<string, unknown>;
+
+    expect(Array.isArray(data.weekly_summary)).toBe(true);
+    expect(Array.isArray(data.categories)).toBe(true);
+    expect(data).toHaveProperty('isolated_muscles');
+    expect(data).toHaveProperty('modes');
   });
 });
 
@@ -500,15 +627,23 @@ test.describe('Session Summary API', () => {
     expect(response.ok()).toBeTruthy();
   });
 
-  test('GET /get_session_summary returns summary data', async ({ request }) => {
-    const response = await request.get(`${BASE_URL}/get_session_summary`);
-    // Route may not exist or returns data
-    if (response.ok()) {
-      const data = await response.json();
-      expect(data.ok === true || data.status === 'success' || data.success === true || typeof data === 'object').toBeTruthy();
-    } else {
-      expect([404]).toContain(response.status());
-    }
+  test('GET /session_summary returns live JSON summary data for explicit JSON callers', async ({ request }) => {
+    const response = await request.get(
+      `${BASE_URL}/session_summary?counting_mode=effective&contribution_mode=total`,
+      { headers: JSON_HEADERS }
+    );
+
+    expect(response.ok()).toBeTruthy();
+    const payload = await response.json();
+    expect(payload.ok).toBe(true);
+    expect(payload.status).toBe('success');
+    expect(payload).toHaveProperty('data');
+    const data = payload.data as Record<string, unknown>;
+
+    expect(Array.isArray(data.session_summary)).toBe(true);
+    expect(Array.isArray(data.categories)).toBe(true);
+    expect(data).toHaveProperty('isolated_muscles');
+    expect(data).toHaveProperty('modes');
   });
 });
 
@@ -518,25 +653,126 @@ test.describe('Volume Splitter API', () => {
     expect(response.ok()).toBeTruthy();
   });
 
-  test('POST /calculate_volume_split requires training_days', async ({ request }) => {
-    const response = await request.post(`${BASE_URL}/calculate_volume_split`, {
+  test('POST /api/calculate_volume returns the final wrapped contract', async ({ request }) => {
+    const response = await request.post(`${BASE_URL}/api/calculate_volume`, {
       data: {}
     });
-    
-    // Route may not exist or may accept empty data
-    expect([200, 400, 404, 500]).toContain(response.status());
+
+    expect(response.ok()).toBeTruthy();
+    const payload = await response.json();
+    expect(payload.ok).toBe(true);
+    expect(payload.status).toBe('success');
+    expect(payload).toHaveProperty('data');
+    const data = payload.data as Record<string, unknown>;
+    expect(data).toHaveProperty('results');
+    expect(data).toHaveProperty('ranges');
+    expect(data).toHaveProperty('suggestions');
   });
 
-  test('POST /calculate_volume_split with valid data', async ({ request }) => {
-    const response = await request.post(`${BASE_URL}/calculate_volume_split`, {
+  test('POST /api/calculate_volume with valid data returns computed results', async ({ request }) => {
+    const response = await request.post(`${BASE_URL}/api/calculate_volume`, {
       data: {
-        training_days: 4,
-        mode: 'basic'
+        training_days: 2,
+        mode: 'basic',
+        volumes: {
+          Chest: 20
+        },
+        ranges: {
+          Chest: {
+            min: 12,
+            max: 18
+          }
+        }
       }
     });
-    
-    // Route may not exist
-    expect([200, 404]).toContain(response.status());
+
+    expect(response.ok()).toBeTruthy();
+    const payload = await response.json();
+    expect(payload.ok).toBe(true);
+    expect(payload.status).toBe('success');
+    expect(payload).toHaveProperty('data');
+    const data = payload.data as Record<string, any>;
+    expect(data.results.Chest.weekly_sets).toBe(20);
+    expect(data.results.Chest.sets_per_session).toBe(10);
+    expect(data.results.Chest.status).toBe('high');
+  });
+
+  test('GET /api/volume_history returns a JSON object', async ({ request }) => {
+    const response = await request.get(`${BASE_URL}/api/volume_history`, {
+      headers: JSON_HEADERS
+    });
+
+    expect(response.ok()).toBeTruthy();
+    const payload = await response.json();
+    expect(payload.ok).toBe(true);
+    expect(payload.status).toBe('success');
+    expect(payload).toHaveProperty('data');
+    expect(typeof payload.data).toBe('object');
+  });
+
+  test('volume persistence routes save, list, load, and delete a plan', async ({ request }) => {
+    const saveResponse = await request.post(`${BASE_URL}/api/save_volume_plan`, {
+      headers: JSON_HEADERS,
+      data: {
+        mode: 'basic',
+        training_days: 4,
+        volumes: {
+          Chest: 18,
+          Back: 14,
+        },
+      }
+    });
+
+    expect(saveResponse.ok()).toBeTruthy();
+    const savePayload = await saveResponse.json();
+    expect(savePayload.ok).toBe(true);
+    expect(savePayload.status).toBe('success');
+    expect(savePayload.message).toBe('Volume plan saved successfully');
+    const savedPlan = savePayload.data as Record<string, unknown>;
+    const planId = savedPlan.plan_id as number;
+    expect(typeof planId).toBe('number');
+
+    const historyResponse = await request.get(`${BASE_URL}/api/volume_history`, {
+      headers: JSON_HEADERS
+    });
+    expect(historyResponse.ok()).toBeTruthy();
+    const historyPayload = await historyResponse.json();
+    expect(historyPayload.ok).toBe(true);
+    expect(historyPayload.status).toBe('success');
+    const history = historyPayload.data as Record<string, Record<string, unknown>>;
+    expect(history[String(planId)]).toBeTruthy();
+
+    const planResponse = await request.get(`${BASE_URL}/api/volume_plan/${planId}`, {
+      headers: JSON_HEADERS
+    });
+    expect(planResponse.ok()).toBeTruthy();
+    const planPayload = await planResponse.json();
+    expect(planPayload.ok).toBe(true);
+    expect(planPayload.status).toBe('success');
+    const plan = planPayload.data as Record<string, unknown>;
+    expect(plan.training_days).toBe(4);
+    expect(plan).toHaveProperty('created_at');
+    expect(plan).toHaveProperty('volumes');
+
+    const deleteResponse = await request.delete(`${BASE_URL}/api/volume_plan/${planId}`, {
+      headers: JSON_HEADERS
+    });
+    expect(deleteResponse.ok()).toBeTruthy();
+    const deletePayload = await deleteResponse.json();
+    expect(deletePayload.ok).toBe(true);
+    expect(deletePayload.status).toBe('success');
+    expect(deletePayload.message).toBe('Volume plan deleted successfully');
+    expect(deletePayload.data).toBeUndefined();
+
+    const missingPlanResponse = await request.get(`${BASE_URL}/api/volume_plan/${planId}`, {
+      headers: JSON_HEADERS
+    });
+    expect(missingPlanResponse.status()).toBe(404);
+    const missingPlanPayload = await missingPlanResponse.json();
+    expect(missingPlanPayload.ok).toBe(false);
+    expect(missingPlanPayload.status).toBe('error');
+    expect(missingPlanPayload.message).toBe('Plan not found');
+    expect(missingPlanPayload.error?.code).toBe('NOT_FOUND');
   });
 });
 
@@ -597,14 +833,16 @@ test.describe('Error Handling', () => {
 test.describe('Response Format Consistency', () => {
   test('success responses have consistent format', async ({ request }) => {
     const endpoints = [
-      '/get_workout_plan',
-      '/get_routine_options',
-      '/get_weekly_summary',
-      '/get_session_summary'
+      { path: '/get_workout_plan' },
+      { path: '/get_routine_options' },
+      { path: '/weekly_summary', headers: JSON_HEADERS },
+      { path: '/session_summary', headers: JSON_HEADERS }
     ];
 
     for (const endpoint of endpoints) {
-      const response = await request.get(`${BASE_URL}${endpoint}`);
+      const response = await request.get(`${BASE_URL}${endpoint.path}`, {
+        headers: endpoint.headers
+      });
       
       // Some routes may not exist (404)
       if (response.ok()) {

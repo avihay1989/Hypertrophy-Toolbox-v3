@@ -1,4 +1,14 @@
 import { defineConfig, devices } from '@playwright/test';
+import fs from 'fs';
+import path from 'path';
+
+const venvPython = process.platform === 'win32'
+  ? path.join(process.cwd(), '.venv', 'Scripts', 'python.exe')
+  : path.join(process.cwd(), '.venv', 'bin', 'python');
+const pythonExecutable = fs.existsSync(venvPython) ? `"${venvPython}"` : 'python';
+const reuseExistingServer = process.env.PW_REUSE_SERVER === '1' && !process.env.CI;
+const configuredWorkers = Number(process.env.PW_WORKERS ?? '1');
+const workers = Number.isFinite(configuredWorkers) && configuredWorkers > 0 ? configuredWorkers : 1;
 
 /**
  * Playwright configuration for Hypertrophy Toolbox E2E tests
@@ -7,13 +17,13 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './e2e',
   /* Run tests in files in parallel */
-  fullyParallel: true,
+  fullyParallel: false,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
   /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  workers,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
     ['list'],
@@ -50,9 +60,9 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'python app.py',
+    command: `${pythonExecutable} app.py`,
     url: 'http://127.0.0.1:5000',
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer,
     timeout: 120 * 1000,
   },
 

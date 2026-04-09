@@ -7,7 +7,11 @@
  * - Add exercise flow
  * - Export actions
  */
-import { test, expect, ROUTES, SELECTORS, waitForPageReady, expectToast } from './fixtures';
+import { test, expect, ROUTES, SELECTORS, waitForPageReady, resetWorkoutPlan } from './fixtures';
+
+test.beforeEach(async ({ page }) => {
+  await resetWorkoutPlan(page);
+});
 
 test.describe('Workout Plan Page', () => {
   test.beforeEach(async ({ page, consoleErrors }) => {
@@ -377,7 +381,7 @@ test.describe('Plan Generator v1.5.0 Features', () => {
   });
 
   test('generator API returns priority muscles option', async ({ request }) => {
-    const response = await request.get('http://localhost:5000/get_generator_options');
+    const response = await request.get('http://127.0.0.1:5000/get_generator_options');
     expect(response.ok()).toBeTruthy();
     
     const data = await response.json();
@@ -390,7 +394,7 @@ test.describe('Plan Generator v1.5.0 Features', () => {
   });
 
   test('generator API returns time budget presets', async ({ request }) => {
-    const response = await request.get('http://localhost:5000/get_generator_options');
+    const response = await request.get('http://127.0.0.1:5000/get_generator_options');
     expect(response.ok()).toBeTruthy();
     
     const data = await response.json();
@@ -403,7 +407,7 @@ test.describe('Plan Generator v1.5.0 Features', () => {
 
   test('generator API validates priority muscles limit', async ({ request }) => {
     // Try to generate with too many priority muscles
-    const response = await request.post('http://localhost:5000/generate_starter_plan', {
+    const response = await request.post('http://127.0.0.1:5000/generate_starter_plan', {
       data: {
         training_days: 2,
         environment: 'gym',
