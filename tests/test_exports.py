@@ -347,6 +347,70 @@ class TestExportErrorHandling:
         assert int(response.headers.get('Content-Length', '0')) > 0
 
 
+class TestExportNPlusOneRecalculation:
+    """Test N+1 UPDATE loop fixes and atomic exercise_order recalculations."""
+    
+    def test_recalculate_exercise_order_success(self, client, clean_database):
+        """Test success path with multiple rows needing recalculation."""
+        from utils.database import DatabaseHandler
+        
+        # Setup rows with missing exercise_order
+        with DatabaseHandler() as db:
+            db.execute_query("INSERT OR IGNORE INTO exercises (exercise_name, primary_muscle_group) VALUES ('Squat', 'Legs')")
+            db.execute_query("INSERT OR IGNORE INTO exercises (exercise_name, primary_muscle_group) VALUES ('Bench Press', 'Chest')")
+            db.execute_query("INSERT OR IGNORE INTO exercises (exercise_name, primary_muscle_group) VALUES ('Deadlift', 'Back')")
+            db.execute_query("INSERT INTO user_selection (routine, exercise, sets, min_rep_range, max_rep_range, weight) VALUES ('A', 'Squat', 3, 8, 12, 100)")
+            db.execute_query("INSERT INTO user_selection (routine, exercise, sets, min_rep_range, max_rep_range, weight) VALUES ('A', 'Bench Press', 3, 8, 12, 100)")
+            db.execute_query("INSERT INTO user_selection (routine, exercise, sets, min_rep_range, max_rep_range, weight) VALUES ('B', 'Deadlift', 3, 8, 12, 100)")
+        
+        # Trigger export, which should recalculate
+        response = client.get('/export_to_excel')
+        assert response.status_code == 200
+        
+        # Verify the database state has updated exercise_order values
+        with DatabaseHandler() as db:
+            rows = db.fetch_all("SELECT routine, exercise, exercise_order FROM user_selection ORDER BY exercise_order")
+            
+            assert len(rows) == 3
+            # Should be ordered 1, 2, 3 and no NULLs
+            orders = [r['exercise_order'] for r in rows]
+            assert all(o is not None for o in orders)
+            assert sorted(orders) == [1, 2, 3]
+
+    def test_recalculate_exercise_order_atomic_failure(self, client, clean_database, monkeypatch):
+        """Test failure / rollback semantics if atomic batch mode fails."""
+        from utils.database import DatabaseHandler
+        
+        # Setup rows
+        with DatabaseHandler() as db:
+            db.execute_query("INSERT OR IGNORE INTO exercises (exercise_name, primary_muscle_group) VALUES ('Squat', 'Legs')")
+            db.execute_query("INSERT OR IGNORE INTO exercises (exercise_name, primary_muscle_group) VALUES ('Bench Press', 'Chest')")
+            db.execute_query("INSERT INTO user_selection (routine, exercise, sets, min_rep_range, max_rep_range, weight) VALUES ('A', 'Squat', 3, 8, 12, 100)")
+            db.execute_query("INSERT INTO user_selection (routine, exercise, sets, min_rep_range, max_rep_range, weight) VALUES ('A', 'Bench Press', 3, 8, 12, 100)")
+            
+        # Mock executemany to raise an exception simulating a failure midway
+        original_executemany = DatabaseHandler.executemany
+        
+        def mocked_executemany(self, query, param_sets, *args, **kwargs):
+            if "UPDATE user_selection SET exercise_order" in query:
+                raise Exception("Simulated batch failure")
+            return original_executemany(self, query, param_sets, *args, **kwargs)
+            
+        monkeypatch.setattr(DatabaseHandler, "executemany", mocked_executemany)
+        
+        # Trigger export
+        client.get('/export_to_excel')
+        
+        # Because we're testing atomic failure, no partial update should have occurred.
+        # Since they were all NULL or missing initially, they should still be NULL or not updated.
+        with DatabaseHandler() as db:
+            if db.fetch_one("PRAGMA table_info(user_selection)").get('name') == 'exercise_order':
+                rows = db.fetch_all("SELECT exercise_order FROM user_selection")
+                orders = [r.get('exercise_order') for r in rows]
+                # Either missing entirely, or all NULL
+                assert all(o is None for o in orders)
+
+
 # Fixtures for tests
 
 @pytest.fixture

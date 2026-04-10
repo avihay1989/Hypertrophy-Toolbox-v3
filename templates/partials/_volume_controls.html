@@ -1,0 +1,26 @@
+{% macro method_selector(update_function_name) %}
+<div class="method-selector">
+    <div class="mb-3">
+        <label for="counting-mode" class="form-label">Set Counting Mode</label>
+        <select id="counting-mode" class="form-select" onchange="{{ update_function_name }}()">
+            <option value="effective" selected>Effective Sets (Effort & Rep Range Weighted)</option>
+            <option value="raw">Raw Sets (Unweighted)</option>
+        </select>
+        <small class="form-text text-muted">
+            <strong>Effective Sets:</strong> Weights sets by effort (RIR/RPE) and rep range to estimate hypertrophy stimulus. Lower RIR = more credit.<br>
+            <strong>Raw Sets:</strong> Simple set count without any adjustments.
+        </small>
+    </div>
+    <div class="mb-3">
+        <label for="contribution-mode" class="form-label">Muscle Contribution Mode</label>
+        <select id="contribution-mode" class="form-select" onchange="{{ update_function_name }}()">
+            <option value="total" selected>Total (Primary + Secondary + Tertiary)</option>
+            <option value="direct">Direct Only (Primary Muscle Only)</option>
+        </select>
+        <small class="form-text text-muted">
+            <strong>Total:</strong> Counts volume from all muscles worked (Primary 100%, Secondary 50%, Tertiary 25%).<br>
+            <strong>Direct Only:</strong> Only counts sets where the muscle is the primary target.
+        </small>
+    </div>
+</div>
+{% endmacro %}

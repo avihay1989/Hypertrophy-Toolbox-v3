@@ -12,7 +12,6 @@ from utils.effective_sets import (
     calculate_effective_sets,
     get_weekly_volume_class,
     MUSCLE_CONTRIBUTION_WEIGHTS,
-    DEFAULT_MULTIPLIER,
 )
 from utils.logger import get_logger
 

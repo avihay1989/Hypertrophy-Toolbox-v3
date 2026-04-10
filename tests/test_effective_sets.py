@@ -15,6 +15,8 @@ from utils.effective_sets import (
     CountingMode,
     ContributionMode,
     VolumeWarningLevel,
+    parse_counting_mode,
+    parse_contribution_mode,
     # Core functions
     get_effort_factor,
     get_rep_range_factor,
@@ -40,6 +42,40 @@ from utils.effective_sets import (
     REP_RANGE_FACTOR_BUCKETS,
     MUSCLE_CONTRIBUTION_WEIGHTS,
 )
+
+
+# =============================================================================
+# Query Parsing Tests
+# =============================================================================
+
+class TestQueryParsers:
+    """Tests for shared query-parameter parsing helpers."""
+
+    def test_parse_counting_mode_raw_variants(self):
+        """Raw values should resolve to RAW mode regardless of case."""
+        assert parse_counting_mode("raw") == CountingMode.RAW
+        assert parse_counting_mode("RAW") == CountingMode.RAW
+        assert parse_counting_mode("RaW") == CountingMode.RAW
+
+    def test_parse_counting_mode_defaults_to_effective(self):
+        """Missing or invalid values should default to EFFECTIVE."""
+        assert parse_counting_mode("effective") == CountingMode.EFFECTIVE
+        assert parse_counting_mode("") == CountingMode.EFFECTIVE
+        assert parse_counting_mode(None) == CountingMode.EFFECTIVE
+        assert parse_counting_mode("invalid") == CountingMode.EFFECTIVE
+
+    def test_parse_contribution_mode_direct_variants(self):
+        """Direct values should resolve to DIRECT_ONLY regardless of case."""
+        assert parse_contribution_mode("direct") == ContributionMode.DIRECT_ONLY
+        assert parse_contribution_mode("DIRECT") == ContributionMode.DIRECT_ONLY
+        assert parse_contribution_mode("DiReCt") == ContributionMode.DIRECT_ONLY
+
+    def test_parse_contribution_mode_defaults_to_total(self):
+        """Missing or invalid values should default to TOTAL."""
+        assert parse_contribution_mode("total") == ContributionMode.TOTAL
+        assert parse_contribution_mode("") == ContributionMode.TOTAL
+        assert parse_contribution_mode(None) == ContributionMode.TOTAL
+        assert parse_contribution_mode("invalid") == ContributionMode.TOTAL
 
 
 # =============================================================================

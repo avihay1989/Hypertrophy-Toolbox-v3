@@ -11,7 +11,12 @@ from utils.volume_classifier import (
     get_category_tooltip,
     get_subcategory_tooltip
 )
-from utils.effective_sets import CountingMode, ContributionMode
+from utils.effective_sets import (
+    CountingMode,
+    ContributionMode,
+    parse_counting_mode as shared_parse_counting_mode,
+    parse_contribution_mode as shared_parse_contribution_mode,
+)
 from utils.logger import get_logger
 from utils.errors import error_response, is_xhr_request, success_response
 
@@ -20,17 +25,13 @@ logger = get_logger()
 
 
 def _parse_counting_mode(value: str) -> CountingMode:
-    """Parse counting mode from request parameter."""
-    if value and value.lower() == 'raw':
-        return CountingMode.RAW
-    return CountingMode.EFFECTIVE  # Default to effective
+    """Compatibility wrapper around the shared counting-mode parser."""
+    return shared_parse_counting_mode(value)
 
 
 def _parse_contribution_mode(value: str) -> ContributionMode:
-    """Parse contribution mode from request parameter."""
-    if value and value.lower() == 'direct':
-        return ContributionMode.DIRECT_ONLY
-    return ContributionMode.TOTAL  # Default to total
+    """Compatibility wrapper around the shared contribution-mode parser."""
+    return shared_parse_contribution_mode(value)
 
 
 @session_summary_bp.route("/session_summary", methods=["GET"])

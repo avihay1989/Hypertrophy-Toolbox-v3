@@ -2,6 +2,18 @@
 
 All notable changes to Hypertrophy Toolbox v3.
 
+## Unreleased - April 10, 2026
+
+### Cleanup
+- Retired the legacy `utils.business_logic` and `utils.data_handler` modules and deleted their dedicated test files after a zero-caller audit.
+- Removed the package-level `get_workout_logs` compatibility export from `utils/__init__.py`.
+- Updated `app.py` to import `initialize_database` from `utils.db_initializer` directly.
+
+### Migration Notes
+- Stop importing `DataHandler` or `BusinessLogic`; use the concrete live modules that now own those responsibilities instead.
+- Stop relying on `from utils import get_workout_logs`; import `get_workout_logs` from `utils.workout_log` directly.
+- New code should prefer concrete module imports over package-level re-exports from `utils/__init__.py`.
+
 ## v1.5.0 - February 5, 2026
 
 ### New Features: Auto Starter Plan Generator Phase 2

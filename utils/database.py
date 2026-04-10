@@ -26,7 +26,8 @@ _DB_LOCK = threading.RLock()
 # Guard against double initialization during Flask auto-reload
 _INITIALIZATION_COMPLETE: dict[str, bool] = {}
 DATA_DIR = Path(DB_FILE).resolve().parent
-SEED_DB_PATH = DATA_DIR / "Database_backup" / "database.db"
+REPO_ROOT = Path(__file__).resolve().parents[1]
+SEED_DB_PATH = REPO_ROOT / "data" / "backup" / "database.db"
 
 
 def _register_sqlite_converters() -> None:

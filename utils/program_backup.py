@@ -6,12 +6,11 @@ Backups are stored persistently in the database and survive standard erase/reset
 """
 from __future__ import annotations
 
-import json
 import sqlite3
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
-from utils.database import DatabaseHandler, _DB_LOCK
+from utils.database import DatabaseHandler
 from utils.logger import get_logger
 
 logger = get_logger()

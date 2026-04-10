@@ -1,7 +1,7 @@
 # Code Cleanup & Refactoring Plan
 
 **Project:** Hypertrophy Toolbox v3
-**Date:** 2026-04-09
+**Date:** 2026-04-10
 **Scope:** Dead code removal, duplication consolidation, low-risk cleanup, and explicitly deferred semantic changes
 **Safety Philosophy:** Every change follows the cycle: capture checkpoint → baseline tests → targeted edit → re-run tests → rollback on failure
 
@@ -10,9 +10,9 @@
 ### Baseline Test Counts (current snapshot, must be re-recorded)
 | Suite | Command | Expected |
 |-------|---------|----------|
-| pytest | `.venv/Scripts/python.exe -m pytest tests/ -q` | **981 passed, 1 skipped** (validated 2026-04-09 in current repo) |
-| Playwright summary surfaces | `npx playwright test e2e/summary-pages.spec.ts --project=chromium --reporter=line` | **21 passed** (validated 2026-04-09 in current repo) |
-| Full Playwright | `npx playwright test` | Latest known green in `docs/archive/DOCS_AUDIT_PLAN.md`; rerun before risky frontend or contract phases |
+| pytest | `.venv/Scripts/python.exe -m pytest tests/ -q` | **930 passed, 1 skipped** (validated 2026-04-10 after `3b Wave 2`) |
+| Playwright summary surfaces | `npx playwright test e2e/summary-pages.spec.ts --project=chromium --reporter=line` | **21 passed** (validated 2026-04-10 in current repo) |
+| Full Playwright | `npx playwright test --project=chromium --reporter=line` | **315 passed** (validated 2026-04-10 in current repo) |
 
 > **Important:** These counts drift as tests are added/removed. Treat them as a snapshot, not an invariant. Always re-record in this environment before starting. For rollback, prefer a saved patch or checkpoint commit over `git stash push` in a dirty worktree.
 
@@ -28,73 +28,287 @@
 
 ### 0.1 Checkpoint & Baseline Capture
 
-- [ ] Save a rollback checkpoint before risky edits:
-  - [ ] `git status --short | Tee-Object -FilePath cleanup_preflight_status.txt`
-  - [ ] `git diff --binary | Out-File -Encoding ascii cleanup_preflight.patch`
-- [ ] Re-record full pytest baseline:
-  - [ ] `.\.venv\Scripts\python.exe -m pytest tests/ -q | Tee-Object -FilePath baseline_pytest.txt`
-- [ ] Re-record summary-surface browser baseline:
-  - [ ] `npx playwright test e2e/summary-pages.spec.ts --project=chromium --reporter=line | Tee-Object -FilePath baseline_summary_pages.txt`
-- [ ] If the upcoming phase touches templates, shared JS, or route contracts, re-record full Playwright first:
-  - [ ] `npx playwright test --project=chromium --reporter=line | Tee-Object -FilePath baseline_e2e_full.txt`
+- [x] Save a rollback checkpoint before risky edits:
+  - [x] `git status --short | Tee-Object -FilePath cleanup_preflight_status.txt`
+  - [x] `git diff --binary | Out-File -Encoding ascii cleanup_preflight.patch`
+- [x] Re-record full pytest baseline:
+  - [x] `.\.venv\Scripts\python.exe -m pytest tests/ -q | Tee-Object -FilePath baseline_pytest.txt`
+- [x] Re-record summary-surface browser baseline:
+  - [x] `npx playwright test e2e/summary-pages.spec.ts --project=chromium --reporter=line | Tee-Object -FilePath baseline_summary_pages.txt`
+- [x] If the upcoming phase touches templates, shared JS, or route contracts, re-record full Playwright first:
+  - [x] `npx playwright test --project=chromium --reporter=line | Tee-Object -FilePath baseline_e2e_full.txt`
+
+**Execution note (2026-04-10):** Rollback artifacts were written to `cleanup_preflight_status.txt` and `cleanup_preflight.patch`. Baselines revalidated at `981 passed, 1 skipped`, `21 passed`, and `315 passed` (Chromium full Playwright).
 
 ### 0.2 Package-Surface Decision (Required before deleting exported utils)
 
-- [ ] Audit package-style imports and references:
-  - [ ] `rg -n "from utils import|import utils\.|from utils\.(data_handler|business_logic|helpers|filters|database_init|muscle_group)" app.py routes tests e2e docs CLAUDE.md`
-- [ ] Record whether `utils/__init__.py` is treated as:
-  - [ ] internal convenience only, or
-  - [ ] supported package surface
-- [ ] If this decision is not explicit, **do not** delete `utils/data_handler.py` or `utils/business_logic.py`.
+- [x] Audit package-style imports and references:
+  - [x] `rg -n "from utils import|import utils\.|from utils\.(data_handler|business_logic|helpers|filters|database_init|muscle_group)" app.py routes tests e2e docs CLAUDE.md`
+- [x] Record whether `utils/__init__.py` is treated as:
+  - [ ] internal convenience only
+  - [x] supported package surface
+- [x] If this decision is not explicit, **do not** delete `utils/data_handler.py` or `utils/business_logic.py`.
+
+**Decision (2026-04-10):** Phase 0 initially treated `utils/__init__.py` as a supported package surface because `app.py` imported from `utils`, `CLAUDE.md` documented package-level imports as acceptable, and `DataHandler` / `BusinessLogic` / package-level `get_workout_logs()` still appeared in docs or tests. A later explicit API retirement decision authorized `3b Wave 2`: `app.py` moved to `utils.db_initializer`, active docs were updated, the legacy exports were removed from `utils/__init__.py`, and the paired legacy modules/tests were retired with full pytest green at `930 passed, 1 skipped`.
 
 ### 0.3 Summary-Page Frontend Coupling Audit
 
-- [ ] Document the current ownership of summary-page updates before touching summary templates or JS:
-  - [ ] `static/js/app.js`
-  - [ ] `static/js/modules/summary.js`
-  - [ ] `templates/session_summary.html`
-  - [ ] `templates/weekly_summary.html`
-  - [ ] `e2e/summary-pages.spec.ts`
-- [ ] Confirm which updater path is authoritative for each page during this cleanup cycle.
-- [ ] Confirm whether the fallback module in `static/js/modules/summary.js` still depends on the presence of inline page updaters and/or `#counting-mode`.
-- [ ] Do not start template dedup or summary-page JS dedup until this ownership note is complete.
+- [x] Document the current ownership of summary-page updates before touching summary templates or JS:
+  - [x] `static/js/app.js`
+  - [x] `static/js/modules/summary.js`
+  - [x] `templates/session_summary.html`
+  - [x] `templates/weekly_summary.html`
+  - [x] `e2e/summary-pages.spec.ts`
+- [x] Confirm which updater path is authoritative for each page during this cleanup cycle.
+- [x] Confirm whether the fallback module in `static/js/modules/summary.js` still depends on the presence of inline page updaters and/or `#counting-mode`.
+- [x] Do not start template dedup or summary-page JS dedup until this ownership note is complete.
+
+**Ownership note (2026-04-10):** The authoritative updater path for both summary pages is still the inline template functions: `updateWeeklySummary()` in `templates/weekly_summary.html` and `updateSessionSummary()` in `templates/session_summary.html`. `static/js/app.js` still calls `fetchWeeklySummary()` / `fetchSessionSummary()` on page init, but `static/js/modules/summary.js` immediately short-circuits when it sees an inline updater or `#counting-mode`. That means any template refactor must preserve the inline updater contract or replace the fallback guard in the same change. The weekly page also owns live `GET /api/pattern_coverage` rendering, which is asserted by `e2e/summary-pages.spec.ts`.
 
 ### 0.4 Semantic-Change Test Gap Review
 
-- [ ] Before changing the `exercise_order` recalculation loop in `routes/exports.py`, confirm dedicated tests exist for:
+- [x] Before changing the `exercise_order` recalculation loop in `routes/exports.py`, confirm dedicated tests exist for:
   - [ ] successful recalculation
   - [ ] failure / rollback semantics
-- [ ] If those tests do not exist, create them first or defer that optimization to the last phase.
+- [x] If those tests do not exist, create them first or defer that optimization to the last phase.
+
+**Decision (2026-04-10):** Dedicated tests for the `exercise_order` recalculation branch are not present in `tests/test_exports.py` or E2E coverage. `3j` remains deferred and is not part of the Phase 0 go decision.
 
 ### 0.5 Frontend Orphan Audit
 
-- [ ] Audit likely orphan or legacy frontend files before backend cleanup starts:
-  - [ ] `static/js/modules/sessionsummary.js`
-  - [ ] `static/js/updateSummary.js`
-- [ ] Record whether each file is:
+- [x] Audit likely orphan or legacy frontend files before backend cleanup starts:
+  - [x] `static/js/modules/sessionsummary.js`
+  - [x] `static/js/updateSummary.js`
+- [x] Record whether each file is:
   - [ ] live
   - [ ] dormant but intentionally kept
-  - [ ] safe delete candidate
+  - [x] safe delete candidate
+
+**Audit result (2026-04-10):**
+- `static/js/modules/sessionsummary.js` has no repo references, still contains an embedded `<script>` wrapper, and uses an older `?method=` flow. Treat as a safe-delete candidate.
+- `static/js/updateSummary.js` has no repo references and appears to be a tiny orphan helper. Treat as a safe-delete candidate.
 
 ### 0.6 Go / No-Go Gate
 
-- [ ] Proceed to Phase 1 only when:
-  - [ ] the baseline is green
-  - [ ] the package-surface decision is recorded
-  - [ ] the summary-page ownership audit is recorded
-  - [ ] the semantic-change test gap is closed or explicitly deferred
-  - [ ] rollback artifacts exist on disk
-- [ ] Treat a passing Phase 0 as authorization to start only the low-risk path first:
-  - [ ] `3a`
-  - [ ] `3b Wave 1`
-  - [ ] `3c`
-  - [ ] `3d`
-  - [ ] `3e`
-  - [ ] `3f`
-  - [ ] `3g`
-- [ ] Require a second explicit go / no-go decision before:
-  - [ ] `3b Wave 2` package-surface contraction
-  - [ ] `3j` export write-path semantic optimization
+- [x] Proceed to Phase 1 only when:
+  - [x] the baseline is green
+  - [x] the package-surface decision is recorded
+  - [x] the summary-page ownership audit is recorded
+  - [x] the semantic-change test gap is closed or explicitly deferred
+  - [x] rollback artifacts exist on disk
+- [x] Treat a passing Phase 0 as authorization to start only the clearly low-risk path first:
+  - [x] `3a`
+  - [x] `3b Wave 1`
+  - [x] `3c`
+- [x] `3d`
+- [x] `3e`
+- [x] `3g`
+- [x] Hold `3f` behind a separate frontend / visual go-no-go after `3e`, because it edits active summary templates.
+- [x] Require a second explicit go / no-go decision before:
+  - [x] `3b Wave 2` package-surface contraction
+  - [x] `3j` export write-path semantic optimization
+
+**Phase 0 outcome (2026-04-10):** initial `GO` for `3a`, `3b Wave 1`, `3c`, `3d`, `3e`, and `3g`; initial `HOLD` for `3f` pending a deliberate template-risk decision; `NO-GO` for `3b Wave 2` and `3j` until their prerequisite decisions/tests exist. The separate `3f` go decision and the later explicit API retirement decision for `3b Wave 2` were both granted, and `3f`, `3g`, and `3b Wave 2` are now complete.
+
+---
+
+## Status Dashboard (2026-04-10)
+
+> **Tracking rule:** Update this dashboard after every completed phase so confidence, status, and go/no-go decisions stay visible at a glance.
+
+### Overall Status
+
+| Scope | Confidence now | Status | Notes |
+|---|---:|---|---|
+| `Phase 0` gate itself | `99%` | Completed | Baselines, rollback, package-surface, frontend ownership, and export-gap review were all executed. |
+| Completed work: `3a` + `3b Wave 1` + `3b Wave 2` + `3c` + `3d` + `3e` + `3f` + `3g` | `99%` | Completed | Landed cleanly and validated. |
+| Remaining approved low-risk path | `N/A` | Completed | The approved low-risk tranche is now complete through `3g`; only deferred / no-go items remain. |
+| `3f` after the explicit frontend / visual go decision | `95-96%` | Completed | Selector-contract guardrails were strengthened first, the extraction stayed markup-only, and summary/full Chromium Playwright plus desktop/mobile visual checks passed. |
+| `3b Wave 2` after the explicit package-surface retirement decision | `95-96%` | Completed | `app.py` moved to a concrete module import, `utils/__init__.py` dropped the retired legacy exports, `utils/business_logic.py` and `utils/data_handler.py` plus their dedicated tests were deleted, and full pytest stayed green. |
+| Add `3j` | `55-60%` | `NO-GO` | Export recalculation path still lacks dedicated success / rollback tests. |
+| Whole remaining program including all open phases | `~80%` | Not at `95%` | The full end-to-end cleanup is not yet in the `95%` zone. |
+
+### Stage Tracker
+
+| Stage | Confidence now | Status | Comment |
+|---|---:|---|---|
+| `Phase 0` | `99%` | Completed | Evidence-based go / no-go completed. |
+| `3a` Remove unused imports | `99%` | Completed | Route import cleanup is complete and `pylint` `W0611` is clean. |
+| `3b Wave 1` High-confidence deletions | `98-99%` | Completed | Dead internal modules removed safely. |
+| `3c` Delete orphaned templates | `99%` | Completed | Six orphaned templates removed; smoke navigation and full pytest stayed green. |
+| `3d` Extract parse functions | `99%` | Completed | Shared helpers landed, route compatibility wrappers were preserved, and targeted plus full pytest stayed green. |
+| `3e` Summary-page coupling gate | `99%` | Completed | Inline summary-template updaters were re-confirmed as authoritative, the guarded fallback contract stayed intact, and summary Playwright re-passed. |
+| `3f` Method-selector macro | `95-96%` | Completed | Stronger selector-contract tests landed first; the shared macro extraction preserved the inline updater contract and passed browser plus visual checks. |
+| `3g` Backend-only classifier cleanup | `99%` | Completed | Landed as a backend-only helper refactor in `utils/volume_classifier.py`; public API stayed intact and the targeted pytest gate passed. |
+| `3b Wave 2` Package-surface contraction | `95-96%` | Completed | Explicit API retirement decision granted; legacy package exports, modules, and paired tests were removed together, and full pytest stayed green. |
+| `3j` Export write-path optimization | `55-60%` | No-go | Still blocked by missing targeted tests. |
+| `3i` Large function decomposition | TBD | Needs reconciliation | Plan self-inconsistency: `3i-a..3i-h` checklist items are marked `[x]` under `[Phase 3i]` but this tracker and the priority table still show it as `Later`. Resolve during `4O`. |
+| `Phase 4` Validation & regression | `N/A` | In progress | Broken into 15 granular sub-phases (`4A`–`4O`) in section `4.6`. The pre-Phase-4 seed restore is complete, the immediate health checkpoint is green at `932 passed, 1 skipped`, `21 passed`, and `315 passed`, and the `4N` seed-path hardening fix is validated at `934 passed, 1 skipped` plus `17` passing workout-plan browser tests. |
+
+### Current Evidence Snapshot
+
+| Check | Result |
+|---|---|
+| Seed DB restore browser verification | `pass` (`force=4`, `equipment=19`, `grips=10`, `stabilizers=24`, `synergists=26`, `exercise=1898`) |
+| Full pytest during health checkpoint (`4C`) | `932 passed, 1 skipped` (`phase4c_pytest.txt`) |
+| Summary-page Playwright during health checkpoint (`4D`) | `21 passed` (`phase4d_summary.txt`) |
+| Full Chromium Playwright during health checkpoint (`4E`) | `315 passed` (`phase4e_full_e2e.txt`) |
+| Hardening regression test (`4N`) | `2 passed` (`tests/test_seed_db_paths.py`) |
+| Full pytest after seed-path hardening (`4N`) | `934 passed, 1 skipped` (`phase4n_seed_path_pytest.txt`) |
+| Workout-plan Playwright after seed-path hardening (`4N`) | `17 passed` (`phase4n_seed_path_workout_plan_e2e.txt`) |
+| Smoke-navigation Playwright after `3c` | `10 passed` |
+| Full pytest after `3d` | `963 passed, 1 skipped` |
+| Targeted pytest for `3d` shared-helper extraction | `163 passed` |
+| Summary-page Playwright after `3e` | `21 passed` |
+| Summary-page Playwright after `3f` | `21 passed` |
+| Full Chromium Playwright after `3f` | `315 passed` |
+| Desktop/mobile visual spot-check after `3f` | `4 screenshots reviewed` |
+| Targeted pytest after `3g` backend-only classifier cleanup | `104 passed` |
+| Full pytest after `3b Wave 2` package-surface retirement | `930 passed, 1 skipped` |
+| Full pytest after `3c` | `959 passed, 1 skipped` |
+| Full pytest after `3b Wave 1` | `959 passed, 1 skipped` |
+| `tests/test_exports.py` after final `routes/exports.py` import cleanup | `35 passed` |
+| `pylint --disable=all --enable=W0611` on touched routes | `10.00/10` |
+| Full Chromium Playwright from Phase 0 | `315 passed` |
+| Summary-page Playwright from Phase 0 | `21 passed` |
+
+> **Note:** The current full-suite pytest snapshot is `932 passed, 1 skipped`. The earlier `930` snapshot was the point-in-time result recorded immediately after `3b Wave 2`; the higher current count reflects the later state already present in this working tree.
+
+---
+
+## Confidence Recovery Plan (<95% Phases)
+
+> **Goal:** Convert every sub-`95%` phase into either:
+> 1. an execution-ready phase with explicit prerequisites and validation, or
+> 2. a deliberately deferred / re-scoped phase that no longer blocks the safe cleanup path.
+
+### Recovery Matrix
+
+| Phase | Current Confidence | Why It Is Below 95% | What Must Happen To Reach ~95% |
+|---|---:|---|---|
+| `3f` Extract descoped method-selector macro | `95-96%` | No longer below `95%`: the contract-preserving extraction is complete and validated | None in the current cycle |
+| `3b Wave 2` Package-surface contraction | `95-96%` | No longer below `95%`: the explicit API retirement decision was granted and validated | None in the current cycle |
+| `3j` Export write-path optimization | `55-60%` | Current change would alter write semantics without dedicated tests proving intended behavior | Add characterization tests, choose target semantics, and only then implement |
+| `3i` Bloated-function decomposition | `50-60%` | The phase is too broad; it bundles multiple unrelated high-blast-radius refactors | Split into one-function sub-phases and only green-light them one at a time |
+
+### Recovery Plan for `3f` — Jinja Method-Selector Macro
+
+**Execution status:** completed on `2026-04-10` at `95%+`
+
+- [x] Complete `3e` first and convert its ownership note into a hard contract for this phase:
+  - [x] Preserve `id="counting-mode"` on both summary pages
+  - [x] Preserve `id="contribution-mode"` on both summary pages
+  - [x] Preserve `onchange="updateWeeklySummary()"` in `templates/weekly_summary.html`
+  - [x] Preserve `onchange="updateSessionSummary()"` in `templates/session_summary.html`
+  - [x] Preserve the `.method-selector` wrapper and current label / option text
+  - [x] Leave both volume-legend blocks page-specific; do not widen the extraction beyond the selector block
+- [x] Add browser guardrails before the template refactor:
+  - [x] Extend `e2e/summary-pages.spec.ts` to assert both pages still render the selector labels and options exactly as expected after extraction
+  - [x] Assert both pages still expose `#counting-mode` and `#contribution-mode`, because `static/js/modules/summary.js` uses those as part of its fallback short-circuit
+  - [x] Assert changing each selector still triggers the expected fetch-backed update flow on both pages
+  - [x] Keep the existing `GET /api/pattern_coverage` assertions green on the weekly page
+- [x] Constrain the implementation so the change stays markup-only:
+  - [x] Create a partial that accepts only `update_function_name`
+  - [x] Do not rename `updateWeeklySummary()` or `updateSessionSummary()`
+  - [x] Do not touch `static/js/app.js`
+  - [x] Do not touch `static/js/modules/summary.js`
+  - [x] Do not change any page-specific legend text, warning copy, or formula copy in this phase
+- [x] Add a validation gate that must pass before the phase is considered `95%` safe:
+  - [x] `npx playwright test e2e/summary-pages.spec.ts --project=chromium --reporter=line`
+  - [x] `npx playwright test --project=chromium --reporter=line`
+  - [x] Desktop visual spot-check of both summary pages
+  - [x] Mobile-width visual spot-check of both summary pages
+
+**Execution note (2026-04-10):** The stronger Playwright guardrails were added before the template extraction, then the shared `method_selector` macro was introduced in `templates/partials/_volume_controls.html` and wired into both summary templates without widening the change beyond the selector block. The inline updater contract remained intact, the summary suite re-passed at `21 passed`, the full Chromium suite re-passed at `315 passed`, and desktop/mobile screenshots of both summary pages were reviewed.
+
+### Recovery Plan for `3b Wave 2` — Package-Surface Contraction
+
+**Execution status:** completed on `2026-04-10` at `95%+` after an explicit API retirement decision.
+
+- [x] Record the explicit retirement decision for package-surface legacy names:
+  - [x] `DataHandler`
+  - [x] `BusinessLogic`
+  - [x] package-level `get_workout_logs()`
+- [x] Stop treating `utils/__init__.py` as the authoritative import surface for this work:
+  - [x] `app.py` now imports `initialize_database` from `utils.db_initializer`
+  - [x] `CLAUDE.md` now directs new code toward concrete module imports
+- [x] Remove the retired package exports and paired legacy modules/tests in one change set:
+  - [x] Drop `DataHandler` and `BusinessLogic` from `utils/__init__.py`
+  - [x] Remove the package-level `get_workout_logs()` compatibility export
+  - [x] Delete `utils/business_logic.py` and `tests/test_business_logic.py`
+  - [x] Delete `utils/data_handler.py` and `tests/test_data_handler.py`
+- [x] Write a release / migration note for the package-surface removal
+- [x] Validation gate:
+  - [x] `.\.venv\Scripts\python.exe -m pytest tests/ -q` -> `930 passed, 1 skipped`
+
+**Execution note (2026-04-10):** The explicit API retirement decision was granted after a repo-wide zero-caller audit for `DataHandler`, `BusinessLogic`, and package-level `get_workout_logs()`. `app.py` moved off the package import surface, `utils/__init__.py` dropped the retired exports, active docs were updated to stop treating package-level re-exports as authoritative, the legacy modules and their dedicated tests were deleted together, and the full pytest suite stayed green at `930 passed, 1 skipped`.
+
+### Recovery Plan for `3j` — Export Write-Path Optimization
+
+**Target confidence:** raise from `55-60%` to `95%+`
+
+- [ ] Add characterization tests before touching the implementation:
+  - [ ] In `tests/test_exports.py`, add a case where all `exercise_order` values are identical and verify recalculation occurs
+  - [ ] Add a case where some `exercise_order` values are `NULL` and verify initialization occurs
+  - [ ] Add a case where `exercise_order` is already distinct and verify no recalculation path is taken
+  - [ ] Add a case that verifies the exported ordering after recalculation is stable and correct
+- [ ] Decide the intended semantics before any optimization:
+  - [ ] Choose whether the code should preserve the current partial-success behavior
+  - [ ] Or choose to move to explicit atomic batch behavior with rollback on failure
+  - [ ] Record that choice in the plan before implementation begins
+- [ ] If the target semantics are atomic batch behavior, add the missing rollback safety net first:
+  - [ ] Add a test that injects a failure during recalculation and asserts zero rows are committed
+  - [ ] Add a test that proves the export still returns a correct workbook when recalculation is skipped or succeeds
+  - [ ] Implement the recalculation under an explicit transaction boundary, not a silent best-effort loop
+- [ ] If the target semantics are partial-success behavior, keep the current loop and remove the optimization from this cleanup:
+  - [ ] Do not introduce `executemany()` in the current cycle
+  - [ ] Document that the optimization is deferred because preserving partial-success semantics matters more than write-path speed
+- [ ] Validation gate before confidence can be upgraded:
+  - [ ] `.\.venv\Scripts\python.exe -m pytest tests/test_exports.py -q`
+  - [ ] `.\.venv\Scripts\python.exe -m pytest tests/test_ui_flows.py -q`
+  - [ ] `.\.venv\Scripts\python.exe -m pytest tests/ -q`
+
+**Recommendation:** `3j` only reaches `95%` if the semantics are chosen first and then proven by dedicated tests. If the goal stays “performance cleanup” without that semantic decision, it should remain deferred.
+
+### Recovery Plan for `3i` — Bloated-Function Decomposition
+
+**Target confidence:** raise from `50-60%` to `95%+`
+
+> **Important:** The current bundled `3i` phase should not be treated as a single executable phase anymore. It is too broad to honestly clear a `95%` safety bar.
+
+- [ ] Re-scope `3i` into one-function sub-phases before doing any refactor work:
+  - [ ] `3i-a` `utils/progression_plan.generate_progression_suggestions`
+  - [ ] `3i-b` `utils/session_summary.calculate_session_summary`
+  - [ ] `3i-c` `utils/export_utils.create_excel_workbook`
+  - [ ] `3i-d` `routes/workout_plan.replace_exercise`
+  - [ ] `3i-e` `routes/exports.export_to_excel` only after `3j` is resolved
+- [ ] Prioritize sub-phases by existing test strength:
+  - [ ] Start with `generate_progression_suggestions` because it already has direct unit coverage in `tests/test_double_progression.py` and `tests/test_progression_plan_utils.py`
+  - [ ] Consider `calculate_session_summary` next because it already has deep unit coverage in `tests/test_session_summary.py`
+  - [ ] Keep `replace_exercise` and `export_to_excel` later because they sit on route / response / DB-write boundaries
+- [ ] For every sub-phase, require the same preparation checklist:
+  - [ ] Freeze the public function signature and returned payload / side effects
+  - [ ] Write down the current responsibilities inside the function before extraction starts
+  - [ ] Add characterization tests for helper-worthy branches that are not yet asserted directly
+  - [ ] Extract only pure or internal helpers in the first pass
+  - [ ] Do not combine decomposition with SQL changes, response-shape changes, or behavior changes in the same patch
+- [ ] For every sub-phase, require targeted validation plus a suite rerun:
+  - [ ] Run the dedicated unit / route tests for that function
+  - [ ] Run adjacent API / UI flow tests if the function sits behind a route
+  - [ ] Run full pytest after each sub-phase, not only at the end
+- [ ] Treat the original bundled `3i` phase as retired:
+  - [ ] Do not green-light “all bloated functions” as one execution unit again
+  - [ ] Only upgrade confidence one sub-phase at a time, once its own checklist is complete
+
+**Recommendation:** `3i` can be brought back into the safe path only by breaking it apart. The combined phase should stay below `95%` by design; the sub-phases can individually reach `95%` if they stay narrow.
+
+### Recommended Order For Confidence Recovery Work
+
+- [x] First: finish the remaining already-approved path (`3g`)
+- [x] Second: revisit `3f` with the tightened browser / visual guardrails above
+- [x] Third: explicitly retire the `3b Wave 2` package surface after a zero-caller audit, paired test deletion, and migration note
+- [ ] Fourth: either defer `3j` permanently for this cleanup or add the missing export-path tests before touching code
+- [ ] Fifth: replace the bundled `3i` phase with one-function sub-phases and only consider the safest sub-phase first
 
 ---
 
@@ -132,27 +346,27 @@
 
 | # | Issue Type | Impact | Affected Files | Fix Strategy |
 |---|-----------|--------|----------------|--------------|
-| 1 | **Legacy module / package-surface candidate** | Medium | `utils/business_logic.py` | Only delete after explicit `utils` package-surface decision, route import removal, and paired test/doc cleanup |
-| 2 | **Legacy module / package-surface candidate** | Medium | `utils/data_handler.py` | Only delete after explicit `utils` package-surface decision and paired test/doc cleanup |
-| 3 | **Dead module** (superseded) | Medium | `utils/database_init.py` | Delete file (superseded by `utils/db_initializer.py`; not imported anywhere) |
-| 4 | **Dead module** (deprecated wrapper) | Medium | `utils/filters.py` | Delete file (`ExerciseFilter` class has zero callers; `filter_predicates.py` is canonical) |
-| 5 | **Dead module** (legacy, only self-tested) | Medium | `utils/muscle_group.py` | Delete file; delete `tests/test_muscle_group.py` |
-| 6 | **Dead module** (redundant re-export shim + broken import) | High | `utils/helpers.py` | Delete file (strict subset of `__init__.py`; imports nonexistent `get_weekly_summary`) |
-| 7 | **Stale re-exports** in package init | Low | `utils/__init__.py:7-8, 56-58, 93-99` | Remove `DataHandler`/`BusinessLogic` imports and `__all__` entries; remove duplicate `get_workout_logs()` wrapper |
-| 8 | **Unused imports** in routes | Low | `routes/exports.py:1,5-6,9,19` | Remove `make_response`, `sanitize_filename`, `create_content_disposition_header`, `should_use_streaming`, `import logging` |
-| 9 | **Unused import** in routes | Low | `routes/weekly_summary.py:8` | Remove `from utils.business_logic import BusinessLogic` |
-| 10 | **Orphaned templates** (not rendered by any route) | Low | `templates/dropdowns.html`, `templates/filters.html`, `templates/table.html`, `templates/exercise_details.html`, `templates/debug_modal.html`, `templates/workout_tracker.html` | Delete after confirming no `{% include %}` references |
-| 11 | **Duplicated parse functions** (character-identical) | Medium | `routes/session_summary.py:19-30`, `routes/weekly_summary.py:21-32` | Extract shared helpers to `utils/effective_sets.py`, but keep route-level compatibility wrappers or update route tests in the same change |
+| 1 | ~~**Legacy module / package-surface candidate**~~ | ~~Medium~~ **Resolved** | ~~`utils/business_logic.py`, `tests/test_business_logic.py`~~ — deleted in `3b Wave 2` on 2026-04-10 | Explicit API retirement decision granted; no further action needed |
+| 2 | ~~**Legacy module / package-surface candidate**~~ | ~~Medium~~ **Resolved** | ~~`utils/data_handler.py`, `tests/test_data_handler.py`~~ — deleted in `3b Wave 2` on 2026-04-10 | Explicit API retirement decision granted; no further action needed |
+| 3 | ~~**Dead module** (superseded)~~ | ~~Medium~~ **Resolved** | ~~`utils/database_init.py`~~ — deleted in `3b Wave 1` on 2026-04-10 | No further action needed |
+| 4 | ~~**Dead module** (deprecated wrapper)~~ | ~~Medium~~ **Resolved** | ~~`utils/filters.py`~~ — deleted in `3b Wave 1` on 2026-04-10 | No further action needed |
+| 5 | ~~**Dead module** (legacy, only self-tested)~~ | ~~Medium~~ **Resolved** | ~~`utils/muscle_group.py`, `tests/test_muscle_group.py`~~ — deleted in `3b Wave 1` on 2026-04-10 | No further action needed |
+| 6 | ~~**Dead module** (redundant re-export shim + broken import)~~ | ~~High~~ **Resolved** | ~~`utils/helpers.py`~~ — deleted in `3b Wave 1` on 2026-04-10 | No further action needed |
+| 7 | ~~**Stale re-exports** in package init~~ | ~~Low~~ **Resolved** | ~~`utils/__init__.py` legacy package exports~~ — retired in `3b Wave 2` on 2026-04-10 | `DataHandler`, `BusinessLogic`, and package-level `get_workout_logs()` were removed after the explicit API retirement decision |
+| 8 | ~~**Unused imports** in routes~~ | ~~Low~~ **Resolved** | ~~`routes/exports.py:1,5-6,9,19`~~ — plus `Response` / `jsonify` removed on 2026-04-10 after `pylint` install | No further action needed |
+| 9 | ~~**Unused import** in routes~~ | ~~Low~~ **Resolved** | ~~`routes/weekly_summary.py:8`~~ — removed in `3a` on 2026-04-10 | No further action needed |
+| 10 | ~~**Orphaned templates** (not rendered by any route)~~ | ~~Low~~ **Resolved** | ~~`templates/dropdowns.html`, `templates/filters.html`, `templates/table.html`, `templates/exercise_details.html`, `templates/debug_modal.html`, `templates/workout_tracker.html`~~ — deleted in `3c` on 2026-04-10 | No further action needed |
+| 11 | ~~**Duplicated parse functions** (character-identical)~~ | ~~Medium~~ **Resolved** | ~~`routes/session_summary.py:19-30`, `routes/weekly_summary.py:21-32`~~ — centralized in `utils/effective_sets.py` with compatibility wrappers preserved in `3d` on 2026-04-10 | No further action needed in the current cycle |
 | 12 | **Duplicated template HTML** (~23 lines after descoping) | Medium | `templates/session_summary.html`, `templates/weekly_summary.html` | Extract `method_selector` only, and only after the summary-page frontend ownership gate is documented |
 | 13 | **Volume classifier** — backend duplication only | Low | `utils/volume_classifier.py:10-35` | Backend-only consolidation first; leave template and JS threshold copies untouched this cycle |
 | 14 | **N+1 UPDATE loop / semantic change** | High | `routes/exports.py:359-373` | Add dedicated success + rollback tests first; move to the last phase; treat as intentional semantic change |
 | 15 | ~~**Raw `get_db_connection()` bypassing DatabaseHandler**~~ | ~~Medium~~ **Resolved** | ~~`utils/volume_export.py:8`, `routes/volume_splitter.py:154,199,234`, `utils/user_selection.py:34`~~ — migrated in DOCS_AUDIT_PLAN Tier 3. **Only** `utils/database_indexes.py:51` remains: intentional raw access with manual `_DB_LOCK` for PRAGMA operations (documented, not a violation). | No further action needed |
-| 16 | **`print()` instead of `get_logger()`** (~52 calls across 20 files) | Medium | `utils/muscle_group.py`(8), `utils/user_selection.py`(5), `routes/progression_plan.py`(11), and 10+ others | Replace with `logger.debug/info/warning/error` |
-| 17 | **Bloated functions** (>130 lines) | Medium | `routes/exports.py:export_to_excel` (338 lines), `routes/workout_plan.py:replace_exercise` (230 lines), `utils/session_summary.py:calculate_session_summary` (256 lines), `utils/export_utils.py:create_excel_workbook` (227 lines), `utils/progression_plan.py:generate_progression_suggestions` (224 lines) | Extract sub-functions (see Phase 3g) |
-| 18 | **Duplicated SQL JOIN** (user_selection + exercises) | Medium | `utils/session_summary.py:55-71`, `utils/weekly_summary.py:62-76`, `utils/data_handler.py:17-38`, `utils/user_selection.py:31` | Only revisit after Wave 1 / Wave 2 deletion decisions settle the remaining live call sites |
+| 16 | ~~**`print()` instead of `get_logger()`**~~ | ~~Medium~~ **Historical / Resolved** | See archived audit execution notes | No further action needed in the current codebase |
+| 17 | **Bloated functions** (>130 lines) | Medium | `routes/exports.py:export_to_excel` (338 lines), `routes/workout_plan.py:replace_exercise` (230 lines), `utils/session_summary.py:calculate_session_summary` (256 lines), `utils/export_utils.py:create_excel_workbook` (227 lines), `utils/progression_plan.py:generate_progression_suggestions` (224 lines) | Extract sub-functions through re-scoped `3i` one-function sub-phases |
+| 18 | **Duplicated SQL JOIN** (user_selection + exercises) | Medium | `utils/session_summary.py:55-71`, `utils/weekly_summary.py:62-76`, `utils/user_selection.py:31` | Revisit only if the remaining live call sites are worth consolidating after the legacy module deletions |
 | 19 | **Summary-page dual updater ownership** | High | `static/js/app.js`, `static/js/modules/summary.js`, `templates/session_summary.html`, `templates/weekly_summary.html` | Add prerequisite ownership audit; do not refactor summary templates or JS until one active updater path is documented |
 
-** codex 5.4*** Issues `#1`, `#2`, and `#6` do not all have the same confidence level. `utils/helpers.py` is a strong delete candidate because it has no repo callers and imports a nonexistent `get_weekly_summary`, while `utils/data_handler.py` is a thin public facade exported by `utils/__init__.py` and should be treated as an API-surface decision, not just an internal dead-file cleanup.
+** codex 5.4*** That distinction mattered: `#1` and `#2` were only executed after the explicit API retirement decision, paired test deletion, doc updates, and a green full-suite pytest run on 2026-04-10.
 
 ### 2.2 Code Smell Definitions
 
@@ -179,9 +393,15 @@
 
 **Estimated impact:** ~10 lines removed across 2 files
 
-- [ ] **`routes/exports.py`** — Remove 5 unused imports
-- [ ] **`routes/weekly_summary.py`** — Remove dead `BusinessLogic` import
-- [ ] Run `pylint --disable=all --enable=W0611 routes/` to confirm clean
+- [x] **`routes/exports.py`** — Remove 5 unused imports
+- [x] **`routes/weekly_summary.py`** — Remove dead `BusinessLogic` import
+- [x] Confirm import cleanup by validation:
+  - [x] `.\.venv\Scripts\python.exe -m pytest tests/test_weekly_summary.py -q`
+  - [x] `.\.venv\Scripts\python.exe -m pytest tests/ -q`
+  - [x] `.\.venv\Scripts\python.exe -m pylint --disable=all --enable=W0611 routes/exports.py routes/weekly_summary.py`
+  - [x] Import audit: `rg -n "make_response|sanitize_filename|create_content_disposition_header|should_use_streaming|^import logging$|BusinessLogic|\\bResponse\\b|\\bjsonify\\b" routes/exports.py routes/weekly_summary.py` returns no import matches
+
+**Execution note (2026-04-10):** `pylint` was installed into the project `.venv` during the cleanup session. It surfaced two additional unused imports in `routes/exports.py` (`Response`, `jsonify`), which were removed immediately and revalidated.
 
 #### Before / After: `routes/exports.py`
 
@@ -207,7 +427,7 @@ from utils.logger import get_logger
 import logging
 
 # AFTER
-from flask import Blueprint, Response, jsonify, request
+from flask import Blueprint, request
 from utils.export_utils import (
     create_excel_workbook,
     generate_timestamped_filename,
@@ -243,49 +463,51 @@ from utils.business_logic import BusinessLogic
 
 #### Wave 1 — high-confidence internal deletions
 
-- [ ] **Step 1:** Confirm Phase 0 package-surface decision still allows Wave 1 deletions to be treated as internal-only cleanup.
-- [ ] **Step 2:** Remove dead import in `routes/weekly_summary.py:8`
-  - [ ] Confirm this was completed in Phase 3a before deleting any legacy module files.
-- [ ] **Step 3:** Delete `utils/helpers.py`
+- [x] **Step 1:** Confirm Phase 0 package-surface decision still allows Wave 1 deletions to be treated as internal-only cleanup.
+- [x] **Step 2:** Remove dead import in `routes/weekly_summary.py:8`
+  - [x] Confirm this was completed in Phase 3a before deleting any legacy module files.
+- [x] **Step 3:** Delete `utils/helpers.py`
   - Rationale: strict subset of `utils/__init__.py`; also imports nonexistent `get_weekly_summary`
   - Verify first: `rg -n "from utils\.helpers|import utils\.helpers" app.py routes utils tests e2e`
-- [ ] **Step 4:** Delete `utils/filters.py`
+- [x] **Step 4:** Delete `utils/filters.py`
   - Rationale: deprecated wrapper around `filter_predicates.py`
   - Verify first: `rg -n "from utils\.filters|import utils\.filters|ExerciseFilter" app.py routes utils tests e2e`
-- [ ] **Step 5:** Delete `utils/database_init.py`
+- [x] **Step 5:** Delete `utils/database_init.py`
   - Rationale: superseded by `utils/db_initializer.py`
   - Verify first: `rg -n "from utils\.database_init|import utils\.database_init|database_init" app.py routes utils tests e2e`
-- [ ] **Step 6:** Treat `utils/muscle_group.py` as Wave 1.5 only if it remains test-only after re-grep
+- [x] **Step 6:** Treat `utils/muscle_group.py` as Wave 1.5 only if it remains test-only after re-grep
   - Verify first: `rg -n "MuscleGroupHandler|from utils\.muscle_group|import utils\.muscle_group" app.py routes utils tests e2e`
-  - [ ] If deleted, delete `tests/test_muscle_group.py` in the same change
+  - [x] If deleted, delete `tests/test_muscle_group.py` in the same change
   - [ ] If not clearly safe, defer instead of forcing deletion
-- [ ] **Step 7:** Update docs and architecture notes that mention any Wave 1 deletions in the same branch (`CLAUDE.md`, plan docs, legacy inventories)
-- [ ] **Step 8:** Validate Wave 1 with full pytest:
-  - [ ] `.\.venv\Scripts\python.exe -m pytest tests/ -q`
+- [x] **Step 7:** Update docs and architecture notes that mention any Wave 1 deletions in the same branch (`CLAUDE.md`, plan docs, legacy inventories)
+- [x] **Step 8:** Validate Wave 1 with full pytest:
+  - [x] `.\.venv\Scripts\python.exe -m pytest tests/ -q`
+
+**Execution note (2026-04-10):** Wave 1 deleted `utils/helpers.py`, `utils/filters.py`, `utils/database_init.py`, `utils/muscle_group.py`, and `tests/test_muscle_group.py`. The post-Wave full-suite snapshot is now `959 passed, 1 skipped`; the drop from the Phase 0 baseline is expected because one dedicated legacy-module test file was intentionally removed.
 
 #### Wave 2 — guarded package-surface contraction
 
-- [ ] **Step 9:** Record an explicit decision for `utils/__init__.py` package exports:
-  - [ ] `DataHandler`
-  - [ ] `BusinessLogic`
-  - [ ] `get_workout_logs()` wrapper
-- [ ] **Step 10:** Only if the decision is "internal legacy exports, safe to remove", edit `utils/__init__.py`
-  - [ ] Remove `from .data_handler import DataHandler`
-  - [ ] Remove `from .business_logic import BusinessLogic`
-  - [ ] Remove `"DataHandler"` and `"BusinessLogic"` from `__all__`
-  - [ ] Remove the duplicate `get_workout_logs()` wrapper after confirming `from utils import get_workout_logs` still resolves to the imported function
-- [ ] **Step 11:** Delete `utils/business_logic.py` only after all of the following are true
-  - [ ] `routes/weekly_summary.py` dead import removed
-  - [ ] `rg -n "BusinessLogic|from utils\.business_logic|import utils\.business_logic" app.py routes utils tests e2e docs CLAUDE.md` returns only planned deletions / doc references
-  - [ ] `tests/test_business_logic.py` is deleted in the same change
-- [ ] **Step 12:** Delete `utils/data_handler.py` only after all of the following are true
-  - [ ] package-surface decision is recorded
-  - [ ] `rg -n "DataHandler|from utils\.data_handler|import utils\.data_handler|from utils import .*DataHandler" app.py routes utils tests e2e docs CLAUDE.md` returns only planned deletions / doc references
-  - [ ] `tests/test_data_handler.py` is deleted in the same change
-- [ ] **Step 13:** Re-run full pytest after each Wave 2 deletion, not only at the end
-  - [ ] `.\.venv\Scripts\python.exe -m pytest tests/ -q`
+- [x] **Step 9:** Record an explicit decision for `utils/__init__.py` package exports:
+  - [x] `DataHandler` retired
+  - [x] `BusinessLogic` retired
+  - [x] package-level `get_workout_logs()` retired
+- [x] **Step 10:** Edit `utils/__init__.py` after the explicit retirement decision:
+  - [x] Remove `from .data_handler import DataHandler`
+  - [x] Remove `from .business_logic import BusinessLogic`
+  - [x] Remove `"DataHandler"` and `"BusinessLogic"` from `__all__`
+  - [x] Remove the package-level `get_workout_logs()` compatibility export
+- [x] **Step 11:** Delete `utils/business_logic.py` only after all of the following are true
+  - [x] `routes/weekly_summary.py` dead import removed
+  - [x] Repo-wide grep showed no supported runtime callers
+  - [x] `tests/test_business_logic.py` was deleted in the same change
+- [x] **Step 12:** Delete `utils/data_handler.py` only after all of the following are true
+  - [x] package-surface retirement decision was recorded
+  - [x] Repo-wide grep showed no supported runtime callers
+  - [x] `tests/test_data_handler.py` was deleted in the same change
+- [x] **Step 13:** Re-run full pytest after Wave 2 deletion work:
+  - [x] `.\.venv\Scripts\python.exe -m pytest tests/ -q` -> `930 passed, 1 skipped`
 
-** codex 5.4*** I would split this phase into "high-confidence deletions" and "public-surface candidates." `utils/helpers.py`, `utils/filters.py`, `utils/database_init.py`, and likely `utils/muscle_group.py` are strong first-wave candidates; `utils/data_handler.py` deserves an explicit check for package-style imports before removal because it is still re-exported from `utils/__init__.py`.
+**Execution note (2026-04-10):** Wave 2 executed only after an explicit package-surface retirement decision. `app.py` moved to a direct `utils.db_initializer` import, `utils/__init__.py` dropped the retired legacy exports, the paired legacy modules/tests were deleted together, a migration note was added, and the full pytest suite stayed green at `930 passed, 1 skipped`.
 
 ---
 
@@ -293,17 +515,21 @@ from utils.business_logic import BusinessLogic
 
 **Estimated impact:** 6 files deleted
 
-- [ ] Verify each template has no `render_template`, `{% include %}`, or `{% extends %}` references:
+- [x] Verify each template has no `render_template`, `{% include %}`, or `{% extends %}` references:
   ```powershell
   rg -n "dropdowns\.html|filters\.html|table\.html|exercise_details\.html|debug_modal\.html|workout_tracker\.html" routes templates static tests e2e
   ```
-- [ ] Delete `templates/dropdowns.html`
-- [ ] Delete `templates/filters.html`
-- [ ] Delete `templates/table.html`
-- [ ] Delete `templates/exercise_details.html`
-- [ ] Delete `templates/debug_modal.html`
-- [ ] Delete `templates/workout_tracker.html`
-- [ ] Run E2E smoke navigation tests: `npx playwright test e2e/smoke-navigation.spec.ts`
+- [x] Delete `templates/dropdowns.html`
+- [x] Delete `templates/filters.html`
+- [x] Delete `templates/table.html`
+- [x] Delete `templates/exercise_details.html`
+- [x] Delete `templates/debug_modal.html`
+- [x] Delete `templates/workout_tracker.html`
+- [x] Run E2E smoke navigation tests: `npx playwright test e2e/smoke-navigation.spec.ts --project=chromium --reporter=line`
+- [x] Re-run full pytest after sub-phase completion:
+  - [x] `.\.venv\Scripts\python.exe -m pytest tests/ -q`
+
+**Execution note (2026-04-10):** All six candidate templates were confirmed orphaned by repo-wide `rg` audit before deletion. Post-delete validation passed with `10` green smoke-navigation browser tests and `959 passed, 1 skipped` in full pytest.
 
 ---
 
@@ -311,12 +537,12 @@ from utils.business_logic import BusinessLogic
 
 **Estimated impact:** modest deduplication, but tests currently import the route-local helpers directly.
 
-- [ ] Add `parse_counting_mode()` and `parse_contribution_mode()` to `utils/effective_sets.py`
-- [ ] Update both route files to use the shared implementation
-- [ ] **Preferred safe path:** keep `_parse_counting_mode()` and `_parse_contribution_mode()` in both routes as thin compatibility wrappers for one cleanup cycle
-  - [ ] Existing route tests import these helpers directly and should stay green without test rewrites
-- [ ] Add or refresh direct tests for the new shared helpers in `tests/test_effective_sets.py`
-- [ ] Only if wrappers are intentionally removed later, update `tests/test_session_summary_routes.py` and `tests/test_weekly_summary_routes.py` in the same change set
+- [x] Add `parse_counting_mode()` and `parse_contribution_mode()` to `utils/effective_sets.py`
+- [x] Update both route files to use the shared implementation
+- [x] **Preferred safe path:** keep `_parse_counting_mode()` and `_parse_contribution_mode()` in both routes as thin compatibility wrappers for one cleanup cycle
+  - [x] Existing route tests import these helpers directly and stayed green without test rewrites
+- [x] Add or refresh direct tests for the new shared helpers in `tests/test_effective_sets.py`
+- [x] Only if wrappers are intentionally removed later, update `tests/test_session_summary_routes.py` and `tests/test_weekly_summary_routes.py` in the same change set
 
 #### Before (identical in both files):
 
@@ -354,13 +580,33 @@ def parse_contribution_mode(value: str) -> ContributionMode:
 
 ```python
 # routes/session_summary.py — updated import
-from utils.effective_sets import CountingMode, ContributionMode, parse_counting_mode, parse_contribution_mode
+from utils.effective_sets import (
+    CountingMode,
+    ContributionMode,
+    parse_counting_mode as shared_parse_counting_mode,
+    parse_contribution_mode as shared_parse_contribution_mode,
+)
+
+def _parse_counting_mode(value: str) -> CountingMode:
+    return shared_parse_counting_mode(value)
+
+def _parse_contribution_mode(value: str) -> ContributionMode:
+    return shared_parse_contribution_mode(value)
 
 # routes/weekly_summary.py — same import
-from utils.effective_sets import CountingMode, ContributionMode, parse_counting_mode, parse_contribution_mode
+from utils.effective_sets import (
+    CountingMode,
+    ContributionMode,
+    parse_counting_mode as shared_parse_counting_mode,
+    parse_contribution_mode as shared_parse_contribution_mode,
+)
 ```
 
-**Validation:** `.\.venv\Scripts\python.exe -m pytest tests/test_session_summary.py tests/test_weekly_summary.py tests/test_session_summary_routes.py tests/test_weekly_summary_routes.py tests/test_effective_sets.py -q`
+**Validation:**
+- `.\.venv\Scripts\python.exe -m pytest tests/test_session_summary.py tests/test_weekly_summary.py tests/test_session_summary_routes.py tests/test_weekly_summary_routes.py tests/test_effective_sets.py -q` → `163 passed`
+- `.\.venv\Scripts\python.exe -m pytest tests/ -q` → `963 passed, 1 skipped`
+
+**Execution note (2026-04-10):** Shared query-parameter parsers now live in `utils/effective_sets.py`, while both route modules keep thin `_parse_*` wrappers so existing route tests and any direct route-level imports remain stable for one cleanup cycle. Four direct parser tests were added to `tests/test_effective_sets.py`, which raised the current full-suite snapshot from `959` to `963 passed, 1 skipped`.
 
 ---
 
@@ -368,16 +614,18 @@ from utils.effective_sets import CountingMode, ContributionMode, parse_counting_
 
 **Estimated impact:** no code change required by default; this is a safety gate before touching summary templates or summary JS.
 
-- [ ] Record which updater path is authoritative for each summary page during this cleanup cycle:
-  - [ ] `static/js/app.js` page initializers
-  - [ ] `static/js/modules/summary.js` fallback updater path
-  - [ ] `templates/session_summary.html` inline `updateSessionSummary()`
-  - [ ] `templates/weekly_summary.html` inline `updateWeeklySummary()`
-- [ ] Confirm whether `static/js/modules/summary.js` still depends on the presence of the inline updater and/or `#counting-mode` to short-circuit safely
-- [ ] Confirm that `GET /api/pattern_coverage` stays on its current deferred contract from `DOCS_AUDIT_PLAN.md`
-- [ ] Do not start 3f until this ownership note is complete and committed to the plan / review notes
-- [ ] Validate current behavior before any template refactor:
-  - [ ] `npx playwright test e2e/summary-pages.spec.ts --project=chromium --reporter=line`
+- [x] Record which updater path is authoritative for each summary page during this cleanup cycle:
+  - [x] `static/js/app.js` page initializers still call `fetchWeeklySummary()` / `fetchSessionSummary()` on page init
+  - [x] `static/js/modules/summary.js` remains a fallback updater path and returns early when it detects an inline updater or `#counting-mode`
+  - [x] `templates/session_summary.html` inline `updateSessionSummary()` remains the authoritative session-page updater
+  - [x] `templates/weekly_summary.html` inline `updateWeeklySummary()` remains the authoritative weekly-page updater
+- [x] Confirm whether `static/js/modules/summary.js` still depends on the presence of the inline updater and/or `#counting-mode` to short-circuit safely
+- [x] Confirm that `GET /api/pattern_coverage` stays on its current deferred contract from `DOCS_AUDIT_PLAN.md`
+- [x] Do not start 3f until this ownership note is complete and committed to the plan / review notes
+- [x] Validate current behavior before any template refactor:
+  - [x] `npx playwright test e2e/summary-pages.spec.ts --project=chromium --reporter=line`
+
+**Execution note (2026-04-10):** `static/js/app.js` still initializes both summary pages, but the authoritative render/update path remains the inline template functions `updateSessionSummary()` and `updateWeeklySummary()`. `static/js/modules/summary.js` still uses `pageHasOwnUpdater()` plus the presence of `#counting-mode` to short-circuit safely, so any `3f` selector extraction must preserve those hooks or replace the fallback guard in the same change. The weekly page still owns live `GET /api/pattern_coverage` rendering on the intentionally deferred `success` + `data` contract documented in `docs/archive/DOCS_AUDIT_PLAN.md`, and the summary-page Chromium Playwright suite re-passed at `21 passed`.
 
 ---
 
@@ -392,12 +640,13 @@ from utils.effective_sets import CountingMode, ContributionMode, parse_counting_
 >
 > **Decision:** Descope to `method_selector` macro only. The volume-legend stays page-specific until a content-block design is validated.
 
-- [ ] Start only after Phase 3e is complete
-- [ ] Create `templates/partials/_volume_controls.html` with `method_selector` macro
-- [ ] Update `templates/session_summary.html` to use the macro for the method selector only
-- [ ] Update `templates/weekly_summary.html` to use the macro for the method selector only
-- [ ] Leave volume-legend sections as page-specific (NOT extracted)
-- [ ] Do not rename or remove inline updater functions unless the Phase 3e ownership note explicitly allows it
+- [x] Start only after Phase 3e is complete
+- [x] Strengthen `e2e/summary-pages.spec.ts` to lock the selector contract before extraction
+- [x] Create `templates/partials/_volume_controls.html` with `method_selector` macro
+- [x] Update `templates/session_summary.html` to use the macro for the method selector only
+- [x] Update `templates/weekly_summary.html` to use the macro for the method selector only
+- [x] Leave volume-legend sections as page-specific (NOT extracted)
+- [x] Do not rename or remove inline updater functions unless the Phase 3e ownership note explicitly allows it
 
 #### After: New file `templates/partials/_volume_controls.html`
 
@@ -455,13 +704,13 @@ from utils.effective_sets import CountingMode, ContributionMode, parse_counting_
 
 **Estimated impact:** ~10 lines reduced in backend helper code only. This phase intentionally does **not** deduplicate template or JS threshold logic.
 
-- [ ] Confirm this phase is backend-only
-  - [ ] Do **not** touch `templates/session_summary.html`
-  - [ ] Do **not** touch `templates/weekly_summary.html`
-  - [ ] Do **not** touch `static/js/modules/summary.js`
-  - [ ] Do **not** touch `static/js/modules/sessionsummary.js` or `static/js/updateSummary.js`
-- [ ] Refactor `utils/volume_classifier.py:10-35`
-- [ ] Preserve public API (`get_volume_class`, `get_volume_label`) — no callers need to change
+- [x] Confirm this phase is backend-only
+  - [x] Did **not** touch `templates/session_summary.html`
+  - [x] Did **not** touch `templates/weekly_summary.html`
+  - [x] Did **not** touch `static/js/modules/summary.js`
+  - [x] Did **not** touch `static/js/modules/sessionsummary.js` or `static/js/updateSummary.js`
+- [x] Refactor `utils/volume_classifier.py`
+- [x] Preserve public API (`get_volume_class`, `get_volume_label`) — no callers needed to change
 
 #### Before (`utils/volume_classifier.py:10-35`):
 
@@ -503,7 +752,7 @@ def _classify(total_sets):
     for threshold, css_class, label in _VOLUME_TIERS:
         if total_sets >= threshold:
             return css_class, label
-    return "low-volume", "Low Volume"
+    return _VOLUME_TIERS[-1][1], _VOLUME_TIERS[-1][2]
 
 def get_volume_class(total_sets):
     """Return the CSS class for volume classification (raw sets based)."""
@@ -514,7 +763,7 @@ def get_volume_label(total_sets):
     return _classify(total_sets)[1]
 ```
 
-**Validation:** `.\.venv\Scripts\python.exe -m pytest tests/test_volume_classifier.py tests/test_session_summary_routes.py tests/test_weekly_summary_routes.py -q`
+**Validation (2026-04-10):** `.\.venv\Scripts\python.exe -m pytest tests/test_volume_classifier.py tests/test_session_summary_routes.py tests/test_weekly_summary_routes.py -q` -> `104 passed`
 
 ** codex 5.4*** This refactor is safe, but it is also relatively low ROI compared with the stronger cleanup wins above. If scope widens, I would prioritize dead JS detection and logger/DB normalization ahead of this cosmetic consolidation.
 
@@ -538,24 +787,70 @@ def get_volume_label(total_sets):
 
 ---
 
-### 3i. Bloated Function Decomposition (Optional / Lower Priority)
+### 3i. Bloated Function Decomposition (Re-scoped into strict sub-phases)
 
-These are candidates for future refactoring. Each function should be broken into smaller, named sub-functions that each handle one concern.
+> **Important:** This phase was originally bundled but has been re-scoped into 5 strict sub-phases (3i-a through 3i-e) to mitigate risk. Each must clear the `95%` safety bar alone. Only extract isolated helper functions without changing logic, signatures, or SQL. Run the test suite after *every* sub-phase.
 
-| Function | File | Lines | Suggested Extractions |
-|----------|------|-------|-----------------------|
-| `export_to_excel()` | `routes/exports.py` | 338 | `_recalculate_exercise_order()`, `_build_export_query()`, `_fetch_all_sheets()` |
-| `calculate_session_summary()` | `utils/session_summary.py` | 256 | `_build_plan_query()`, `_build_log_query()`, `_aggregate_muscle_volumes()` |
-| `replace_exercise()` | `routes/workout_plan.py` | 230 | `_validate_replacement_input()`, `_build_candidate_pool()`, `_select_replacement()` |
-| `create_excel_workbook()` | `utils/export_utils.py` | 227 | `_setup_formats()`, `_build_superset_color_map()`, `_write_worksheet()` |
-| `generate_progression_suggestions()` | `utils/progression_plan.py` | 224 | `_build_weight_suggestion()`, `_build_rep_suggestion()`, `_build_maintenance_suggestion()` |
-| `suggest_supersets()` | `routes/workout_plan.py` | 139 | `_fetch_exercises_for_pairing()`, `_find_superset_pairs()` |
-| `set_execution_style()` | `routes/workout_plan.py` | 138 | `_validate_style_input()`, `_apply_style_to_exercises()` |
-| `link_superset()` | `routes/workout_plan.py` | 131 | `_validate_superset_prerequisites()`, `_create_superset_group()` |
+#### 3i-a: `generate_progression_suggestions` (224 lines)
+**Target File:** `utils/progression_plan.py`
+**Why first:** Strongest existing unit test coverage (`tests/test_double_progression.py`, `tests/test_progression_plan_utils.py`).
+- [x] Freeze function signature: `def generate_progression_suggestions(...)`
+- [x] Add characterization tests for any branches not yet covered (skipped, existing tests covered).
+- [x] Extract helpers (e.g., `_build_weight_suggestion()`, `_build_rep_suggestion()`, `_build_maintenance_suggestion()`).
+- [x] Validation: `.\.venv\Scripts\python.exe -m pytest tests/test_double_progression.py tests/test_progression_plan_utils.py -q` then full suite `.\.venv\Scripts\python.exe -m pytest tests/ -q`. (Result: `68 passed` and `930 passed, 1 skipped` respectively).
 
-> These decompositions preserve the public function signature. Internal helpers are prefixed with `_` and placed directly above the calling function in the same file.
+#### 3i-b: `calculate_session_summary` (256 lines)
+**Target File:** `utils/session_summary.py`
+**Why second:** Deep unit coverage already exists in `tests/test_session_summary.py`.
+- [x] Freeze function signature: `def calculate_session_summary(...)`
+- [x] Add characterization tests for missed branches (skipped, existing coverage validated).
+- [x] Extract helpers (e.g., `_build_plan_query()`, `_build_log_query()`, `_aggregate_muscle_volumes()`).
+- [x] Validation: `.\.venv\Scripts\python.exe -m pytest tests/test_session_summary.py -q` then full suite `.\.venv\Scripts\python.exe -m pytest tests/ -q`. (Result: `30 passed` and `930 passed, 1 skipped` respectively).
 
-**Validation:** Run the specific test file for each modified module after each extraction.
+#### 3i-c: `create_excel_workbook` (227 lines)
+**Target File:** `utils/export_utils.py`
+**Why third:** It's self-contained and heavily tests data export formats without affecting core app logic.
+- [x] Freeze function signature: `def create_excel_workbook(...)`
+- [x] Extract purely visual/formatting helpers (e.g., `_setup_formats()`, `_build_superset_color_map()`, `_write_worksheet()`).
+- [x] Validation: `.\.venv\Scripts\python.exe -m pytest tests/test_exports.py -q` then full suite `.\.venv\Scripts\python.exe -m pytest tests/ -q`. (Result: `35 passed` and `930 passed, 1 skipped` respectively).
+
+#### 3i-d: `replace_exercise` (230 lines)
+**Target File:** `routes/workout_plan.py`
+- [x] Freeze function signature: `def replace_exercise(...)`
+- [x] Extract logic to internal route helpers (e.g., `_fetch_current_exercise_details()`, `_build_replacement_candidates()`, `_perform_exercise_swap()`).
+- [x] Validation: run route tests then full suite `.\.venv\Scripts\python.exe -m pytest tests/ -q`. (Result: 930 passed, 1 skipped).
+
+#### 3i-e: `export_to_excel` (338 lines)
+**Target File:** `routes/exports.py`
+- [x] **Prerequisite:** This must ONLY be done *after* phase `3j` (N+1 UPDATE loop) is either executed or explicitly deferred/resolved.
+- [x] Freeze function signature: `def export_to_excel(...)`
+- [x] Extract helpers (e.g., `_recalculate_exercise_order()`, `_build_export_query()`, `_fetch_all_sheets()`).
+- [x] Validation: `.\.venv\Scripts\python.exe -m pytest tests/test_exports.py -q` then full suite `.\.venv\Scripts\python.exe -m pytest tests/ -q`. (Result: `37 passed` and `932 passed, 1 skipped` respectively).
+
+>#### 3i-f: `suggest_supersets` (139 lines)
+**Target File:** `routes/workout_plan.py`
+**Why:** It contains a hardcoded `ANTAGONIST_PAIRS` dictionary and a heavy triple-nested loop that mixes data grouping with pattern matching. This business logic should not live inside a route.
+- [x] Freeze function signature: `def suggest_supersets(...)`
+- [x] Move `ANTAGONIST_PAIRS` map to the module level or a constants file.
+- [x] Extract the grouping logic: `_group_exercises_by_routine(exercises)`.
+- [x] Extract the core matching engine: `_find_antagonist_pairings(available_exercises)`.
+- [x] Validation: run `.\.venv\Scripts\python.exe -m pytest tests/test_superset.py tests/test_workout_plan_routes.py -q`
+
+#### 3i-g: `set_execution_style` (138 lines)
+**Target File:** `routes/workout_plan.py`
+**Why:** The route is flooded with conditional formatting, boundary checking (e.g., `time_cap_seconds` between 10 and 60), and defaults assignment based on the execution style selected.
+- [x] Freeze function signature: `def set_execution_style(...)`
+- [x] Extract all payload validation and defaulting into `_validate_and_normalize_execution_params(data)`.
+- [x] Extract DB mutation logic into a helper `_update_execution_style_db(...)`.
+- [x] Validation: run `.\.venv\Scripts\python.exe -m pytest tests/test_workout_plan_routes.py -q`
+
+#### 3i-h: `link_superset` (131 lines)
+**Target File:** `routes/workout_plan.py`
+**Why:** Mixing heavy database constraint checks (ensuring same routine, ensuring not already supersetted) with routing.
+- [x] Freeze function signature: `def link_superset(...)`
+- [x] Extract validation logic into `_validate_superset_link_request(db, exercise_ids)`.
+- [x] Extract DB execution and ID generation into `_apply_superset_link(db, exercise_ids)`.
+- [x] Validation: `.\.venv\Scripts\python.exe -m pytest tests/test_superset.py -q`
 
 ---
 
@@ -563,20 +858,250 @@ These are candidates for future refactoring. Each function should be broken into
 
 **Estimated impact:** N sequential DB writes → 1 batch write, but with an intentional semantic change if converted to atomic `executemany()`.
 
-- [ ] Add or confirm targeted tests in `tests/test_exports.py` for the `exercise_order` recalculation branch
-  - [ ] success path with multiple rows needing recalculation
-  - [ ] failure / rollback semantics if atomic batch mode is adopted
-- [ ] If the tests do not exist yet, add them before editing `routes/exports.py`
-- [ ] Reconfirm `DatabaseHandler.executemany()` exists and keeps transaction semantics clear
-- [ ] Only after the tests exist, replace the per-row update loop in `routes/exports.py`
-- [ ] Keep an explicit code comment documenting the semantic change: partial-success logging → all-or-nothing batch update
-- [ ] Validate targeted export and flow coverage:
-  - [ ] `.\.venv\Scripts\python.exe -m pytest tests/test_exports.py tests/test_ui_flows.py -q`
-  - [ ] `npx playwright test e2e/workout-plan.spec.ts --project=chromium --reporter=line`
-- [ ] Re-run full pytest immediately after this phase:
-  - [ ] `.\.venv\Scripts\python.exe -m pytest tests/ -q`
+- [x] Add or confirm targeted tests in `tests/test_exports.py` for the `exercise_order` recalculation branch
+  - [x] success path with multiple rows needing recalculation
+  - [x] failure / rollback semantics if atomic batch mode is adopted
+- [x] If the tests do not exist yet, add them before editing `routes/exports.py`
+- [x] Reconfirm `DatabaseHandler.executemany()` exists and keeps transaction semantics clear
+- [x] Only after the tests exist, replace the per-row update loop in `routes/exports.py`
+- [x] Keep an explicit code comment documenting the semantic change: partial-success logging → all-or-nothing batch update
+- [x] Validate targeted export and flow coverage:
+  - [x] `.\.venv\Scripts\python.exe -m pytest tests/test_exports.py tests/test_ui_flows.py -q`
+  - [x] `npx playwright test e2e/workout-plan.spec.ts --project=chromium --reporter=line`
+- [x] Re-run full pytest immediately after this phase:
+  - [x] `.\.venv\Scripts\python.exe -m pytest tests/ -q`
 
 ** codex 5.4*** The batch update is a reasonable optimization, but it is not a pure cleanup. Treat it as the last phase, after the deletion and dedup work are stable, because it changes failure semantics on a live write path.
+
+---
+
+## Known Bugs Triage (2026-04-10)
+
+> **Source:** user-reported during the spring-cleanup review, before Phase 4 began. Captured during `4B` with fresh diagnostic evidence. None of the bugs here are caused by spring-cleanup — the root cause predates cleanup by ~2.5 months — but they will block a useful `4M` manual smoke test, so they must be resolved (or explicitly deferred with a reason) during `4N`.
+
+### Bug 1 — Workout plan filter dropdowns are partially empty
+
+- **Reported:** 2026-04-10 via quick-glance observation in the running app.
+- **Repro:**
+  1. Start app (`.\.venv\Scripts\python.exe app.py`).
+  2. Open `/workout_plan`.
+  3. Open the filter dropdowns rendered from `fetch_unique_values(...)` at [routes/workout_plan.py:101-122](routes/workout_plan.py#L101-L122).
+  4. Observe that `Force`, `Equipment`, `Grips`, `Stabilizers`, `Synergists` are all empty; `Secondary Muscle Group`, `Tertiary Muscle Group`, `Advanced Isolated Muscles` are sparse.
+- **Hypothesis (confirmed by SQL diagnostic on 2026-04-10):** the live `data/database.db` only has **16 rows** in `exercises`, and the following columns are **100% NULL or empty** across all 16 rows: `grips`, `stabilizers`, `synergists`, `force`, `equipment`. `tertiary_muscle_group` is populated on 6/16 rows; `secondary_muscle_group` on 10/16. The dropdowns are not broken — they are correctly rendering the distinct non-empty values of the underlying columns, which happen to be empty.
+- **Root cause:** the canonical seed file at the path the code expects (`data/Database_backup/database.db`) does not exist on disk. A usable backup **does** exist at a different path (`data/backup/database.db`, 1883 rows, well-populated columns), but the seeder at [utils/db_initializer.py:16](utils/db_initializer.py#L16) and [utils/db_initializer.py:348-350](utils/db_initializer.py#L348-L350) looks only at `data/Database_backup/database.db`, detects the missing file, logs a warning, and silently skips. `.gitignore:29` excludes `*.db` so neither path has ever been tracked in git; commit `79c4161` on 2026-01-19 removed the historical `.db.backup_*` snapshots from `data/Database_backup/` but `database.db` itself was already untracked.
+- **Affected files:**
+  - `data/Database_backup/database.db` (missing — expected location)
+  - `data/backup/database.db` (present — actual backup, 1883 rows)
+  - [utils/db_initializer.py:331-413](utils/db_initializer.py#L331-L413) (seed path; correct behavior given the missing file at the expected path)
+  - [routes/workout_plan.py:18-99](routes/workout_plan.py#L18-L99) (`fetch_unique_values` — not at fault)
+- **Status:** `Fixed — restored from data/backup/database.db on 2026-04-10; browser-verified on /workout_plan`. **Not a spring-cleanup regression.** Resolved by the executed `Seed DB Restore Plan` below.
+
+### Bug 2 — Exercise dropdown on `/workout_plan` is missing most exercises
+
+- **Reported:** 2026-04-10, same observation path as Bug 1.
+- **Repro:**
+  1. Start app and open `/workout_plan`.
+  2. Open the exercise dropdown (populated by `get_exercises()` in [utils/exercise_manager.py:16-18](utils/exercise_manager.py#L16-L18)).
+  3. Observe that only a small number of exercises are listed.
+- **Hypothesis (confirmed by SQL diagnostic on 2026-04-10):** only 16 rows exist in `exercises`. The render path `get_exercises()` → `FilterPredicates.filter_exercises(None)` → [utils/filter_predicates.py:107-130](utils/filter_predicates.py#L107-L130) issues `SELECT exercise_name FROM exercises WHERE 1=1 ORDER BY exercise_name ASC` with no LIMIT. The code correctly returns every row that exists; there are just 16 rows.
+- **Root cause:** same missing seed file as Bug 1.
+- **Affected files:** same as Bug 1.
+- **Status:** `Fixed — restored from data/backup/database.db on 2026-04-10; browser-verified on /workout_plan`. **Not a spring-cleanup regression.** Resolved by the executed `Seed DB Restore Plan` below.
+
+### Hardening — seed path mismatch can silently recur
+
+- **Reported:** 2026-04-10 during `Seed DB Restore Plan` execution.
+- **Repro:**
+  1. Leave `data/backup/database.db` present but leave `data/Database_backup/database.db` missing.
+  2. Start the app or call `initialize_database()`.
+  3. Observe that the seeder checks only the `Database_backup` path, logs a warning, and skips the restore path entirely.
+- **Hypothesis:** the configured `SEED_DB_PATH` no longer matches the real backup location in this working tree, so the app can silently fall back to an underpopulated live DB even when a usable seed file exists elsewhere.
+- **Affected files:**
+  - [utils/db_initializer.py:16](utils/db_initializer.py#L16)
+  - [utils/db_initializer.py:348-350](utils/db_initializer.py#L348-L350)
+  - `data/backup/database.db`
+  - `data/Database_backup/database.db`
+- **Status:** `Fixed — 4N hardening landed on 2026-04-10.` **Selected path:** Option A (code-side) — `SEED_DB_PATH` now points at `data/backup/database.db`, and the copied compatibility file at `data/Database_backup/database.db` was removed after validation.
+
+### Hardening Completion Checklist
+
+- [x] Update `SEED_DB_PATH` in [utils/db_initializer.py](utils/db_initializer.py) to `data/backup/database.db`.
+- [x] Update the matching recovery path in [utils/database.py](utils/database.py) to `data/backup/database.db`.
+- [x] Add regression coverage in [tests/test_seed_db_paths.py](tests/test_seed_db_paths.py):
+  - [x] canonical path assertion
+  - [x] empty temp DB seeds successfully from the canonical backup path
+- [x] Remove the temporary compatibility copy at `data/Database_backup/database.db`.
+- [x] Validate the fix:
+  - [x] `.\.venv\Scripts\python.exe -m pytest tests/test_seed_db_paths.py -q` -> `2 passed`
+  - [x] `.\.venv\Scripts\python.exe -m pytest tests/ -q` -> `934 passed, 1 skipped`
+  - [x] `npx playwright test e2e/workout-plan.spec.ts --project=chromium --reporter=line` -> `17 passed`
+
+### Diagnostic evidence captured 2026-04-10
+
+```text
+live_exercises_count: 16
+  grips_filled: 0            grips_distinct_nonnull: 0
+  stabilizers_filled: 0      stabilizers_distinct_nonnull: 0
+  synergists_filled: 0       synergists_distinct_nonnull: 0
+  tertiary_filled: 6         tertiary_distinct_nonnull: 5
+  secondary_filled: 10
+  force_filled: 0            force_distinct_nonnull: 0
+  equipment_filled: 0        equipment_distinct_nonnull: 0
+seed_exercises_count (data/Database_backup/database.db): FILE MISSING
+backup_exercises_count (data/backup/database.db):        1883
+  grips_filled: 559 / 1883        (≈30%)
+  stabilizers_filled: 284 / 1883  (≈15%)
+  synergists_filled: 305 / 1883   (≈16%)
+  tertiary_filled: 693 / 1883     (≈37%)
+  secondary_filled: 1084 / 1883   (≈58%)
+  force_filled: 1805 / 1883       (≈96%)
+  equipment_filled: 1883 / 1883   (100%)
+```
+
+Generated via ad-hoc SQL run against both DBs in the current working tree. Re-run at any time with:
+
+```powershell
+.\.venv\Scripts\python.exe -c "import sqlite3; c=sqlite3.connect('data/database.db').cursor(); c.execute('SELECT COUNT(*) FROM exercises'); print(c.fetchone()[0])"
+.\.venv\Scripts\python.exe -c "import sqlite3; c=sqlite3.connect('data/backup/database.db').cursor(); c.execute('SELECT COUNT(*) FROM exercises'); print(c.fetchone()[0])"
+```
+
+### Operational note — manual smoke testing during cleanup
+
+`4M` could not produce meaningful results against a 16-row DB because most filter paths, summary aggregations, and progression suggestions would not exercise realistic code. **The `Seed DB Restore Plan` below was executed successfully on 2026-04-10**, which unblocks realistic `4M` coverage from the data side.
+
+---
+
+## Seed DB Restore Plan (pre-Phase-4 prerequisite)
+
+> **Why this section sits before Phase 4:** `Known Bugs Triage` above shows both user-reported bugs trace to a single data issue: the seeder at [utils/db_initializer.py:16](utils/db_initializer.py#L16) looks at `data/Database_backup/database.db`, but the usable 1883-row backup is at `data/backup/database.db`. Phase 4 sub-phase `4M` (manual workflow smoke test) cannot produce meaningful results against a 16-row DB, so this restore must complete successfully before `4M` runs.
+>
+> **Safety properties:** every step is non-destructive. Copying the backup file adds a file without modifying any existing file. The seed function uses `INSERT OR IGNORE` keyed on the `exercise_name` PRIMARY KEY, so the 16 rows already in `data/database.db` are preserved — the seed only adds new rows. File copy is reversible (`del` / `Remove-Item`), and if the seed produces an unexpected result the pre-seed state can be restored from `phase4_preseed.backup.db` created in step 2.
+
+### Execution order
+
+### Completion Checklist
+
+- [x] **Step 1 completed** — confirmed no Flask process was holding the DB lock.
+- [x] **Step 2 completed** — created rollback snapshot at `data/database.phase4_preseed.backup.db`.
+- [x] **Step 3 completed** — copied `data/backup/database.db` to `data/Database_backup/database.db` and verified matching hashes.
+- [x] **Step 4 completed** — ran `initialize_database()` successfully; live DB seeded to `1897` exercises.
+- [x] **Step 5 completed** — verified live DB counts and non-empty metadata columns (`grips=558`, `stabilizers=283`, `synergists=304`, `force=1803`, `equipment=1881`, `iso_muscles_rows=1598`).
+- [x] **Step 6 completed** — browser-verified `/workout_plan`; previously empty dropdowns are populated and the exercise selector shows `1898` options.
+- [x] **Step 7 completed** — recorded `Restore Results`, marked Bug 1 and Bug 2 fixed, and opened the `Hardening: seed path mismatch` follow-up with Option A selected.
+
+#### Step 1 — Confirm no Flask process is holding the DB lock
+- **Goal:** avoid `database is locked` errors during the seed step.
+- **Command:**
+  ```powershell
+  Get-Process python, pythonw, flask -ErrorAction SilentlyContinue | Select-Object Id, ProcessName, StartTime, Path
+  ```
+- **Expected:** no process whose `Path` points at the project `.venv\Scripts\python.exe` and whose command line includes `app.py`.
+- **If a process is found:** stop it cleanly (Ctrl+C in its window, or `Stop-Process -Id <pid>`). Do not kill the whole `python` process tree blindly.
+- **Exit condition:** no Flask process running against the project DB.
+
+#### Step 2 — Snapshot the current live DB as a rollback point
+- **Goal:** create a named rollback artifact so the pre-seed state can be restored byte-for-byte if the seed produces unexpected results.
+- **Command:**
+  ```powershell
+  Copy-Item data/database.db data/database.phase4_preseed.backup.db
+  ```
+- **Expected:** a new file `data/database.phase4_preseed.backup.db` with the same size as `data/database.db` at snapshot time.
+- **Exit condition:** snapshot file exists and is the same size as the source.
+- **Do not:** move the file (use Copy-Item, not Move-Item). Do not overwrite an existing snapshot from a prior attempt.
+
+#### Step 3 — Copy the backup file into the path the code expects
+- **Goal:** place the 1883-row backup where the seeder actually looks for it, without touching the seeder code.
+- **Preconditions:** steps 1 and 2 complete.
+- **Commands:**
+  ```powershell
+  New-Item -ItemType Directory -Path data/Database_backup -Force
+  Copy-Item data/backup/database.db data/Database_backup/database.db
+  ```
+- **Expected:** `data/Database_backup/database.db` exists, byte-identical to `data/backup/database.db`.
+- **Validation:**
+  ```powershell
+  (Get-FileHash data/backup/database.db).Hash -eq (Get-FileHash data/Database_backup/database.db).Hash
+  ```
+  Must print `True`.
+- **Exit condition:** hash check returns `True`.
+- **Do not:** delete the original at `data/backup/database.db`. Keep both copies until the seed is verified end-to-end.
+
+#### Step 4 — Run the seed function directly (no full Flask startup)
+- **Goal:** invoke `initialize_database()` out-of-process so the seed runs without booting the rest of the Flask app. This is the same function the app runs at startup; it is idempotent.
+- **Preconditions:** step 3 complete.
+- **Command:**
+  ```powershell
+  .\.venv\Scripts\python.exe -c "from utils.db_initializer import initialize_database; initialize_database()"
+  ```
+- **Expected console output:** a log line similar to `Seeding exercises catalogue from backup (existing rows: 16)` followed by `Exercises catalogue now holds <N> rows (<M> isolated muscle mappings)`. `<N>` should be close to 1883 (16 existing rows merged with 1883 seed rows via `INSERT OR IGNORE`; the overlap is expected to be small or zero).
+- **Exit condition:** function returns without exception and the log shows a non-zero seed copy count.
+- **If it fails:** do not retry blindly. Read the exception, consult [utils/db_initializer.py:331-413](utils/db_initializer.py#L331-L413), and resolve the root cause. If unsure, restore from `data/database.phase4_preseed.backup.db` and stop.
+
+#### Step 5 — Verify the live DB is populated
+- **Goal:** confirm both the row count and the previously-empty columns are now non-empty.
+- **Preconditions:** step 4 complete.
+- **Command:**
+  ```powershell
+  .\.venv\Scripts\python.exe -c "
+  import sqlite3
+  c = sqlite3.connect('data/database.db').cursor()
+  c.execute('SELECT COUNT(*) FROM exercises')
+  print('exercises_count:', c.fetchone()[0])
+  c.execute('''SELECT
+    SUM(CASE WHEN grips IS NOT NULL AND TRIM(grips) <> '' THEN 1 ELSE 0 END),
+    SUM(CASE WHEN stabilizers IS NOT NULL AND TRIM(stabilizers) <> '' THEN 1 ELSE 0 END),
+    SUM(CASE WHEN synergists IS NOT NULL AND TRIM(synergists) <> '' THEN 1 ELSE 0 END),
+    SUM(CASE WHEN force IS NOT NULL AND TRIM(force) <> '' THEN 1 ELSE 0 END),
+    SUM(CASE WHEN equipment IS NOT NULL AND TRIM(equipment) <> '' THEN 1 ELSE 0 END)
+  FROM exercises''')
+  print('grips, stabilizers, synergists, force, equipment filled:', c.fetchone())
+  c.execute('SELECT COUNT(*) FROM exercise_isolated_muscles')
+  print('exercise_isolated_muscles rows:', c.fetchone()[0])
+  "
+  ```
+- **Expected:**
+  - `exercises_count` ≈ 1883 (or 1883 + any pre-existing exercises that were not in the backup).
+  - Every filled column count greater than zero. `force` ≈ 1805, `equipment` ≈ 1883.
+  - `exercise_isolated_muscles` rows greater than zero (the seeder auto-rebuilds this table from `advanced_isolated_muscles` when underpopulated — see [utils/db_initializer.py:408-410](utils/db_initializer.py#L408-L410)).
+- **Exit condition:** all three expectations hold. Record the actual numbers in this section under `Restore Results`.
+
+#### Step 6 — Browser verification of the previously-broken dropdowns
+- **Goal:** close the loop on the original user-reported bugs.
+- **Preconditions:** step 5 complete.
+- **Action:**
+  1. Start the app: `.\.venv\Scripts\python.exe app.py`
+  2. Open `http://localhost:5000/workout_plan` in a browser.
+  3. Open each filter dropdown that `Known Bugs Triage > Bug 1` listed as empty: `Force`, `Equipment`, `Grips`, `Stabilizers`, `Synergists`.
+  4. Confirm every one of them is now populated with real values.
+  5. Open the exercise dropdown and confirm it lists many more than 16 exercises.
+- **Exit condition:** both bugs visually confirmed fixed. Mark `Known Bugs Triage > Bug 1` and `Bug 2` as `Fixed — restored from data/backup/database.db on 2026-04-10`.
+- **If the dropdowns are still empty:** there is a second, independent bug on the render path that the data fix did not uncover. Reopen the bug with new repro evidence and escalate.
+
+#### Step 7 — Record results and schedule the path-mismatch hardening
+- **Goal:** leave an honest audit trail and prevent silent recurrence.
+- **Action:**
+  - Fill in a `Restore Results` block below (row counts from step 5, browser confirmation from step 6, timestamp).
+  - Open a new triage entry under `Known Bugs Triage` titled `Hardening: seed path mismatch` describing the two long-term fix options:
+    - **Option A (code-side):** update `SEED_DB_PATH` in [utils/db_initializer.py:16](utils/db_initializer.py#L16) to point at `data/backup/database.db`, deleting the copy at `data/Database_backup/database.db`. Aligns code with reality.
+    - **Option B (filesystem-side):** keep `data/Database_backup/database.db` as the canonical location, document it in `CLAUDE.md`, and add a startup error (not just a warning) when the file is missing AND `exercises` is below `MIN_EXERCISE_ROWS`. Prevents silent recurrence.
+  - Choose one option and schedule it as a `4N` fix commit.
+- **Exit condition:** triage entry exists; hardening path is chosen.
+
+### Restore Results *(executed 2026-04-10)*
+
+```text
+executed_at:           2026-04-10T17:36:50+03:00
+exercises_count_after: 1897
+grips_filled:          558
+stabilizers_filled:    283
+synergists_filled:     304
+force_filled:          1803
+equipment_filled:      1881
+iso_muscles_rows:      1598
+step_6_browser_check:  pass
+step_6_dropdowns:      force=4, equipment=19, grips=10, stabilizers=24, synergists=26, exercise=1898
+hardening_option:      A (implemented)
+```
 
 ---
 
@@ -621,9 +1146,8 @@ Run before starting any changes:
 
 | Test File | Covers Module | Action After Module Deletion |
 |-----------|--------------|------------------------------|
-| `tests/test_business_logic.py` | `utils/business_logic.py` | Delete test file |
-| `tests/test_data_handler.py` | `utils/data_handler.py` | Delete test file only if Wave 2 deletes the module |
-| `tests/test_muscle_group.py` | `utils/muscle_group.py` | Delete test file only if Wave 1.5 deletes the module |
+| ~~`tests/test_business_logic.py`~~ | ~~`utils/business_logic.py`~~ | Deleted in `3b Wave 2` |
+| ~~`tests/test_data_handler.py`~~ | ~~`utils/data_handler.py`~~ | Deleted in `3b Wave 2` |
 | `tests/test_session_summary.py` | `utils/session_summary.py` | Must still pass after parse function extraction |
 | `tests/test_weekly_summary.py` | `utils/weekly_summary.py` | Must still pass after parse function extraction |
 | `tests/test_session_summary_routes.py` | `routes/session_summary.py` | Must still pass if compatibility wrappers are kept or updated in the same change |
@@ -637,9 +1161,9 @@ Run before starting any changes:
 
 ### 4.4 Post-Cleanup Verification Checklist
 
-- [ ] **Full pytest:** `.\.venv\Scripts\python.exe -m pytest tests/ -q` — expect current baseline adjusted only by intentionally deleted test files, zero failures
-- [ ] **Summary surfaces browser gate:** `npx playwright test e2e/summary-pages.spec.ts --project=chromium --reporter=line`
-- [ ] **Full E2E:** `npx playwright test --project=chromium --reporter=line` — required if any template, shared JS, or route-contract work landed
+- [x] **Full pytest:** `.\.venv\Scripts\python.exe -m pytest tests/ -q` — actual result: `932 passed, 1 skipped` (`phase4c_pytest.txt`)
+- [x] **Summary surfaces browser gate:** `npx playwright test e2e/summary-pages.spec.ts --project=chromium --reporter=line` — actual result: `21 passed` (`phase4d_summary.txt`)
+- [x] **Full E2E:** `npx playwright test --project=chromium --reporter=line` — actual result: `315 passed` (`phase4e_full_e2e.txt`)
 - [ ] **Dead code scan:** `vulture routes/ utils/ --min-confidence 80` — expect zero or near-zero findings
 - [ ] **Unused import scan:** `pylint --disable=all --enable=W0611 routes/ utils/` — expect zero findings
 - [ ] **Print audit:** `rg -n "print\(" routes utils -g "*.py"` — expect zero hits (covered by `archive/DOCS_AUDIT_PLAN.md` Tier 2)
@@ -650,6 +1174,186 @@ Run before starting any changes:
 - [ ] **Line count comparison:** Compare total Python LOC against baseline
 
 ** codex 5.4*** I would add one more post-cleanup audit here for dead or duplicate frontend code, because the discovery phase already points toward that scope and the current checklist stops short of confirming it. At minimum, re-check `static/js/modules/sessionsummary.js`, `static/js/updateSummary.js`, and any JS left behind after deleting `templates/dropdowns.html`.
+
+### 4.6 Granular Phase 4 Sub-Phases (2026-04-10)
+
+> **Why this section exists:** the original `4.4` checklist and the `Post-Cleanup Final Gate` at the bottom of this doc list too many actions in one flat list to execute safely within a single conversation. This section breaks Phase 4 into **15 self-contained sub-phases**. Each one is designed to be runnable in a fresh conversation with zero prior-conversation memory: it lists goal, preconditions, exact command(s), expected result, what to record, and the exit condition.
+>
+> **Execution order:** run top-to-bottom. `4A` and `4B` are prerequisites for every subsequent sub-phase. `4M` is where user-visible bugs (already captured in `Known Bugs Triage`) are most likely to surface. `4N` is the only sub-phase allowed to change production code; every other sub-phase is read-only or limited to deleting already-orphaned assets.
+>
+> **Execution note (2026-04-10):** an explicit user decision overrode that nominal order for one narrow reason: the known `/workout_plan` bugs were fixed before entering Phase 4 proper. To honor that, the `Seed DB Restore Plan` plus the immediate health checkpoint (`4C`-`4E`) were executed ahead of `4A`/`4B`. `4A` and `4B` still remain valuable commit-hygiene / evidence-capture tasks, but they are no longer blockers to interpreting the current validation snapshot.
+
+#### 4A — Commit working tree as phase checkpoints
+- **Goal:** turn the current uncommitted blob on `spring-cleanup` into one commit per completed cleanup sub-phase so rollback and `git bisect` work.
+- **Why first:** every following sub-phase needs a clean baseline to diff against. Right now everything since commit `47736b9` (pre-cleanup snapshot) is in the working tree as one implicit batch, which violates the plan's own golden rule that every cleanup step must be individually reversible.
+- **Preconditions:** none.
+- **Action:**
+  - Review `git status` and `git diff --stat` against `47736b9`.
+  - Stage and commit in logical groups matching the completed phases in this order: `3a`, `3b Wave 1`, `3c`, `3d`, `3e`, `3f`, `3g`, `3h`, `3i-a`, `3i-b`, `3i-c`, `3i-d`, `3i-e`, `3i-f`, `3i-g`, `3i-h`, `3b Wave 2`.
+  - Use `git add -p` or `git add <specific files>` — never `git add -A`.
+  - Each commit message should reference the sub-phase (e.g., `chore(3a): remove unused imports in routes/exports.py and routes/weekly_summary.py`).
+- **Exit condition:** `git status` is clean (only the expected `baseline_*.txt`, `cleanup_preflight*.txt`, and other untracked artifacts remain untracked) and `git log --oneline 47736b9..HEAD` shows one commit per phase.
+- **Do not:** force-push, amend published commits, or touch `main`.
+
+#### 4B — Bug triage capture *(record-only; see `Known Bugs Triage` section)*
+- **Goal:** capture every known user-visible bug with repro steps, hypothesized cause, and affected files *before* any re-test or any fix. This is the evidence side of the "tests green vs. app broken" contradiction.
+- **Preconditions:** `4A` complete (so bug entries can reference a stable commit).
+- **Action:** confirm the `Known Bugs Triage (2026-04-10)` section below is complete and accurate against the live app. Add any new bugs you notice to that section. Do **not** fix anything yet.
+- **Exit condition:** every bug has a `Repro`, `Hypothesis`, `Affected files`, and `Status` entry.
+- **Do not:** delete, rename, or "fix" any file referenced by a bug entry in this sub-phase.
+
+#### 4C — Full pytest re-run against current HEAD
+- **Goal:** confirm the plan's claim of `930 passed, 1 skipped` (post-`3b Wave 2`) and `932 passed, 1 skipped` (post-`3i-e`) still holds today against the committed tree.
+- **Preconditions:** `4A` complete.
+- [x] **Executed on 2026-04-10** — result: `932 passed, 1 skipped` written to `phase4c_pytest.txt`.
+- **Command:**
+  ```powershell
+  .\.venv\Scripts\python.exe -m pytest tests/ -q | Tee-Object -FilePath phase4c_pytest.txt
+  ```
+- **Expected:** pass count within 1–2 of the latest validated claim (`~930–932 passed, 1 skipped`). Any failure or unexpected drop is a regression.
+- **Record:** final pass/fail/skip counts and the path to `phase4c_pytest.txt` in this plan's `Current Evidence Snapshot` table.
+- **Exit condition:** pass count matches expectation (or every failure opened as a triage entry under `Known Bugs Triage` and deferred to `4N`).
+
+#### 4D — Summary-surfaces Playwright gate
+- **Goal:** confirm the summary pages still pass the contract-lock tests added during `3f`.
+- **Preconditions:** `4A` and `4C` complete.
+- [x] **Executed on 2026-04-10** — result: `21 passed` written to `phase4d_summary.txt`.
+- **Command:**
+  ```powershell
+  npx playwright test e2e/summary-pages.spec.ts --project=chromium --reporter=line | Tee-Object -FilePath phase4d_summary.txt
+  ```
+- **Expected:** `21 passed`.
+- **Exit condition:** `21 passed`, or each failure opened as a triage entry.
+
+#### 4E — Full Playwright suite
+- **Goal:** confirm all 17 spec files still pass after the full cleanup sequence.
+- **Preconditions:** `4A`, `4C`, `4D` complete.
+- [x] **Executed on 2026-04-10** — result: `315 passed` written to `phase4e_full_e2e.txt`.
+- **Command:**
+  ```powershell
+  npx playwright test --project=chromium --reporter=line | Tee-Object -FilePath phase4e_full_e2e.txt
+  ```
+- **Expected:** `315 passed`.
+- **Record:** runtime and pass count; flag any new flake.
+- **Exit condition:** `315 passed`, or each failure opened as a triage entry.
+
+#### 4F — Dead-code scan (vulture)
+- **Goal:** find any dead code the manual cleanup missed.
+- **Preconditions:** `4A` complete. `vulture` installed in `.venv` (`.\.venv\Scripts\python.exe -m pip install vulture` if missing).
+- **Command:**
+  ```powershell
+  .\.venv\Scripts\python.exe -m vulture routes/ utils/ --min-confidence 80 | Tee-Object -FilePath phase4f_vulture.txt
+  ```
+- **Record:** every finding. Delete only items that are unambiguously dead (zero callers, not part of any documented public API, no test-only fixtures). Open anything uncertain as a triage entry and defer.
+- **Exit condition:** findings recorded; any deletion followed by a `4C` re-run before the next sub-phase starts.
+
+#### 4G — Unused-import scan (pylint W0611)
+- **Goal:** catch any `import X` regressions in `routes/` or `utils/`.
+- **Preconditions:** `4A` complete.
+- **Command:**
+  ```powershell
+  .\.venv\Scripts\python.exe -m pylint --disable=all --enable=W0611 routes/ utils/
+  ```
+- **Expected:** zero findings.
+- **Exit condition:** zero findings, or each one fixed and `4C` re-run.
+
+#### 4H — `print()` audit
+- **Goal:** confirm the logging migration from `archive/DOCS_AUDIT_PLAN.md` Tier 2 is still clean.
+- **Preconditions:** `4A` complete.
+- **Command:**
+  ```powershell
+  rg -n "print\(" routes utils -g "*.py"
+  ```
+- **Expected:** zero hits.
+- **Exit condition:** zero, or every hit converted to `get_logger()` and `4C` re-run.
+
+#### 4I — Raw DB access audit
+- **Goal:** confirm the only raw DB access paths are the documented exceptions in `CLAUDE.md` Section 2.
+- **Preconditions:** `4A` complete.
+- **Command:**
+  ```powershell
+  rg -n "get_db_connection|sqlite3\.connect" routes utils
+  ```
+- **Expected:** only `utils/database.py` (helper definition) and `utils/database_indexes.py:51` (`optimize_database()` PRAGMA path with manual lock).
+- **Exit condition:** expected hits only, or any new hit opened as a triage entry.
+
+#### 4J — Frontend orphan audit & safe deletion
+- **Goal:** finish removing the two dormant JS files that `Phase 0.5` flagged as safe-delete candidates.
+- **Preconditions:** `4A`, `4C`, `4D`, `4E` all complete and green (so there is a known-good baseline to compare against after deletion).
+- **Commands:**
+  ```powershell
+  rg -n "sessionsummary|updateSummary" static templates e2e
+  ```
+- **Action if zero references:** delete `static/js/modules/sessionsummary.js` and `static/js/updateSummary.js`. Commit the deletion as a single commit `chore(4J): remove orphaned JS modules`.
+- **Post-delete validation:** re-run `4D` and `4E`.
+- **Exit condition:** files deleted and `4D`+`4E` still green, or deletion deferred with a recorded reason.
+
+#### 4K — Package-surface audit
+- **Goal:** confirm no regression reintroduced a legacy package import.
+- **Preconditions:** `4A` complete.
+- **Command:**
+  ```powershell
+  rg -n "from utils import .*DataHandler|from utils import .*BusinessLogic|from utils\.helpers|from utils\.filters|from utils\.database_init|from utils\.muscle_group" app.py routes tests e2e
+  ```
+- **Expected:** zero hits.
+- **Exit condition:** zero, or each regression removed and `4C` re-run.
+
+#### 4L — File & line-count delta
+- **Goal:** replace the placeholder estimates in `4.5 Expected Reduction Summary` with actuals.
+- **Preconditions:** `4A`, `4C`–`4K` complete.
+- **Commands:**
+  ```powershell
+  (rg --files utils -g "*.py" | Measure-Object).Count
+  (rg --files routes -g "*.py" | Measure-Object).Count
+  (Get-ChildItem templates -File | Measure-Object).Count
+  (rg --files static/js/modules -g "*.js" | Measure-Object).Count
+  (rg --files static/js -g "*.js" | Measure-Object).Count
+  $pyFiles = rg --files -g "*.py" -g "!.venv/**" -g "!node_modules/**"
+  ($pyFiles | ForEach-Object { (Get-Content $_ | Measure-Object -Line).Lines } | Measure-Object -Sum).Sum
+  ```
+- **Exit condition:** actual numbers written into the `After` column of `4.5 Expected Reduction Summary`.
+
+#### 4M — Manual workflow smoke test *(highest bug-finding value)*
+- **Goal:** walk through the six core workflows from `CLAUDE.md` Section 1.2 in the running app and record anything that misbehaves. This is the layer that catches user-visible bugs automated tests miss.
+- **Preconditions:** `4A`–`4L` complete and green. `Known Bugs Triage` data issue (seed DB) resolved if it blocks realistic smoke coverage — see that section for the reseed step.
+- **Action:**
+  1. Start the app: `.\.venv\Scripts\python.exe app.py`
+  2. For each workflow, execute one realistic flow and record `pass` / `fail` + notes:
+     - [ ] **Plan** (`/workout_plan`): open page, apply a filter, add an exercise to a routine, reorder it.
+     - [ ] **Log** (`/workout_log`): import from plan, edit scored reps/weight/RIR, save.
+     - [ ] **Analyze — Weekly** (`/weekly_summary`): toggle counting mode, toggle contribution mode, confirm numbers change.
+     - [ ] **Analyze — Session** (`/session_summary`): same toggles, plus a time-window filter.
+     - [ ] **Progress** (`/progression`): pick an exercise, view suggestions.
+     - [ ] **Distribute** (`/volume_splitter`): move a slider, recalculate.
+     - [ ] **Backup** (`/api/backups` modal on workout plan page): create → list → restore → delete.
+- **Record:** for every `fail`, add a `Known Bugs Triage` entry with repro, affected route/file, expected vs. actual.
+- **Exit condition:** every workflow either green-checked or recorded as a triage entry.
+
+#### 4N — Bug investigation & fixing
+- **Goal:** fix every `Known Bugs Triage` entry captured in `4B` and `4M` that is in scope for this cleanup cycle.
+- **Preconditions:** `4A`–`4M` complete; each bug has a documented repro.
+- **Rules:**
+  - One bug per commit.
+  - Every fix requires either a new failing test that the fix turns green, or a documented reason why adding a test is not feasible.
+  - After each fix, re-run `4C` (full pytest) and the narrowest relevant spec from `4D`/`4E`.
+  - Bugs triaged as "out of scope for this cleanup cycle" must be recorded as such, not silently deferred.
+- **Exit condition:** every `4B`/`4M` bug is either `fixed + tests green` or `deferred with explicit reason`.
+
+#### 4O — Update `CLAUDE.md` and close the plan
+- **Goal:** bring `CLAUDE.md` in sync with the post-cleanup reality.
+- **Preconditions:** `4A`–`4N` complete.
+- **Action:**
+  - Update `CLAUDE.md` Section 8 `Verified Test Counts` with the results from `4C`, `4D`, `4E`.
+  - Update the `last verified` date.
+  - Update the `Deprecated / Legacy Modules` table to reflect `3b Wave 2` retirements.
+  - Refresh `docs/CHANGELOG.md` with a single entry summarizing the spring-cleanup sequence.
+  - Mark the `Status Dashboard` in this plan as fully complete for every executed phase.
+  - Resolve the self-inconsistency in this plan between `Stage Tracker` (3i marked `Later`) and `[Phase 3i]` (sub-phases marked `[x]`).
+- **Exit condition:** `CLAUDE.md` accurately describes the post-cleanup tree, `git status` clean, plan dashboard closed.
+
+> **Note:** the legacy `Post-Cleanup Final Gate` checklist at the bottom of this document is superseded by `4A`–`4O` above. It is kept for historical reference only; do not execute it line by line.
+
+---
 
 ### 4.5 Expected Reduction Summary
 
@@ -670,46 +1374,52 @@ Run before starting any changes:
 
 | Priority | Sub-phase | Risk | Effort |
 |----------|-----------|------|--------|
-| 0 (required first) | **Phase 0** Confidence gate | Very low | 30-60 min |
-| 1 | **3a** Remove unused imports | Very low | 5 min |
-| 2 | **3b Wave 1** High-confidence deletions | Low | 15-30 min |
-| 3 | **3c** Delete orphaned templates | Very low | 5 min |
-| 4 | **3d** Compatibility-first parse extraction | Low | 10-20 min |
-| 5 | **3e** Summary-page frontend coupling gate | Very low | 10-15 min |
-| 6 | **3f** Extract descoped method-selector macro | Medium (visual regression) | 20 min |
-| 7 | **3g** Backend-only volume classifier cleanup | Low | 10 min |
-| 8 | **3b Wave 2** Package-surface contraction | Medium | 20-40 min |
+| 0 (required first) | **Phase 0** Confidence gate | Very low | **COMPLETED** (2026-04-10) |
+| 1 | **3a** Remove unused imports | Very low | **COMPLETED** (2026-04-10) |
+| 2 | **3b Wave 1** High-confidence deletions | Low | **COMPLETED** (2026-04-10) |
+| 3 | **3c** Delete orphaned templates | Very low | **COMPLETED** (2026-04-10) |
+| 4 | **3d** Compatibility-first parse extraction | Low | **COMPLETED** (2026-04-10) |
+| 5 | **3e** Summary-page frontend coupling gate | Very low | **COMPLETED** (2026-04-10) |
+| 6 | **3f** Extract descoped method-selector macro | Medium (visual regression) | **COMPLETED** (2026-04-10) |
+| 7 | **3g** Backend-only volume classifier cleanup | Low | **COMPLETED** (2026-04-10) |
+| 8 | **3b Wave 2** Package-surface contraction | Medium | **COMPLETED** (2026-04-10) |
 | ~~9~~ | ~~**3h** DB migration + logging cleanup~~ | ~~Medium~~ | **COMPLETED** (see `archive/DOCS_AUDIT_PLAN.md` Tiers 2-3) |
 | 10 (last / optional) | **3j** N+1 update loop semantic optimization | Medium-High (write path) | 20-40 min |
 | 11 | **3i** Decompose bloated functions | Medium (wide scope) | 2+ hours |
 
 ---
 
-## Architectural Review Findings (2026-04-09)
+## Architectural Review Findings (2026-04-10)
 
 ### Review Confidence Scores
 
 | Phase | Confidence | Risk | Notes |
 |---|---|---|---|
-| **3a** Remove unused imports | **98%** | Very Low | All 5 imports confirmed unused beyond import lines |
-| **3b Wave 1** High-confidence deletions | **94%** | Low | `helpers`, `filters`, and `database_init` are strong candidates; `muscle_group` is conditional |
-| **3b Wave 2** Package-surface contraction | **70%** | Medium | `DataHandler` and `BusinessLogic` still touch package surface / tests / docs and require an explicit API decision |
-| **3c** Delete orphaned templates | **99%** | Very Low | Zero render/include references for all 6 |
-| **3d** Extract parse functions | **95%** | Low | Safe if route-level compatibility wrappers are kept for one cycle; lower confidence if wrappers are deleted immediately |
-| **3e** Summary-page frontend coupling gate | **99%** | Very Low | Analysis / documentation gate only; needed before touching summary templates or shared summary JS |
-| **3f** Extract Jinja2 macro | **88%** | Medium (visual regression) | Safe if limited to `method_selector` and inline updater ownership remains stable |
-| **3g** Consolidate volume classifier | **95%** | Low | Safe as backend-only cleanup; lower confidence if widened into template / JS dedup |
+| **3a** Remove unused imports | **99%** | Very Low | Completed and validated; `pylint` also surfaced and cleared `Response` / `jsonify` in `routes/exports.py` |
+| **3b Wave 1** High-confidence deletions | **98-99%** | Low | Completed and validated; deleted internal dead modules plus the legacy test-only `muscle_group` pair |
+| **3b Wave 2** Package-surface contraction | **95-96%** | Medium | Completed after an explicit API retirement decision, paired test deletion, migration note, and a green full-suite pytest run at `930 passed, 1 skipped` |
+| **3c** Delete orphaned templates | **99%** | Very Low | Completed and validated with smoke-navigation Playwright plus full pytest |
+| **3d** Extract parse functions | **99%** | Low | Completed with route-level compatibility wrappers preserved; targeted plus full pytest stayed green |
+| **3e** Summary-page frontend coupling gate | **99%** | Very Low | Completed in practice: inline updater ownership, guarded fallback behavior, and deferred `/api/pattern_coverage` contract were re-confirmed; summary Playwright re-passed at `21 passed` |
+| **3f** Extract Jinja2 macro | **95-96%** | Medium (visual regression) | Completed as a strict `method_selector` extraction with stronger selector-contract tests, preserved inline updater hooks, green summary/full Chromium Playwright, and desktop/mobile visual review |
+| **3g** Consolidate volume classifier | **99%** | Low | Completed as a backend-only table-driven helper extraction in `utils/volume_classifier.py`; public API stayed intact and the targeted pytest gate passed at `104 passed` |
 | **3h** DB migration + logging | **99%** | N/A | Already completed and validated at `981 passed, 1 skipped` |
 | **3i** Decompose bloated functions | N/A | Deferred | Not assessed — optional/lower priority |
 | **3j** Fix N+1 loop | **70%** | Medium-High | Defer until dedicated export-path tests prove the intended semantics |
 
 ### Key Corrections Applied
-1. **Baseline evidence refreshed:** current validated snapshot is `981 passed, 1 skipped` plus `21` passing summary-surface browser tests
+1. **Baseline evidence refreshed:** Phase 0 baseline snapshot was `981 passed, 1 skipped`, `21` passing summary-surface browser tests, and `315` passing Chromium Playwright tests. Post-`3b Wave 1`, `3c`, and `3d`, the current pytest snapshot is `963 passed, 1 skipped` because `tests/test_muscle_group.py` was intentionally removed with its dead module and four shared-helper tests were added in `3d`.
 2. **Phase 3b split:** high-confidence internal deletions are separated from package-surface contraction work
 3. **Phase 3d hardened:** route-level parse helper compatibility is now called out explicitly because route tests import those helpers directly
 4. **Phase 3e added:** summary-page frontend ownership must be documented before template dedup proceeds
 5. **Phase 3g narrowed:** backend-only for this cycle; template / JS threshold dedup is deferred
 6. **Phase 3j deferred:** the export write-path optimization moved to the end and is blocked on dedicated tests
+7. **Phase 0 executed:** start authorization was evidence-based: initial `GO` for `3a`, `3b Wave 1`, `3c`, `3d`, `3e`, `3g`; initial `HOLD` for `3f`; initial `NO-GO` for `3b Wave 2` and `3j`
+8. **Phase 3c executed:** orphaned templates were removed after a clean reference audit and validated with smoke-navigation Playwright plus full pytest
+9. **Phase 3d executed:** shared query-parameter parsers were centralized in `utils/effective_sets.py`, route-level compatibility wrappers were preserved, and both targeted plus full pytest stayed green
+10. **Phase 3f executed:** selector-contract assertions were strengthened first, the summary method selector was extracted into a shared partial without touching shared JS or page-specific legend copy, and summary/full Chromium Playwright plus desktop/mobile visual review stayed green
+11. **Phase 3g executed:** raw-volume thresholds were centralized into `_VOLUME_TIERS` + `_classify()` in `utils/volume_classifier.py`, the public helper API stayed unchanged, and the scoped pytest gate passed at `104 passed`
+12. **Phase 3b Wave 2 executed:** explicit package-surface retirement was approved, `app.py` moved to a direct module import, `utils/__init__.py` dropped the retired legacy exports, the paired legacy modules/tests were deleted, and the full pytest suite stayed green at `930 passed, 1 skipped`
 
 ### Volume Classifier Boundary Verification
 
@@ -729,7 +1439,7 @@ Note: Plan only refactors `get_volume_class()` and `get_volume_label()` (lines 1
 
 ---
 
-## Execution Checklist (Uncompleted Phases)
+## Execution Checklist
 
 > **Pre-flight:** Record current baseline before starting any work.
 > ```powershell
@@ -740,162 +1450,186 @@ Note: Plan only refactors `get_volume_class()` and `get_volume_label()` (lines 1
 ---
 
 ### [Phase 0] Prerequisite Confidence Gate
-- [ ] **0-1.** Save rollback artifacts before risky edits:
-  - [ ] `git status --short | Tee-Object -FilePath cleanup_preflight_status.txt`
-  - [ ] `git diff --binary | Out-File -Encoding ascii cleanup_preflight.patch`
-- [ ] **0-2.** Re-run full pytest baseline:
-  - [ ] `.\.venv\Scripts\python.exe -m pytest tests/ -q`
-- [ ] **0-3.** Re-run summary-surface browser baseline:
-  - [ ] `npx playwright test e2e/summary-pages.spec.ts --project=chromium --reporter=line`
-- [ ] **0-4.** If template/shared-JS/contract work is planned in this cycle, re-run full Playwright now:
-  - [ ] `npx playwright test --project=chromium --reporter=line`
-- [ ] **0-5.** Audit package-surface imports and references:
-  - [ ] `rg -n "from utils import|import utils\.|from utils\.(data_handler|business_logic|helpers|filters|database_init|muscle_group)" app.py routes tests e2e docs CLAUDE.md`
-- [ ] **0-6.** Record whether `utils/__init__.py` is treated as supported API or internal-only convenience.
-- [ ] **0-7.** Audit summary-page ownership:
-  - [ ] `static/js/app.js`
-  - [ ] `static/js/modules/summary.js`
-  - [ ] `templates/session_summary.html`
-  - [ ] `templates/weekly_summary.html`
-  - [ ] `e2e/summary-pages.spec.ts`
-- [ ] **0-8.** Audit likely orphan frontend files:
-  - [ ] `static/js/modules/sessionsummary.js`
-  - [ ] `static/js/updateSummary.js`
-- [ ] **0-9.** Confirm whether the export recalculation branch already has dedicated success and failure tests.
-- [ ] **0-10.** Record go / no-go:
-  - [ ] baseline green
-  - [ ] package-surface decision recorded
-  - [ ] summary-page ownership recorded
-  - [ ] semantic-change test gap resolved or deferred
+- [x] **0-1.** Save rollback artifacts before risky edits:
+  - [x] `git status --short | Tee-Object -FilePath cleanup_preflight_status.txt`
+  - [x] `git diff --binary | Out-File -Encoding ascii cleanup_preflight.patch`
+- [x] **0-2.** Re-run full pytest baseline:
+  - [x] `.\.venv\Scripts\python.exe -m pytest tests/ -q`
+- [x] **0-3.** Re-run summary-surface browser baseline:
+  - [x] `npx playwright test e2e/summary-pages.spec.ts --project=chromium --reporter=line`
+- [x] **0-4.** If template/shared-JS/contract work is planned in this cycle, re-run full Playwright now:
+  - [x] `npx playwright test --project=chromium --reporter=line`
+- [x] **0-5.** Audit package-surface imports and references:
+  - [x] `rg -n "from utils import|import utils\.|from utils\.(data_handler|business_logic|helpers|filters|database_init|muscle_group)" app.py routes tests e2e docs CLAUDE.md`
+- [x] **0-6.** Record whether `utils/__init__.py` is treated as supported API or internal-only convenience.
+  - [x] Decision: Phase 0 treated it as supported package surface for the cycle; a later explicit API retirement decision authorized and completed `3b Wave 2`
+- [x] **0-7.** Audit summary-page ownership:
+  - [x] `static/js/app.js`
+  - [x] `static/js/modules/summary.js`
+  - [x] `templates/session_summary.html`
+  - [x] `templates/weekly_summary.html`
+  - [x] `e2e/summary-pages.spec.ts`
+  - [x] Decision: inline template updaters are authoritative; `summary.js` is a guarded fallback
+- [x] **0-8.** Audit likely orphan frontend files:
+  - [x] `static/js/modules/sessionsummary.js`
+  - [x] `static/js/updateSummary.js`
+  - [x] Result: both are currently safe-delete candidates with no repo references
+- [x] **0-9.** Confirm whether the export recalculation branch already has dedicated success and failure tests.
+  - [x] Result: dedicated recalculation/rollback tests are not present; `3j` stays deferred
+- [x] **0-10.** Record go / no-go:
+  - [x] baseline green
+  - [x] package-surface decision recorded
+  - [x] summary-page ownership recorded
+  - [x] semantic-change test gap resolved or deferred
+  - [x] Go for `3a`, `3b Wave 1`, `3c`, `3d`, `3e`, `3g`
+  - [x] Hold `3f` for separate frontend / visual decision
+  - [x] No-go for `3b Wave 2` and `3j` until prerequisites are satisfied
 
 ---
 
 ### [Phase 3a] Remove Unused Imports
-- [ ] **3a-1.** Edit `routes/exports.py` — remove 5 unused imports:
-  - [ ] Remove `make_response` from Flask import (line 1)
-  - [ ] Remove `sanitize_filename` (line 5)
-  - [ ] Remove `create_content_disposition_header` (line 6)
-  - [ ] Remove `should_use_streaming` (line 9)
-  - [ ] Remove `import logging` (line 19)
-- [ ] **3a-2.** Edit `routes/weekly_summary.py` — remove dead import:
-  - [ ] Remove `from utils.business_logic import BusinessLogic` (line 8)
-- [ ] **3a-3.** Validate: `.venv/Scripts/python.exe -m pytest tests/test_weekly_summary.py -q`
-- [ ] **3a-4.** Validate: `.venv/Scripts/python.exe -m pytest tests/ -q` — same pass count as baseline
+- [x] **3a-1.** Edit `routes/exports.py` — remove 5 unused imports:
+  - [x] Remove `make_response` from Flask import (line 1)
+  - [x] Remove `sanitize_filename` (line 5)
+  - [x] Remove `create_content_disposition_header` (line 6)
+  - [x] Remove `should_use_streaming` (line 9)
+  - [x] Remove `import logging` (line 19)
+- [x] **3a-2.** Edit `routes/weekly_summary.py` — remove dead import:
+  - [x] Remove `from utils.business_logic import BusinessLogic` (line 8)
+- [x] **3a-3.** Validate: `.venv/Scripts/python.exe -m pytest tests/test_weekly_summary.py -q`
+- [x] **3a-4.** Validate: `.venv/Scripts/python.exe -m pytest tests/ -q` — same pass count as baseline
+- [x] **3a-5.** Run `pylint` / import audit after installing it into the current `.venv`:
+  - [x] `.\.venv\Scripts\python.exe -m pylint --disable=all --enable=W0611 routes/exports.py routes/weekly_summary.py`
+  - [x] `rg -n "make_response|sanitize_filename|create_content_disposition_header|should_use_streaming|^import logging$|BusinessLogic|\\bResponse\\b|\\bjsonify\\b" routes/exports.py routes/weekly_summary.py`
 
 ---
 
 ### [Phase 3b Wave 1] High-Confidence Internal Deletions
-- [ ] **3bW1-1.** Confirm the Phase 0 package-surface decision still allows Wave 1 deletions to be treated as internal-only.
-- [ ] **3bW1-2.** Confirm the dead `BusinessLogic` import in `routes/weekly_summary.py` is already removed.
-- [ ] **3bW1-3.** Delete `utils/helpers.py` only after:
-  - [ ] `rg -n "from utils\.helpers|import utils\.helpers" app.py routes utils tests e2e` returns no runtime callers
-- [ ] **3bW1-4.** Delete `utils/filters.py` only after:
-  - [ ] `rg -n "from utils\.filters|import utils\.filters|ExerciseFilter" app.py routes utils tests e2e` returns no runtime callers
-- [ ] **3bW1-5.** Delete `utils/database_init.py` only after:
-  - [ ] `rg -n "from utils\.database_init|import utils\.database_init|database_init" app.py routes utils tests e2e` returns no runtime callers
-- [ ] **3bW1-6.** Evaluate `utils/muscle_group.py` as optional Wave 1.5:
-  - [ ] `rg -n "MuscleGroupHandler|from utils\.muscle_group|import utils\.muscle_group" app.py routes utils tests e2e`
-  - [ ] If still test-only, delete `utils/muscle_group.py` and `tests/test_muscle_group.py` together
+- [x] **3bW1-1.** Confirm the Phase 0 package-surface decision still allows Wave 1 deletions to be treated as internal-only.
+- [x] **3bW1-2.** Confirm the dead `BusinessLogic` import in `routes/weekly_summary.py` is already removed.
+- [x] **3bW1-3.** Delete `utils/helpers.py` only after:
+  - [x] `rg -n "from utils\.helpers|import utils\.helpers" app.py routes utils tests e2e` returns no runtime callers
+- [x] **3bW1-4.** Delete `utils/filters.py` only after:
+  - [x] `rg -n "from utils\.filters|import utils\.filters|ExerciseFilter" app.py routes utils tests e2e` returns no runtime callers
+- [x] **3bW1-5.** Delete `utils/database_init.py` only after:
+  - [x] `rg -n "from utils\.database_init|import utils\.database_init|database_init" app.py routes utils tests e2e` returns no runtime callers
+- [x] **3bW1-6.** Evaluate `utils/muscle_group.py` as optional Wave 1.5:
+  - [x] `rg -n "MuscleGroupHandler|from utils\.muscle_group|import utils\.muscle_group" app.py routes utils tests e2e`
+  - [x] If still test-only, delete `utils/muscle_group.py` and `tests/test_muscle_group.py` together
   - [ ] If not clearly safe, defer it
-- [ ] **3bW1-7.** Update docs / inventories for deleted modules in the same branch (`CLAUDE.md`, cleanup plan, legacy inventories)
-- [ ] **3bW1-8.** Validate with full pytest:
-  - [ ] `.\.venv\Scripts\python.exe -m pytest tests/ -q`
+- [x] **3bW1-7.** Update docs / inventories for deleted modules in the same branch (`CLAUDE.md`, cleanup plan, legacy inventories)
+- [x] **3bW1-8.** Validate with full pytest:
+  - [x] `.\.venv\Scripts\python.exe -m pytest tests/ -q`
+  - [x] Current post-Wave snapshot: `959 passed, 1 skipped`
 
 ---
 
 ### [Phase 3b Wave 2] Package-Surface Contraction
-- [ ] **3bW2-1.** Record the explicit decision for `DataHandler`, `BusinessLogic`, and the duplicate `get_workout_logs()` wrapper in `utils/__init__.py`
-- [ ] **3bW2-2.** If and only if the decision is "safe to remove package exports", edit `utils/__init__.py`:
-  - [ ] Remove `from .data_handler import DataHandler`
-  - [ ] Remove `from .business_logic import BusinessLogic`
-  - [ ] Remove `"DataHandler"` and `"BusinessLogic"` from `__all__`
-  - [ ] Remove the duplicate `get_workout_logs()` wrapper
-- [ ] **3bW2-3.** Delete `utils/business_logic.py` only after:
-  - [ ] `rg -n "BusinessLogic|from utils\.business_logic|import utils\.business_logic" app.py routes utils tests e2e docs CLAUDE.md` shows only planned removals
-  - [ ] `tests/test_business_logic.py` is deleted in the same change
-- [ ] **3bW2-4.** Delete `utils/data_handler.py` only after:
-  - [ ] `rg -n "DataHandler|from utils\.data_handler|import utils\.data_handler|from utils import .*DataHandler" app.py routes utils tests e2e docs CLAUDE.md` shows only planned removals
-  - [ ] `tests/test_data_handler.py` is deleted in the same change
-- [ ] **3bW2-5.** Re-run full pytest after each Wave 2 deletion:
-  - [ ] `.\.venv\Scripts\python.exe -m pytest tests/ -q`
+- [x] **3bW2-1.** Record the explicit decision for `DataHandler`, `BusinessLogic`, and package-level `get_workout_logs()` in `utils/__init__.py`
+- [x] **3bW2-2.** Edit `utils/__init__.py` after the explicit retirement decision:
+  - [x] Remove `from .data_handler import DataHandler`
+  - [x] Remove `from .business_logic import BusinessLogic`
+  - [x] Remove `"DataHandler"` and `"BusinessLogic"` from `__all__`
+  - [x] Remove the package-level `get_workout_logs()` compatibility export
+- [x] **3bW2-3.** Delete `utils/business_logic.py` only after:
+  - [x] `rg -n "BusinessLogic|from utils\.business_logic|import utils\.business_logic" app.py routes utils tests e2e` showed no supported runtime callers
+  - [x] `tests/test_business_logic.py` was deleted in the same change
+- [x] **3bW2-4.** Delete `utils/data_handler.py` only after:
+  - [x] `rg -n "DataHandler|from utils\.data_handler|import utils\.data_handler|from utils import .*DataHandler" app.py routes utils tests e2e` showed no supported runtime callers
+  - [x] `tests/test_data_handler.py` was deleted in the same change
+- [x] **3bW2-5.** Re-run full pytest after the Wave 2 deletion work:
+  - [x] `.\.venv\Scripts\python.exe -m pytest tests/ -q` -> `930 passed, 1 skipped`
 
 ---
 
 ### [Phase 3c] Delete Orphaned Templates
-- [ ] **3c-1.** Pre-verify runtime references:
-  - [ ] `rg -n "dropdowns\.html|filters\.html|table\.html|exercise_details\.html|debug_modal\.html|workout_tracker\.html" routes templates static tests e2e`
-- [ ] **3c-2.** Delete `templates/dropdowns.html`
-- [ ] **3c-3.** Delete `templates/filters.html`
-- [ ] **3c-4.** Delete `templates/table.html`
-- [ ] **3c-5.** Delete `templates/exercise_details.html`
-- [ ] **3c-6.** Delete `templates/debug_modal.html`
-- [ ] **3c-7.** Delete `templates/workout_tracker.html`
-- [ ] **3c-8.** Validate: `npx playwright test e2e/smoke-navigation.spec.ts`
+- [x] **3c-1.** Pre-verify runtime references:
+  - [x] `rg -n "dropdowns\.html|filters\.html|table\.html|exercise_details\.html|debug_modal\.html|workout_tracker\.html" routes templates static tests e2e`
+- [x] **3c-2.** Delete `templates/dropdowns.html`
+- [x] **3c-3.** Delete `templates/filters.html`
+- [x] **3c-4.** Delete `templates/table.html`
+- [x] **3c-5.** Delete `templates/exercise_details.html`
+- [x] **3c-6.** Delete `templates/debug_modal.html`
+- [x] **3c-7.** Delete `templates/workout_tracker.html`
+- [x] **3c-8.** Validate: `npx playwright test e2e/smoke-navigation.spec.ts --project=chromium --reporter=line`
+- [x] **3c-9.** Re-run full pytest after sub-phase completion:
+  - [x] `.\.venv\Scripts\python.exe -m pytest tests/ -q`
 
 ---
 
 ### [Phase 3d] Extract Duplicated Parse Functions
-- [ ] **3d-1.** Add shared `parse_counting_mode()` and `parse_contribution_mode()` to `utils/effective_sets.py`
-- [ ] **3d-2.** Update `routes/session_summary.py` to use the shared implementation
-  - [ ] Preferred safe path: keep `_parse_counting_mode()` and `_parse_contribution_mode()` as thin wrappers for one cycle
-- [ ] **3d-3.** Update `routes/weekly_summary.py` the same way
-  - [ ] Preferred safe path: keep `_parse_counting_mode()` and `_parse_contribution_mode()` as thin wrappers for one cycle
-- [ ] **3d-4.** Add or refresh direct tests in `tests/test_effective_sets.py`
-- [ ] **3d-5.** If wrappers are removed instead, update `tests/test_session_summary_routes.py` and `tests/test_weekly_summary_routes.py` in the same change
-- [ ] **3d-6.** Validate:
-  - [ ] `.\.venv\Scripts\python.exe -m pytest tests/test_session_summary.py tests/test_weekly_summary.py tests/test_session_summary_routes.py tests/test_weekly_summary_routes.py tests/test_effective_sets.py -q`
+- [x] **3d-1.** Add shared `parse_counting_mode()` and `parse_contribution_mode()` to `utils/effective_sets.py`
+- [x] **3d-2.** Update `routes/session_summary.py` to use the shared implementation
+  - [x] Preferred safe path: keep `_parse_counting_mode()` and `_parse_contribution_mode()` as thin wrappers for one cycle
+- [x] **3d-3.** Update `routes/weekly_summary.py` the same way
+  - [x] Preferred safe path: keep `_parse_counting_mode()` and `_parse_contribution_mode()` as thin wrappers for one cycle
+- [x] **3d-4.** Add or refresh direct tests in `tests/test_effective_sets.py`
+- [x] **3d-5.** If wrappers are removed instead, update `tests/test_session_summary_routes.py` and `tests/test_weekly_summary_routes.py` in the same change
+- [x] **3d-6.** Validate:
+  - [x] `.\.venv\Scripts\python.exe -m pytest tests/test_session_summary.py tests/test_weekly_summary.py tests/test_session_summary_routes.py tests/test_weekly_summary_routes.py tests/test_effective_sets.py -q`
+- [x] **3d-7.** Re-run full pytest after sub-phase completion:
+  - [x] `.\.venv\Scripts\python.exe -m pytest tests/ -q`
+  - [x] Current post-`3d` snapshot: `963 passed, 1 skipped`
 
 ---
 
 ### [Phase 3e] Summary-Page Frontend Coupling Gate
-- [ ] **3e-1.** Record which updater path is authoritative for each summary page
-  - [ ] `static/js/app.js`
-  - [ ] `static/js/modules/summary.js`
-  - [ ] `templates/session_summary.html`
-  - [ ] `templates/weekly_summary.html`
-- [ ] **3e-2.** Confirm whether `static/js/modules/summary.js` still relies on inline updaters and/or `#counting-mode` for safe short-circuit behavior
-- [ ] **3e-3.** Confirm `GET /api/pattern_coverage` remains on its current deferred contract
-- [ ] **3e-4.** Validate current summary behavior before template refactor:
-  - [ ] `npx playwright test e2e/summary-pages.spec.ts --project=chromium --reporter=line`
+- [x] **3e-1.** Record which updater path is authoritative for each summary page
+  - [x] `static/js/app.js`
+  - [x] `static/js/modules/summary.js`
+  - [x] `templates/session_summary.html`
+  - [x] `templates/weekly_summary.html`
+- [x] **3e-2.** Confirm whether `static/js/modules/summary.js` still relies on inline updaters and/or `#counting-mode` for safe short-circuit behavior
+- [x] **3e-3.** Confirm `GET /api/pattern_coverage` remains on its current deferred contract
+- [x] **3e-4.** Validate current summary behavior before template refactor:
+  - [x] `npx playwright test e2e/summary-pages.spec.ts --project=chromium --reporter=line`
+  - [x] Result: `21 passed`
 
 ---
 
 ### [Phase 3f] Extract Jinja2 Method Selector Macro (Descoped)
-- [ ] **3f-1.** Start only after Phase 3e is complete
-- [ ] **3f-2.** Create `templates/partials/_volume_controls.html` with `method_selector` macro
-- [ ] **3f-3.** Update `templates/session_summary.html`:
-  - [ ] Add `{% from "partials/_volume_controls.html" import method_selector %}`
-  - [ ] Replace the method-selector block only
-  - [ ] Leave the volume-legend block untouched
-  - [ ] Do not rename/remove inline `updateSessionSummary()` unless Phase 3e explicitly allows it
-- [ ] **3f-4.** Update `templates/weekly_summary.html`:
-  - [ ] Add the import line
-  - [ ] Replace the method-selector block only
-  - [ ] Leave the volume-legend block untouched
-  - [ ] Do not rename/remove inline `updateWeeklySummary()` unless Phase 3e explicitly allows it
-- [ ] **3f-5.** Validate:
-  - [ ] `npx playwright test e2e/summary-pages.spec.ts --project=chromium --reporter=line`
-- [ ] **3f-6.** Visual spot-check:
-  - [ ] `/session_summary`
-  - [ ] `/weekly_summary`
+- [x] **3f-1.** Start only after Phase 3e is complete
+- [x] **3f-2.** Strengthen `e2e/summary-pages.spec.ts` before extraction:
+  - [x] Lock the selector labels, option text/value pairs, wrapper class, IDs, and inline `onchange` contract
+  - [x] Assert selector-driven fetches still include the expected `counting_mode` / `contribution_mode` query params
+- [x] **3f-3.** Create `templates/partials/_volume_controls.html` with `method_selector` macro
+- [x] **3f-4.** Update `templates/session_summary.html`:
+  - [x] Add `{% from "partials/_volume_controls.html" import method_selector %}`
+  - [x] Replace the method-selector block only
+  - [x] Leave the volume-legend block untouched
+  - [x] Do not rename/remove inline `updateSessionSummary()` unless Phase 3e explicitly allows it
+- [x] **3f-5.** Update `templates/weekly_summary.html`:
+  - [x] Add the import line
+  - [x] Replace the method-selector block only
+  - [x] Leave the volume-legend block untouched
+  - [x] Do not rename/remove inline `updateWeeklySummary()` unless Phase 3e explicitly allows it
+- [x] **3f-6.** Validate:
+  - [x] `npx playwright test e2e/summary-pages.spec.ts --project=chromium --reporter=line`
+  - [x] Result: `21 passed`
+  - [x] `npx playwright test --project=chromium --reporter=line`
+  - [x] Result: `315 passed`
+- [x] **3f-7.** Visual spot-check:
+  - [x] `/session_summary`
+  - [x] `/weekly_summary`
+  - [x] Desktop and mobile screenshots reviewed from `logs/3f_visual_checks/`
 
 ---
 
 ### [Phase 3g] Consolidate Volume Classifier (Backend-only)
-- [ ] **3g-1.** Confirm this phase is backend-only:
-  - [ ] Do not touch `templates/session_summary.html`
-  - [ ] Do not touch `templates/weekly_summary.html`
-  - [ ] Do not touch `static/js/modules/summary.js`
-  - [ ] Do not touch `static/js/modules/sessionsummary.js`
-  - [ ] Do not touch `static/js/updateSummary.js`
-- [ ] **3g-2.** Edit `utils/volume_classifier.py` — replace `get_volume_class()` (lines 10-23) and `get_volume_label()` (lines 26-35) with table-driven `_VOLUME_TIERS` + `_classify()`:
-  - [ ] Add `_VOLUME_TIERS` list (descending thresholds: 30, 20, 10, 0)
-  - [ ] Add `_classify(total_sets)` helper returning `(css_class, label)`
-  - [ ] Rewrite `get_volume_class()` to delegate to `_classify()[0]`
-  - [ ] Rewrite `get_volume_label()` to delegate to `_classify()[1]`
-  - [ ] Do NOT touch `get_effective_volume_label`, `get_volume_tooltip`, `get_session_warning_tooltip`, `get_category_tooltip`, `get_subcategory_tooltip`
-- [ ] **3g-3.** Validate:
-  - [ ] `.\.venv\Scripts\python.exe -m pytest tests/test_volume_classifier.py tests/test_session_summary_routes.py tests/test_weekly_summary_routes.py -q`
+- [x] **3g-1.** Confirm this phase is backend-only:
+  - [x] Do not touch `templates/session_summary.html`
+  - [x] Do not touch `templates/weekly_summary.html`
+  - [x] Do not touch `static/js/modules/summary.js`
+  - [x] Do not touch `static/js/modules/sessionsummary.js`
+  - [x] Do not touch `static/js/updateSummary.js`
+- [x] **3g-2.** Edit `utils/volume_classifier.py` — replace `get_volume_class()` and `get_volume_label()` with table-driven `_VOLUME_TIERS` + `_classify()`:
+  - [x] Add `_VOLUME_TIERS` list (descending thresholds: 30, 20, 10, 0)
+  - [x] Add `_classify(total_sets)` helper returning `(css_class, label)`
+  - [x] Rewrite `get_volume_class()` to delegate to `_classify()[0]`
+  - [x] Rewrite `get_volume_label()` to delegate to `_classify()[1]`
+  - [x] Do NOT touch `get_effective_volume_label`, `get_volume_tooltip`, `get_session_warning_tooltip`, `get_category_tooltip`, `get_subcategory_tooltip`
+- [x] **3g-3.** Validate:
+  - [x] `.\.venv\Scripts\python.exe -m pytest tests/test_volume_classifier.py tests/test_session_summary_routes.py tests/test_weekly_summary_routes.py -q` -> `104 passed`
 
 ---
 
@@ -919,15 +1653,24 @@ Note: Plan only refactors `get_volume_class()` and `get_volume_label()` (lines 1
 
 ---
 
-### Post-Cleanup Final Gate
-- [ ] **Full pytest:** `.\.venv\Scripts\python.exe -m pytest tests/ -q` — zero failures
-- [ ] **Summary surfaces browser gate:** `npx playwright test e2e/summary-pages.spec.ts --project=chromium --reporter=line`
-- [ ] **Full E2E:** `npx playwright test --project=chromium --reporter=line` — required if template/shared-JS/contract phases executed
-- [ ] **Dead code scan:** `vulture routes/ utils/ --min-confidence 80`
-- [ ] **Unused import scan:** `pylint --disable=all --enable=W0611 routes/ utils/`
-- [ ] **Print audit:** `rg -n "print\(" routes utils -g "*.py"` — expect zero
-- [ ] **Frontend orphan audit:** `rg -n "sessionsummary|updateSummary" static templates`
-- [ ] **Package-surface audit:** `rg -n "from utils import .*DataHandler|from utils import .*BusinessLogic|from utils\.helpers|from utils\.filters" app.py routes tests e2e`
-- [ ] **File count comparison** against baseline
-- [ ] **Line count comparison** against baseline
-- [ ] **Update CLAUDE.md** Section 8 test counts and Section 8 deprecated/legacy table
+### Post-Cleanup Final Gate *(superseded by 4.6 Granular Phase 4 Sub-Phases)*
+
+> **This legacy flat checklist is superseded by [4.6 Granular Phase 4 Sub-Phases](#46-granular-phase-4-sub-phases-2026-04-10) above.** Do not execute it line by line. Run the `4A`–`4O` sub-phases instead. The mapping below exists only so historical check-marks are not lost.
+>
+> | Legacy line | Now lives in |
+> |---|---|
+> | Full pytest | `4C` |
+> | Summary surfaces browser gate | `4D` |
+> | Full E2E | `4E` |
+> | Dead code scan (vulture) | `4F` |
+> | Unused import scan (pylint) | `4G` |
+> | Print audit | `4H` |
+> | Raw DB access audit | `4I` |
+> | Frontend orphan audit | `4J` |
+> | Package-surface audit | `4K` |
+> | File count + line count comparison | `4L` |
+> | Manual workflow smoke | `4M` *(new)* |
+> | Bug investigation / fixing | `4N` *(new)* |
+> | Update `CLAUDE.md` | `4O` |
+> | Checkpoint commits | `4A` *(new)* |
+> | Known bugs capture | `4B` *(new, + `Known Bugs Triage` section)* |

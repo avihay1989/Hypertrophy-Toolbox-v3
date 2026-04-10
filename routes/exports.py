@@ -1,12 +1,9 @@
-from flask import Blueprint, Response, jsonify, request, make_response
+from flask import Blueprint, request
 from utils.database import DatabaseHandler
 from utils.export_utils import (
     create_excel_workbook,
-    sanitize_filename,
-    create_content_disposition_header,
     generate_timestamped_filename,
     stream_excel_response,
-    should_use_streaming,
     MAX_EXPORT_ROWS
 )
 from utils.weekly_summary import (
@@ -16,7 +13,6 @@ from utils.weekly_summary import (
 )
 from utils.errors import error_response, success_response
 from utils.logger import get_logger
-import logging
 
 exports_bp = Blueprint('exports', __name__)
 logger = get_logger()
@@ -291,6 +287,178 @@ def calculate_frequency_for_category(category, muscle_group):
 # Test route to verify blueprint is working
 # Test route removed - no longer needed
 
+def _recalculate_exercise_order(db):
+    """Check dataset state and recalculate sequential order if needed."""
+    from routes.workout_plan import column_exists
+    if not column_exists(db, 'user_selection', 'exercise_order'):
+        return
+        
+    # Check current state of exercise_order
+    total_check = db.fetch_one("SELECT COUNT(*) as count FROM user_selection")
+    order_check = db.fetch_one("SELECT COUNT(DISTINCT exercise_order) as distinct_count, COUNT(*) as total_count FROM user_selection WHERE exercise_order IS NOT NULL")
+    
+    # Recalculate if all values are the same (like all "1") or NULL
+    needs_recalc = False
+    if total_check and total_check['count'] > 0:
+        if order_check and order_check['distinct_count'] == 1:
+            logger.info(f"All exercise_order values are the same ({order_check['distinct_count']} distinct). Recalculating...")
+            needs_recalc = True
+        elif order_check and order_check['total_count'] < total_check['count']:
+            logger.info(f"Some exercise_order values are NULL. Initializing...")
+            needs_recalc = True
+    
+    if needs_recalc:
+        logger.info(f"Recalculating exercise_order for {total_check['count']} rows")
+        ordered_rows = db.fetch_all("""
+            SELECT id FROM user_selection 
+            ORDER BY routine, exercise, id
+        """)
+        logger.info(f"Found {len(ordered_rows)} rows to update")
+        
+        # Semantic change: N+1 update loop changed to atomic batch.
+        # This changes behavior from partial-success logging per-row to all-or-nothing batch update.
+        batch_params = [(index, row['id']) for index, row in enumerate(ordered_rows, start=1)]
+        try:
+            db.executemany(
+                "UPDATE user_selection SET exercise_order = ? WHERE id = ?",
+                batch_params
+            )
+            updated_count = len(batch_params)
+        except Exception as e:
+            logger.error(f"Error performing batch update for exercise_order: {e}")
+            updated_count = 0
+        
+        verify = db.fetch_one("SELECT COUNT(DISTINCT exercise_order) as distinct_count FROM user_selection WHERE exercise_order IS NOT NULL")
+        logger.info(f"exercise_order recalculated: {updated_count} rows updated, {verify['distinct_count'] if verify else 0} distinct values")
+
+
+def _build_export_query(db):
+    """Build the SQL query for the user selection export based on available columns."""
+    from routes.workout_plan import column_exists
+    has_superset = column_exists(db, 'user_selection', 'superset_group')
+    has_order = column_exists(db, 'user_selection', 'exercise_order')
+    
+    if has_superset and has_order:
+        return """
+            WITH superset_min_order AS (
+                SELECT superset_group, routine, MIN(exercise_order) as min_order
+                FROM user_selection
+                WHERE superset_group IS NOT NULL
+                GROUP BY superset_group, routine
+            )
+            SELECT 
+                us.routine, us.exercise, e.primary_muscle_group, e.secondary_muscle_group,
+                e.tertiary_muscle_group, e.advanced_isolated_muscles, e.utility,
+                e.movement_pattern, e.movement_subpattern, us.sets, us.min_rep_range,
+                us.max_rep_range, us.rir, us.rpe, us.weight, us.execution_style,
+                e.grips, e.stabilizers, e.synergists, us.superset_group, us.exercise_order,
+                CASE WHEN us.superset_group IS NOT NULL THEN smo.min_order ELSE us.exercise_order END as sort_order
+            FROM user_selection us
+            LEFT JOIN exercises e ON us.exercise = e.exercise_name
+            LEFT JOIN superset_min_order smo ON us.superset_group = smo.superset_group AND us.routine = smo.routine
+            ORDER BY us.routine, sort_order, CASE WHEN us.superset_group IS NOT NULL THEN 0 ELSE 1 END,
+                     us.superset_group, us.exercise_order, us.exercise
+        """
+    elif has_order:
+        return """
+            SELECT 
+                us.routine, us.exercise, e.primary_muscle_group, e.secondary_muscle_group,
+                e.tertiary_muscle_group, e.advanced_isolated_muscles, e.utility,
+                e.movement_pattern, e.movement_subpattern, us.sets, us.min_rep_range,
+                us.max_rep_range, us.rir, us.rpe, us.weight, us.execution_style,
+                e.grips, e.stabilizers, e.synergists, us.superset_group, us.exercise_order
+            FROM user_selection us
+            LEFT JOIN exercises e ON us.exercise = e.exercise_name
+            ORDER BY us.routine, us.exercise_order, us.exercise
+        """
+    else:
+        return """
+            SELECT 
+                us.routine, us.exercise, e.primary_muscle_group, e.secondary_muscle_group,
+                e.tertiary_muscle_group, e.advanced_isolated_muscles, e.utility,
+                e.movement_pattern, e.movement_subpattern, us.sets, us.min_rep_range,
+                us.max_rep_range, us.rir, us.rpe, us.weight, us.execution_style,
+                e.grips, e.stabilizers, e.synergists, us.superset_group
+            FROM user_selection us
+            LEFT JOIN exercises e ON us.exercise = e.exercise_name
+            ORDER BY us.routine, us.exercise
+        """
+
+
+def _fetch_all_sheets(db, view_mode):
+    """Fetch data for all export sheets and return a mapping of sheet name to data."""
+    sheets_data = {}
+    
+    # 1. Workout Plan
+    logger.info("Fetching workout plan data")
+    user_selection_query = _build_export_query(db)
+    user_selection = db.fetch_all(user_selection_query)
+    if user_selection:
+        sheets_data['Workout Plan'] = reorder_and_rename_columns(user_selection, WORKOUT_PLAN_COLUMNS, view_mode)
+        logger.info(f"Fetched {len(user_selection)} workout plan rows")
+        
+    # 2. Workout Log
+    logger.info("Fetching workout log data")
+    workout_log = db.fetch_all(f"SELECT * FROM workout_log ORDER BY created_at DESC LIMIT {MAX_EXPORT_ROWS}")
+    if workout_log:
+        sheets_data['Workout Log'] = workout_log
+        logger.info(f"Fetched {len(workout_log)} workout log rows")
+        
+    # 3. Weekly Summary
+    logger.info("Calculating weekly summary")
+    weekly_summary_raw = calculate_weekly_summary('Total')
+    if weekly_summary_raw:
+        weekly_summary = _weekly_summary_to_rows(weekly_summary_raw)
+        sheets_data['Weekly Summary'] = weekly_summary
+        logger.info(f"Generated {len(weekly_summary)} weekly summary rows")
+        
+    # 4. Session Summary
+    logger.info("Fetching session summary data")
+    session_summary_query = f"""
+        SELECT 
+            date(wl.created_at) as session_date, wl.routine, wl.exercise,
+            e.primary_muscle_group, e.secondary_muscle_group, e.tertiary_muscle_group, e.advanced_isolated_muscles,
+            wl.planned_sets, wl.planned_min_reps, wl.planned_max_reps, wl.planned_weight, wl.planned_rir, wl.planned_rpe,
+            wl.scored_weight, wl.scored_max_reps, wl.scored_rir, wl.scored_rpe
+        FROM workout_log wl
+        LEFT JOIN exercises e ON wl.exercise = e.exercise_name
+        WHERE (wl.scored_weight IS NOT NULL OR wl.scored_max_reps IS NOT NULL OR wl.planned_weight IS NOT NULL OR wl.planned_sets IS NOT NULL)
+        AND wl.routine IS NOT NULL
+        ORDER BY wl.created_at DESC
+        LIMIT {MAX_EXPORT_ROWS}
+    """
+    session_summary = db.fetch_all(session_summary_query)
+    if session_summary:
+        sheets_data['Session Summary'] = session_summary
+        logger.info(f"Fetched {len(session_summary)} session summary rows")
+        
+    # 5. Progression Goals
+    logger.info("Fetching progression goals")
+    progression_goals = db.fetch_all("""
+        SELECT exercise, goal_type, current_value, target_value, goal_date, completed, created_at
+        FROM progression_goals ORDER BY created_at DESC
+    """)
+    if progression_goals:
+        sheets_data['Progression Goals'] = progression_goals
+        logger.info(f"Fetched {len(progression_goals)} progression goals")
+        
+    # 6. Categories Summary
+    logger.info("Calculating exercise categories")
+    categories = calculate_exercise_categories()
+    if categories:
+        sheets_data['Categories'] = categories
+        logger.info(f"Generated {len(categories)} category rows")
+        
+    # 7. Isolated Muscles Stats
+    logger.info("Calculating isolated muscles stats")
+    isolated_muscles = calculate_isolated_muscles_stats()
+    if isolated_muscles:
+        sheets_data['Isolated Muscles'] = isolated_muscles
+        logger.info(f"Generated {len(isolated_muscles)} isolated muscle rows")
+        
+    return sheets_data
+
+
 @exports_bp.route("/export_to_excel", methods=['GET'])
 def export_to_excel():
     """
@@ -316,275 +484,11 @@ def export_to_excel():
                 'view_mode': view_mode
             }
         )
-        sheets_data = {}
         
         with DatabaseHandler() as db:
-            # Export User Selection (Workout Plan)
-            logger.info("Fetching workout plan data")
+            _recalculate_exercise_order(db)
+            sheets_data = _fetch_all_sheets(db, view_mode)
             
-            # Check if exercise_order column exists and initialize if needed
-            from routes.workout_plan import column_exists
-            
-            # Initialize/Recalculate exercise_order if column exists
-            if column_exists(db, 'user_selection', 'exercise_order'):
-                # Check current state of exercise_order
-                total_check = db.fetch_one("SELECT COUNT(*) as count FROM user_selection")
-                order_check = db.fetch_one("SELECT COUNT(DISTINCT exercise_order) as distinct_count, COUNT(*) as total_count FROM user_selection WHERE exercise_order IS NOT NULL")
-                
-                # Recalculate if all values are the same (like all "1") or NULL
-                needs_recalc = False
-                if total_check and total_check['count'] > 0:
-                    if order_check and order_check['distinct_count'] == 1:
-                        # All non-NULL values are the same - need to recalculate
-                        logger.info(f"All exercise_order values are the same ({order_check['distinct_count']} distinct). Recalculating...")
-                        needs_recalc = True
-                    elif order_check and order_check['total_count'] < total_check['count']:
-                        # Some values are NULL
-                        logger.info(f"Some exercise_order values are NULL. Initializing...")
-                        needs_recalc = True
-                
-                if needs_recalc:
-                    logger.info(f"Recalculating exercise_order for {total_check['count']} rows")
-                    
-                    # Get all rows ordered by routine and exercise (don't use existing exercise_order)
-                    ordered_rows = db.fetch_all("""
-                        SELECT id FROM user_selection 
-                        ORDER BY routine, exercise, id
-                    """)
-                    
-                    logger.info(f"Found {len(ordered_rows)} rows to update")
-                    
-                    # Update each row with its sequential order
-                    updated_count = 0
-                    for index, row in enumerate(ordered_rows, start=1):
-                        try:
-                            db.execute_query(
-                                "UPDATE user_selection SET exercise_order = ? WHERE id = ?",
-                                (index, row['id'])
-                            )
-                            updated_count += 1
-                            if index <= 3:  # Log first 3 for debugging
-                                logger.debug(f"Updated row id={row['id']} to exercise_order={index}")
-                        except Exception as e:
-                            logger.error(f"Error updating row id={row['id']}: {e}")
-                    
-                    # Verify the updates
-                    verify = db.fetch_one("SELECT COUNT(DISTINCT exercise_order) as distinct_count FROM user_selection WHERE exercise_order IS NOT NULL")
-                    logger.info(f"exercise_order recalculated: {updated_count} rows updated, {verify['distinct_count'] if verify else 0} distinct values")
-            
-            # Check if superset_group column exists
-            has_superset = column_exists(db, 'user_selection', 'superset_group')
-            has_order = column_exists(db, 'user_selection', 'exercise_order')
-            
-            # Build query to fetch all needed columns from exercises table for proper export
-            # Order by routine first, then group superset exercises together, then by exercise_order
-            if has_superset and has_order:
-                # For superset exercises: group them together by using a subquery to find 
-                # the minimum exercise_order within each superset group
-                # This ensures superset exercises appear consecutively at their first member's position
-                user_selection_query = """
-                    WITH superset_min_order AS (
-                        SELECT superset_group, routine, MIN(exercise_order) as min_order
-                        FROM user_selection
-                        WHERE superset_group IS NOT NULL
-                        GROUP BY superset_group, routine
-                    )
-                    SELECT 
-                        us.routine,
-                        us.exercise,
-                        e.primary_muscle_group,
-                        e.secondary_muscle_group,
-                        e.tertiary_muscle_group,
-                        e.advanced_isolated_muscles,
-                        e.utility,
-                        e.movement_pattern,
-                        e.movement_subpattern,
-                        us.sets,
-                        us.min_rep_range,
-                        us.max_rep_range,
-                        us.rir,
-                        us.rpe,
-                        us.weight,
-                        us.execution_style,
-                        e.grips,
-                        e.stabilizers,
-                        e.synergists,
-                        us.superset_group,
-                        us.exercise_order,
-                        CASE 
-                            WHEN us.superset_group IS NOT NULL THEN smo.min_order
-                            ELSE us.exercise_order
-                        END as sort_order
-                    FROM user_selection us
-                    LEFT JOIN exercises e ON us.exercise = e.exercise_name
-                    LEFT JOIN superset_min_order smo 
-                        ON us.superset_group = smo.superset_group 
-                        AND us.routine = smo.routine
-                    ORDER BY us.routine, 
-                             sort_order,
-                             CASE WHEN us.superset_group IS NOT NULL THEN 0 ELSE 1 END,
-                             us.superset_group,
-                             us.exercise_order,
-                             us.exercise
-                """
-            elif has_order:
-                user_selection_query = """
-                    SELECT 
-                        us.routine,
-                        us.exercise,
-                        e.primary_muscle_group,
-                        e.secondary_muscle_group,
-                        e.tertiary_muscle_group,
-                        e.advanced_isolated_muscles,
-                        e.utility,
-                        e.movement_pattern,
-                        e.movement_subpattern,
-                        us.sets,
-                        us.min_rep_range,
-                        us.max_rep_range,
-                        us.rir,
-                        us.rpe,
-                        us.weight,
-                        us.execution_style,
-                        e.grips,
-                        e.stabilizers,
-                        e.synergists,
-                        us.superset_group,
-                        us.exercise_order
-                    FROM user_selection us
-                    LEFT JOIN exercises e ON us.exercise = e.exercise_name
-                    ORDER BY us.routine, us.exercise_order, us.exercise
-                """
-            else:
-                user_selection_query = """
-                    SELECT 
-                        us.routine,
-                        us.exercise,
-                        e.primary_muscle_group,
-                        e.secondary_muscle_group,
-                        e.tertiary_muscle_group,
-                        e.advanced_isolated_muscles,
-                        e.utility,
-                        e.movement_pattern,
-                        e.movement_subpattern,
-                        us.sets,
-                        us.min_rep_range,
-                        us.max_rep_range,
-                        us.rir,
-                        us.rpe,
-                        us.weight,
-                        us.execution_style,
-                        e.grips,
-                        e.stabilizers,
-                        e.synergists,
-                        us.superset_group
-                    FROM user_selection us
-                    LEFT JOIN exercises e ON us.exercise = e.exercise_name
-                    ORDER BY us.routine, us.exercise
-                """
-            
-            user_selection = db.fetch_all(user_selection_query)
-            if user_selection:
-                # Reorder and rename columns based on view mode
-                user_selection = reorder_and_rename_columns(
-                    user_selection, 
-                    WORKOUT_PLAN_COLUMNS, 
-                    view_mode
-                )
-                sheets_data['Workout Plan'] = user_selection
-                logger.info(f"Fetched {len(user_selection)} workout plan rows")
-
-            # Export Workout Log
-            logger.info("Fetching workout log data")
-            workout_log_query = f"""
-            SELECT * FROM workout_log 
-            ORDER BY created_at DESC
-            LIMIT {MAX_EXPORT_ROWS}
-            """
-            workout_log = db.fetch_all(workout_log_query)
-            if workout_log:
-                sheets_data['Workout Log'] = workout_log
-                logger.info(f"Fetched {len(workout_log)} workout log rows")
-
-            # Export Weekly Summary
-            logger.info("Calculating weekly summary")
-            weekly_summary_raw = calculate_weekly_summary('Total')
-            if weekly_summary_raw:
-                weekly_summary = _weekly_summary_to_rows(weekly_summary_raw)
-                sheets_data['Weekly Summary'] = weekly_summary
-                logger.info(f"Generated {len(weekly_summary)} weekly summary rows")
-
-            # Export Session Summary with exercise categories
-            logger.info("Fetching session summary data")
-            session_summary_query = f"""
-            SELECT 
-                date(wl.created_at) as session_date,
-                wl.routine,
-                wl.exercise,
-                e.primary_muscle_group,
-                e.secondary_muscle_group,
-                e.tertiary_muscle_group,
-                e.advanced_isolated_muscles,
-                wl.planned_sets,
-                wl.planned_min_reps,
-                wl.planned_max_reps,
-                wl.planned_weight,
-                wl.planned_rir,
-                wl.planned_rpe,
-                wl.scored_weight,
-                wl.scored_max_reps,
-                wl.scored_rir,
-                wl.scored_rpe
-            FROM workout_log wl
-            LEFT JOIN exercises e ON wl.exercise = e.exercise_name
-            WHERE (
-                wl.scored_weight IS NOT NULL
-                OR wl.scored_max_reps IS NOT NULL
-                OR wl.planned_weight IS NOT NULL
-                OR wl.planned_sets IS NOT NULL
-            )
-            AND wl.routine IS NOT NULL
-            ORDER BY wl.created_at DESC
-            LIMIT {MAX_EXPORT_ROWS}
-            """
-            session_summary = db.fetch_all(session_summary_query)
-            if session_summary:
-                sheets_data['Session Summary'] = session_summary
-                logger.info(f"Fetched {len(session_summary)} session summary rows")
-
-            # Export Progression Goals
-            logger.info("Fetching progression goals")
-            progression_query = """
-            SELECT 
-                exercise,
-                goal_type,
-                current_value,
-                target_value,
-                goal_date,
-                completed,
-                created_at
-            FROM progression_goals
-            ORDER BY created_at DESC
-            """
-            progression_goals = db.fetch_all(progression_query)
-            if progression_goals:
-                sheets_data['Progression Goals'] = progression_goals
-                logger.info(f"Fetched {len(progression_goals)} progression goals")
-
-            # Export Categories Summary
-            logger.info("Calculating exercise categories")
-            categories = calculate_exercise_categories()
-            if categories:
-                sheets_data['Categories'] = categories
-                logger.info(f"Generated {len(categories)} category rows")
-
-            # Export Isolated Muscles Stats
-            logger.info("Calculating isolated muscles stats")
-            isolated_muscles = calculate_isolated_muscles_stats()
-            if isolated_muscles:
-                sheets_data['Isolated Muscles'] = isolated_muscles
-                logger.info(f"Generated {len(isolated_muscles)} isolated muscle rows")
-
         # Generate filename with timestamp
         filename = generate_timestamped_filename('workout_tracker_summary')
         
@@ -619,15 +523,11 @@ def export_to_excel():
     except Exception as e:
         logger.exception(f"Error exporting to Excel: {e}")
         # Return JSON error response properly
-        # The frontend should handle this and show an error message
-        error = error_response(
+        return error_response(
             "EXPORT_FAILED",
             "Failed to export data to Excel. Please try again.",
             500
         )
-        # error_response returns a tuple (response, status_code)
-        # For export endpoint, we need to return it properly
-        return error
 
 @exports_bp.route("/export_to_workout_log", methods=["POST"])
 def export_to_workout_log():

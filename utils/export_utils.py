@@ -12,11 +12,10 @@ import re
 import os
 import tempfile
 from io import BytesIO
-from typing import List, Dict, Any, Generator, Optional
+from typing import List, Dict, Any, Generator
 from datetime import datetime
 from flask import Response, make_response
-from werkzeug.utils import secure_filename
-import logging
+
 from utils.config import MAX_EXPORT_ROWS, EXPORT_BATCH_SIZE, MAX_FILENAME_LENGTH, STREAMING_THRESHOLD
 from utils.logger import get_logger
 
@@ -181,6 +180,111 @@ def stream_excel_response(
     return response
 
 
+def _setup_formats(workbook) -> tuple[Any, Any, Dict[int, Any]]:
+    header_format = workbook.add_format({
+        'bold': True,
+        'bg_color': '#4A90E2',
+        'font_color': '#FFFFFF',
+        'border': 1
+    })
+    
+    cell_format = workbook.add_format({
+        'border': 1
+    })
+    
+    superset_formats = {
+        1: workbook.add_format({
+            'border': 1,
+            'bg_color': '#E8E0F0',
+            'left': 5,
+            'left_color': '#7C3AED'
+        }),
+        2: workbook.add_format({
+            'border': 1,
+            'bg_color': '#E0F0F0',
+            'left': 5,
+            'left_color': '#0891B2'
+        }),
+        3: workbook.add_format({
+            'border': 1,
+            'bg_color': '#E0F5ED',
+            'left': 5,
+            'left_color': '#059669'
+        }),
+        4: workbook.add_format({
+            'border': 1,
+            'bg_color': '#FEF3E0',
+            'left': 5,
+            'left_color': '#D97706'
+        })
+    }
+    return header_format, cell_format, superset_formats
+
+
+def _build_superset_color_map(data: List[Dict[str, Any]]) -> Dict[str, int]:
+    superset_color_map = {}
+    color_index = 0
+    for row_data in data:
+        superset_group = row_data.get('superset_group') or row_data.get('Superset Group')
+        if superset_group and superset_group not in superset_color_map:
+            color_index = (color_index % 4) + 1
+            superset_color_map[superset_group] = color_index
+    return superset_color_map
+
+
+def _write_worksheet(workbook, sheet_name: str, data: Any, header_format, cell_format, superset_formats) -> bool:
+    if data is None:
+        logger.info(f"Skipping None sheet: {sheet_name}")
+        return False
+    if not isinstance(data, list):
+        logger.warning(f"Sheet {sheet_name} has invalid data type: {type(data)}")
+        return False
+    if len(data) == 0:
+        logger.info(f"Skipping empty sheet: {sheet_name}")
+        return False
+        
+    safe_sheet_name = sheet_name[:31]
+    worksheet = workbook.add_worksheet(safe_sheet_name)
+    logger.debug(f"Added worksheet: {safe_sheet_name} with {len(data)} rows")
+    
+    if not isinstance(data[0], dict):
+        logger.warning(f"First row of {sheet_name} is not a dict: {type(data[0])}")
+        return True
+        
+    headers = list(data[0].keys())
+    
+    for col_idx, header in enumerate(headers):
+        worksheet.set_column(col_idx, col_idx, max(len(str(header)) + 2, 10))
+        worksheet.write(0, col_idx, header, header_format)
+        
+    rows_written = 0
+    superset_color_map = {}
+    if sheet_name == 'Workout Plan':
+        superset_color_map = _build_superset_color_map(data)
+        
+    for row_idx, row_data in enumerate(data, start=1):
+        if rows_written >= MAX_EXPORT_ROWS:
+            logger.warning(f"Reached max export rows ({MAX_EXPORT_ROWS}) for sheet {sheet_name}")
+            break
+            
+        row_format = cell_format
+        if sheet_name == 'Workout Plan':
+            superset_group = row_data.get('superset_group') or row_data.get('Superset Group')
+            if superset_group and superset_group in superset_color_map:
+                color_num = superset_color_map[superset_group]
+                row_format = superset_formats.get(color_num, cell_format)
+                
+        for col_idx, key in enumerate(headers):
+            value = row_data.get(key, '')
+            if value is None:
+                value = ''
+            worksheet.write(row_idx, col_idx, value, row_format)
+            
+        rows_written += 1
+        
+    return True
+
+
 def create_excel_workbook(
     sheets_data: Dict[str, List[Dict[str, Any]]],
     filename: str
@@ -203,129 +307,24 @@ def create_excel_workbook(
     
     logger.info(f"Creating Excel workbook with {len(sheets_data)} sheet(s)")
     
-    # Use a temporary file instead of BytesIO for more reliable Excel file generation
-    # This approach is more compatible with XlsxWriter and ensures the file is properly written
     temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.xlsx')
     temp_file_path = temp_file.name
-    temp_file.close()  # Close the file handle, XlsxWriter will manage it
+    temp_file.close()
     
     logger.info(f"Using temporary file: {temp_file_path}")
     workbook = None
     
     try:
-        # Lazy load xlsxwriter - only imported when export is requested
         from xlsxwriter import Workbook
         
-        # Write to temporary file instead of BytesIO - this is more reliable
         workbook = Workbook(temp_file_path)
         worksheets_created = 0
         
-        # Define some formats for better readability
-        header_format = workbook.add_format({
-            'bold': True,
-            'bg_color': '#4A90E2',
-            'font_color': '#FFFFFF',
-            'border': 1
-        })
-        
-        cell_format = workbook.add_format({
-            'border': 1
-        })
-        
-        # Superset formatting - 4 color variations with visual indicators
-        superset_formats = {
-            1: workbook.add_format({
-                'border': 1,
-                'bg_color': '#E8E0F0',  # Light purple
-                'left': 5,  # Thick left border
-                'left_color': '#7C3AED'  # Purple
-            }),
-            2: workbook.add_format({
-                'border': 1,
-                'bg_color': '#E0F0F0',  # Light teal
-                'left': 5,
-                'left_color': '#0891B2'  # Teal
-            }),
-            3: workbook.add_format({
-                'border': 1,
-                'bg_color': '#E0F5ED',  # Light green
-                'left': 5,
-                'left_color': '#059669'  # Green
-            }),
-            4: workbook.add_format({
-                'border': 1,
-                'bg_color': '#FEF3E0',  # Light orange
-                'left': 5,
-                'left_color': '#D97706'  # Orange
-            })
-        }
+        header_format, cell_format, superset_formats = _setup_formats(workbook)
         
         for sheet_name, data in sheets_data.items():
-            # Check if data is None or empty
-            if data is None:
-                logger.info(f"Skipping None sheet: {sheet_name}")
-                continue
-            if not isinstance(data, list):
-                logger.warning(f"Sheet {sheet_name} has invalid data type: {type(data)}")
-                continue
-            if len(data) == 0:
-                logger.info(f"Skipping empty sheet: {sheet_name}")
-                continue
-            
-            # Truncate sheet name to Excel's 31 character limit
-            safe_sheet_name = sheet_name[:31]
-            worksheet = workbook.add_worksheet(safe_sheet_name)
-            worksheets_created += 1
-            logger.debug(f"Added worksheet: {safe_sheet_name} with {len(data)} rows")
-            
-            # Get headers from first row - ensure it's a dict
-            if not isinstance(data[0], dict):
-                logger.warning(f"First row of {sheet_name} is not a dict: {type(data[0])}")
-                continue
-            headers = list(data[0].keys())
-            
-            # Set column width and write headers
-            for col_idx, header in enumerate(headers):
-                # Auto-size column width based on header
-                worksheet.set_column(col_idx, col_idx, max(len(str(header)) + 2, 10))
-                worksheet.write(0, col_idx, header, header_format)
-            
-            # Write data rows
-            rows_written = 0
-            
-            # For Workout Plan sheet, build superset color map for visual grouping
-            superset_color_map = {}
-            if sheet_name == 'Workout Plan':
-                color_index = 0
-                for row_data in data:
-                    # Support both original and renamed column names
-                    superset_group = row_data.get('superset_group') or row_data.get('Superset Group')
-                    if superset_group and superset_group not in superset_color_map:
-                        color_index = (color_index % 4) + 1
-                        superset_color_map[superset_group] = color_index
-            
-            for row_idx, row_data in enumerate(data, start=1):
-                if rows_written >= MAX_EXPORT_ROWS:
-                    logger.warning(f"Reached max export rows ({MAX_EXPORT_ROWS}) for sheet {sheet_name}")
-                    break
-                
-                # Determine cell format based on superset group (for Workout Plan sheet)
-                row_format = cell_format
-                if sheet_name == 'Workout Plan':
-                    # Support both original and renamed column names
-                    superset_group = row_data.get('superset_group') or row_data.get('Superset Group')
-                    if superset_group and superset_group in superset_color_map:
-                        color_num = superset_color_map[superset_group]
-                        row_format = superset_formats.get(color_num, cell_format)
-                
-                for col_idx, key in enumerate(headers):
-                    value = row_data.get(key, '')
-                    # Handle None values
-                    if value is None:
-                        value = ''
-                    worksheet.write(row_idx, col_idx, value, row_format)
-                
-                rows_written += 1
+            if _write_worksheet(workbook, sheet_name, data, header_format, cell_format, superset_formats):
+                worksheets_created += 1
         
         # Ensure at least one worksheet is created to make the Excel file valid
         if worksheets_created == 0:

@@ -1,11 +1,13 @@
+"""Utilities package.
+
+Prefer importing concrete modules such as ``utils.db_initializer`` instead of
+relying on package-level re-exports for new code.
+"""
+
 # Core imports
 from .config import DB_FILE
 from .database import DatabaseHandler
 from .db_initializer import initialize_database
-
-# Data handling and business logic
-from .data_handler import DataHandler
-from .business_logic import BusinessLogic
 
 # Exercise management
 from .exercise_manager import (
@@ -36,7 +38,6 @@ from .volume_classifier import (
 
 # Workout log functionality
 from .workout_log import (
-    get_workout_logs,
     check_progression
 )
 
@@ -52,10 +53,6 @@ __all__ = [
     "DB_FILE",
     "DatabaseHandler",
     "initialize_database",
-    
-    # Data handling
-    "DataHandler",
-    "BusinessLogic",
     
     # Exercise management
     "get_exercises",
@@ -79,7 +76,6 @@ __all__ = [
     "get_subcategory_tooltip",
     
     # Workout log
-    "get_workout_logs",
     "check_progression",
     
     # User selection
@@ -88,12 +84,3 @@ __all__ = [
     # Plan generator
     "generate_starter_plan",
 ]
-
-# Remove duplicate function definition
-def get_workout_logs():
-    """
-    This function is now imported from workout_log.py
-    Keeping this here for backward compatibility
-    """
-    from .workout_log import get_workout_logs as get_logs
-    return get_logs()

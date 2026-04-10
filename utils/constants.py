@@ -312,3 +312,20 @@ GROUP_LABELS_FORBIDDEN_IN_ADV = {
     "latissimus-dorsi",
     "lats",
 }
+
+# Antagonist pairing rules for optimal supersets
+ANTAGONIST_PAIRS = {
+    # Upper body
+    'biceps': ['triceps'],
+    'triceps': ['biceps'],
+    'chest': ['upper back', 'latissimus dorsi', 'middle-traps'],
+    'latissimus dorsi': ['chest', 'front-shoulder'],
+    'upper back': ['chest', 'front-shoulder'],
+    'front-shoulder': ['latissimus dorsi', 'upper back'],
+    'rear-shoulder': ['front-shoulder', 'middle-shoulder'],
+    # Lower body
+    'quadriceps': ['hamstrings', 'gluteus maximus'],
+    'hamstrings': ['quadriceps'],
+    'gluteus maximus': ['quadriceps', 'hip-adductors'],
+    'calves': ['quadriceps', 'hamstrings'],  # Non-competing with main movers
+}

@@ -10,6 +10,16 @@
 import type { Page } from '@playwright/test';
 import { test, expect, ROUTES, SELECTORS, waitForPageReady } from './fixtures';
 
+const COUNTING_MODE_OPTIONS = [
+  { value: 'effective', text: 'Effective Sets (Effort & Rep Range Weighted)' },
+  { value: 'raw', text: 'Raw Sets (Unweighted)' },
+];
+
+const CONTRIBUTION_MODE_OPTIONS = [
+  { value: 'total', text: 'Total (Primary + Secondary + Tertiary)' },
+  { value: 'direct', text: 'Direct Only (Primary Muscle Only)' },
+];
+
 function unwrapApiData(payload: unknown) {
   if (
     payload &&
@@ -42,6 +52,32 @@ async function expectSharedLegendSwatches(page: Page) {
   );
 }
 
+async function expectMethodSelectorContract(page: Page, updaterName: string) {
+  const methodSelector = page.locator('.method-selector');
+  await expect(methodSelector).toBeVisible();
+
+  const countingMode = page.locator('#counting-mode');
+  const contributionMode = page.locator('#contribution-mode');
+
+  await expect(page.locator('label[for="counting-mode"]')).toHaveText('Set Counting Mode');
+  await expect(page.locator('label[for="contribution-mode"]')).toHaveText('Muscle Contribution Mode');
+  await expect(countingMode).toHaveAttribute('onchange', `${updaterName}()`);
+  await expect(contributionMode).toHaveAttribute('onchange', `${updaterName}()`);
+
+  await expect(countingMode.locator('option')).toHaveCount(COUNTING_MODE_OPTIONS.length);
+  await expect(contributionMode.locator('option')).toHaveCount(CONTRIBUTION_MODE_OPTIONS.length);
+
+  for (const [index, option] of COUNTING_MODE_OPTIONS.entries()) {
+    await expect(countingMode.locator('option').nth(index)).toHaveAttribute('value', option.value);
+    await expect(countingMode.locator('option').nth(index)).toHaveText(option.text);
+  }
+
+  for (const [index, option] of CONTRIBUTION_MODE_OPTIONS.entries()) {
+    await expect(contributionMode.locator('option').nth(index)).toHaveAttribute('value', option.value);
+    await expect(contributionMode.locator('option').nth(index)).toHaveText(option.text);
+  }
+}
+
 test.describe('Weekly Summary Page', () => {
   test.beforeEach(async ({ page, consoleErrors }) => {
     consoleErrors.startCollecting();
@@ -62,23 +98,7 @@ test.describe('Weekly Summary Page', () => {
   });
 
   test('calculation mode selectors are present', async ({ page }) => {
-    // Check counting mode selector
-    const countingMode = page.locator('#counting-mode');
-    await expect(countingMode).toBeVisible();
-
-    // Check it has the expected options
-    const countingOptions = countingMode.locator('option');
-    const countingCount = await countingOptions.count();
-    expect(countingCount).toBeGreaterThanOrEqual(2);
-
-    // Check contribution mode selector
-    const contributionMode = page.locator('#contribution-mode');
-    await expect(contributionMode).toBeVisible();
-
-    // Check it has the expected options
-    const contributionOptions = contributionMode.locator('option');
-    const contributionCount = await contributionOptions.count();
-    expect(contributionCount).toBeGreaterThanOrEqual(2);
+    await expectMethodSelectorContract(page, 'updateWeeklySummary');
   });
 
   test('volume legend is displayed', async ({ page }) => {
@@ -158,6 +178,8 @@ test.describe('Weekly Summary Page', () => {
     ]);
 
     expect(countingResponse.ok()).toBeTruthy();
+    expect(countingResponse.url()).toContain('counting_mode=raw');
+    expect(countingResponse.url()).toContain('contribution_mode=total');
     const countingResponsePayload = await countingResponse.json();
     expect(countingResponsePayload.ok).toBe(true);
     expect(countingResponsePayload.status).toBe('success');
@@ -179,6 +201,8 @@ test.describe('Weekly Summary Page', () => {
     ]);
 
     expect(contributionResponse.ok()).toBeTruthy();
+    expect(contributionResponse.url()).toContain('counting_mode=raw');
+    expect(contributionResponse.url()).toContain('contribution_mode=direct');
     const contributionResponsePayload = await contributionResponse.json();
     expect(contributionResponsePayload.ok).toBe(true);
     expect(contributionResponsePayload.status).toBe('success');
@@ -208,13 +232,7 @@ test.describe('Session Summary Page', () => {
   });
 
   test('calculation mode selectors are present', async ({ page }) => {
-    // Check counting mode selector
-    const countingMode = page.locator('#counting-mode');
-    await expect(countingMode).toBeVisible();
-
-    // Check contribution mode selector  
-    const contributionMode = page.locator('#contribution-mode');
-    await expect(contributionMode).toBeVisible();
+    await expectMethodSelectorContract(page, 'updateSessionSummary');
   });
 
   test('volume legend is displayed', async ({ page }) => {
@@ -264,6 +282,8 @@ test.describe('Session Summary Page', () => {
     ]);
 
     expect(countingResponse.ok()).toBeTruthy();
+    expect(countingResponse.url()).toContain('counting_mode=raw');
+    expect(countingResponse.url()).toContain('contribution_mode=total');
     const countingResponsePayload = await countingResponse.json();
     expect(countingResponsePayload.ok).toBe(true);
     expect(countingResponsePayload.status).toBe('success');
@@ -285,6 +305,8 @@ test.describe('Session Summary Page', () => {
     ]);
 
     expect(contributionResponse.ok()).toBeTruthy();
+    expect(contributionResponse.url()).toContain('counting_mode=raw');
+    expect(contributionResponse.url()).toContain('contribution_mode=direct');
     const contributionResponsePayload = await contributionResponse.json();
     expect(contributionResponsePayload.ok).toBe(true);
     expect(contributionResponsePayload.status).toBe('success');

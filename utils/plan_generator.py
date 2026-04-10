@@ -7,7 +7,7 @@ and evidence-based programming principles.
 from __future__ import annotations
 
 import random
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 from utils.database import DatabaseHandler
@@ -15,14 +15,11 @@ from utils.logger import get_logger
 from utils.movement_patterns import (
     MovementPattern,
     MovementSubpattern,
-    MovementCategory,
     SlotDefinition,
     PrescriptionRules,
     SESSION_BLUEPRINTS,
     ENVIRONMENT_EQUIPMENT,
-    HOME_BASIC_EQUIPMENT,
     classify_exercise,
-    get_pattern_category,
 )
 
 logger = get_logger()

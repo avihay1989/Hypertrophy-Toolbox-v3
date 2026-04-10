@@ -36,6 +36,26 @@ class VolumeWarningLevel(Enum):
     EXCESSIVE = "excessive"
 
 
+def parse_counting_mode(value: Optional[str]) -> CountingMode:
+    """Parse counting mode from a request/query value.
+
+    Defaults to EFFECTIVE for missing or unrecognized values.
+    """
+    if value and value.lower() == "raw":
+        return CountingMode.RAW
+    return CountingMode.EFFECTIVE
+
+
+def parse_contribution_mode(value: Optional[str]) -> ContributionMode:
+    """Parse contribution mode from a request/query value.
+
+    Defaults to TOTAL for missing or unrecognized values.
+    """
+    if value and value.lower() == "direct":
+        return ContributionMode.DIRECT_ONLY
+    return ContributionMode.TOTAL
+
+
 # Effort factor buckets (RIR-based, discrete buckets)
 # RIR 0-1: High effort (near failure) - full credit
 # RIR 2-3: Moderate-high effort - slight reduction

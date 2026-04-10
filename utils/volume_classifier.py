@@ -6,6 +6,22 @@ from utils.effective_sets import (
     VolumeWarningLevel,
 )
 
+_VOLUME_TIERS = [
+    (30, "ultra-volume", "Excessive Volume"),
+    (20, "high-volume", "High Volume"),
+    (10, "medium-volume", "Medium Volume"),
+    (0, "low-volume", "Low Volume"),
+]
+
+
+def _classify(total_sets):
+    """Return the raw-volume CSS class and label for a set count."""
+    for minimum_sets, css_class, label in _VOLUME_TIERS:
+        if total_sets >= minimum_sets:
+            return css_class, label
+
+    return _VOLUME_TIERS[-1][1], _VOLUME_TIERS[-1][2]
+
 
 def get_volume_class(total_sets):
     """Return the CSS class for volume classification (raw sets based).
@@ -13,26 +29,12 @@ def get_volume_class(total_sets):
     This is the legacy classification based on raw set counts.
     For effective sets classification, use get_effective_volume_class.
     """
-    if total_sets < 10:
-        return "low-volume"
-    elif total_sets < 20:
-        return "medium-volume"
-    elif total_sets < 30:
-        return "high-volume"
-    else:
-        return "ultra-volume"
+    return _classify(total_sets)[0]
 
 
 def get_volume_label(total_sets):
     """Return the text label for volume classification."""
-    if total_sets < 10:
-        return "Low Volume"
-    elif total_sets < 20:
-        return "Medium Volume"
-    elif total_sets < 30:
-        return "High Volume"
-    else:
-        return "Excessive Volume"
+    return _classify(total_sets)[1]
 
 
 def get_effective_volume_label(effective_sets):
@@ -75,6 +77,7 @@ def get_session_warning_tooltip(effective_per_session):
         return f"Session volume BORDERLINE ({effective_per_session:.1f} effective sets) - Approaching productive limits"
     else:
         return f"Session volume EXCESSIVE ({effective_per_session:.1f} effective sets) - May exceed productive stimulus"
+
 
 def get_category_tooltip(category):
     tooltips = {

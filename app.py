@@ -1,6 +1,6 @@
 
 from flask import Flask, render_template, url_for, jsonify, request, make_response, g
-from utils import initialize_database
+from utils.db_initializer import initialize_database
 from utils.database import DatabaseHandler, add_progression_goals_table, add_volume_tracking_tables
 from routes.workout_log import workout_log_bp
 from routes.weekly_summary import weekly_summary_bp

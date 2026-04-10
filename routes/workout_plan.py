@@ -9,7 +9,7 @@ from utils.exercise_manager import (
 from utils.errors import success_response, error_response
 from utils.logger import get_logger
 from routes.filters import ALLOWED_COLUMNS, validate_column_name
-from utils.constants import DIFFICULTY, MECHANIC, UTILITY
+from utils.constants import DIFFICULTY, MECHANIC, UTILITY, ANTAGONIST_PAIRS
 from utils.plan_generator import generate_starter_plan
 
 workout_plan_bp = Blueprint('workout_plan', __name__)
@@ -959,6 +959,69 @@ def suggest_replacement_exercise(current_exercise, muscle, equipment, candidates
     return random.choice(candidates)
 
 
+def _fetch_current_exercise_details(db: DatabaseHandler, exercise_id: int):
+    return db.fetch_one("""
+        SELECT 
+            us.id, us.routine, us.exercise, us.sets,
+            us.min_rep_range, us.max_rep_range, us.rir, us.rpe, us.weight,
+            e.primary_muscle_group, e.equipment
+        FROM user_selection us
+        LEFT JOIN exercises e ON us.exercise = e.exercise_name
+        WHERE us.id = ?
+    """, (exercise_id,))
+
+
+def _build_replacement_candidates(db: DatabaseHandler, routine: str, muscle: str, equipment: str, current_exercise: str) -> list[str]:
+    candidates_query = """
+        SELECT exercise_name
+        FROM exercises
+        WHERE LOWER(primary_muscle_group) = LOWER(?)
+          AND LOWER(equipment) = LOWER(?)
+          AND LOWER(exercise_name) != LOWER(?)
+    """
+    candidate_rows = db.fetch_all(candidates_query, (muscle, equipment, current_exercise))
+    candidate_names = [row['exercise_name'] for row in candidate_rows]
+    
+    routine_exercises_query = """
+        SELECT exercise FROM user_selection WHERE routine = ?
+    """
+    routine_exercises = db.fetch_all(routine_exercises_query, (routine,))
+    routine_exercise_names_lower = {row['exercise'].lower() for row in routine_exercises}
+    
+    return [c for c in candidate_names if c.lower() not in routine_exercise_names_lower]
+
+
+def _perform_exercise_swap(db: DatabaseHandler, exercise_id: int, new_exercise: str):
+    db.execute_query(
+        "UPDATE user_selection SET exercise = ? WHERE id = ?",
+        (new_exercise, exercise_id)
+    )
+    
+    updated_row_result = db.fetch_one("""
+        SELECT 
+            us.id, us.routine, us.exercise, us.sets,
+            us.min_rep_range, us.max_rep_range, us.rir, us.rpe, us.weight,
+            e.primary_muscle_group, e.secondary_muscle_group,
+            e.tertiary_muscle_group, e.advanced_isolated_muscles,
+            e.utility, e.grips, e.stabilizers, e.synergists, e.equipment
+        FROM user_selection us
+        LEFT JOIN exercises e ON us.exercise = e.exercise_name
+        WHERE us.id = ?
+    """, (exercise_id,))
+    
+    updated_row: dict = dict(updated_row_result) if updated_row_result else {}
+    
+    if column_exists(db, 'user_selection', 'exercise_order'):
+        order_row = db.fetch_one(
+            "SELECT exercise_order FROM user_selection WHERE id = ?",
+            (exercise_id,)
+        )
+        if order_row and order_row.get('exercise_order'):
+            updated_row['exercise_order'] = order_row['exercise_order']
+            
+    return updated_row
+
+
 @workout_plan_bp.route("/replace_exercise", methods=["POST"])
 def replace_exercise():
     """
@@ -988,31 +1051,16 @@ def replace_exercise():
         exercise_id = int(exercise_id)
         
         with DatabaseHandler() as db:
-            # a) Fetch the current user_selection row with exercise metadata
-            current_row = db.fetch_one("""
-                SELECT 
-                    us.id, us.routine, us.exercise, us.sets,
-                    us.min_rep_range, us.max_rep_range, us.rir, us.rpe, us.weight,
-                    e.primary_muscle_group, e.equipment
-                FROM user_selection us
-                LEFT JOIN exercises e ON us.exercise = e.exercise_name
-                WHERE us.id = ?
-            """, (exercise_id,))
+            current_row = _fetch_current_exercise_details(db, exercise_id)
             
             if not current_row:
-                return error_response(
-                    "NOT_FOUND", 
-                    "Exercise not found in workout plan",
-                    404,
-                    reason="not_found"
-                )
+                return error_response("NOT_FOUND", "Exercise not found in workout plan", 404, reason="not_found")
             
             current_exercise = current_row['exercise']
             routine = current_row['routine']
             muscle = current_row['primary_muscle_group']
             equipment = current_row['equipment']
             
-            # b) Validate we have the necessary metadata
             if not muscle or not equipment:
                 logger.warning(
                     "Cannot replace exercise - missing metadata",
@@ -1023,38 +1071,10 @@ def replace_exercise():
                         'equipment': equipment
                     }
                 )
-                return error_response(
-                    "VALIDATION_ERROR",
-                    "Exercise is missing muscle group or equipment metadata",
-                    400,
-                    reason="missing_metadata"
-                )
+                return error_response("VALIDATION_ERROR", "Exercise is missing muscle group or equipment metadata", 400, reason="missing_metadata")
             
-            # c) Build candidate pool from exercises table
-            # Match same primary muscle group and equipment (case-insensitive)
-            # Also exclude current exercise with case-insensitive comparison
-            candidates_query = """
-                SELECT exercise_name
-                FROM exercises
-                WHERE LOWER(primary_muscle_group) = LOWER(?)
-                  AND LOWER(equipment) = LOWER(?)
-                  AND LOWER(exercise_name) != LOWER(?)
-            """
-            candidate_rows = db.fetch_all(candidates_query, (muscle, equipment, current_exercise))
-            candidate_names = [row['exercise_name'] for row in candidate_rows]
+            valid_candidates = _build_replacement_candidates(db, routine, muscle, equipment, current_exercise)
             
-            # d) Exclude exercises already used in the same routine
-            routine_exercises_query = """
-                SELECT exercise FROM user_selection WHERE routine = ?
-            """
-            routine_exercises = db.fetch_all(routine_exercises_query, (routine,))
-            # Use case-insensitive comparison for routine exercises
-            routine_exercise_names_lower = {row['exercise'].lower() for row in routine_exercises}
-            
-            # Filter out exercises already in the routine (case-insensitive)
-            valid_candidates = [c for c in candidate_names if c.lower() not in routine_exercise_names_lower]
-            
-            # e) If no valid candidates, return failure
             if not valid_candidates:
                 return jsonify({
                     "ok": False,
@@ -1065,12 +1085,9 @@ def replace_exercise():
                         "reason": "no_candidates",
                         "message": f"No alternative exercises found for {muscle} with {equipment}"
                     }
-                }), 200  # Return 200 so frontend can handle gracefully
+                }), 200
             
-            # f) Choose replacement using AI or fallback
-            new_exercise = suggest_replacement_exercise(
-                current_exercise, muscle, equipment, valid_candidates, strategy
-            )
+            new_exercise = suggest_replacement_exercise(current_exercise, muscle, equipment, valid_candidates, strategy)
             
             if not new_exercise:
                 return jsonify({
@@ -1084,19 +1101,15 @@ def replace_exercise():
                     }
                 }), 200
             
-            # g) Double-check duplicate constraint before updating (case-insensitive)
             duplicate_check = db.fetch_one(
                 "SELECT id FROM user_selection WHERE routine = ? AND LOWER(exercise) = LOWER(?)",
                 (routine, new_exercise)
             )
             
             if duplicate_check:
-                # Try to find another candidate (case-insensitive comparison)
                 remaining_candidates = [c for c in valid_candidates if c.lower() != new_exercise.lower()]
                 if remaining_candidates:
-                    new_exercise = suggest_replacement_exercise(
-                        current_exercise, muscle, equipment, remaining_candidates, "fallback"
-                    )
+                    new_exercise = suggest_replacement_exercise(current_exercise, muscle, equipment, remaining_candidates, "fallback")
                     if not new_exercise:
                         return jsonify({
                             "ok": False,
@@ -1120,36 +1133,7 @@ def replace_exercise():
                         }
                     }), 200
             
-            # Update the exercise in user_selection
-            db.execute_query(
-                "UPDATE user_selection SET exercise = ? WHERE id = ?",
-                (new_exercise, exercise_id)
-            )
-            
-            # h) Fetch the updated row with full metadata for response
-            updated_row_result = db.fetch_one("""
-                SELECT 
-                    us.id, us.routine, us.exercise, us.sets,
-                    us.min_rep_range, us.max_rep_range, us.rir, us.rpe, us.weight,
-                    e.primary_muscle_group, e.secondary_muscle_group,
-                    e.tertiary_muscle_group, e.advanced_isolated_muscles,
-                    e.utility, e.grips, e.stabilizers, e.synergists, e.equipment
-                FROM user_selection us
-                LEFT JOIN exercises e ON us.exercise = e.exercise_name
-                WHERE us.id = ?
-            """, (exercise_id,))
-            
-            # Convert to dict and handle None case
-            updated_row: dict = dict(updated_row_result) if updated_row_result else {}
-            
-            # Check if exercise_order column exists and include it
-            if column_exists(db, 'user_selection', 'exercise_order'):
-                order_row = db.fetch_one(
-                    "SELECT exercise_order FROM user_selection WHERE id = ?",
-                    (exercise_id,)
-                )
-                if order_row and order_row.get('exercise_order'):
-                    updated_row['exercise_order'] = order_row['exercise_order']
+            updated_row = _perform_exercise_swap(db, exercise_id, new_exercise)
             
             logger.info(
                 "Exercise replaced successfully",
@@ -1164,7 +1148,6 @@ def replace_exercise():
                 }
             )
             
-            # Calculate remaining options (excluding the one we just picked)
             remaining_options = len([c for c in valid_candidates if c.lower() != new_exercise.lower()])
             
             return jsonify(success_response(
@@ -1188,6 +1171,82 @@ def replace_exercise():
 # =============================================================================
 # SUPERSET ENDPOINTS
 # =============================================================================
+
+def _validate_superset_link_request(db: DatabaseHandler, exercise_ids: list):
+    # Check if superset_group column exists
+    if not column_exists(db, 'user_selection', 'superset_group'):
+        return None, (
+            "INTERNAL_ERROR",
+            "Superset feature not available - database migration required",
+            500
+        )
+    
+    # Fetch both exercises
+    exercises = db.fetch_all(
+        "SELECT id, routine, exercise, superset_group FROM user_selection WHERE id IN (?, ?)",
+        tuple(exercise_ids)
+    )
+    
+    if len(exercises) != 2:
+        return None, (
+            "NOT_FOUND",
+            "One or both exercises not found",
+            404
+        )
+    
+    ex1, ex2 = exercises[0], exercises[1]
+    
+    # Validate same routine
+    if ex1['routine'] != ex2['routine']:
+        return None, (
+            "VALIDATION_ERROR",
+            f"Supersets must be within the same routine. '{ex1['exercise']}' is in '{ex1['routine']}' but '{ex2['exercise']}' is in '{ex2['routine']}'",
+            400
+        )
+    
+    # Validate neither is already in a superset
+    if ex1.get('superset_group'):
+        return None, (
+            "VALIDATION_ERROR",
+            f"'{ex1['exercise']}' is already in a superset. Unlink it first.",
+            400
+        )
+    if ex2.get('superset_group'):
+        return None, (
+            "VALIDATION_ERROR",
+            f"'{ex2['exercise']}' is already in a superset. Unlink it first.",
+            400
+        )
+        
+    return exercises, None
+
+
+def _apply_superset_link(db: DatabaseHandler, exercise_ids: list, routine_name: str):
+    import time
+    superset_group = f"SS-{routine_name}-{int(time.time())}"
+    
+    # Update both exercises with the superset group
+    db.execute_query(
+        "UPDATE user_selection SET superset_group = ? WHERE id IN (?, ?)",
+        (superset_group, exercise_ids[0], exercise_ids[1])
+    )
+    
+    # Fetch updated exercises with full metadata
+    updated_exercises = db.fetch_all("""
+        SELECT 
+            us.id, us.routine, us.exercise, us.sets,
+            us.min_rep_range, us.max_rep_range, us.rir, us.rpe, us.weight,
+            us.superset_group,
+            e.primary_muscle_group, e.secondary_muscle_group,
+            e.tertiary_muscle_group, e.advanced_isolated_muscles,
+            e.utility, e.grips, e.stabilizers, e.synergists
+        FROM user_selection us
+        LEFT JOIN exercises e ON us.exercise = e.exercise_name
+        WHERE us.id IN (?, ?)
+    """, tuple(exercise_ids))
+    
+    return superset_group, updated_exercises
+
 
 @workout_plan_bp.route("/api/superset/link", methods=["POST"])
 def link_superset():
@@ -1228,80 +1287,20 @@ def link_superset():
             return error_response("VALIDATION_ERROR", "Invalid exercise IDs", 400)
         
         with DatabaseHandler() as db:
-            # Check if superset_group column exists
-            if not column_exists(db, 'user_selection', 'superset_group'):
-                return error_response(
-                    "INTERNAL_ERROR",
-                    "Superset feature not available - database migration required",
-                    500
-                )
-            
-            # Fetch both exercises
-            exercises = db.fetch_all(
-                "SELECT id, routine, exercise, superset_group FROM user_selection WHERE id IN (?, ?)",
-                tuple(exercise_ids)
-            )
-            
-            if len(exercises) != 2:
-                return error_response(
-                    "NOT_FOUND",
-                    "One or both exercises not found",
-                    404
-                )
+            exercises, error = _validate_superset_link_request(db, exercise_ids)
+            if error:
+                return error_response(*error)
             
             ex1, ex2 = exercises[0], exercises[1]
+            routine_name = ex1['routine']
             
-            # Validate same routine
-            if ex1['routine'] != ex2['routine']:
-                return error_response(
-                    "VALIDATION_ERROR",
-                    f"Supersets must be within the same routine. '{ex1['exercise']}' is in '{ex1['routine']}' but '{ex2['exercise']}' is in '{ex2['routine']}'",
-                    400
-                )
-            
-            # Validate neither is already in a superset
-            if ex1.get('superset_group'):
-                return error_response(
-                    "VALIDATION_ERROR",
-                    f"'{ex1['exercise']}' is already in a superset. Unlink it first.",
-                    400
-                )
-            if ex2.get('superset_group'):
-                return error_response(
-                    "VALIDATION_ERROR",
-                    f"'{ex2['exercise']}' is already in a superset. Unlink it first.",
-                    400
-                )
-            
-            # Generate superset group identifier: SS-{routine}-{timestamp}
-            import time
-            superset_group = f"SS-{ex1['routine']}-{int(time.time())}"
-            
-            # Update both exercises with the superset group
-            db.execute_query(
-                "UPDATE user_selection SET superset_group = ? WHERE id IN (?, ?)",
-                (superset_group, exercise_ids[0], exercise_ids[1])
-            )
-            
-            # Fetch updated exercises with full metadata
-            updated_exercises = db.fetch_all("""
-                SELECT 
-                    us.id, us.routine, us.exercise, us.sets,
-                    us.min_rep_range, us.max_rep_range, us.rir, us.rpe, us.weight,
-                    us.superset_group,
-                    e.primary_muscle_group, e.secondary_muscle_group,
-                    e.tertiary_muscle_group, e.advanced_isolated_muscles,
-                    e.utility, e.grips, e.stabilizers, e.synergists
-                FROM user_selection us
-                LEFT JOIN exercises e ON us.exercise = e.exercise_name
-                WHERE us.id IN (?, ?)
-            """, tuple(exercise_ids))
+            superset_group, updated_exercises = _apply_superset_link(db, exercise_ids, routine_name)
             
             logger.info(
                 "Superset created",
                 extra={
                     'superset_group': superset_group,
-                    'routine': ex1['routine'],
+                    'routine': routine_name,
                     'exercise_1': ex1['exercise'],
                     'exercise_2': ex2['exercise']
                 }
@@ -1420,6 +1419,126 @@ def unlink_superset():
 
 # ==================== Phase 3: Execution Styles ====================
 
+def _validate_and_normalize_execution_params(data: dict):
+    if not data:
+        return None, ("VALIDATION_ERROR", "No data provided", 400)
+    
+    exercise_id = data.get('exercise_id')
+    execution_style = data.get('execution_style', 'standard')
+    time_cap_seconds = data.get('time_cap_seconds')
+    emom_interval_seconds = data.get('emom_interval_seconds')
+    emom_rounds = data.get('emom_rounds')
+    
+    # Validate exercise_id
+    if not exercise_id or not str(exercise_id).isdigit():
+        return None, ("VALIDATION_ERROR", "Invalid exercise ID", 400)
+    
+    # Validate execution_style
+    valid_styles = {'standard', 'amrap', 'emom'}
+    if execution_style not in valid_styles:
+        return None, (
+            "VALIDATION_ERROR",
+            f"Invalid execution style. Must be one of: {', '.join(valid_styles)}",
+            400
+        )
+    
+    # Apply defaults and validate based on style
+    if execution_style == 'amrap':
+        time_cap_seconds = time_cap_seconds if time_cap_seconds else 60
+        if not isinstance(time_cap_seconds, int) or time_cap_seconds < 10 or time_cap_seconds > 600:
+            return None, (
+                "VALIDATION_ERROR",
+                "time_cap_seconds must be between 10 and 600 seconds",
+                400
+            )
+        emom_interval_seconds = None
+        emom_rounds = None
+    elif execution_style == 'emom':
+        emom_interval_seconds = emom_interval_seconds if emom_interval_seconds else 60
+        emom_rounds = emom_rounds if emom_rounds else 5
+        
+        if not isinstance(emom_interval_seconds, int) or emom_interval_seconds < 15 or emom_interval_seconds > 180:
+            return None, (
+                "VALIDATION_ERROR",
+                "emom_interval_seconds must be between 15 and 180 seconds",
+                400
+            )
+        if not isinstance(emom_rounds, int) or emom_rounds < 1 or emom_rounds > 20:
+            return None, (
+                "VALIDATION_ERROR",
+                "emom_rounds must be between 1 and 20",
+                400
+            )
+        time_cap_seconds = None
+    else:  # standard
+        time_cap_seconds = None
+        emom_interval_seconds = None
+        emom_rounds = None
+
+    return {
+        'exercise_id': int(exercise_id),
+        'execution_style': execution_style,
+        'time_cap_seconds': time_cap_seconds,
+        'emom_interval_seconds': emom_interval_seconds,
+        'emom_rounds': emom_rounds
+    }, None
+
+
+def _update_execution_style_db(db: DatabaseHandler, params: dict):
+    # Check if columns exist
+    cols = db.fetch_all("PRAGMA table_info(user_selection)")
+    col_names = {row['name'] for row in cols}
+    
+    if 'execution_style' not in col_names:
+        return None, (
+            "INTERNAL_ERROR",
+            "Execution style feature not available - database migration required",
+            500
+        )
+    
+    exercise_id = params['exercise_id']
+    
+    # Verify exercise exists
+    exercise = db.fetch_one(
+        "SELECT id, exercise, routine FROM user_selection WHERE id = ?",
+        (exercise_id,)
+    )
+    
+    if not exercise:
+        return None, ("NOT_FOUND", "Exercise not found", 404)
+    
+    # Update execution style
+    db.execute_query(
+        """
+        UPDATE user_selection 
+        SET execution_style = ?,
+            time_cap_seconds = ?,
+            emom_interval_seconds = ?,
+            emom_rounds = ?
+        WHERE id = ?
+        """,
+        (
+            params['execution_style'],
+            params['time_cap_seconds'],
+            params['emom_interval_seconds'],
+            params['emom_rounds'],
+            exercise_id
+        )
+    )
+    
+    # Fetch updated row
+    updated = db.fetch_one(
+        """
+        SELECT id, routine, exercise, execution_style, 
+               time_cap_seconds, emom_interval_seconds, emom_rounds
+        FROM user_selection WHERE id = ?
+        """,
+        (exercise_id,)
+    )
+    
+    return {'exercise': exercise, 'updated': updated}, None
+
+
 @workout_plan_bp.route("/api/execution_style", methods=["POST"])
 def set_execution_style():
     """
@@ -1437,120 +1556,33 @@ def set_execution_style():
     """
     try:
         data = request.get_json()
-        if not data:
-            return error_response("VALIDATION_ERROR", "No data provided", 400)
-        
-        exercise_id = data.get('exercise_id')
-        execution_style = data.get('execution_style', 'standard')
-        time_cap_seconds = data.get('time_cap_seconds')
-        emom_interval_seconds = data.get('emom_interval_seconds')
-        emom_rounds = data.get('emom_rounds')
-        
-        # Validate exercise_id
-        if not exercise_id or not str(exercise_id).isdigit():
-            return error_response("VALIDATION_ERROR", "Invalid exercise ID", 400)
-        
-        # Validate execution_style
-        valid_styles = {'standard', 'amrap', 'emom'}
-        if execution_style not in valid_styles:
-            return error_response(
-                "VALIDATION_ERROR",
-                f"Invalid execution style. Must be one of: {', '.join(valid_styles)}",
-                400
-            )
-        
-        # Apply defaults and validate based on style
-        if execution_style == 'amrap':
-            time_cap_seconds = time_cap_seconds if time_cap_seconds else 60
-            if not isinstance(time_cap_seconds, int) or time_cap_seconds < 10 or time_cap_seconds > 600:
-                return error_response(
-                    "VALIDATION_ERROR",
-                    "time_cap_seconds must be between 10 and 600 seconds",
-                    400
-                )
-            emom_interval_seconds = None
-            emom_rounds = None
-        elif execution_style == 'emom':
-            emom_interval_seconds = emom_interval_seconds if emom_interval_seconds else 60
-            emom_rounds = emom_rounds if emom_rounds else 5
-            
-            if not isinstance(emom_interval_seconds, int) or emom_interval_seconds < 15 or emom_interval_seconds > 180:
-                return error_response(
-                    "VALIDATION_ERROR",
-                    "emom_interval_seconds must be between 15 and 180 seconds",
-                    400
-                )
-            if not isinstance(emom_rounds, int) or emom_rounds < 1 or emom_rounds > 20:
-                return error_response(
-                    "VALIDATION_ERROR",
-                    "emom_rounds must be between 1 and 20",
-                    400
-                )
-            time_cap_seconds = None
-        else:  # standard
-            time_cap_seconds = None
-            emom_interval_seconds = None
-            emom_rounds = None
+        params, error = _validate_and_normalize_execution_params(data)
+        if error:
+            return error_response(*error)
         
         with DatabaseHandler() as db:
-            # Check if columns exist
-            cols = db.fetch_all("PRAGMA table_info(user_selection)")
-            col_names = {row['name'] for row in cols}
+            result, db_error = _update_execution_style_db(db, params)
+            if db_error:
+                return error_response(*db_error)
             
-            if 'execution_style' not in col_names:
-                return error_response(
-                    "INTERNAL_ERROR",
-                    "Execution style feature not available - database migration required",
-                    500
-                )
-            
-            # Verify exercise exists
-            exercise = db.fetch_one(
-                "SELECT id, exercise, routine FROM user_selection WHERE id = ?",
-                (int(exercise_id),)
-            )
-            
-            if not exercise:
-                return error_response("NOT_FOUND", "Exercise not found", 404)
-            
-            # Update execution style
-            db.execute_query(
-                """
-                UPDATE user_selection 
-                SET execution_style = ?,
-                    time_cap_seconds = ?,
-                    emom_interval_seconds = ?,
-                    emom_rounds = ?
-                WHERE id = ?
-                """,
-                (execution_style, time_cap_seconds, emom_interval_seconds, emom_rounds, int(exercise_id))
-            )
-            
-            # Fetch updated row
-            updated = db.fetch_one(
-                """
-                SELECT id, routine, exercise, execution_style, 
-                       time_cap_seconds, emom_interval_seconds, emom_rounds
-                FROM user_selection WHERE id = ?
-                """,
-                (int(exercise_id),)
-            )
+            exercise = result['exercise']
+            updated = result['updated']
             
             logger.info(
                 "Execution style updated",
                 extra={
-                    'exercise_id': exercise_id,
+                    'exercise_id': params['exercise_id'],
                     'exercise': exercise['exercise'],
-                    'execution_style': execution_style,
-                    'time_cap_seconds': time_cap_seconds,
-                    'emom_interval_seconds': emom_interval_seconds,
-                    'emom_rounds': emom_rounds
+                    'execution_style': params['execution_style'],
+                    'time_cap_seconds': params['time_cap_seconds'],
+                    'emom_interval_seconds': params['emom_interval_seconds'],
+                    'emom_rounds': params['emom_rounds']
                 }
             )
             
             return jsonify(success_response(
                 data=dict(updated) if updated else None,
-                message=f"Set '{exercise['exercise']}' to {execution_style.upper()} style"
+                message=f"Set '{exercise['exercise']}' to {params['execution_style'].upper()} style"
             ))
             
     except Exception as e:
@@ -1606,6 +1638,76 @@ def get_execution_style_options():
 
 # ==================== Phase 3: Superset Auto-Suggestion ====================
 
+def _group_exercises_by_routine(exercises: list) -> dict:
+    routines = {}
+    for ex in exercises:
+        r = ex['routine']
+        if r not in routines:
+            routines[r] = []
+        routines[r].append(ex)
+    return routines
+
+
+def _find_antagonist_pairings(routine_name: str, routine_exercises: list) -> list:
+    suggestions = []
+    
+    # Skip exercises already in supersets
+    available = [
+        ex for ex in routine_exercises 
+        if not ex.get('superset_group')
+    ]
+    
+    paired = set()
+    
+    for i, ex1 in enumerate(available):
+        if ex1['id'] in paired:
+            continue
+        
+        muscle1 = (ex1.get('primary_muscle_group') or '').lower()
+        if not muscle1:
+            continue
+        
+        best_partner = None
+        best_reason = None
+        
+        for j, ex2 in enumerate(available):
+            if i == j or ex2['id'] in paired:
+                continue
+            
+            muscle2 = (ex2.get('primary_muscle_group') or '').lower()
+            if not muscle2:
+                continue
+            
+            # Check for antagonist pairing
+            antagonists = ANTAGONIST_PAIRS.get(muscle1, [])
+            if muscle2 in antagonists or any(m in muscle2 for m in antagonists):
+                # Calculate pairing score
+                best_partner = ex2
+                best_reason = f"Antagonist pair: {muscle1.title()} / {muscle2.title()} - allows one muscle to rest while the other works"
+                break
+        
+        if best_partner:
+            suggestions.append({
+                "routine": routine_name,
+                "exercise_1": {
+                    "id": ex1['id'],
+                    "name": ex1['exercise'],
+                    "muscle": muscle1.title()
+                },
+                "exercise_2": {
+                    "id": best_partner['id'],
+                    "name": best_partner['exercise'],
+                    "muscle": (best_partner.get('primary_muscle_group') or '').title()
+                },
+                "reason": best_reason,
+                "benefit": "Saves time without compromising performance"
+            })
+            paired.add(ex1['id'])
+            paired.add(best_partner['id'])
+            
+    return suggestions
+
+
 @workout_plan_bp.route("/api/superset/suggest", methods=["GET"])
 def suggest_supersets():
     """
@@ -1621,23 +1723,6 @@ def suggest_supersets():
     """
     try:
         routine = request.args.get('routine')
-        
-        # Antagonist pairing rules for optimal supersets
-        ANTAGONIST_PAIRS = {
-            # Upper body
-            'biceps': ['triceps'],
-            'triceps': ['biceps'],
-            'chest': ['upper back', 'latissimus dorsi', 'middle-traps'],
-            'latissimus dorsi': ['chest', 'front-shoulder'],
-            'upper back': ['chest', 'front-shoulder'],
-            'front-shoulder': ['latissimus dorsi', 'upper back'],
-            'rear-shoulder': ['front-shoulder', 'middle-shoulder'],
-            # Lower body
-            'quadriceps': ['hamstrings', 'gluteus maximus'],
-            'hamstrings': ['quadriceps'],
-            'gluteus maximus': ['quadriceps', 'hip-adductors'],
-            'calves': ['quadriceps', 'hamstrings'],  # Non-competing with main movers
-        }
         
         with DatabaseHandler() as db:
             # Fetch current workout plan
@@ -1663,72 +1748,11 @@ def suggest_supersets():
                     data={"suggestions": [], "message": "No exercises found in workout plan"}
                 ))
             
-            # Group by routine
-            routines = {}
-            for ex in exercises:
-                r = ex['routine']
-                if r not in routines:
-                    routines[r] = []
-                routines[r].append(ex)
-            
+            routines = _group_exercises_by_routine(exercises)
             suggestions = []
             
             for routine_name, routine_exercises in routines.items():
-                # Skip exercises already in supersets
-                available = [
-                    ex for ex in routine_exercises 
-                    if not ex.get('superset_group')
-                ]
-                
-                # Find optimal pairings
-                paired = set()
-                
-                for i, ex1 in enumerate(available):
-                    if ex1['id'] in paired:
-                        continue
-                    
-                    muscle1 = (ex1.get('primary_muscle_group') or '').lower()
-                    if not muscle1:
-                        continue
-                    
-                    # Find best partner based on antagonist pairing
-                    best_partner = None
-                    best_reason = None
-                    
-                    for j, ex2 in enumerate(available):
-                        if i == j or ex2['id'] in paired:
-                            continue
-                        
-                        muscle2 = (ex2.get('primary_muscle_group') or '').lower()
-                        if not muscle2:
-                            continue
-                        
-                        # Check for antagonist pairing
-                        antagonists = ANTAGONIST_PAIRS.get(muscle1, [])
-                        if muscle2 in antagonists or any(m in muscle2 for m in antagonists):
-                            # Calculate pairing score
-                            best_partner = ex2
-                            best_reason = f"Antagonist pair: {muscle1.title()} / {muscle2.title()} - allows one muscle to rest while the other works"
-                            break
-                    
-                    if best_partner:
-                        suggestions.append({
-                            "routine": routine_name,
-                            "exercise_1": {
-                                "id": ex1['id'],
-                                "name": ex1['exercise'],
-                                "muscle": muscle1.title()
-                            },
-                            "exercise_2": {
-                                "id": best_partner['id'],
-                                "name": best_partner['exercise'],
-                                "muscle": (best_partner.get('primary_muscle_group') or '').title()
-                            },
-                            "reason": best_reason,
-                            "benefit": "Saves time without compromising performance"
-                        })
-                        paired.add(ex1['id'])
-                        paired.add(best_partner['id'])
+                suggestions.extend(_find_antagonist_pairings(routine_name, routine_exercises))
             
             logger.info(
                 "Superset suggestions generated",

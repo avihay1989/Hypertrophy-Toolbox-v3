@@ -6,14 +6,14 @@ import sqlite3
 import threading
 from pathlib import Path
 
-from utils.database import DatabaseHandler, _DB_LOCK
+from utils.database import DatabaseHandler
 from utils.logger import get_logger
 from utils.normalization import normalize_equipment, normalize_muscle
 
 logger = get_logger()
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SEED_DB_PATH = REPO_ROOT / "data" / "Database_backup" / "database.db"
+SEED_DB_PATH = REPO_ROOT / "data" / "backup" / "database.db"
 MIN_EXERCISE_ROWS = 100
 
 # Guard against double initialization during Flask auto-reload

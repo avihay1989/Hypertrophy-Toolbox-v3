@@ -62,11 +62,12 @@ app.py                 ← startup + middleware only; no business logic
 
 **Target Standards:**
 - Routes import from utils; utils never import from routes — **clean, no violations**
+- Prefer concrete module imports such as `utils.db_initializer`; `utils/__init__.py` is no longer the authoritative facade for new code
 - All DB access via `DatabaseHandler` context manager (`utils/database.py:200`)
 - All JSON responses via `success_response()` / `error_response()` (`utils/errors.py:22,67`)
 - All logging via `get_logger()` (`utils/logger.py:121`)
 
-**Current Exceptions** (verified 2026-04-08):
+**Current Exceptions** (verified 2026-04-10):
 | Rule | Violating File(s) | Detail |
 |---|---|---|
 | DatabaseHandler | `utils/volume_export.py:8` | Raw `get_db_connection()` for INSERT writes — no lock |
@@ -76,7 +77,6 @@ app.py                 ← startup + middleware only; no business logic
 | success/error_response | `routes/progression_plan.py:66,77` | Raw `jsonify()` — missing `ok`/`requestId` fields |
 | success/error_response | `routes/session_summary.py:86` | Raw `jsonify()` — missing standard response wrapper |
 | success/error_response | `routes/volume_splitter.py:150,194,212` | Ad-hoc `{'success': True}` instead of standard format |
-| get_logger() | `utils/muscle_group.py` (8×), `utils/user_selection.py` (5×), `utils/business_logic.py` (2×), + 10 more | `print()` instead of logger — see Section 4 |
 
 ### Blueprints Registered (`app.py:60-71`)
 | Blueprint | File | Key routes |
@@ -115,7 +115,7 @@ XHR detection (`utils/errors.py:47-64`): checks `X-Requested-With`, `Accept: app
 | `program_backup_items` | `id INTEGER` | `backup_id` → `program_backups` CASCADE | `utils/program_backup.py:23` |
 
 ### Seed Database
-`data/Database_backup/database.db` is the canonical exercise library. On first init, if `exercises` has < 100 rows (`MIN_EXERCISE_ROWS`, `db_initializer.py:17`), the seed is ATTACHed and copied (`db_initializer.py:331-395`). Skipped when `TESTING=1` env var is set (`db_initializer.py:333`).
+`data/backup/database.db` is the canonical exercise library. On first init, if `exercises` has < 100 rows (`MIN_EXERCISE_ROWS`, `db_initializer.py:17`), the seed is ATTACHed and copied (`db_initializer.py:331-395`). Skipped when `TESTING=1` env var is set (`db_initializer.py:333`).
 
 ### DB Connection Config (`utils/database.py:80-104`)
 `_configure_connection()` sets PRAGMAs per connection:
@@ -231,8 +231,7 @@ logger = get_logger()
 ```
 Returns the `'hypertrophy_toolbox'` named logger (`utils/logger.py:37`). Logs to `logs/app.log` (rotating 10MB × 5, `logger.py:48-53`) and console (INFO+, `logger.py:61`).
 
-**Known deviations** (20+ `print()` calls instead of logger):
-`utils/muscle_group.py` (8), `utils/user_selection.py` (5), `utils/business_logic.py` (2), `utils/filter_predicates.py` (1), `utils/volume_export.py` (1), `utils/weekly_summary.py` (2), `utils/workout_log.py` (1), `utils/database_init.py` (2), `utils/maintenance.py` (2), `routes/progression_plan.py` (11), `routes/exports.py` (2), `routes/weekly_summary.py` (2), `routes/session_summary.py` (1). These bypass log rotation and request ID correlation.
+**Known deviations:** none for `print()`-based logging in the current production code paths. The logging cleanup was completed earlier and the removed legacy modules from Cleanup Wave 1 no longer contribute stale exceptions here.
 
 ### DatabaseHandler Pattern
 ```python
@@ -265,12 +264,12 @@ Always normalize before persisting: `normalize_muscle()`, `normalize_equipment()
 FLASK_DEBUG=1 python app.py                         # debug mode
 $env:FLASK_DEBUG='1'; python app.py                  # debug mode (PowerShell)
 
-# Tests (981 pass, 1 skipped, ~113s)
+# Tests (930 pass, 1 skipped, ~114s)
 .venv/Scripts/python.exe -m pytest tests/ -v
 .venv/Scripts/python.exe -m pytest tests/test_effective_sets.py -q    # single file
 .venv/Scripts/python.exe -m pytest tests/test_foo.py::test_bar -v    # single test
 
-# E2E (306 pass, ~11min; auto-starts Flask via playwright.config.ts webServer)
+# E2E (315 pass, ~6.8m; auto-starts Flask via playwright.config.ts webServer)
 npx playwright test                                  # full suite
 npx playwright test e2e/smoke-navigation.spec.ts     # single spec
 npx playwright test --headed                         # visible browser
@@ -371,7 +370,7 @@ Routes validate bounds before calling utils. Example pattern in `routes/workout_
 | Symptom | Cause | Evidence |
 |---|---|---|
 | `database is locked` | Concurrent writes (e.g. reloader spawned 2 processes) | Check `_DB_LOCK` in `database.py:24`; disable reloader |
-| Empty exercise list on fresh start | Seed DB missing at `data/Database_backup/database.db` | `db_initializer.py:348` |
+| Empty exercise list on fresh start | Seed DB missing at `data/backup/database.db` | `db_initializer.py:348` |
 | `FK constraint failed` | Inserting log without valid `workout_plan_id` | `db_initializer.py:257` |
 | 404 on new route in tests | Blueprint not in `conftest.py` | See Playbook C step 3 |
 | Effective sets = raw sets | RIR/RPE null → neutral factor 1.0 | By design (`effective_sets.py:6-7`) |
@@ -380,9 +379,9 @@ Routes validate bounds before calling utils. Example pattern in `routes/workout_
 
 ## 8. Current State & Risks
 
-### Verified Test Counts (last verified: 2026-04-08)
-- **pytest**: 952 passed, 1 skipped (~78s) — command: `.venv/Scripts/python.exe -m pytest tests/ -q`
-- **E2E Playwright**: 306 passed (~11min) — command: `npx playwright test`
+### Verified Test Counts (last verified: 2026-04-10)
+- **pytest**: 930 passed, 1 skipped (~114s) — command: `.venv/Scripts/python.exe -m pytest tests/ -q`
+- **E2E Playwright**: 315 passed (~6.8m, Chromium project) — command: `npx playwright test --project=chromium --reporter=line`
 
 > Re-verify after significant changes: run both suites and update counts + date above.
 
@@ -392,16 +391,9 @@ Routes validate bounds before calling utils. Example pattern in `routes/workout_
 ### Deprecated / Legacy Modules
 | File | Status | Evidence |
 |---|---|---|
-| `utils/filters.py` | `DEPRECATED` — delegates to `filter_predicates.py` | Line 3: `"DEPRECATED: This module is superseded by utils/filter_predicates.py"` |
-| `utils/business_logic.py` | Legacy aggregation modes | Superseded by `utils/effective_sets.py` + `utils/weekly_summary.py` |
-| `utils/database_init.py` | Legacy table init | Superseded by `utils/db_initializer.py` (which is used in `app.py` and `conftest.py`) |
-| `utils/muscle_group.py` | Legacy `MuscleGroupHandler` class | Uses `print()` (line 21), not `get_logger()` |
 | `utils/volume_export.py` | Uses raw `get_db_connection()` (line 8) instead of `DatabaseHandler` | Inconsistent with project pattern |
-| `utils/data_handler.py` | `DataHandler` class | Still imported via `utils/__init__.py:7`; parallel to newer utils |
-| `utils/helpers.py` | Re-export shim | Subset of `utils/__init__.py` |
 
-### `utils/__init__.py` vs `utils/helpers.py` Duplication
-Both re-export functions from submodules. `__init__.py` is the authoritative package entry point (line 1-100, 90-line `__all__`). `helpers.py` is a smaller subset (23 lines). Code importing `from utils import X` uses `__init__.py`; `from utils.helpers import X` uses the shim.
+Cleanup Wave 1 removed `utils/helpers.py`, `utils/filters.py`, `utils/database_init.py`, and `utils/muscle_group.py` on 2026-04-10 after repo-wide reference audits and green suite validation. Cleanup Wave 2 retired `utils/business_logic.py`, `utils/data_handler.py`, `tests/test_business_logic.py`, `tests/test_data_handler.py`, and the package-level `get_workout_logs` compatibility export from `utils/__init__.py` on 2026-04-10 after a zero-caller audit and a green full-suite pytest run.
 
 ### exercise_order Column
 Added at startup by `initialize_exercise_order()` (`routes/workout_plan.py:614`) via `ALTER TABLE`. Route handler `get_workout_plan` (line 231-234) defensively checks `column_exists()` before using it. In practice, the column always exists after init, but the defensive check is there for pre-migration databases.
@@ -415,9 +407,9 @@ These are **not duplicates** — they serve distinct purposes:
 
 ---
 
-## Appendix A: E2E Test Map (last verified: 2026-04-08)
+## Appendix A: E2E Test Map (last verified: 2026-04-10)
 
-All 17 Playwright spec files in `e2e/` (306 total tests from `npx playwright test`):
+All 17 Playwright spec files in `e2e/` (315 total tests from `npx playwright test --project=chromium --reporter=line`):
 
 | Spec | Tests | User Flow | Key Routes | Fixtures Needed |
 |---|---|---|---|---|
@@ -469,5 +461,5 @@ Full file-by-file audit log and violation details moved to `docs/CLAUDE_MD_AUDIT
 |---|---|---|
 | `utils/volume_export.py` bypasses `DatabaseHandler` | **Confirmed: does INSERTs + commits without lock** | Lines 14-35: INSERT into `volume_plans` + `muscle_volumes`, `conn.commit()` at line 35. Thread-unsafe. Now listed in Section 2 Current Exceptions. |
 | `filter_cache.py:85` SQL injection | **Latent risk only — no active user-input callers** | Only caller is `warm_cache()` (line 113) with hardcoded column/table names. No routes call `get_cached_unique_values()` directly. |
-| `utils/business_logic.py` active callers | **Dead import, zero calls** | `routes/weekly_summary.py:8` imports `BusinessLogic` but never instantiates or calls it. No other callers in routes/ or templates/. |
-| `utils/data_handler.py` active callers | **Exported but unused in routes** | `utils/__init__.py:7` imports `DataHandler`; zero imports in `routes/`. Legacy class, no active code path. |
+| `utils/business_logic.py` active callers | **Retired in Cleanup Wave 2** | Zero repo callers remained after the `routes/weekly_summary.py` dead import was removed, so the module and `tests/test_business_logic.py` were deleted on 2026-04-10. |
+| `utils/data_handler.py` active callers | **Retired in Cleanup Wave 2** | Zero repo callers remained outside its dedicated test file, so the module and `tests/test_data_handler.py` were deleted on 2026-04-10. |

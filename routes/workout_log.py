@@ -1,11 +1,6 @@
-from flask import Blueprint, render_template, request, jsonify, Response, send_file
+from flask import Blueprint, render_template, request, jsonify, send_file
 from utils.database import DatabaseHandler
-from utils.workout_log import get_workout_logs, check_progression
-from utils.volume_classifier import (
-    get_volume_class,
-    get_volume_label,
-    get_volume_tooltip
-)
+from utils.workout_log import get_workout_logs
 from utils.errors import success_response, error_response
 from utils.logger import get_logger
 from io import BytesIO
