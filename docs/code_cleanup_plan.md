@@ -115,6 +115,8 @@
 ## Status Dashboard (2026-04-10)
 
 > **Tracking rule:** Update this dashboard after every completed phase so confidence, status, and go/no-go decisions stay visible at a glance.
+>
+> **Fresh agent? Start here:** if you need to know "what's next," skip to the **[Post-Phase-4 Handoff](#post-phase-4-handoff-2026-04-11)** section below. Do not interpret the checkboxes in `[Phase 3i]` / `[Phase 3j]` / `Execution Checklist` as an active to-do list — several items are deliberately deferred for confidence reasons the Stage Tracker records but the checklists do not.
 
 ### Overall Status
 
@@ -142,8 +144,8 @@
 | `3g` Backend-only classifier cleanup | `99%` | Completed | Landed as a backend-only helper refactor in `utils/volume_classifier.py`; public API stayed intact and the targeted pytest gate passed. |
 | `3b Wave 2` Package-surface contraction | `95-96%` | Completed | Explicit API retirement decision granted; legacy package exports, modules, and paired tests were removed together, and full pytest stayed green. |
 | `3j` Export write-path optimization | `55-60%` | No-go | Still blocked by missing targeted tests. |
-| `3i` Large function decomposition | TBD | Needs reconciliation | Plan self-inconsistency: `3i-a..3i-h` checklist items are marked `[x]` under `[Phase 3i]` but this tracker and the priority table still show it as `Later`. Resolve during `4O`. |
-| `Phase 4` Validation & regression | `N/A` | In progress | Broken into 15 granular sub-phases (`4A`–`4O`) in section `4.6`. The pre-Phase-4 seed restore is complete, the immediate health checkpoint is green at `932 passed, 1 skipped`, `21 passed`, and `315 passed`, and the `4N` seed-path hardening fix is validated at `934 passed, 1 skipped` plus `17` passing workout-plan browser tests. |
+| `3i` Large function decomposition | `50-60%` | Deferred | 4O resolved the checklist/tracker self-inconsistency by leaving `3i` deferred. It requires a new one-function-at-a-time breakdown plan before execution. |
+| `Phase 4` Validation & regression | `N/A` | Completed | Closed via `phase4_option_c_plan.md`: audits ran, 4J orphan removal landed, 4M smoke failures were triaged, Progression was fixed forward in `ec748ba`, and the current full pytest baseline is `936 passed, 1 skipped`. |
 
 ### Current Evidence Snapshot
 
@@ -155,6 +157,8 @@
 | Full Chromium Playwright during health checkpoint (`4E`) | `315 passed` (`phase4e_full_e2e.txt`) |
 | Hardening regression test (`4N`) | `2 passed` (`tests/test_seed_db_paths.py`) |
 | Full pytest after seed-path hardening (`4N`) | `934 passed, 1 skipped` (`phase4n_seed_path_pytest.txt`) |
+| Full pytest after Progression fixed-forward bugfix (`ec748ba`) | `936 passed, 1 skipped` |
+| 4M manual smoke triage | Progression fixed forward in `ec748ba`; Weekly/Session counter toggles remain out-of-cycle follow-up bugs |
 | Workout-plan Playwright after seed-path hardening (`4N`) | `17 passed` (`phase4n_seed_path_workout_plan_e2e.txt`) |
 | Smoke-navigation Playwright after `3c` | `10 passed` |
 | Full pytest after `3d` | `963 passed, 1 skipped` |
@@ -172,7 +176,70 @@
 | Full Chromium Playwright from Phase 0 | `315 passed` |
 | Summary-page Playwright from Phase 0 | `21 passed` |
 
-> **Note:** The current full-suite pytest snapshot is `932 passed, 1 skipped`. The earlier `930` snapshot was the point-in-time result recorded immediately after `3b Wave 2`; the higher current count reflects the later state already present in this working tree.
+> **Note:** The current full-suite pytest snapshot is `936 passed, 1 skipped`. Earlier `930`, `932`, and `934` snapshots were point-in-time results recorded after intermediate cleanup/hardening steps; the higher current count reflects later regression coverage, including the 4M Progression fixed-forward tests.
+
+---
+
+## Post-Phase-4 Handoff (2026-04-11)
+
+> **Fresh agent entry point.** If you are landing on this file and need to know "what's next after Phase 4," **read this section first** — do not skim the rest of the plan looking for unchecked boxes. Several items in the body of this document are deferred for confidence reasons that are not obvious from the checklist state.
+>
+> **Why this section exists:** it was drafted after an Opus session ran out of tokens mid-conversation while walking the user through post-Phase-4 options. The full decision tree is in [phase4_option_c_plan.md §18](phase4_option_c_plan.md#18-post-4o-decision-tree--what-happens-after-phase-4-closes). This section is the short version and the entry point.
+
+### Is Phase 4 closed?
+
+| Signal | If present → | If absent → |
+|---|---|---|
+| `debug/4O_commit.txt` exists and references a `docs(4O): close spring-cleanup Phase 4` commit | Phase 4 is **closed**. Skip to "What's next" below. | Phase 4 is **not closed**. Go to `phase4_option_c_plan.md` and execute the next action starting from §17 "Fresh Session Kickoff Prompt". |
+| `git tag -l phase4-rollback-point` returns a tag | Phase 4 is mid-execution. Resume via `phase4_option_c_plan.md`. | Tag has been cleaned up per 4O-5 → Phase 4 is fully closed. |
+| Stage Tracker row for `Phase 4` in this file shows `Completed` | Phase 4 is closed. | Phase 4 is still in progress. |
+
+### What's next (if Phase 4 is closed)
+
+Execute in this order, stopping at the first item the user approves. **Do not start any of these without explicit user confirmation** — the user decides, not you.
+
+1. **Merge `spring-cleanup` → `main`.** This is the baseline exit from Phase 4. Long-lived cleanup branches lose value over time.
+2. **Fix remaining 4M bugs.** The 2026-04-11 manual smoke surfaced 3 failures: Weekly Summary counter toggle, Session Summary counter toggle, and Progression rendering. Progression was fixed forward in `ec748ba`; Weekly and Session counter toggles remain out-of-cycle follow-up bugs per `debug/4M_triage.md`. Write a **small dedicated bugfix plan per bug** — do not bundle.
+3. **(Optional) db_seed_fix_plan.md Phase F** — `SEED_DB_PATH` retirement. Architectural cleanup, no user-visible payoff. Only if the user specifically asks.
+
+### What's NOT next — deferred items that must not auto-resume
+
+The following items appear in this document as "deferred," "no-go," or with `[x]` checkbox marks. **Do not execute them directly.** The parent plan explicitly rated them below the 95% confidence bar:
+
+| Item | Confidence | Why deferred | To un-defer |
+|---|---:|---|---|
+| `3i` Large function decomposition | **50–60%** | Too broad; bundles multiple unrelated high-blast-radius refactors. The `[x]` marks under `[Phase 3i]` are a known plan self-inconsistency — 4O-2 resolved them by leaving `3i` deferred at the tracker level. | Write a new breakdown plan that splits `3i` into **one-function sub-phases**, one at a time. Same shape as `phase4_option_c_plan.md`. |
+| `3j` Export write-path optimization | **55–60%** | Would alter write semantics without dedicated tests proving intended behavior. | Add characterization tests for `routes/exports.py` write path **first**, then write a breakdown plan. |
+
+**Both items require a new breakdown plan before any execution.** Running them directly from this document's `[Phase 3i]` / `[Phase 3j]` checklists will regress the codebase. See [phase4_option_c_plan.md §18.3](phase4_option_c_plan.md#183-hard-rule-do-not-auto-resume-code_cleanup_planmd) for the full rationale.
+
+### Anti-patterns (do not do any of these without explicit user instruction)
+
+- Execute `3i-a..3i-h` just because the `[Phase 3i]` checklist has `[x]` marks. Those marks predate the confidence downgrade and are explicitly superseded by the Stage Tracker row for `3i`.
+- Interpret this file as a to-do list with unchecked boxes that must be drained. The checklist state is a historical artifact; the Stage Tracker + this Post-Phase-4 Handoff section are the authoritative "what to do next" source.
+- Roll back a 3a–3h cleanup commit to "fix" a 4M bug without first running the regression-check block in [phase4_option_c_plan.md §10 4M-3](phase4_option_c_plan.md#4m-3--record-failures-as-triage-entries-if-any). Pre-existing bugs (most 4M findings are) must be fixed forward.
+- Delete the `debug/` directory — it is the Phase 4 audit trail.
+
+### Reporting format when you land here as a fresh agent
+
+Your first reply to the user should be:
+
+```
+Read docs/code_cleanup_plan.md Post-Phase-4 Handoff section.
+
+Phase 4 status: <closed per debug/4O_commit.txt at <hash>> OR <in progress, next action = 4X-Y>
+
+If closed, remaining open items:
+  1. Merge spring-cleanup → main (ready)
+  2. 4M bugs: <N> open per debug/4M_triage.md
+  3. 3i/3j deferred (require new breakdown plans, do not auto-resume)
+  4. db_seed Phase F deferred
+  5. create_performance_indexes() open question from CLAUDE.md Appendix C
+
+Which would you like to start with?
+```
+
+Do not start work without an explicit "go."
 
 ---
 
@@ -1357,16 +1424,18 @@ Run before starting any changes:
 
 ### 4.5 Expected Reduction Summary
 
-| Metric | Before (est.) | After (est.) | Reduction |
+| Metric | Before | After (actual) | Reduction |
 |--------|---------------|--------------|-----------|
-| Python files in `utils/` | ~27 | ~23 to ~21 | Depends on whether Wave 2 deletions proceed |
-| Template files | 15 | 9 (+1 partial) | -5 files |
+| Python files in `utils/` | 34 | 27 | -7 files |
+| Python files in `routes/` | 10 | 10 | 0 files |
+| Template files | 15 | 9 | -6 files |
+| JS files in `static/js/modules/` | 24 | 21 | -3 files |
 | Dead imports | ~7 | 0 | -7 |
 | Duplicated parse functions | 2 route copies | 1 shared helper + optional temporary wrappers | Safer incremental reduction |
-| N+1 query loops | 1 | 0 only if 3j executes | Performance fix, deferred by default |
-| Raw `get_db_connection()` calls | ~8 | 0 | Thread safety fix |
+| N+1 query loops | 1 | 1 | Deferred to `3j`; no semantic write-path change made |
+| Raw `get_db_connection()` calls | ~8 | 1 intentional maintenance exception | Unsafe app write paths migrated; `utils/database_indexes.py` holds `_DB_LOCK` explicitly |
 | `print()` calls in prod code | already 0 | 0 | Already completed in archived audit |
-| Total lines removed (est.) | — | — | Intentionally variable; safety preferred over maximum reduction |
+| Total Python LOC | ~27,000 | 25,546 | ~1,454 fewer |
 
 ---
 

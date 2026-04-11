@@ -67,16 +67,12 @@ app.py                 ← startup + middleware only; no business logic
 - All JSON responses via `success_response()` / `error_response()` (`utils/errors.py:22,67`)
 - All logging via `get_logger()` (`utils/logger.py:121`)
 
-**Current Exceptions** (verified 2026-04-10):
+**Current Exceptions** (verified 2026-04-11):
 | Rule | Violating File(s) | Detail |
 |---|---|---|
-| DatabaseHandler | `utils/volume_export.py:8` | Raw `get_db_connection()` for INSERT writes — no lock |
-| DatabaseHandler | `utils/database_indexes.py:51` | `optimize_database()` runs ANALYZE/PRAGMA without lock |
-| DatabaseHandler | `routes/volume_splitter.py:154,199,234` | 3 endpoints use raw `get_db_connection()` (including DELETE) |
-| DatabaseHandler | `utils/user_selection.py:34` | Direct `sqlite3.connect()` for SELECT — no context manager (read-only) |
-| success/error_response | `routes/progression_plan.py:66,77` | Raw `jsonify()` — missing `ok`/`requestId` fields |
-| success/error_response | `routes/session_summary.py:86` | Raw `jsonify()` — missing standard response wrapper |
-| success/error_response | `routes/volume_splitter.py:150,194,212` | Ad-hoc `{'success': True}` instead of standard format |
+| DatabaseHandler | `utils/database_indexes.py:60,65` | `optimize_database()` intentionally uses raw maintenance commands with explicit `_DB_LOCK` handling |
+| success/error_response | `routes/weekly_summary.py:133,139` | Pattern coverage endpoint still returns legacy `success`/`error` JSON |
+| success/error_response | `routes/workout_plan.py:1079,1093,1114,1125` | Replace-exercise fallback paths return legacy ad-hoc JSON with 200 error payloads |
 
 ### Blueprints Registered (`app.py:60-71`)
 | Blueprint | File | Key routes |
@@ -379,9 +375,9 @@ Routes validate bounds before calling utils. Example pattern in `routes/workout_
 
 ## 8. Current State & Risks
 
-### Verified Test Counts (last verified: 2026-04-10)
-- **pytest**: 930 passed, 1 skipped (~114s) — command: `.venv/Scripts/python.exe -m pytest tests/ -q`
-- **E2E Playwright**: 315 passed (~6.8m, Chromium project) — command: `npx playwright test --project=chromium --reporter=line`
+### Verified Test Counts (last verified: 2026-04-11)
+- **pytest**: 936 passed, 1 skipped (~125s) — command: `.venv/Scripts/python.exe -m pytest tests/ -q`
+- **E2E Playwright**: 315 passed (~7.1m, Chromium project) — command: `npx playwright test --project=chromium --reporter=line`
 
 > Re-verify after significant changes: run both suites and update counts + date above.
 
@@ -389,9 +385,7 @@ Routes validate bounds before calling utils. Example pattern in `routes/workout_
 `utils/filter_cache.py:13` — TTL of 3600s. `invalidate_cache()` (line 92) exists but is **never called from any route** — grep confirms only test and module-internal usage. Stale filter options may persist up to 1 hour after exercise data changes. This is a known gap, not a bug per se, but worth noting.
 
 ### Deprecated / Legacy Modules
-| File | Status | Evidence |
-|---|---|---|
-| `utils/volume_export.py` | Uses raw `get_db_connection()` (line 8) instead of `DatabaseHandler` | Inconsistent with project pattern |
+No current deprecated / legacy modules are tracked here. Cleanup Waves 1 and 2 removed the confirmed dead legacy modules; `utils/volume_export.py` remains live and was migrated to `DatabaseHandler` in DOCS_AUDIT_PLAN Tier 3.
 
 Cleanup Wave 1 removed `utils/helpers.py`, `utils/filters.py`, `utils/database_init.py`, and `utils/muscle_group.py` on 2026-04-10 after repo-wide reference audits and green suite validation. Cleanup Wave 2 retired `utils/business_logic.py`, `utils/data_handler.py`, `tests/test_business_logic.py`, `tests/test_data_handler.py`, and the package-level `get_workout_logs` compatibility export from `utils/__init__.py` on 2026-04-10 after a zero-caller audit and a green full-suite pytest run.
 
@@ -459,7 +453,7 @@ Full file-by-file audit log and violation details moved to `docs/CLAUDE_MD_AUDIT
 
 | Item | Finding | Evidence |
 |---|---|---|
-| `utils/volume_export.py` bypasses `DatabaseHandler` | **Confirmed: does INSERTs + commits without lock** | Lines 14-35: INSERT into `volume_plans` + `muscle_volumes`, `conn.commit()` at line 35. Thread-unsafe. Now listed in Section 2 Current Exceptions. |
+| `utils/volume_export.py` bypasses `DatabaseHandler` | **Resolved in DOCS_AUDIT_PLAN Tier 3** | The live helper now uses `DatabaseHandler` with grouped `commit=False` inserts and context-manager commit/rollback semantics. Regression coverage verifies rollback on mid-write failure. |
 | `filter_cache.py:85` SQL injection | **Latent risk only — no active user-input callers** | Only caller is `warm_cache()` (line 113) with hardcoded column/table names. No routes call `get_cached_unique_values()` directly. |
 | `utils/business_logic.py` active callers | **Retired in Cleanup Wave 2** | Zero repo callers remained after the `routes/weekly_summary.py` dead import was removed, so the module and `tests/test_business_logic.py` were deleted on 2026-04-10. |
 | `utils/data_handler.py` active callers | **Retired in Cleanup Wave 2** | Zero repo callers remained outside its dedicated test file, so the module and `tests/test_data_handler.py` were deleted on 2026-04-10. |

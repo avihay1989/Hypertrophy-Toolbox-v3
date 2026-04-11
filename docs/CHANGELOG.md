@@ -2,12 +2,26 @@
 
 All notable changes to Hypertrophy Toolbox v3.
 
-## Unreleased - April 10, 2026
+## Unreleased - April 11, 2026
 
 ### Cleanup
+- Closed the spring-cleanup Phase 4 validation path covering `4A`, `4F`, `4G`, `4H`, `4J`, `4K`, `4L`, `4M`, `4N`, and `4O`.
+- Landed the 3a-3h cleanup rollup in `12c90ac` and the 4J orphan frontend-module removal in `596acde`.
+- Reduced `utils/` Python files from 34 to 27, template files from 15 to 9, `static/js/modules/` files from 24 to 21, and total Python LOC from roughly 27,000 to 25,546.
 - Retired the legacy `utils.business_logic` and `utils.data_handler` modules and deleted their dedicated test files after a zero-caller audit.
 - Removed the package-level `get_workout_logs` compatibility export from `utils/__init__.py`.
 - Updated `app.py` to import `initialize_database` from `utils.db_initializer` directly.
+
+### Bug Fixes
+- Fixed plan-only Progression suggestions and current-value prefill before workout-log history exists in `ec748ba`.
+
+### Data
+- Regenerated the catalog-only seed database in `0e0ca3b` and verified the seed path hardening against `data/backup/database.db`.
+
+### Validation
+- Current pytest baseline: `936 passed, 1 skipped`.
+- Full Chromium Playwright remains green at `315 passed`; summary-page Playwright remains green at `21 passed`.
+- 4M manual smoke triage recorded Progression as fixed forward and left Weekly/Session counter-toggle issues as out-of-cycle follow-up bugs.
 
 ### Migration Notes
 - Stop importing `DataHandler` or `BusinessLogic`; use the concrete live modules that now own those responsibilities instead.
