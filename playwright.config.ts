@@ -9,6 +9,8 @@ const pythonExecutable = fs.existsSync(venvPython) ? `"${venvPython}"` : 'python
 const reuseExistingServer = process.env.PW_REUSE_SERVER === '1' && !process.env.CI;
 const configuredWorkers = Number(process.env.PW_WORKERS ?? '1');
 const workers = Number.isFinite(configuredWorkers) && configuredWorkers > 0 ? configuredWorkers : 1;
+const artifactsRoot = process.env.TEST_ARTIFACTS_DIR ?? 'artifacts';
+const playwrightArtifactsDir = path.join(artifactsRoot, 'playwright');
 
 /**
  * Playwright configuration for Hypertrophy Toolbox E2E tests
@@ -27,8 +29,9 @@ export default defineConfig({
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
     ['list'],
-    ['html', { outputFolder: 'playwright-report' }],
+    ['html', { outputFolder: path.join(playwrightArtifactsDir, 'report') }],
   ],
+  outputDir: path.join(playwrightArtifactsDir, 'test-results'),
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */

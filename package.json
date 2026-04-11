@@ -5,7 +5,8 @@
   "scripts": {
     "build:css": "sass --load-path=node_modules scss/custom-bootstrap.scss static/css/bootstrap.custom.min.css --style compressed",
     "watch:css": "sass --load-path=node_modules scss/custom-bootstrap.scss static/css/bootstrap.custom.min.css --watch",
-    "test:e2e": "npx playwright test",
+    "test:py": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-pytest.ps1",
+    "test:e2e": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-playwright.ps1",
     "test:e2e:ui": "npx playwright test --ui",
     "test:e2e:debug": "npx playwright test --debug",
     "test:e2e:headed": "npx playwright test --headed"
@@ -21,4 +22,3 @@
     "node": ">=16.0.0"
   }
 }
-

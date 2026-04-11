@@ -91,6 +91,9 @@
                             <thead>
                                 <tr>
                                     <th scope="col" class="col--high" data-label="Muscle Group">Muscle Group</th>
+                                    <th scope="col" class="col--high is-num" data-label="Active Sets"
+                                        data-bs-toggle="tooltip"
+                                        title="Set count used by the selected counting mode">Active Sets</th>
                                     <th scope="col" class="col--high is-num" data-label="Effective Sets">Effective Sets</th>
                                     <th scope="col" class="col--med is-num" data-label="Raw Sets">Raw Sets</th>
                                     <th scope="col" class="col--med is-num" data-label="Routines"
@@ -452,7 +455,7 @@ async function updateWeeklySummary() {
     // Display loading spinner
     tableBody.innerHTML = `
         <tr>
-            <td colspan="6" class="text-center">
+            <td colspan="7" class="text-center">
                 <div class="spinner-border text-primary" role="status">
                     <span class="visually-hidden">Loading...</span>
                 </div>
@@ -488,13 +491,14 @@ async function updateWeeklySummary() {
         if (weeklySummary.length === 0) {
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="6" class="text-center text-muted">No data available.</td>
+                    <td colspan="7" class="text-center text-muted">No data available.</td>
                 </tr>`;
         } else {
             // Populate the table with fetched data
             tableBody.innerHTML = weeklySummary.map(row => {
-                const effectiveSets = row.effective_sets || row.total_sets;
-                const rawSets = row.raw_sets || row.total_sets;
+                const effectiveSets = row.effective_sets ?? row.total_sets ?? 0;
+                const rawSets = row.raw_sets ?? row.total_sets ?? 0;
+                const activeSets = row.total_sets ?? (countingMode === 'raw' ? rawSets : effectiveSets);
                 const routines = row.frequency || 0;
                 const volume = getVolumeDetails(effectiveSets);
                 // Transform muscle group name based on view mode
@@ -506,6 +510,7 @@ async function updateWeeklySummary() {
                 return `
                     <tr>
                         <td data-label="Muscle Group" data-raw-value="${row.muscle_group || ''}">${muscleDisplay}</td>
+                        <td data-label="Active Sets" class="is-num">${activeSets.toFixed(1)}</td>
                         <td data-label="Effective Sets" class="is-num">${effectiveSets.toFixed(1)}</td>
                         <td data-label="Raw Sets" class="is-num">${rawSets.toFixed(1)}</td>
                         <td data-label="Routines" class="is-num">${routines}</td>
@@ -560,7 +565,7 @@ async function updateWeeklySummary() {
         console.error("Error fetching data:", error);
         tableBody.innerHTML = `
             <tr>
-                <td colspan="6" class="text-center text-danger">Failed to load data.</td>
+                <td colspan="7" class="text-center text-danger">Failed to load data.</td>
             </tr>`;
     }
 }

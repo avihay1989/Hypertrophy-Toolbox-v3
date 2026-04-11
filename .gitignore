@@ -49,6 +49,12 @@ htmlcov/
 .tox/
 test-results/
 playwright-report/
+debug/
+/artifacts/
+/baseline*.txt
+/phase*.txt
+/cleanup*.txt
+/cleanup*.patch
 
 # Distribution / packaging
 dist/

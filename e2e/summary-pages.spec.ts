@@ -53,7 +53,7 @@ async function expectSharedLegendSwatches(page: Page) {
 }
 
 async function expectMethodSelectorContract(page: Page, updaterName: string) {
-  const methodSelector = page.locator('.method-selector');
+  const methodSelector = page.locator('.method-selector').first();
   await expect(methodSelector).toBeVisible();
 
   const countingMode = page.locator('#counting-mode');
@@ -126,6 +126,7 @@ test.describe('Weekly Summary Page', () => {
     const headerString = headerTexts.join(' ').toLowerCase();
 
     expect(headerString).toContain('muscle');
+    expect(headerString).toContain('active sets');
     expect(headerString).toContain('effective sets');
     expect(headerString).toContain('raw sets');
     expect(headerString).toContain('volume');
@@ -189,6 +190,12 @@ test.describe('Weekly Summary Page', () => {
     expect(countingPayload).toHaveProperty('isolated_muscles');
     expect(countingPayload).toHaveProperty('modes');
     await expect(page.locator('#volume-formula-text')).toContainText('Raw Sets');
+    const rawWeeklySummary = countingPayload.weekly_summary as Array<Record<string, unknown>>;
+    if (rawWeeklySummary.length > 0) {
+      await expect(
+        page.locator('#weekly-summary-table tr').first().locator('td[data-label="Active Sets"]')
+      ).toHaveText(Number(rawWeeklySummary[0].total_sets).toFixed(1));
+    }
     await expect(page.locator('#weekly-summary-table tr').first()).toBeVisible();
 
     const [contributionResponse] = await Promise.all([
@@ -258,17 +265,45 @@ test.describe('Session Summary Page', () => {
 
     expect(headerString).toContain('routine');
     expect(headerString).toContain('muscle');
+    expect(headerString).toContain('active sets');
     expect(headerString).toContain('effective sets');
     expect(headerString).toContain('volume');
   });
 
   test('method selector section has descriptions', async ({ page }) => {
-    const methodSelector = page.locator('.method-selector');
+    const methodSelector = page.locator('.method-selector').first();
     await expect(methodSelector).toBeVisible();
 
     // Check help text exists (multiple form-text elements, check at least one is visible)
     const formTexts = methodSelector.locator('.form-text');
     await expect(formTexts.first()).toBeVisible();
+  });
+
+  test('date filter controls are wired into session summary requests', async ({ page }) => {
+    await expect(page.locator('#session-start-date')).toBeVisible();
+    await expect(page.locator('#session-end-date')).toBeVisible();
+    await expect(page.locator('#clear-session-date-filter')).toBeVisible();
+
+    await page.locator('#session-start-date').evaluate((el) => {
+      (el as HTMLInputElement).value = '2026-02-01';
+    });
+
+    const [dateFilterResponse] = await Promise.all([
+      page.waitForResponse((response) =>
+        response.url().includes('/session_summary?') &&
+        response.url().includes('start_date=2026-02-01') &&
+        response.url().includes('end_date=2026-02-07') &&
+        response.request().method() === 'GET' &&
+        response.request().headers()['x-requested-with'] === 'XMLHttpRequest'
+      ),
+      page.locator('#session-end-date').evaluate((el) => {
+        (el as HTMLInputElement).value = '2026-02-07';
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      }),
+    ]);
+
+    expect(dateFilterResponse.ok()).toBeTruthy();
+    await expect(page.locator('#session-summary-table tr').first()).toBeVisible();
   });
 
   test('fetch-backed session summary updates use explicit JSON intent', async ({ page }) => {
@@ -293,6 +328,12 @@ test.describe('Session Summary Page', () => {
     expect(countingPayload).toHaveProperty('isolated_muscles');
     expect(countingPayload).toHaveProperty('modes');
     await expect(page.locator('#volume-formula-text')).toContainText('Raw Sets');
+    const rawSessionSummary = countingPayload.session_summary as Array<Record<string, unknown>>;
+    if (rawSessionSummary.length > 0) {
+      await expect(
+        page.locator('#session-summary-table tr').first().locator('td[data-label="Active Sets"]')
+      ).toHaveText(Number(rawSessionSummary[0].total_sets).toFixed(1));
+    }
     await expect(page.locator('#session-summary-table tr').first()).toBeVisible();
 
     const [contributionResponse] = await Promise.all([
