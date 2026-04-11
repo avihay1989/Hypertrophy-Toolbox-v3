@@ -17,6 +17,25 @@ def get_exercise_history(exercise: str) -> List[Dict[str, Any]]:
         return db.fetch_all(query, (exercise,))
 
 
+def get_exercise_plan_defaults(exercise: str) -> Optional[Dict[str, Any]]:
+    """Get current plan values for an exercise when no log history exists."""
+    query = """
+    SELECT
+        exercise,
+        weight AS planned_weight,
+        min_rep_range AS planned_min_reps,
+        max_rep_range AS planned_max_reps,
+        sets AS planned_sets
+    FROM user_selection
+    WHERE exercise = ?
+    ORDER BY id DESC
+    LIMIT 1
+    """
+
+    with DatabaseHandler() as db:
+        return db.fetch_one(query, (exercise,))
+
+
 def _calculate_weight_increment(current_weight: float, is_novice: bool = True) -> float:
     """
     Calculate appropriate weight increment based on double progression rules.
@@ -297,6 +316,33 @@ def _build_manual_progression_options(exercise, current_weight, current_reps, pl
     })
     
     return options
+
+
+def generate_plan_based_progression_suggestions(
+    exercise: str,
+    plan_defaults: Optional[Dict[str, Any]],
+    is_novice: bool = True,
+) -> List[Dict[str, Any]]:
+    """Generate starter suggestions from the current plan before log history exists."""
+    suggestions = [{
+        "type": "technique",
+        "title": "Start Training",
+        "description": f"Begin training {exercise} to generate progression suggestions.",
+        "action": "Set initial goals",
+        "priority": "high",
+    }]
+
+    if not plan_defaults:
+        return suggestions
+
+    suggestions.extend(_build_manual_progression_options(
+        exercise=exercise,
+        current_weight=plan_defaults.get("planned_weight"),
+        current_reps=plan_defaults.get("planned_max_reps"),
+        planned_sets=plan_defaults.get("planned_sets"),
+        is_novice=is_novice,
+    ))
+    return suggestions
 
 
 def generate_progression_suggestions(

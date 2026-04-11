@@ -6,7 +6,9 @@ from utils.errors import error_response, is_xhr_request, success_response
 from utils.logger import get_logger
 from utils.progression_plan import (
     get_exercise_history,
+    get_exercise_plan_defaults,
     generate_progression_suggestions,
+    generate_plan_based_progression_suggestions,
     save_progression_goal
 )
 
@@ -151,13 +153,12 @@ def get_suggestions():
         history = get_exercise_history(exercise)
 
         if not history:
-            suggestions = [{
-                "type": "technique",
-                "title": "Start Training",
-                "description": f"Begin training {exercise} to generate progression suggestions.",
-                "action": "Set initial goals",
-                "priority": "high"
-            }]
+            plan_defaults = get_exercise_plan_defaults(exercise)
+            suggestions = generate_plan_based_progression_suggestions(
+                exercise,
+                plan_defaults,
+                is_novice=is_novice,
+            )
         else:
             suggestions = generate_progression_suggestions(history, is_novice=is_novice)
 
@@ -333,7 +334,21 @@ def get_current_value():
             result = db.fetch_one(query, (exercise,))
             logger.debug("Current value query result: %s", result)
 
-            current_value = result['current_value'] if result and result['current_value'] else 0
+            current_value = result['current_value'] if result else None
+            if current_value is None:
+                plan_defaults = get_exercise_plan_defaults(exercise)
+                plan_value_keys = {
+                    "weight": "planned_weight",
+                    "reps": "planned_max_reps",
+                    "sets": "planned_sets",
+                }
+                current_value = (
+                    plan_defaults.get(plan_value_keys[goal_type])
+                    if plan_defaults
+                    else None
+                )
+                if current_value is None:
+                    current_value = 0
             logger.debug("Returning current_value=%s", current_value)
 
             return jsonify(success_response(data={"current_value": current_value}))

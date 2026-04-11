@@ -59,6 +59,39 @@ def test_get_exercise_suggestions_returns_wrapped_start_training_when_no_history
     assert "Start Training" in payload["data"][0]["title"]
 
 
+def test_get_exercise_suggestions_uses_plan_values_when_no_log_history(
+    client, clean_db, exercise_factory, workout_plan_factory
+):
+    exercise_factory("Bench Press")
+    workout_plan_factory(
+        exercise_name="Bench Press",
+        routine="Push",
+        sets=4,
+        min_rep_range=8,
+        max_rep_range=12,
+        weight=80.0,
+    )
+
+    response = client.post(
+        "/get_exercise_suggestions",
+        json={"exercise": "Bench Press", "is_novice": True},
+        headers=XHR_HEADERS,
+    )
+
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert_success_envelope(payload)
+    suggestions = {item["type"]: item for item in payload["data"]}
+
+    assert "technique" in suggestions
+    assert suggestions["weight"]["current_value"] == 80.0
+    assert suggestions["weight"]["suggested_value"] == 82.5
+    assert suggestions["reps"]["current_value"] == 12
+    assert suggestions["reps"]["suggested_value"] == 14
+    assert suggestions["sets"]["current_value"] == 4
+    assert suggestions["sets"]["suggested_value"] == 5
+
+
 def test_get_exercise_suggestions_returns_validation_error_for_missing_exercise(client, clean_db):
     response = client.post(
         "/get_exercise_suggestions",
@@ -104,6 +137,38 @@ def test_get_current_value_returns_wrapped_latest_weight_value(
     payload = response.get_json()
     assert_success_envelope(payload)
     assert payload["data"]["current_value"] == 82.5
+
+
+def test_get_current_value_falls_back_to_plan_when_log_history_is_empty(
+    client, clean_db, exercise_factory, workout_plan_factory
+):
+    exercise_factory("Bench Press")
+    workout_plan_factory(
+        exercise_name="Bench Press",
+        routine="Push",
+        sets=4,
+        min_rep_range=8,
+        max_rep_range=12,
+        weight=80.0,
+    )
+
+    expected_values = {
+        "weight": 80.0,
+        "reps": 12,
+        "sets": 4,
+    }
+
+    for goal_type, expected_value in expected_values.items():
+        response = client.post(
+            "/get_current_value",
+            json={"exercise": "Bench Press", "goal_type": goal_type},
+            headers=XHR_HEADERS,
+        )
+
+        assert response.status_code == 200
+        payload = response.get_json()
+        assert_success_envelope(payload)
+        assert payload["data"]["current_value"] == expected_value
 
 
 def test_get_current_value_returns_wrapped_na_for_unsupported_goal_type(client, clean_db):

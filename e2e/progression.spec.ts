@@ -351,12 +351,18 @@ test.describe('Progression Goal Lifecycle Smoke', () => {
     await exerciseSelector.selectOption(selectedValue!);
 
     await expect(page.locator('#suggestionsContainer')).toBeVisible();
-    const firstGoalButton = page.locator('.set-goal-btn').first();
-    await expect(firstGoalButton).toBeVisible();
-    await firstGoalButton.click();
+    await expect(page.locator('.suggestion-card[data-goal-type="weight"]')).toBeVisible();
+    await expect(page.locator('.suggestion-card[data-goal-type="reps"]')).toBeVisible();
+    await expect(page.locator('.suggestion-card[data-goal-type="sets"]')).toBeVisible();
+
+    const weightGoalButton = page.locator('.set-goal-btn[data-goal-type="weight"]').first();
+    await expect(weightGoalButton).toBeVisible();
+    await weightGoalButton.click();
 
     const goalModal = page.locator('#goalSettingModal');
     await expect(goalModal).toBeVisible();
+    await expect(page.locator('#currentValue')).toHaveValue(/^[1-9]\d*(\.\d+)?$/);
+    await expect(page.locator('#targetValue')).toHaveValue(/^[1-9]\d*(\.\d+)?$/);
     await page.locator('#goalDate').fill('31-12-2099');
     await page.locator('#saveGoal').click();
 
