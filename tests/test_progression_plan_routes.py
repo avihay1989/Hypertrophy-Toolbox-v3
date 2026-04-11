@@ -44,7 +44,7 @@ def insert_progression_goal(exercise, goal_type, current_value, target_value, go
     return row["id"]
 
 
-def test_get_exercise_suggestions_returns_wrapped_start_training_when_no_history(client, clean_db):
+def test_get_exercise_suggestions_returns_wrapped_technique_prompt_when_no_history(client, clean_db):
     response = client.post(
         "/get_exercise_suggestions",
         json={"exercise": "Bench Press", "is_novice": True},
@@ -56,7 +56,7 @@ def test_get_exercise_suggestions_returns_wrapped_start_training_when_no_history
     assert_success_envelope(payload)
     assert isinstance(payload["data"], list)
     assert payload["data"][0]["type"] == "technique"
-    assert "Start Training" in payload["data"][0]["title"]
+    assert "Technique Improvement" in payload["data"][0]["title"]
 
 
 def test_get_exercise_suggestions_uses_plan_values_when_no_log_history(

@@ -3,17 +3,12 @@
  * 
  * Tests the summary pages functionality including:
  * - Page loading
- * - Calculation mode toggles
+ * - Contribution mode toggles
  * - Volume legend display
  * - Table rendering
  */
 import type { Page } from '@playwright/test';
 import { test, expect, ROUTES, SELECTORS, waitForPageReady } from './fixtures';
-
-const COUNTING_MODE_OPTIONS = [
-  { value: 'effective', text: 'Effective Sets (Effort & Rep Range Weighted)' },
-  { value: 'raw', text: 'Raw Sets (Unweighted)' },
-];
 
 const CONTRIBUTION_MODE_OPTIONS = [
   { value: 'total', text: 'Total (Primary + Secondary + Tertiary)' },
@@ -56,21 +51,14 @@ async function expectMethodSelectorContract(page: Page, updaterName: string) {
   const methodSelector = page.locator('.method-selector').first();
   await expect(methodSelector).toBeVisible();
 
-  const countingMode = page.locator('#counting-mode');
   const contributionMode = page.locator('#contribution-mode');
 
-  await expect(page.locator('label[for="counting-mode"]')).toHaveText('Set Counting Mode');
+  await expect(page.locator('#counting-mode')).toHaveCount(0);
+  await expect(page.locator('label[for="counting-mode"]')).toHaveCount(0);
   await expect(page.locator('label[for="contribution-mode"]')).toHaveText('Muscle Contribution Mode');
-  await expect(countingMode).toHaveAttribute('onchange', `${updaterName}()`);
   await expect(contributionMode).toHaveAttribute('onchange', `${updaterName}()`);
 
-  await expect(countingMode.locator('option')).toHaveCount(COUNTING_MODE_OPTIONS.length);
   await expect(contributionMode.locator('option')).toHaveCount(CONTRIBUTION_MODE_OPTIONS.length);
-
-  for (const [index, option] of COUNTING_MODE_OPTIONS.entries()) {
-    await expect(countingMode.locator('option').nth(index)).toHaveAttribute('value', option.value);
-    await expect(countingMode.locator('option').nth(index)).toHaveText(option.text);
-  }
 
   for (const [index, option] of CONTRIBUTION_MODE_OPTIONS.entries()) {
     await expect(contributionMode.locator('option').nth(index)).toHaveAttribute('value', option.value);
@@ -97,7 +85,7 @@ test.describe('Weekly Summary Page', () => {
     await expect(page.locator(SELECTORS.PAGE_WEEKLY_SUMMARY)).toBeVisible();
   });
 
-  test('calculation mode selectors are present', async ({ page }) => {
+  test('contribution mode selector is present', async ({ page }) => {
     await expectMethodSelectorContract(page, 'updateWeeklySummary');
   });
 
@@ -126,28 +114,9 @@ test.describe('Weekly Summary Page', () => {
     const headerString = headerTexts.join(' ').toLowerCase();
 
     expect(headerString).toContain('muscle');
-    expect(headerString).toContain('active sets');
     expect(headerString).toContain('effective sets');
     expect(headerString).toContain('raw sets');
     expect(headerString).toContain('volume');
-  });
-
-  test('changing counting mode updates display', async ({ page }) => {
-    const countingMode = page.locator('#counting-mode');
-    
-    // Select "Raw Sets" option
-    await countingMode.selectOption('raw');
-
-    // Wait for update (the function is called on change)
-    await page.waitForTimeout(500);
-
-    // The selection should persist
-    await expect(countingMode).toHaveValue('raw');
-
-    // Switch back to effective
-    await countingMode.selectOption('effective');
-    await page.waitForTimeout(500);
-    await expect(countingMode).toHaveValue('effective');
   });
 
   test('changing contribution mode updates display', async ({ page }) => {
@@ -169,38 +138,10 @@ test.describe('Weekly Summary Page', () => {
   });
 
   test('fetch-backed weekly summary updates use explicit JSON intent', async ({ page }) => {
-    const [countingResponse] = await Promise.all([
-      page.waitForResponse((response) =>
-        response.url().includes('/weekly_summary?') &&
-        response.request().method() === 'GET' &&
-        response.request().headers()['x-requested-with'] === 'XMLHttpRequest'
-      ),
-      page.locator('#counting-mode').selectOption('raw'),
-    ]);
-
-    expect(countingResponse.ok()).toBeTruthy();
-    expect(countingResponse.url()).toContain('counting_mode=raw');
-    expect(countingResponse.url()).toContain('contribution_mode=total');
-    const countingResponsePayload = await countingResponse.json();
-    expect(countingResponsePayload.ok).toBe(true);
-    expect(countingResponsePayload.status).toBe('success');
-    const countingPayload = unwrapApiData(countingResponsePayload) as Record<string, unknown>;
-    expect(Array.isArray(countingPayload.weekly_summary)).toBe(true);
-    expect(Array.isArray(countingPayload.categories)).toBe(true);
-    expect(countingPayload).toHaveProperty('isolated_muscles');
-    expect(countingPayload).toHaveProperty('modes');
-    await expect(page.locator('#volume-formula-text')).toContainText('Raw Sets');
-    const rawWeeklySummary = countingPayload.weekly_summary as Array<Record<string, unknown>>;
-    if (rawWeeklySummary.length > 0) {
-      await expect(
-        page.locator('#weekly-summary-table tr').first().locator('td[data-label="Active Sets"]')
-      ).toHaveText(Number(rawWeeklySummary[0].total_sets).toFixed(1));
-    }
-    await expect(page.locator('#weekly-summary-table tr').first()).toBeVisible();
-
     const [contributionResponse] = await Promise.all([
       page.waitForResponse((response) =>
         response.url().includes('/weekly_summary?') &&
+        response.url().includes('contribution_mode=direct') &&
         response.request().method() === 'GET' &&
         response.request().headers()['x-requested-with'] === 'XMLHttpRequest'
       ),
@@ -208,13 +149,26 @@ test.describe('Weekly Summary Page', () => {
     ]);
 
     expect(contributionResponse.ok()).toBeTruthy();
-    expect(contributionResponse.url()).toContain('counting_mode=raw');
     expect(contributionResponse.url()).toContain('contribution_mode=direct');
+    expect(contributionResponse.url()).not.toContain('counting_mode=');
     const contributionResponsePayload = await contributionResponse.json();
     expect(contributionResponsePayload.ok).toBe(true);
     expect(contributionResponsePayload.status).toBe('success');
     const contributionPayload = unwrapApiData(contributionResponsePayload) as Record<string, unknown>;
     expect(Array.isArray(contributionPayload.weekly_summary)).toBe(true);
+    expect(Array.isArray(contributionPayload.categories)).toBe(true);
+    expect(contributionPayload).toHaveProperty('isolated_muscles');
+    expect(contributionPayload).toHaveProperty('modes');
+    await expect(page.locator('#volume-formula-text')).toContainText('Effective Sets');
+    const weeklySummary = contributionPayload.weekly_summary as Array<Record<string, unknown>>;
+    if (weeklySummary.length > 0) {
+      await expect(
+        page.locator('#weekly-summary-table tr').first().locator('td[data-label="Effective Sets"]')
+      ).toHaveText(Number(weeklySummary[0].effective_sets).toFixed(1));
+      await expect(
+        page.locator('#weekly-summary-table tr').first().locator('td[data-label="Raw Sets"]')
+      ).toHaveText(Number(weeklySummary[0].raw_sets).toFixed(1));
+    }
     await expect(page.locator('#weekly-summary-table tr').first()).toBeVisible();
   });
 });
@@ -238,7 +192,7 @@ test.describe('Session Summary Page', () => {
     await expect(page.locator(SELECTORS.PAGE_SESSION_SUMMARY)).toBeVisible();
   });
 
-  test('calculation mode selectors are present', async ({ page }) => {
+  test('contribution mode selector is present', async ({ page }) => {
     await expectMethodSelectorContract(page, 'updateSessionSummary');
   });
 
@@ -265,8 +219,8 @@ test.describe('Session Summary Page', () => {
 
     expect(headerString).toContain('routine');
     expect(headerString).toContain('muscle');
-    expect(headerString).toContain('active sets');
     expect(headerString).toContain('effective sets');
+    expect(headerString).toContain('raw sets');
     expect(headerString).toContain('volume');
   });
 
@@ -279,66 +233,11 @@ test.describe('Session Summary Page', () => {
     await expect(formTexts.first()).toBeVisible();
   });
 
-  test('date filter controls are wired into session summary requests', async ({ page }) => {
-    await expect(page.locator('#session-start-date')).toBeVisible();
-    await expect(page.locator('#session-end-date')).toBeVisible();
-    await expect(page.locator('#clear-session-date-filter')).toBeVisible();
-
-    await page.locator('#session-start-date').evaluate((el) => {
-      (el as HTMLInputElement).value = '2026-02-01';
-    });
-
-    const [dateFilterResponse] = await Promise.all([
-      page.waitForResponse((response) =>
-        response.url().includes('/session_summary?') &&
-        response.url().includes('start_date=2026-02-01') &&
-        response.url().includes('end_date=2026-02-07') &&
-        response.request().method() === 'GET' &&
-        response.request().headers()['x-requested-with'] === 'XMLHttpRequest'
-      ),
-      page.locator('#session-end-date').evaluate((el) => {
-        (el as HTMLInputElement).value = '2026-02-07';
-        el.dispatchEvent(new Event('change', { bubbles: true }));
-      }),
-    ]);
-
-    expect(dateFilterResponse.ok()).toBeTruthy();
-    await expect(page.locator('#session-summary-table tr').first()).toBeVisible();
-  });
-
   test('fetch-backed session summary updates use explicit JSON intent', async ({ page }) => {
-    const [countingResponse] = await Promise.all([
-      page.waitForResponse((response) =>
-        response.url().includes('/session_summary?') &&
-        response.request().method() === 'GET' &&
-        response.request().headers()['x-requested-with'] === 'XMLHttpRequest'
-      ),
-      page.locator('#counting-mode').selectOption('raw'),
-    ]);
-
-    expect(countingResponse.ok()).toBeTruthy();
-    expect(countingResponse.url()).toContain('counting_mode=raw');
-    expect(countingResponse.url()).toContain('contribution_mode=total');
-    const countingResponsePayload = await countingResponse.json();
-    expect(countingResponsePayload.ok).toBe(true);
-    expect(countingResponsePayload.status).toBe('success');
-    const countingPayload = unwrapApiData(countingResponsePayload) as Record<string, unknown>;
-    expect(Array.isArray(countingPayload.session_summary)).toBe(true);
-    expect(Array.isArray(countingPayload.categories)).toBe(true);
-    expect(countingPayload).toHaveProperty('isolated_muscles');
-    expect(countingPayload).toHaveProperty('modes');
-    await expect(page.locator('#volume-formula-text')).toContainText('Raw Sets');
-    const rawSessionSummary = countingPayload.session_summary as Array<Record<string, unknown>>;
-    if (rawSessionSummary.length > 0) {
-      await expect(
-        page.locator('#session-summary-table tr').first().locator('td[data-label="Active Sets"]')
-      ).toHaveText(Number(rawSessionSummary[0].total_sets).toFixed(1));
-    }
-    await expect(page.locator('#session-summary-table tr').first()).toBeVisible();
-
     const [contributionResponse] = await Promise.all([
       page.waitForResponse((response) =>
         response.url().includes('/session_summary?') &&
+        response.url().includes('contribution_mode=direct') &&
         response.request().method() === 'GET' &&
         response.request().headers()['x-requested-with'] === 'XMLHttpRequest'
       ),
@@ -346,13 +245,26 @@ test.describe('Session Summary Page', () => {
     ]);
 
     expect(contributionResponse.ok()).toBeTruthy();
-    expect(contributionResponse.url()).toContain('counting_mode=raw');
     expect(contributionResponse.url()).toContain('contribution_mode=direct');
+    expect(contributionResponse.url()).not.toContain('counting_mode=');
     const contributionResponsePayload = await contributionResponse.json();
     expect(contributionResponsePayload.ok).toBe(true);
     expect(contributionResponsePayload.status).toBe('success');
     const contributionPayload = unwrapApiData(contributionResponsePayload) as Record<string, unknown>;
     expect(Array.isArray(contributionPayload.session_summary)).toBe(true);
+    expect(Array.isArray(contributionPayload.categories)).toBe(true);
+    expect(contributionPayload).toHaveProperty('isolated_muscles');
+    expect(contributionPayload).toHaveProperty('modes');
+    await expect(page.locator('#volume-formula-text')).toContainText('Effective Sets');
+    const sessionSummary = contributionPayload.session_summary as Array<Record<string, unknown>>;
+    if (sessionSummary.length > 0) {
+      await expect(
+        page.locator('#session-summary-table tr').first().locator('td[data-label="Effective Sets"]')
+      ).toHaveText(Number(sessionSummary[0].effective_sets).toFixed(1));
+      await expect(
+        page.locator('#session-summary-table tr').first().locator('td[data-label="Raw Sets"]')
+      ).toHaveText(Number(sessionSummary[0].raw_sets).toFixed(1));
+    }
     await expect(page.locator('#session-summary-table tr').first()).toBeVisible();
   });
 });

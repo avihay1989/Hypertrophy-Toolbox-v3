@@ -23,39 +23,6 @@
             <!-- Calculation Method Toggles -->
             {{ method_selector('updateSessionSummary') }}
 
-            <div class="method-selector" aria-label="Session date filter">
-                <div class="row g-3 align-items-end">
-                    <div class="col-md-5">
-                        <label for="session-start-date" class="form-label">Start Date</label>
-                        <input
-                            type="date"
-                            id="session-start-date"
-                            class="form-control"
-                            onchange="updateSessionSummary()">
-                    </div>
-                    <div class="col-md-5">
-                        <label for="session-end-date" class="form-label">End Date</label>
-                        <input
-                            type="date"
-                            id="session-end-date"
-                            class="form-control"
-                            onchange="updateSessionSummary()">
-                    </div>
-                    <div class="col-md-2">
-                        <button
-                            type="button"
-                            id="clear-session-date-filter"
-                            class="btn btn-outline-secondary w-100"
-                            onclick="clearSessionDateFilter()">
-                            Clear
-                        </button>
-                    </div>
-                </div>
-                <small class="form-text text-muted">
-                    Filter logged session counts by workout-log date. Plan volume remains based on the current plan.
-                </small>
-            </div>
-
             <!-- Volume Classification Legend -->
             <div class="volume-legend">
                 <h5>Volume Classification Legend <small class="text-muted">(Based on Effective Sets)</small></h5>
@@ -125,9 +92,6 @@
                                 <tr>
                                     <th scope="col" class="col--high" data-label="Routine">Routine</th>
                                     <th scope="col" class="col--high" data-label="Muscle Group">Muscle Group</th>
-                                    <th scope="col" class="col--high is-num" data-label="Active Sets"
-                                        data-bs-toggle="tooltip"
-                                        title="Set count used by the selected counting mode">Active Sets</th>
                                     <th scope="col" class="col--high is-num" data-label="Effective Sets">Effective Sets</th>
                                     <th scope="col" class="col--med is-num" data-label="Raw Sets">Raw Sets</th>
                                     <th scope="col" class="col--med is-num" data-label="Total Volume">Total Volume</th>
@@ -361,25 +325,20 @@ function getSessionWarningBadge(warningLevel, effectivePerSession) {
 
 // Function to update the session summary table based on the selected modes
 async function updateSessionSummary() {
-    const countingMode = document.getElementById("counting-mode").value;
     const contributionMode = document.getElementById("contribution-mode").value;
-    const startDate = document.getElementById("session-start-date")?.value || "";
-    const endDate = document.getElementById("session-end-date")?.value || "";
     const tableBody = document.getElementById("session-summary-table");
     const categoryTableBody = document.getElementById("categories-table-body");
 
     // Update formula text based on counting mode
     const formulaText = document.getElementById('volume-formula-text');
     if (formulaText) {
-        formulaText.textContent = countingMode === 'raw'
-            ? 'Total Volume = Raw Sets × Avg Reps × Weight'
-            : 'Total Volume = Effective Sets × Avg Reps × Weight';
+        formulaText.textContent = 'Total Volume = Effective Sets × Avg Reps × Weight';
     }
 
     // Display loading spinner
     tableBody.innerHTML = `
         <tr>
-            <td colspan="7" class="text-center">
+            <td colspan="6" class="text-center">
                 <div class="spinner-border text-primary" role="status">
                     <span class="visually-hidden">Loading...</span>
                 </div>
@@ -388,15 +347,8 @@ async function updateSessionSummary() {
 
     try {
         const params = new URLSearchParams({
-            counting_mode: countingMode,
             contribution_mode: contributionMode
         });
-        if (startDate) {
-            params.set("start_date", startDate);
-        }
-        if (endDate) {
-            params.set("end_date", endDate);
-        }
 
         const response = await fetch(`/session_summary?${params.toString()}`, {
             headers: {
@@ -417,30 +369,25 @@ async function updateSessionSummary() {
         if (sessionSummary.length === 0) {
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="7" class="text-center text-muted">No data available.</td>
+                    <td colspan="6" class="text-center text-muted">No data available.</td>
                 </tr>`;
         } else {
             // Populate the table with fetched data
             tableBody.innerHTML = sessionSummary.map(row => {
                 const effectiveSets = row.effective_sets ?? row.total_sets ?? 0;
                 const rawSets = row.raw_sets ?? row.total_sets ?? 0;
-                const activeSets = row.total_sets ?? (countingMode === 'raw' ? rawSets : effectiveSets);
                 const effectivePerSession = row.effective_per_session;
                 const warningLevel = row.warning_level || 'no_data';
                 const volume = getVolumeDetails(effectiveSets);
                 const warning = getSessionWarningBadge(warningLevel, effectivePerSession);
                 // Transform muscle group name based on view mode
                 const muscleDisplay = window.FilterViewMode?.transformMuscleDisplay(row.muscle_group) || row.muscle_group || "N/A";
-                // Use raw or effective volume based on counting mode
-                const displayVolume = countingMode === 'raw'
-                    ? (row.raw_total_volume ?? row.total_volume ?? 0)
-                    : (row.total_volume ?? 0);
+                const displayVolume = row.total_volume ?? 0;
 
                 return `
                     <tr class="${row.is_excessive ? 'table-danger' : row.is_borderline ? 'table-warning' : ''}">
                         <td data-label="Routine">${row.routine || "N/A"}</td>
                         <td data-label="Muscle Group" data-raw-value="${row.muscle_group || ''}">${muscleDisplay}</td>
-                        <td data-label="Active Sets" class="is-num">${activeSets.toFixed(1)}</td>
                         <td data-label="Effective Sets" class="is-num">${effectiveSets.toFixed(1)}</td>
                         <td data-label="Raw Sets" class="is-num">${rawSets.toFixed(1)}</td>
                         <td data-label="Total Volume" class="is-num">${displayVolume.toFixed(0)}</td>
@@ -501,21 +448,9 @@ async function updateSessionSummary() {
         console.error("Error fetching data:", error);
         tableBody.innerHTML = `
             <tr>
-                <td colspan="7" class="text-center text-danger">Failed to load data.</td>
+                <td colspan="6" class="text-center text-danger">Failed to load data.</td>
             </tr>`;
     }
-}
-
-function clearSessionDateFilter() {
-    const startDateInput = document.getElementById("session-start-date");
-    const endDateInput = document.getElementById("session-end-date");
-    if (startDateInput) {
-        startDateInput.value = "";
-    }
-    if (endDateInput) {
-        endDateInput.value = "";
-    }
-    updateSessionSummary();
 }
 
 // Initialize table when the page loads

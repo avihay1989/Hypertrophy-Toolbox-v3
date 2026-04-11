@@ -2,7 +2,7 @@
 
 This script talks to `@modelcontextprotocol/server-puppeteer` over stdio
 JSON-RPC and executes browser-level checks for:
-1) Effective-sets invariance when switching counting mode to RAW.
+1) Effective/raw set columns render together without a counting-mode switch.
 2) Session summary inflation when multiple workout_log rows exist for one plan row.
 """
 from __future__ import annotations
@@ -186,63 +186,47 @@ def session_api_script() -> str:
     """.strip()
 
 
-def test_weekly_effective_invariance(client: PuppeteerMcpClient) -> TestResult:
+def test_weekly_effective_raw_columns_present(client: PuppeteerMcpClient) -> TestResult:
     client.navigate(f"{BASE_URL}/weekly_summary")
-    before = client.evaluate_json(weekly_capture_script())
-    before_map = {row["muscle"]: row for row in before}
-
-    client.select("#counting-mode", "raw")
-    after = client.evaluate_json(weekly_capture_script())
-    after_map = {row["muscle"]: row for row in after}
+    rows = client.evaluate_json(weekly_capture_script())
 
     diffs: List[Dict[str, Any]] = []
-    for muscle, left in before_map.items():
-        right = after_map.get(muscle)
-        if not right:
-            continue
-        if not nearly_equal(float(left["effective"]), float(right["effective"])):
+    for row in rows:
+        if row["effective"] <= 0 or row["raw"] <= 0:
             diffs.append(
                 {
-                    "muscle": muscle,
-                    "effective_mode": left["effective"],
-                    "raw_mode": right["effective"],
+                    "muscle": row["muscle"],
+                    "effective": row["effective"],
+                    "raw": row["raw"],
                 }
             )
 
     return TestResult(
-        name="weekly_effective_sets_invariant_across_counting_modes",
-        passed=len(diffs) == 0,
+        name="weekly_effective_raw_columns_present",
+        passed=len(rows) > 0 and len(diffs) == 0,
         details=diffs,
     )
 
 
-def test_session_effective_invariance(client: PuppeteerMcpClient) -> TestResult:
+def test_session_effective_raw_columns_present(client: PuppeteerMcpClient) -> TestResult:
     client.navigate(f"{BASE_URL}/session_summary")
-    before = client.evaluate_json(session_capture_script())
-    before_map = {f"{row['routine']}::{row['muscle']}": row for row in before}
-
-    client.select("#counting-mode", "raw")
-    after = client.evaluate_json(session_capture_script())
-    after_map = {f"{row['routine']}::{row['muscle']}": row for row in after}
+    rows = client.evaluate_json(session_capture_script())
 
     diffs: List[Dict[str, Any]] = []
-    for key, left in before_map.items():
-        right = after_map.get(key)
-        if not right:
-            continue
-        if not nearly_equal(float(left["effective"]), float(right["effective"])):
+    for row in rows:
+        if row["effective"] <= 0 or row["raw"] <= 0:
             diffs.append(
                 {
-                    "routine": left["routine"],
-                    "muscle": left["muscle"],
-                    "effective_mode": left["effective"],
-                    "raw_mode": right["effective"],
+                    "routine": row["routine"],
+                    "muscle": row["muscle"],
+                    "effective": row["effective"],
+                    "raw": row["raw"],
                 }
             )
 
     return TestResult(
-        name="session_effective_sets_invariant_across_counting_modes",
-        passed=len(diffs) == 0,
+        name="session_effective_raw_columns_present",
+        passed=len(rows) > 0 and len(diffs) == 0,
         details=diffs,
     )
 
@@ -287,8 +271,8 @@ def main() -> int:
     client = PuppeteerMcpClient()
     try:
         results = [
-            test_weekly_effective_invariance(client),
-            test_session_effective_invariance(client),
+            test_weekly_effective_raw_columns_present(client),
+            test_session_effective_raw_columns_present(client),
             test_session_not_inflated_by_logs(client),
         ]
     finally:
@@ -306,4 +290,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

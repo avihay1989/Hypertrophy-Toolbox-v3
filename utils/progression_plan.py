@@ -326,10 +326,10 @@ def generate_plan_based_progression_suggestions(
     """Generate starter suggestions from the current plan before log history exists."""
     suggestions = [{
         "type": "technique",
-        "title": "Start Training",
-        "description": f"Begin training {exercise} to generate progression suggestions.",
-        "action": "Set initial goals",
-        "priority": "high",
+        "title": "Technique Improvement",
+        "description": f"Focus on improving your {exercise} form and mobility for better results.",
+        "action": "Set a goal date for mastering proper technique",
+        "priority": "low",
     }]
 
     if not plan_defaults:

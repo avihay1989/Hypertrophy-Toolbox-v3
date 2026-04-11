@@ -4,8 +4,8 @@ import { api } from './fetch-wrapper.js';
 // Check if the page already has its own updateWeeklySummary function defined
 // If so, skip the module's version to avoid conflicts
 function pageHasOwnUpdater() {
-    return typeof window.updateWeeklySummary === 'function' || 
-           document.getElementById('counting-mode') !== null;
+    return typeof window.updateWeeklySummary === 'function' ||
+           typeof window.updateSessionSummary === 'function';
 }
 
 export async function fetchWeeklySummary(method = 'Total') {
@@ -130,4 +130,4 @@ function getVolumeLabel(sets) {
     if (sets >= 20) return 'High Volume';
     if (sets >= 10) return 'Medium Volume';
     return 'Low Volume';
-} 
+}

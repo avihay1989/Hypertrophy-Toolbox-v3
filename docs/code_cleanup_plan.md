@@ -65,6 +65,8 @@
 
 **Ownership note (2026-04-10):** The authoritative updater path for both summary pages is still the inline template functions: `updateWeeklySummary()` in `templates/weekly_summary.html` and `updateSessionSummary()` in `templates/session_summary.html`. `static/js/app.js` still calls `fetchWeeklySummary()` / `fetchSessionSummary()` on page init, but `static/js/modules/summary.js` immediately short-circuits when it sees an inline updater or `#counting-mode`. That means any template refactor must preserve the inline updater contract or replace the fallback guard in the same change. The weekly page also owns live `GET /api/pattern_coverage` rendering, which is asserted by `e2e/summary-pages.spec.ts`.
 
+**Post-4M UX update (2026-04-11):** `#counting-mode` is no longer a summary-page UI contract. Weekly/Plan Summary and Session Summary now show both Effective Sets and Raw Sets directly in the table, so the Set Counting Mode selector and derived Active Sets column were removed to avoid presenting two competing counting models. `static/js/modules/summary.js` now short-circuits on the inline updater functions only.
+
 ### 0.4 Semantic-Change Test Gap Review
 
 - [x] Before changing the `exercise_order` recalculation loop in `routes/exports.py`, confirm dedicated tests exist for:
@@ -694,6 +696,8 @@ from utils.effective_sets import (
 
 **Execution note (2026-04-10):** `static/js/app.js` still initializes both summary pages, but the authoritative render/update path remains the inline template functions `updateSessionSummary()` and `updateWeeklySummary()`. `static/js/modules/summary.js` still uses `pageHasOwnUpdater()` plus the presence of `#counting-mode` to short-circuit safely, so any `3f` selector extraction must preserve those hooks or replace the fallback guard in the same change. The weekly page still owns live `GET /api/pattern_coverage` rendering on the intentionally deferred `success` + `data` contract documented in `docs/archive/DOCS_AUDIT_PLAN.md`, and the summary-page Chromium Playwright suite re-passed at `21 passed`.
 
+**Post-4M UX update (2026-04-11):** The `#counting-mode` hook was intentionally retired after review found the UI confusing: the table already displays both Effective Sets and Raw Sets. The fallback guard in `static/js/modules/summary.js` was updated to detect the inline updater functions instead of relying on that selector.
+
 ---
 
 ### 3f. Extract Jinja2 Method Selector Macro (Descoped)
@@ -720,18 +724,6 @@ from utils.effective_sets import (
 ```html
 {% macro method_selector(update_function_name) %}
 <div class="method-selector">
-    <div class="mb-3">
-        <label for="counting-mode" class="form-label">Set Counting Mode</label>
-        <select id="counting-mode" class="form-select"
-                onchange="{{ update_function_name }}()">
-            <option value="effective" selected>Effective Sets (Effort & Rep Range Weighted)</option>
-            <option value="raw">Raw Sets (Unweighted)</option>
-        </select>
-        <small class="form-text text-muted">
-            <strong>Effective Sets:</strong> Weights sets by effort (RIR/RPE) and rep range to estimate hypertrophy stimulus. Lower RIR = more credit.<br>
-            <strong>Raw Sets:</strong> Simple set count without any adjustments.
-        </small>
-    </div>
     <div class="mb-3">
         <label for="contribution-mode" class="form-label">Muscle Contribution Mode</label>
         <select id="contribution-mode" class="form-select"
