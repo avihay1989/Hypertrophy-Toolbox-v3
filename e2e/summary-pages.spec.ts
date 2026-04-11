@@ -98,6 +98,9 @@ test.describe('Weekly Summary Page', () => {
     await expect(legend).toContainText('Medium Volume');
     await expect(legend).toContainText('High Volume');
     await expect(legend).toContainText('Excessive Volume');
+    await expect(legend).toContainText('Raw Sets');
+    await expect(legend).toContainText('Effective Sets');
+    await expect(legend).toContainText('Volume Classification');
   });
 
   test('legend swatches use shared volume classification colors', async ({ page }) => {
@@ -202,6 +205,9 @@ test.describe('Session Summary Page', () => {
 
     // Check session-specific content
     await expect(legend).toContainText('Volume Classification');
+    await expect(legend).toContainText('Raw Sets');
+    await expect(legend).toContainText('Effective Sets');
+    await expect(legend).toContainText('Session Warnings');
   });
 
   test('session legend swatches use shared volume classification colors', async ({ page }) => {
