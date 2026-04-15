@@ -43,12 +43,13 @@ Any change to core workflow behavior (plan/log/analyze/progress/distribute/backu
 
 ### Startup Sequence (`app.py`)
 ```
-app.py lines 46-57:
-  initialize_database()           ← utils/db_initializer.py — tables, seed, normalization
-  add_progression_goals_table()   ← utils/database.py:476
-  add_volume_tracking_tables()    ← utils/database.py:482
-  initialize_exercise_order()     ← routes/workout_plan.py:614 — ALTERs user_selection
-  init_backup_tables()            ← routes/program_backup.py → utils/program_backup.py:23
+app.py startup:
+  initialize_database()           ← utils/db_initializer.py — tables + normalization (no seed)
+  add_progression_goals_table()   ← utils/database.py
+  add_volume_tracking_tables()    ← utils/database.py
+  initialize_exercise_order()     ← routes/workout_plan.py — ALTERs user_selection
+  init_backup_tables()            ← routes/program_backup.py → utils/program_backup.py
+  create_startup_backup()         ← utils/auto_backup.py — snapshots live DB to data/auto_backup/
 ```
 Then registers 10 blueprints (`app.py:60-71`).
 
@@ -331,9 +332,7 @@ E2E fixtures: `e2e/fixtures.ts` — exports `test` (with console error collector
 Routes validate bounds before calling utils. Example pattern in `routes/workout_plan.py`: sets 1-20, reps 1-100, weight ≥ 0, RIR 0-10.
 
 ### Auth Boundaries
-**No authentication exists.** Single-user local app. `POST /erase-data` (`app.py:125`) deletes everything with no confirmation. Do not expose to untrusted network.
-
-**Recommendation:** Gate `/erase-data` behind an env var check (e.g. `ALLOW_ERASE=1`) or require a confirmation token in the request body to prevent accidental data loss.
+**No authentication exists.** Single-user local app. `POST /erase-data` requires `{"confirm": "ERASE_ALL_DATA"}` in the JSON body; requests without it return 400. A pre-erase snapshot is written to `data/auto_backup/` before wiping. Still: do not expose this app to an untrusted network.
 
 ### Filename Sanitization
 `utils/export_utils.py` has `sanitize_filename()` to strip path traversal and dangerous characters from export filenames.

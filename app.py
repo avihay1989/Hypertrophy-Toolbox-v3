@@ -2,6 +2,7 @@
 from flask import Flask, render_template, url_for, jsonify, request, make_response, g
 from utils.db_initializer import initialize_database
 from utils.database import DatabaseHandler, add_progression_goals_table, add_volume_tracking_tables
+from utils.auto_backup import create_startup_backup
 from routes.workout_log import workout_log_bp
 from routes.weekly_summary import weekly_summary_bp
 from routes.session_summary import session_summary_bp
@@ -56,6 +57,9 @@ initialize_exercise_order()
 logger.info("Initializing backup tables...")
 init_backup_tables()
 logger.info("Database initialization complete")
+
+# Snapshot the live DB to data/auto_backup/ so a wipe or corruption has a recovery point.
+create_startup_backup()
 
 # Register blueprints
 app.register_blueprint(main_bp)
@@ -125,7 +129,16 @@ def inject_scale_level():
 
 @app.route('/erase-data', methods=['POST'])
 def erase_data():
+    payload = request.get_json(silent=True) or {}
+    if payload.get('confirm') != 'ERASE_ALL_DATA':
+        return error_response(
+            "VALIDATION_ERROR",
+            "Erase requires confirm=ERASE_ALL_DATA in the request body.",
+            400,
+        )
     try:
+        # Snapshot before wiping so the nuke is recoverable from data/auto_backup/.
+        create_startup_backup()
         # Drop ALL tables including backup tables (full reset)
         with DatabaseHandler() as db:
             tables = [
