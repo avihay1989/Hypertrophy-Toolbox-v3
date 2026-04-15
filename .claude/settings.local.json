@@ -30,7 +30,10 @@
       "Bash(find /c/Users/aviha/Downloads/Hypertrophy-Toolbox-v3-main -type f \\\\\\( -name \"*.py\" -o -name \"*.js\" -o -name \"*.html\" \\\\\\) ! -path \"*/.venv/*\" -exec grep -l \"dropdowns\\\\.html\\\\|filters\\\\.html\\\\|table\\\\.html\\\\|exercise_details\\\\.html\\\\|debug_modal\\\\.html\\\\|workout_tracker\\\\.html\" {} \\\\;)",
       "Bash(wc -l \"c:/Users/aviha/Downloads/Hypertrophy-Toolbox-v3-main/tests/\"*.py)",
       "Bash(find . -path ./.venv -prune -o -path ./venv -prune -o -path ./node_modules -prune -o -type f -name \"*.py\" -exec grep -l \"from utils.business_logic\\\\|from .business_logic\\\\|import.*BusinessLogic\" {} \\\\;)",
-      "Bash(ls -1 /c/Users/aviha/Downloads/Hypertrophy-Toolbox-v3-main/docs/*.md)"
+      "Bash(ls -1 /c/Users/aviha/Downloads/Hypertrophy-Toolbox-v3-main/docs/*.md)",
+      "Bash(git checkout *)",
+      "Bash(git merge *)",
+      "Bash(git push *)"
     ]
   },
   "enableAllProjectMcpServers": true,
