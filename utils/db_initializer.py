@@ -4,17 +4,11 @@ from __future__ import annotations
 import os
 import sqlite3
 import threading
-from pathlib import Path
-
 from utils.database import DatabaseHandler
 from utils.logger import get_logger
 from utils.normalization import normalize_equipment, normalize_muscle
 
 logger = get_logger()
-
-REPO_ROOT = Path(__file__).resolve().parents[1]
-SEED_DB_PATH = REPO_ROOT / "data" / "backup" / "database.db"
-MIN_EXERCISE_ROWS = 100
 
 # Guard against double initialization during Flask auto-reload
 _INITIALIZATION_LOCK = threading.Lock()
@@ -328,90 +322,6 @@ def _backfill_workout_log_plan_ids(db: DatabaseHandler) -> None:
         logger.exception("Error during workout_log FK backfill")
 
 
-def _seed_exercises_from_backup_if_needed(db: DatabaseHandler) -> None:
-    """Populate the exercises catalogue from the canonical backup when empty."""
-    if os.getenv("TESTING") == "1":
-        logger.debug("Skipping seed from backup while TESTING flag is set")
-        return
-
-    try:
-        row = db.fetch_one("SELECT COUNT(*) AS count FROM exercises")
-        existing_count = int(row["count"]) if row and row.get("count") is not None else 0
-    except sqlite3.Error:
-        logger.exception("Unable to inspect exercises table for seeding")
-        return
-
-    if existing_count >= MIN_EXERCISE_ROWS:
-        logger.debug("Exercises catalogue already populated (%s rows)", existing_count)
-        return
-
-    if not SEED_DB_PATH.exists():
-        logger.warning("Seed database missing at %s; skipping automatic restore", SEED_DB_PATH)
-        return
-
-    logger.info("Seeding exercises catalogue from backup (existing rows: %s)", existing_count)
-    attached = False
-    columns = (
-        "exercise_name",
-        "primary_muscle_group",
-        "secondary_muscle_group",
-        "tertiary_muscle_group",
-        "advanced_isolated_muscles",
-        "utility",
-        "grips",
-        "stabilizers",
-        "synergists",
-        "force",
-        "equipment",
-        "mechanic",
-        "difficulty",
-    )
-    column_list = ", ".join(columns)
-
-    try:
-        db.execute_query("ATTACH DATABASE ? AS seed_db", (str(SEED_DB_PATH),))
-        attached = True
-        db.execute_query(
-            f"INSERT OR IGNORE INTO exercises ({column_list}) "
-            f"SELECT {column_list} FROM seed_db.exercises"
-        )
-        isolated_exists = db.fetch_one(
-            "SELECT name FROM seed_db.sqlite_master WHERE type='table' AND name='exercise_isolated_muscles'"
-        )
-        if isolated_exists:
-            db.execute_query(
-                "INSERT OR IGNORE INTO exercise_isolated_muscles (exercise_name, muscle) "
-                "SELECT exercise_name, muscle FROM seed_db.exercise_isolated_muscles"
-            )
-        else:
-            logger.debug("Seed database missing exercise_isolated_muscles table; skipping copy")
-    except sqlite3.Error:
-        logger.exception("Failed to seed exercises from backup database")
-    finally:
-        if attached:
-            try:
-                db.execute_query("DETACH DATABASE seed_db")
-            except sqlite3.Error:
-                logger.exception("Failed to detach seed database after seeding attempt")
-
-    try:
-        row = db.fetch_one("SELECT COUNT(*) AS count FROM exercises")
-        final_count = int(row["count"]) if row and row.get("count") is not None else existing_count
-        isolated_row = db.fetch_one("SELECT COUNT(*) AS count FROM exercise_isolated_muscles")
-        isolated_count = int(isolated_row["count"]) if isolated_row and isolated_row.get("count") is not None else 0
-        logger.info(
-            "Exercises catalogue now holds %s rows (%s isolated muscle mappings)",
-            final_count,
-            isolated_count,
-        )
-        # Rebuild mapping table if it's underpopulated (less than 10% of exercises)
-        if final_count > 0 and isolated_count < final_count * 0.1:
-            logger.info("Rebuilding exercise_isolated_muscles from advanced_isolated_muscles column...")
-            _rebuild_isolated_muscles_mapping(db)
-    except sqlite3.Error:
-        logger.exception("Unable to confirm row counts after seeding")
-
-
 def _normalize_equipment_values(db: DatabaseHandler) -> None:
     """Ensure equipment values align with canonical normalization rules."""
     try:
@@ -532,7 +442,6 @@ def initialize_database(force: bool = False) -> None:
             _initialize_user_selection_table(db)
             _initialize_workout_log_table(db)
             _backfill_workout_log_plan_ids(db)
-            _seed_exercises_from_backup_if_needed(db)
             _normalize_equipment_values(db)
             _normalize_muscle_group_values(db)
             _populate_movement_patterns(db)

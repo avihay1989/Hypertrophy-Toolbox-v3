@@ -1,7 +1,6 @@
 """Database connection helpers and lightweight data-access abstraction."""
 from __future__ import annotations
 
-import shutil
 import sqlite3
 import threading
 import time
@@ -26,8 +25,6 @@ _DB_LOCK = threading.RLock()
 # Guard against double initialization during Flask auto-reload
 _INITIALIZATION_COMPLETE: dict[str, bool] = {}
 DATA_DIR = Path(DB_FILE).resolve().parent
-REPO_ROOT = Path(__file__).resolve().parents[1]
-SEED_DB_PATH = REPO_ROOT / "data" / "backup" / "database.db"
 
 
 def _register_sqlite_converters() -> None:
@@ -149,20 +146,7 @@ def _attempt_database_recovery(database_path: str) -> bool:
             logger.exception("Failed to quarantine corrupted database file %s", db_path)
             return False
 
-    if SEED_DB_PATH.exists():
-        try:
-            db_path.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(SEED_DB_PATH, db_path)
-            logger.warning("Restored database from seed backup at %s", SEED_DB_PATH)
-            return True
-        except OSError:
-            logger.exception("Failed to copy seed database from %s", SEED_DB_PATH)
-            return False
-
-    logger.warning(
-        "Seed database not found at %s; a new database will be created on next initialization",
-        SEED_DB_PATH,
-    )
+    logger.warning("A fresh empty database will be created on next initialization")
     return True
 
 

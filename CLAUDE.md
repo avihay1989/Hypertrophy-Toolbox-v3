@@ -111,7 +111,7 @@ XHR detection (`utils/errors.py:47-64`): checks `X-Requested-With`, `Accept: app
 | `program_backup_items` | `id INTEGER` | `backup_id` → `program_backups` CASCADE | `utils/program_backup.py:23` |
 
 ### Seed Database
-`data/backup/database.db` is the canonical exercise library. On first init, if `exercises` has < 100 rows (`MIN_EXERCISE_ROWS`, `db_initializer.py:17`), the seed is ATTACHed and copied (`db_initializer.py:331-395`). Skipped when `TESTING=1` env var is set (`db_initializer.py:333`).
+No built-in seed. Fresh installs start with empty tables; bring your own `data/database.db` backup to restore the exercise catalog. On corruption, `_attempt_database_recovery()` quarantines the bad file as `*.corrupted_<timestamp>` and a fresh empty DB is created on next init.
 
 ### DB Connection Config (`utils/database.py:80-104`)
 `_configure_connection()` sets PRAGMAs per connection:

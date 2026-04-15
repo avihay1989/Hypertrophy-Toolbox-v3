@@ -254,14 +254,14 @@ IF the Edge smoke in E3 reveals the original dropdown bug still present, re-open
 
 ---
 
-## 7. Phase F — Deferred Architectural Cleanup (NOT THIS SESSION)
+## 7. Phase F — Deferred Architectural Cleanup
 
-Captured for future planning. Do not execute without reopening this decision.
+Executed 2026-04-15 with scope F1 + F2 + F4. F3 became moot once the seed contract was retired (empty DB is now the valid initial state, not an error).
 
-- [ ] **F1** — Retire the `SEED_DB_PATH` contract entirely: delete the seed file, replace both read sites ([utils/db_initializer.py:348-395](utils/db_initializer.py#L348-L395) and [utils/database.py:152-166](utils/database.py#L152-L166)) with explicit failure on empty DB.
-- [ ] **F2** — Remove duplicate `SEED_DB_PATH` constant from [utils/database.py:30](utils/database.py#L30); import from `utils.db_initializer` instead.
-- [ ] **F3** — Harden [utils/db_initializer.py:348](utils/db_initializer.py#L348) to **raise** (not warn) when seed is missing AND live DB is empty, guarded by `os.getenv("TESTING") != "1"`.
-- [ ] **F4** — Fix the `filter-view-mode.js` double-load between [templates/workout_plan.html:516](templates/workout_plan.html#L516) and `templates/base.html:290`.
+- [x] **F1** — Retired `SEED_DB_PATH` contract entirely. Deleted `data/backup/database.db`, removed `_seed_exercises_from_backup_if_needed()` from `utils/db_initializer.py`, and simplified `_attempt_database_recovery()` in `utils/database.py` to quarantine-only (next init creates a fresh empty DB). User keeps their own `data/database.db` backups offline (`C:\Users\aviha\OneDrive\מסמכים\backup database`).
+- [x] **F2** — Removed duplicate `SEED_DB_PATH` constant from `utils/database.py`; subsumed by F1.
+- [ ] **F3** — Superseded by F1. Empty DB is no longer an error condition.
+- [x] **F4** — Removed duplicate `filter-view-mode.js` script tag from `templates/workout_plan.html`; the load now lives only in `templates/base.html`.
 
 ---
 
