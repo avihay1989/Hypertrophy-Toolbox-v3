@@ -118,7 +118,7 @@
 
 > **Tracking rule:** Update this dashboard after every completed phase so confidence, status, and go/no-go decisions stay visible at a glance.
 >
-> **Fresh agent? Start here:** if you need to know "what's next," skip to the **[Post-Phase-4 Handoff](#post-phase-4-handoff-2026-04-11)** section below. Do not interpret the checkboxes in `[Phase 3i]` / `[Phase 3j]` / `Execution Checklist` as an active to-do list — several items are deliberately deferred for confidence reasons the Stage Tracker records but the checklists do not.
+> **Fresh agent? Start here:** if you need to know "what's next," skip to the **[Post-Phase-4 Handoff](#post-phase-4-handoff-2026-04-11)** section below. Do not interpret the checkboxes in `[Phase 3i]` / `[Phase 3j]` / `Execution Checklist` as an active to-do list — those sections are historical and superseded by the Stage Tracker plus `docs/phase5_3i_plan.md`.
 
 ### Overall Status
 
@@ -126,11 +126,11 @@
 |---|---:|---|---|
 | `Phase 0` gate itself | `99%` | Completed | Baselines, rollback, package-surface, frontend ownership, and export-gap review were all executed. |
 | Completed work: `3a` + `3b Wave 1` + `3b Wave 2` + `3c` + `3d` + `3e` + `3f` + `3g` | `99%` | Completed | Landed cleanly and validated. |
-| Remaining approved low-risk path | `N/A` | Completed | The approved low-risk tranche is now complete through `3g`; only deferred / no-go items remain. |
+| Remaining approved low-risk path | `N/A` | Completed | The approved low-risk tranche is complete through `3g`; `3i` and `3j` were later retired by `docs/phase5_3i_plan.md`. |
 | `3f` after the explicit frontend / visual go decision | `95-96%` | Completed | Selector-contract guardrails were strengthened first, the extraction stayed markup-only, and summary/full Chromium Playwright plus desktop/mobile visual checks passed. |
 | `3b Wave 2` after the explicit package-surface retirement decision | `95-96%` | Completed | `app.py` moved to a concrete module import, `utils/__init__.py` dropped the retired legacy exports, `utils/business_logic.py` and `utils/data_handler.py` plus their dedicated tests were deleted, and full pytest stayed green. |
-| Add `3j` | `55-60%` | `NO-GO` | Export recalculation path still lacks dedicated success / rollback tests. |
-| Whole remaining program including all open phases | `~80%` | Not at `95%` | The full end-to-end cleanup is not yet in the `95%` zone. |
+| `3j` after Phase 5 recovery | `95%+` | Completed | `debug/5I_test_hardening.md` added the missing tests and `debug/5J_recalculate_exercise_order.md` validated the intended atomic batch semantics. |
+| Whole remaining program including all open phases | `N/A` | Split | `3i` and `3j` no longer block this cleanup plan; other open items, if any, remain tracked separately by their own artifacts. |
 
 ### Stage Tracker
 
@@ -145,8 +145,8 @@
 | `3f` Method-selector macro | `95-96%` | Completed | Stronger selector-contract tests landed first; the shared macro extraction preserved the inline updater contract and passed browser plus visual checks. |
 | `3g` Backend-only classifier cleanup | `99%` | Completed | Landed as a backend-only helper refactor in `utils/volume_classifier.py`; public API stayed intact and the targeted pytest gate passed. |
 | `3b Wave 2` Package-surface contraction | `95-96%` | Completed | Explicit API retirement decision granted; legacy package exports, modules, and paired tests were removed together, and full pytest stayed green. |
-| `3j` Export write-path optimization | `55-60%` | No-go | Still blocked by missing targeted tests. |
-| `3i` Large function decomposition | `50-60%` | Deferred | 4O resolved the checklist/tracker self-inconsistency by leaving `3i` deferred. It requires a new one-function-at-a-time breakdown plan before execution. |
+| `3j` Export write-path optimization | `95%+` | Completed | Retroactively validated by `docs/phase5_3i_plan.md` sub-phase 5J. See `debug/5J_recalculate_exercise_order.md`. |
+| `3i` Large function decomposition | `95%+` | Completed | Retroactively validated by `docs/phase5_3i_plan.md` sub-phases 5A-5H. See `debug/5A_*.md`..`debug/5H_*.md` for per-function audits. |
 | `Phase 4` Validation & regression | `N/A` | Completed | Closed via `phase4_option_c_plan.md`: audits ran, 4J orphan removal landed, 4M smoke failures were triaged, Progression was fixed forward in `ec748ba`, and the current full pytest baseline is `936 passed, 1 skipped`. |
 
 ### Current Evidence Snapshot
@@ -204,20 +204,20 @@ Execute in this order, stopping at the first item the user approves. **Do not st
 2. **Fix remaining 4M bugs.** The 2026-04-11 manual smoke surfaced 3 failures: Weekly Summary counter toggle, Session Summary counter toggle, and Progression rendering. Progression was fixed forward in `ec748ba`; Weekly and Session counter toggles remain out-of-cycle follow-up bugs per `debug/4M_triage.md`. Write a **small dedicated bugfix plan per bug** — do not bundle.
 3. **(Optional) db_seed_fix_plan.md Phase F** — `SEED_DB_PATH` retirement. Architectural cleanup, no user-visible payoff. Only if the user specifically asks.
 
-### What's NOT next — deferred items that must not auto-resume
+### What's NOT next — retired items that must not auto-resume
 
-The following items appear in this document as "deferred," "no-go," or with `[x]` checkbox marks. **Do not execute them directly.** The parent plan explicitly rated them below the 95% confidence bar:
+The following items previously appeared in this document as "deferred," "no-go," or with `[x]` checkbox marks. **Do not execute them directly.** They were deferred at 50-60% / 55-60% until `docs/phase5_3i_plan.md` split and validated them with per-sub-phase artifacts:
 
-| Item | Confidence | Why deferred | To un-defer |
+| Item | Confidence | Historical note | Current authority |
 |---|---:|---|---|
-| `3i` Large function decomposition | **50–60%** | Too broad; bundles multiple unrelated high-blast-radius refactors. The `[x]` marks under `[Phase 3i]` are a known plan self-inconsistency — 4O-2 resolved them by leaving `3i` deferred at the tracker level. | Write a new breakdown plan that splits `3i` into **one-function sub-phases**, one at a time. Same shape as `phase4_option_c_plan.md`. |
-| `3j` Export write-path optimization | **55–60%** | Would alter write semantics without dedicated tests proving intended behavior. | Add characterization tests for `routes/exports.py` write path **first**, then write a breakdown plan. |
+| `3i` Large function decomposition | **95%+** | Was deferred at **50-60%** because it bundled multiple unrelated high-blast-radius refactors. The `[x]` marks under `[Phase 3i]` were a known plan self-inconsistency. | Retroactively validated by `docs/phase5_3i_plan.md` sub-phases 5A-5H. See `debug/5A_*.md`..`debug/5H_*.md`. |
+| `3j` Export write-path optimization | **95%+** | Was deferred at **55-60%** because it would alter write semantics without dedicated tests proving intended behavior. | Retroactively validated by `docs/phase5_3i_plan.md` sub-phase 5J after 5I test hardening. See `debug/5I_test_hardening.md` and `debug/5J_recalculate_exercise_order.md`. |
 
-**Both items require a new breakdown plan before any execution.** Running them directly from this document's `[Phase 3i]` / `[Phase 3j]` checklists will regress the codebase. See [phase4_option_c_plan.md §18.3](phase4_option_c_plan.md#183-hard-rule-do-not-auto-resume-code_cleanup_planmd) for the full rationale.
+**Both items are now retired from this document's executable checklist.** Running them directly from this document's `[Phase 3i]` / `[Phase 3j]` checklists would re-run historical work. See `docs/phase5_3i_plan.md` for the executed audit trail.
 
 ### Anti-patterns (do not do any of these without explicit user instruction)
 
-- Execute `3i-a..3i-h` just because the `[Phase 3i]` checklist has `[x]` marks. Those marks predate the confidence downgrade and are explicitly superseded by the Stage Tracker row for `3i`.
+- Execute `3i-a..3i-h` just because the historical `[Phase 3i]` checklist had `[x]` marks. Those marks are superseded by `docs/phase5_3i_plan.md` and the `debug/5A_*.md`..`debug/5H_*.md` exit artifacts.
 - Interpret this file as a to-do list with unchecked boxes that must be drained. The checklist state is a historical artifact; the Stage Tracker + this Post-Phase-4 Handoff section are the authoritative "what to do next" source.
 - Roll back a 3a–3h cleanup commit to "fix" a 4M bug without first running the regression-check block in [phase4_option_c_plan.md §10 4M-3](phase4_option_c_plan.md#4m-3--record-failures-as-triage-entries-if-any). Pre-existing bugs (most 4M findings are) must be fixed forward.
 - Delete the `debug/` directory — it is the Phase 4 audit trail.
@@ -234,7 +234,7 @@ Phase 4 status: <closed per debug/4O_commit.txt at <hash>> OR <in progress, next
 If closed, remaining open items:
   1. Merge spring-cleanup → main (ready)
   2. 4M bugs: <N> open per debug/4M_triage.md
-  3. 3i/3j deferred (require new breakdown plans, do not auto-resume)
+  3. 3i/3j retired by docs/phase5_3i_plan.md (do not auto-resume)
   4. db_seed Phase F deferred
   5. create_performance_indexes() open question from CLAUDE.md Appendix C
 
@@ -257,8 +257,8 @@ Do not start work without an explicit "go."
 |---|---:|---|---|
 | `3f` Extract descoped method-selector macro | `95-96%` | No longer below `95%`: the contract-preserving extraction is complete and validated | None in the current cycle |
 | `3b Wave 2` Package-surface contraction | `95-96%` | No longer below `95%`: the explicit API retirement decision was granted and validated | None in the current cycle |
-| `3j` Export write-path optimization | `55-60%` | Current change would alter write semantics without dedicated tests proving intended behavior | Add characterization tests, choose target semantics, and only then implement |
-| `3i` Bloated-function decomposition | `50-60%` | The phase is too broad; it bundles multiple unrelated high-blast-radius refactors | Split into one-function sub-phases and only green-light them one at a time |
+| `3j` Export write-path optimization | `95%+` | No longer below `95%`: `debug/5I_test_hardening.md` added the missing characterization coverage and `debug/5J_recalculate_exercise_order.md` validated the intended semantics | None in the current cycle |
+| `3i` Bloated-function decomposition | `95%+` | No longer below `95%`: `docs/phase5_3i_plan.md` split the bundled work into one-function validation sub-phases 5A-5H | None in the current cycle |
 
 ### Recovery Plan for `3f` — Jinja Method-Selector Macro
 
@@ -314,70 +314,23 @@ Do not start work without an explicit "go."
 
 ### Recovery Plan for `3j` — Export Write-Path Optimization
 
-**Target confidence:** raise from `55-60%` to `95%+`
+**Status:** Superseded by `docs/phase5_3i_plan.md` — see that file §5I and §5J for the executed test-hardening and batch-update validation sub-phases.
 
-- [ ] Add characterization tests before touching the implementation:
-  - [ ] In `tests/test_exports.py`, add a case where all `exercise_order` values are identical and verify recalculation occurs
-  - [ ] Add a case where some `exercise_order` values are `NULL` and verify initialization occurs
-  - [ ] Add a case where `exercise_order` is already distinct and verify no recalculation path is taken
-  - [ ] Add a case that verifies the exported ordering after recalculation is stable and correct
-- [ ] Decide the intended semantics before any optimization:
-  - [ ] Choose whether the code should preserve the current partial-success behavior
-  - [ ] Or choose to move to explicit atomic batch behavior with rollback on failure
-  - [ ] Record that choice in the plan before implementation begins
-- [ ] If the target semantics are atomic batch behavior, add the missing rollback safety net first:
-  - [ ] Add a test that injects a failure during recalculation and asserts zero rows are committed
-  - [ ] Add a test that proves the export still returns a correct workbook when recalculation is skipped or succeeds
-  - [ ] Implement the recalculation under an explicit transaction boundary, not a silent best-effort loop
-- [ ] If the target semantics are partial-success behavior, keep the current loop and remove the optimization from this cleanup:
-  - [ ] Do not introduce `executemany()` in the current cycle
-  - [ ] Document that the optimization is deferred because preserving partial-success semantics matters more than write-path speed
-- [ ] Validation gate before confidence can be upgraded:
-  - [ ] `.\.venv\Scripts\python.exe -m pytest tests/test_exports.py -q`
-  - [ ] `.\.venv\Scripts\python.exe -m pytest tests/test_ui_flows.py -q`
-  - [ ] `.\.venv\Scripts\python.exe -m pytest tests/ -q`
-
-**Recommendation:** `3j` only reaches `95%` if the semantics are chosen first and then proven by dedicated tests. If the goal stays “performance cleanup” without that semantic decision, it should remain deferred.
+**Result:** `3j` reached `95%+` after `debug/5I_test_hardening.md` added the missing characterization coverage and `debug/5J_recalculate_exercise_order.md` validated the intended atomic batch semantics.
 
 ### Recovery Plan for `3i` — Bloated-Function Decomposition
 
-**Target confidence:** raise from `50-60%` to `95%+`
+**Status:** Superseded by `docs/phase5_3i_plan.md` — see that file §5 for the executed one-function sub-phases.
 
-> **Important:** The current bundled `3i` phase should not be treated as a single executable phase anymore. It is too broad to honestly clear a `95%` safety bar.
-
-- [ ] Re-scope `3i` into one-function sub-phases before doing any refactor work:
-  - [ ] `3i-a` `utils/progression_plan.generate_progression_suggestions`
-  - [ ] `3i-b` `utils/session_summary.calculate_session_summary`
-  - [ ] `3i-c` `utils/export_utils.create_excel_workbook`
-  - [ ] `3i-d` `routes/workout_plan.replace_exercise`
-  - [ ] `3i-e` `routes/exports.export_to_excel` only after `3j` is resolved
-- [ ] Prioritize sub-phases by existing test strength:
-  - [ ] Start with `generate_progression_suggestions` because it already has direct unit coverage in `tests/test_double_progression.py` and `tests/test_progression_plan_utils.py`
-  - [ ] Consider `calculate_session_summary` next because it already has deep unit coverage in `tests/test_session_summary.py`
-  - [ ] Keep `replace_exercise` and `export_to_excel` later because they sit on route / response / DB-write boundaries
-- [ ] For every sub-phase, require the same preparation checklist:
-  - [ ] Freeze the public function signature and returned payload / side effects
-  - [ ] Write down the current responsibilities inside the function before extraction starts
-  - [ ] Add characterization tests for helper-worthy branches that are not yet asserted directly
-  - [ ] Extract only pure or internal helpers in the first pass
-  - [ ] Do not combine decomposition with SQL changes, response-shape changes, or behavior changes in the same patch
-- [ ] For every sub-phase, require targeted validation plus a suite rerun:
-  - [ ] Run the dedicated unit / route tests for that function
-  - [ ] Run adjacent API / UI flow tests if the function sits behind a route
-  - [ ] Run full pytest after each sub-phase, not only at the end
-- [ ] Treat the original bundled `3i` phase as retired:
-  - [ ] Do not green-light “all bloated functions” as one execution unit again
-  - [ ] Only upgrade confidence one sub-phase at a time, once its own checklist is complete
-
-**Recommendation:** `3i` can be brought back into the safe path only by breaking it apart. The combined phase should stay below `95%` by design; the sub-phases can individually reach `95%` if they stay narrow.
+**Result:** `3i` reached `95%+` after `debug/5A_*.md` through `debug/5H_*.md` validated the individual decomposition targets one at a time.
 
 ### Recommended Order For Confidence Recovery Work
 
 - [x] First: finish the remaining already-approved path (`3g`)
 - [x] Second: revisit `3f` with the tightened browser / visual guardrails above
 - [x] Third: explicitly retire the `3b Wave 2` package surface after a zero-caller audit, paired test deletion, and migration note
-- [ ] Fourth: either defer `3j` permanently for this cleanup or add the missing export-path tests before touching code
-- [ ] Fifth: replace the bundled `3i` phase with one-function sub-phases and only consider the safest sub-phase first
+- [x] Fourth: `docs/phase5_3i_plan.md` added/hardened export-path tests before validating `3j`
+- [x] Fifth: `docs/phase5_3i_plan.md` replaced the bundled `3i` phase with one-function validation sub-phases
 
 ---
 
@@ -846,91 +799,33 @@ def get_volume_label(total_sets):
 
 ---
 
-### 3i. Bloated Function Decomposition (Re-scoped into strict sub-phases)
+### 3i. Bloated Function Decomposition (Retired - see phase5_3i_plan.md)
 
-> **Important:** This phase was originally bundled but has been re-scoped into 5 strict sub-phases (3i-a through 3i-e) to mitigate risk. Each must clear the `95%` safety bar alone. Only extract isolated helper functions without changing logic, signatures, or SQL. Run the test suite after *every* sub-phase.
-
-#### 3i-a: `generate_progression_suggestions` (224 lines)
-**Target File:** `utils/progression_plan.py`
-**Why first:** Strongest existing unit test coverage (`tests/test_double_progression.py`, `tests/test_progression_plan_utils.py`).
-- [x] Freeze function signature: `def generate_progression_suggestions(...)`
-- [x] Add characterization tests for any branches not yet covered (skipped, existing tests covered).
-- [x] Extract helpers (e.g., `_build_weight_suggestion()`, `_build_rep_suggestion()`, `_build_maintenance_suggestion()`).
-- [x] Validation: `.\.venv\Scripts\python.exe -m pytest tests/test_double_progression.py tests/test_progression_plan_utils.py -q` then full suite `.\.venv\Scripts\python.exe -m pytest tests/ -q`. (Result: `68 passed` and `930 passed, 1 skipped` respectively).
-
-#### 3i-b: `calculate_session_summary` (256 lines)
-**Target File:** `utils/session_summary.py`
-**Why second:** Deep unit coverage already exists in `tests/test_session_summary.py`.
-- [x] Freeze function signature: `def calculate_session_summary(...)`
-- [x] Add characterization tests for missed branches (skipped, existing coverage validated).
-- [x] Extract helpers (e.g., `_build_plan_query()`, `_build_log_query()`, `_aggregate_muscle_volumes()`).
-- [x] Validation: `.\.venv\Scripts\python.exe -m pytest tests/test_session_summary.py -q` then full suite `.\.venv\Scripts\python.exe -m pytest tests/ -q`. (Result: `30 passed` and `930 passed, 1 skipped` respectively).
-
-#### 3i-c: `create_excel_workbook` (227 lines)
-**Target File:** `utils/export_utils.py`
-**Why third:** It's self-contained and heavily tests data export formats without affecting core app logic.
-- [x] Freeze function signature: `def create_excel_workbook(...)`
-- [x] Extract purely visual/formatting helpers (e.g., `_setup_formats()`, `_build_superset_color_map()`, `_write_worksheet()`).
-- [x] Validation: `.\.venv\Scripts\python.exe -m pytest tests/test_exports.py -q` then full suite `.\.venv\Scripts\python.exe -m pytest tests/ -q`. (Result: `35 passed` and `930 passed, 1 skipped` respectively).
-
-#### 3i-d: `replace_exercise` (230 lines)
-**Target File:** `routes/workout_plan.py`
-- [x] Freeze function signature: `def replace_exercise(...)`
-- [x] Extract logic to internal route helpers (e.g., `_fetch_current_exercise_details()`, `_build_replacement_candidates()`, `_perform_exercise_swap()`).
-- [x] Validation: run route tests then full suite `.\.venv\Scripts\python.exe -m pytest tests/ -q`. (Result: 930 passed, 1 skipped).
-
-#### 3i-e: `export_to_excel` (338 lines)
-**Target File:** `routes/exports.py`
-- [x] **Prerequisite:** This must ONLY be done *after* phase `3j` (N+1 UPDATE loop) is either executed or explicitly deferred/resolved.
-- [x] Freeze function signature: `def export_to_excel(...)`
-- [x] Extract helpers (e.g., `_recalculate_exercise_order()`, `_build_export_query()`, `_fetch_all_sheets()`).
-- [x] Validation: `.\.venv\Scripts\python.exe -m pytest tests/test_exports.py -q` then full suite `.\.venv\Scripts\python.exe -m pytest tests/ -q`. (Result: `37 passed` and `932 passed, 1 skipped` respectively).
-
->#### 3i-f: `suggest_supersets` (139 lines)
-**Target File:** `routes/workout_plan.py`
-**Why:** It contains a hardcoded `ANTAGONIST_PAIRS` dictionary and a heavy triple-nested loop that mixes data grouping with pattern matching. This business logic should not live inside a route.
-- [x] Freeze function signature: `def suggest_supersets(...)`
-- [x] Move `ANTAGONIST_PAIRS` map to the module level or a constants file.
-- [x] Extract the grouping logic: `_group_exercises_by_routine(exercises)`.
-- [x] Extract the core matching engine: `_find_antagonist_pairings(available_exercises)`.
-- [x] Validation: run `.\.venv\Scripts\python.exe -m pytest tests/test_superset.py tests/test_workout_plan_routes.py -q`
-
-#### 3i-g: `set_execution_style` (138 lines)
-**Target File:** `routes/workout_plan.py`
-**Why:** The route is flooded with conditional formatting, boundary checking (e.g., `time_cap_seconds` between 10 and 60), and defaults assignment based on the execution style selected.
-- [x] Freeze function signature: `def set_execution_style(...)`
-- [x] Extract all payload validation and defaulting into `_validate_and_normalize_execution_params(data)`.
-- [x] Extract DB mutation logic into a helper `_update_execution_style_db(...)`.
-- [x] Validation: run `.\.venv\Scripts\python.exe -m pytest tests/test_workout_plan_routes.py -q`
-
-#### 3i-h: `link_superset` (131 lines)
-**Target File:** `routes/workout_plan.py`
-**Why:** Mixing heavy database constraint checks (ensuring same routine, ensuring not already supersetted) with routing.
-- [x] Freeze function signature: `def link_superset(...)`
-- [x] Extract validation logic into `_validate_superset_link_request(db, exercise_ids)`.
-- [x] Extract DB execution and ID generation into `_apply_superset_link(db, exercise_ids)`.
-- [x] Validation: `.\.venv\Scripts\python.exe -m pytest tests/test_superset.py -q`
+> **Retired 2026-04-13 by `docs/phase5_3i_plan.md` §5A-§5H.** The decompositions
+> listed here shipped inside commit `12c90ac` bundled with phases `3a-3h`;
+> the confidence-recovery audit required by this plan's Confidence Recovery Plan
+> ran in `docs/phase5_3i_plan.md` and produced the exit artifacts
+> `debug/5A_*.md` through `debug/5H_*.md`.
+>
+> The original §3i sub-phase bodies (`3i-a`..`3i-h`) are preserved in git
+> history at commit `571a365` for reference. Do not re-execute from this
+> document.
 
 ---
 
-### 3j. Fix N+1 UPDATE Loop (Deferred / Last)
+### 3j. Fix N+1 UPDATE Loop (Retired - see phase5_3i_plan.md)
 
-**Estimated impact:** N sequential DB writes → 1 batch write, but with an intentional semantic change if converted to atomic `executemany()`.
-
-- [x] Add or confirm targeted tests in `tests/test_exports.py` for the `exercise_order` recalculation branch
-  - [x] success path with multiple rows needing recalculation
-  - [x] failure / rollback semantics if atomic batch mode is adopted
-- [x] If the tests do not exist yet, add them before editing `routes/exports.py`
-- [x] Reconfirm `DatabaseHandler.executemany()` exists and keeps transaction semantics clear
-- [x] Only after the tests exist, replace the per-row update loop in `routes/exports.py`
-- [x] Keep an explicit code comment documenting the semantic change: partial-success logging → all-or-nothing batch update
-- [x] Validate targeted export and flow coverage:
-  - [x] `.\.venv\Scripts\python.exe -m pytest tests/test_exports.py tests/test_ui_flows.py -q`
-  - [x] `npx playwright test e2e/workout-plan.spec.ts --project=chromium --reporter=line`
-- [x] Re-run full pytest immediately after this phase:
-  - [x] `.\.venv\Scripts\python.exe -m pytest tests/ -q`
-
-** codex 5.4*** The batch update is a reasonable optimization, but it is not a pure cleanup. Treat it as the last phase, after the deletion and dedup work are stable, because it changes failure semantics on a live write path.
+> **Retired 2026-04-13 by `docs/phase5_3i_plan.md` §5I-§5J.** The export
+> write-path optimization shipped inside commit `12c90ac` and intentionally
+> changed failure semantics from partial-success per-row updates to an atomic
+> batch update.
+>
+> `debug/5I_test_hardening.md` hardened the missing characterization coverage,
+> and `debug/5J_recalculate_exercise_order.md` validated the documented
+> `executemany()` batch semantics at `95%+` confidence.
+>
+> The original §3j checklist is preserved in git history at commit `571a365`
+> for reference. Do not re-execute from this document.
 
 ---
 
@@ -1424,7 +1319,7 @@ Run before starting any changes:
 | JS files in `static/js/modules/` | 24 | 21 | -3 files |
 | Dead imports | ~7 | 0 | -7 |
 | Duplicated parse functions | 2 route copies | 1 shared helper + optional temporary wrappers | Safer incremental reduction |
-| N+1 query loops | 1 | 1 | Deferred to `3j`; no semantic write-path change made |
+| N+1 query loops | 1 | 0 unresolved | Initially deferred to `3j`; later validated by `docs/phase5_3i_plan.md` §5J |
 | Raw `get_db_connection()` calls | ~8 | 1 intentional maintenance exception | Unsafe app write paths migrated; `utils/database_indexes.py` holds `_DB_LOCK` explicitly |
 | `print()` calls in prod code | already 0 | 0 | Already completed in archived audit |
 | Total Python LOC | ~27,000 | 25,546 | ~1,454 fewer |
@@ -1465,8 +1360,8 @@ Run before starting any changes:
 | **3f** Extract Jinja2 macro | **95-96%** | Medium (visual regression) | Completed as a strict `method_selector` extraction with stronger selector-contract tests, preserved inline updater hooks, green summary/full Chromium Playwright, and desktop/mobile visual review |
 | **3g** Consolidate volume classifier | **99%** | Low | Completed as a backend-only table-driven helper extraction in `utils/volume_classifier.py`; public API stayed intact and the targeted pytest gate passed at `104 passed` |
 | **3h** DB migration + logging | **99%** | N/A | Already completed and validated at `981 passed, 1 skipped` |
-| **3i** Decompose bloated functions | N/A | Deferred | Not assessed — optional/lower priority |
-| **3j** Fix N+1 loop | **70%** | Medium-High | Defer until dedicated export-path tests prove the intended semantics |
+| **3i** Decompose bloated functions | **95%+** | Retired | Later validated by `docs/phase5_3i_plan.md` sub-phases 5A-5H |
+| **3j** Fix N+1 loop | **95%+** | Retired | Later validated by `docs/phase5_3i_plan.md` sub-phase 5J after 5I test hardening |
 
 ### Key Corrections Applied
 1. **Baseline evidence refreshed:** Phase 0 baseline snapshot was `981 passed, 1 skipped`, `21` passing summary-surface browser tests, and `315` passing Chromium Playwright tests. Post-`3b Wave 1`, `3c`, and `3d`, the current pytest snapshot is `963 passed, 1 skipped` because `tests/test_muscle_group.py` was intentionally removed with its dead module and four shared-helper tests were added in `3d`.
@@ -1474,13 +1369,14 @@ Run before starting any changes:
 3. **Phase 3d hardened:** route-level parse helper compatibility is now called out explicitly because route tests import those helpers directly
 4. **Phase 3e added:** summary-page frontend ownership must be documented before template dedup proceeds
 5. **Phase 3g narrowed:** backend-only for this cycle; template / JS threshold dedup is deferred
-6. **Phase 3j deferred:** the export write-path optimization moved to the end and is blocked on dedicated tests
+6. **Phase 3j initially deferred:** the export write-path optimization moved to the end and was blocked on dedicated tests until Phase 5 resolved it
 7. **Phase 0 executed:** start authorization was evidence-based: initial `GO` for `3a`, `3b Wave 1`, `3c`, `3d`, `3e`, `3g`; initial `HOLD` for `3f`; initial `NO-GO` for `3b Wave 2` and `3j`
 8. **Phase 3c executed:** orphaned templates were removed after a clean reference audit and validated with smoke-navigation Playwright plus full pytest
 9. **Phase 3d executed:** shared query-parameter parsers were centralized in `utils/effective_sets.py`, route-level compatibility wrappers were preserved, and both targeted plus full pytest stayed green
 10. **Phase 3f executed:** selector-contract assertions were strengthened first, the summary method selector was extracted into a shared partial without touching shared JS or page-specific legend copy, and summary/full Chromium Playwright plus desktop/mobile visual review stayed green
 11. **Phase 3g executed:** raw-volume thresholds were centralized into `_VOLUME_TIERS` + `_classify()` in `utils/volume_classifier.py`, the public helper API stayed unchanged, and the scoped pytest gate passed at `104 passed`
 12. **Phase 3b Wave 2 executed:** explicit package-surface retirement was approved, `app.py` moved to a direct module import, `utils/__init__.py` dropped the retired legacy exports, the paired legacy modules/tests were deleted, and the full pytest suite stayed green at `930 passed, 1 skipped`
+13. **Phase 5 recovery executed:** `docs/phase5_3i_plan.md` retired the remaining `3i`/`3j` confidence gaps with per-function artifacts and a post-5I baseline of `938 passed, 1 skipped`
 
 ### Volume Classifier Boundary Verification
 
@@ -1536,7 +1432,7 @@ Note: Plan only refactors `get_volume_class()` and `get_volume_label()` (lines 1
   - [x] `static/js/updateSummary.js`
   - [x] Result: both are currently safe-delete candidates with no repo references
 - [x] **0-9.** Confirm whether the export recalculation branch already has dedicated success and failure tests.
-  - [x] Result: dedicated recalculation/rollback tests are not present; `3j` stays deferred
+  - [x] Result at Phase 0 time: dedicated recalculation/rollback tests were not present, so `3j` stayed deferred until Phase 5
 - [x] **0-10.** Record go / no-go:
   - [x] baseline green
   - [x] package-surface decision recorded
@@ -1544,7 +1440,7 @@ Note: Plan only refactors `get_volume_class()` and `get_volume_label()` (lines 1
   - [x] semantic-change test gap resolved or deferred
   - [x] Go for `3a`, `3b Wave 1`, `3c`, `3d`, `3e`, `3g`
   - [x] Hold `3f` for separate frontend / visual decision
-  - [x] No-go for `3b Wave 2` and `3j` until prerequisites are satisfied
+  - [x] No-go for `3b Wave 2` and `3j` until prerequisites are satisfied; both were resolved later by explicit follow-up decisions/plans
 
 ---
 
@@ -1694,23 +1590,13 @@ Note: Plan only refactors `get_volume_class()` and `get_volume_label()` (lines 1
 
 ---
 
-### [Phase 3i] Decompose Bloated Functions (Optional — Deferred)
-> Not scheduled for this cleanup cycle. Candidates documented in Section 3i above.
+### [Phase 3i] Decompose Bloated Functions (Retired - see phase5_3i_plan.md)
+Retired - see `docs/phase5_3i_plan.md` §5A-§5H and `debug/5A_*.md`..`debug/5H_*.md`.
 
 ---
 
-### [Phase 3j] Fix N+1 UPDATE Loop (Deferred / Last)
-- [ ] **3j-1.** Add or confirm targeted tests in `tests/test_exports.py` for the recalculation branch
-  - [ ] success path
-  - [ ] failure / rollback semantics
-- [ ] **3j-2.** If those tests do not exist, add them before editing `routes/exports.py`
-- [ ] **3j-3.** Only after the tests exist, replace the per-row update loop with `executemany()`
-- [ ] **3j-4.** Add an explicit code comment documenting the semantic change
-- [ ] **3j-5.** Validate targeted export / flow behavior:
-  - [ ] `.\.venv\Scripts\python.exe -m pytest tests/test_exports.py tests/test_ui_flows.py -q`
-  - [ ] `npx playwright test e2e/workout-plan.spec.ts --project=chromium --reporter=line`
-- [ ] **3j-6.** Re-run full pytest:
-  - [ ] `.\.venv\Scripts\python.exe -m pytest tests/ -q`
+### [Phase 3j] Fix N+1 UPDATE Loop (Retired - see phase5_3i_plan.md)
+Retired - see `docs/phase5_3i_plan.md` §5I-§5J, `debug/5I_test_hardening.md`, and `debug/5J_recalculate_exercise_order.md`.
 
 ---
 
