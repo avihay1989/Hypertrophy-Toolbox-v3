@@ -705,6 +705,12 @@ baseline is `936 passed, 1 skipped`.
 - Independent review found no blocking issues. Verified with focused progression Python tests (`83 passed`), Playwright progression lifecycle smoke (`1 passed`), and full pytest (`936 passed, 1 skipped`).
 - 4M-3 should record Progression as fixed-forward in `ec748ba`; only Weekly Summary and Session Summary remain out-of-cycle/open unless separately fixed.
 
+### 2026-04-15 — 4M summary follow-up closed
+
+- Weekly Summary and Session Summary counter UX was resolved by later summary commits: `b058d19` surfaced both active set counts, `73bc1eb` removed the confusing Raw/Effective counting selector from the UI, and `571a365` clarified the Raw Sets / Effective Sets explanation.
+- Reverified with focused summary pytest (`95 passed`) and summary-page Playwright (`20 passed`).
+- No 4M follow-up bugs remain open after this check.
+
 ---
 
 ## 16. Action Count Summary
@@ -833,7 +839,7 @@ After 4O-5 completes, the following is **true by construction** — do not re-ve
 | # | Item | Source of record | State | Recommended ownership |
 |---|---|---|---|---|
 | 1 | Merge `spring-cleanup` → `main` | This plan | Ready to merge | User decision |
-| 2 | 4M bugs (Weekly/Session counter toggle, Progression rendering) | `debug/4M_triage.md` | Deferred as "out of cycle" (Path A) OR already fixed (Path B) — check the triage file | New small plan if Path A |
+| 2 | 4M bugs (Weekly/Session counter toggle, Progression rendering) | `debug/4M_triage.md` + 2026-04-15 follow-up | Resolved: Progression fixed in `ec748ba`; Weekly/Session summary UX closed by `b058d19`, `73bc1eb`, and `571a365` | None |
 | 3 | 3i bloated-function decomposition | [code_cleanup_plan.md](code_cleanup_plan.md) Stage Tracker | Deferred at **50–60%** confidence by the parent plan | Do NOT auto-resume |
 | 4 | 3j export write-path optimization | [code_cleanup_plan.md](code_cleanup_plan.md) Stage Tracker | Deferred at **55–60%** confidence (missing characterization tests) | Do NOT auto-resume |
 | 5 | [db_seed_fix_plan.md](db_seed_fix_plan.md) Phase F — `SEED_DB_PATH` retirement | db_seed_fix_plan.md | Deferred, architectural | User decision |
@@ -855,10 +861,9 @@ A fresh agent reading [code_cleanup_plan.md](code_cleanup_plan.md) might see `3i
 Execute in this order, stopping at the first one the user approves:
 
 1. **Merge `spring-cleanup` → `main`.** Long-lived cleanup branches lose value the longer they sit. Confirm with the user, then standard PR or fast-forward merge. This is the baseline "Phase 4 is done" exit.
-2. **Tackle the 4M bugs** (if any remain open per `debug/4M_triage.md`). The 2026-04-11 smoke run surfaced 3 failures — Weekly Summary counter toggle, Session Summary counter toggle, Progression rendering. If Path A was taken (pre-existing), they are now sitting as "out of cycle" tickets and are the **highest-leverage next work**: they affect the user directly and have been triaged already. Write a small bugfix plan per bug, do not bundle them.
-3. **Write a 3i breakdown plan** — ONLY if the user specifically asks for function decomposition. Start by satisfying the "must split into one-function sub-phases" clause. Expect it to be ~10× the planning overhead of phase4_option_c itself.
-4. **Execute db_seed_fix_plan.md Phase F** — `SEED_DB_PATH` retirement. Architectural simplification with no user-visible payoff. Defer unless the user specifically wants a single-source-of-truth for the constant.
-5. **Write a 3j breakdown plan** — ONLY after the characterization tests for `routes/exports.py` write path exist. Lowest priority of the five.
+2. **Execute db_seed_fix_plan.md Phase F** — `SEED_DB_PATH` retirement. Architectural simplification with no user-visible payoff. Defer unless the user specifically wants a single-source-of-truth for the constant.
+3. **Resolve the `create_performance_indexes()` startup decision** if startup/index hygiene becomes a priority.
+4. **Write a 3i/3j follow-on only if new issues appear.** The historical 3i/3j confidence gaps were retired by `docs/phase5_3i_plan.md`.
 
 ### 18.5 Explicit anti-patterns
 
@@ -879,8 +884,8 @@ Phase 4 is closed per debug/4O_commit.txt at <hash>.
 
 Remaining open items:
   1. Merge spring-cleanup → main (ready)
-  2. 4M bugs: <N> open tickets from debug/4M_triage.md  (OR "resolved as regressions in <commit>")
-  3. 3i/3j deferred (require new breakdown plans)
+  2. 4M bugs: resolved (Progression in ec748ba; summary UX in b058d19/73bc1eb/571a365)
+  3. 3i/3j retired by docs/phase5_3i_plan.md
   4. db_seed Phase F deferred
   5. create_performance_indexes() open question
 

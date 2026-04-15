@@ -31,7 +31,7 @@ Do not read the plan linearly on entry. Each sub-phase action is self-contained 
 
 > **Fresh-agent handoff:** this table is the quick resume state. The authoritative evidence remains the named `debug/` artifact for each checked item. If this table and the artifacts ever disagree, trust the artifacts and update this table before continuing.
 
-**Current resume point (2026-04-13):** 5O patch is proposed and awaiting user commit approval; after commit, next sub-phase is **5Z**. Prior artifact is `debug/5O_retirement_summary.md`.
+**Current resume point (2026-04-15):** Phase 5 is closed. See `debug/5Z_close.md`; 5I landed at `e41460b`, 5O landed at `c0da18e`, and `phase5-rollback-point` was deleted.
 
 - [x] `P0` Shell bootstrap — PASS, `debug/P0_phase5_shell.md`
 - [x] `P1` Environment sanity — PASS, `debug/P1_phase5_env.md`
@@ -48,8 +48,8 @@ Do not read the plan linearly on entry. Each sub-phase action is self-contained 
 - [x] `5I` Harden `tests/test_exports.py` rollback characterization — PASS, `debug/5I_test_hardening.md`, `debug/5I_postbaseline.md`
 - [x] `5J` Validate `_recalculate_exercise_order` — PASS, `debug/5J_recalculate_exercise_order.md`
 - [x] `5E` Validate `export_to_excel` — PASS, `debug/5E_export_to_excel.md`
-- [x] `5O` Retire §3i and §3j in `code_cleanup_plan.md` — PROPOSED, `debug/5O_planmd.patch`, `debug/5O_retirement_summary.md`
-- [ ] `5Z` Phase 5 close — BLOCKED until user-approved 5O commit lands
+- [x] `5O` Retire §3i and §3j in `code_cleanup_plan.md` — COMMITTED at `c0da18e`, `debug/5O_planmd.patch`, `debug/5O_retirement_summary.md`
+- [x] `5Z` Phase 5 close — PASS, `debug/5Z_close.md`
 
 ---
 
@@ -84,14 +84,14 @@ Evidence (verified 2026-04-11 via `git show 12c90ac -- <file>`):
 | 3i-h `link_superset` decomposed | `+def _validate_superset_link_request`, `+def _apply_superset_link`; main body shrunk from 131 → 68 lines | Yes |
 | 3j batch update via `executemany` | `+db.executemany("UPDATE user_selection SET exercise_order = ? WHERE id = ?", ...)`; old per-row loop `UPDATE user_selection SET exercise_order = ? WHERE id = ?` removed | Yes |
 
-The current working tree passes **936 passed, 1 skipped** on the full pytest suite (per [CLAUDE.md](../CLAUDE.md) §8 *Verified Test Counts*, last verified 2026-04-11). That pytest number already reflects the post-`12c90ac` code. The refactors are demonstrably not breaking the existing test coverage.
+At Phase 5 start, the working tree passed **936 passed, 1 skipped** on the full pytest suite (per [CLAUDE.md](../CLAUDE.md) §8 *Verified Test Counts*, last verified 2026-04-11). After 5I test hardening, the live baseline became **938 passed, 1 skipped**. The refactors are demonstrably not breaking the existing test coverage.
 
 ### 0.3 What this plan is NOT
 
 - **It is not a re-execution plan.** The code has already been refactored. Re-executing the decomposition would corrupt committed history and risk breaking the 936 green tests. §12 anti-patterns enforces this.
 - **It is not a behavioral-equivalence proof at fuzzed-input level.** The plan verifies equivalence at the pytest-coverage level (936 targeted + integration tests) and at the signature/SQL/response-shape level. If the user wants stronger guarantees, that is a separate follow-on: adding characterization tests for branches not covered by the current suite. The plan names this as the only escalation path in §5 sub-phase escalation rule.
 - **It is not a `git revert 12c90ac` plan.** The rollup commit also contains `3a-3h` cleanup work that is independently valuable and out of scope for this plan. Rollback (§8) is an **emergency whole-file restore** via `git show 47736b9:<file> > <file>` — this reverts every line in that file that changed between `47736b9` and HEAD, including co-located unrelated cleanup work. See §8 for the blast-radius disclaimer.
-- **It does not touch the Phase 4M bugs** (Weekly/Session counter toggle, Progression rendering). Those have their own triage artifacts in `debug/4M_*.md` and are out of scope.
+- **It does not touch the Phase 4M bugs** (Weekly/Session counter toggle, Progression rendering). Those have their own triage artifacts in `debug/4M_*.md` and are out of scope. They were later closed outside Phase 5: Progression in `ec748ba`, and Weekly/Session summary UX in `b058d19`, `73bc1eb`, and `571a365`.
 
 ### 0.4 The self-inconsistency being closed
 
@@ -176,7 +176,7 @@ All prerequisites are read-only for source code. **P4 writes one git tag** (not 
 ### P2 — Baseline recapture
 **Exit artifact:** `debug/P2_phase5_baseline.md`
 
-> **Why:** the parent plan's last recorded baseline was `934 passed, 1 skipped` post-4C. [CLAUDE.md](../CLAUDE.md) §8 now shows `936 passed, 1 skipped` — the `ec748ba` progression fix added 2 new tests to `tests/test_progression_plan_routes.py`. Every subsequent action in this plan gates on the **live** pytest number, not the parent plan's stale number. **Note:** after 5I runs, the baseline rolls forward — see `debug/5I_postbaseline.md` for the gate used by 5J and later sub-phases.
+> **Why:** the parent plan's last recorded baseline was `934 passed, 1 skipped` post-4C. Phase 5 P2 captured `936 passed, 1 skipped` after the `ec748ba` progression fix added 2 new tests to `tests/test_progression_plan_routes.py`. Every subsequent action in this plan gates on the **live** pytest number, not the parent plan's stale number. **Note:** after 5I runs, the baseline rolls forward — see `debug/5I_postbaseline.md` for the gate used by 5J and later sub-phases.
 
 - [ ] Run:
     ```powershell
@@ -1297,7 +1297,7 @@ After all sub-phases (5A..5O) complete and the user approves the 5O commit:
 ### 2026-04-12 (Codex live progress checkpoint)
 - Live Progress Tracker added near the top of this plan for Gemini/Claude/Codex handoff resilience.
 - Completed with PASS artifacts: P0, P1, P2, P3, P4, 5A, 5B, 5C, 5D, 5F, 5G, 5H, 5I, 5J, 5E. 5O is PROPOSED, not committed.
-- Current resume point is user review / commit approval for `5O`; after that, run `5Z`.
+- Phase 5 is closed; `debug/5Z_close.md` records the close-out.
 - Active Phase 5 baseline is now `938 passed, 1 skipped` per `debug/5I_postbaseline.md`.
 
 ### 2026-04-12 (Codex 5I test hardening)
@@ -1322,10 +1322,10 @@ After all sub-phases (5A..5O) complete and the user approves the 5O commit:
 - After this 5E checkpoint, the next sub-phase was `5O`, with prior artifact `debug/5E_export_to_excel.md`.
 
 ### 2026-04-13 (Codex 5O plan retirement proposal)
-- 5O completed as PROPOSED, not committed, with artifacts: `debug/5O_planmd.patch` and `debug/5O_retirement_summary.md`.
-- `docs/code_cleanup_plan.md` now has a proposed retirement patch for §3i and §3j, replacing executable checklist bodies with redirects to `docs/phase5_3i_plan.md` and the 5A-5J debug artifacts.
+- 5O completed and was committed at `c0da18e`, with artifacts: `debug/5O_planmd.patch` and `debug/5O_retirement_summary.md`.
+- `docs/code_cleanup_plan.md` now has a landed retirement patch for §3i and §3j, replacing executable checklist bodies with redirects to `docs/phase5_3i_plan.md` and the 5A-5J debug artifacts.
 - Patch size is `363` lines; `git diff --check -- docs/code_cleanup_plan.md` passed.
-- Current resume point is user review / commit approval for `5O`. After the approved commit lands, run `5Z`.
+- 5Z later closed Phase 5 in `debug/5Z_close.md`.
 
 ---
 
@@ -1520,7 +1520,7 @@ After 5Z completes, the following is **true by construction** — do not re-veri
 | 1 | 5J characterization coverage for `_recalculate_exercise_order` batch update | Expected **PASS after 5I hardening** — the 4 named branches (success, NULL-init, no-op, rollback) now have dedicated tests that all exercise the real `executemany` path. If 5J still escalated, see `debug/5J_ANOMALY.md` and `debug/5I_postbaseline.md`. | User decides: accept the verdict or spawn a follow-on test-addition plan |
 | 2 | Any other 5A–5H ESCALATE verdicts | Documented in the corresponding `debug/5<letter>_*.md` | Follow-on plan per escalation |
 | 3 | `create_performance_indexes()` not in startup | Still open from CLAUDE.md Appendix C | Separate from Phase 5 |
-| 4 | 4M bugs | Still open from `debug/4M_triage.md` | Separate bugfix plans per bug |
+| 4 | 4M bugs | Resolved after Phase 5: Progression in `ec748ba`; Weekly/Session summary UX in `b058d19`, `73bc1eb`, and `571a365` | None |
 | 5 | `db_seed_fix_plan.md` Phase F | Still deferred | User decision |
 | 6 | Gemini review of this plan | Still pending as of 2026-04-11 (Codex v1 review addressed in v2 revision) | User decides whether to ask Gemini for a second opinion before marking Phase 5 closed |
 
@@ -1547,7 +1547,7 @@ Final pytest: <count> passed, <count> skipped (≥ debug/5I_postbaseline.md <bas
 Remaining open items:
   1. <any ESCALATE follow-ons>
   2. Gemini review of this plan (if user wants a second reviewer)
-  3. 4M bugs (unrelated)
+  3. 4M bugs resolved after Phase 5 close-out
   4. Other backlog items from CLAUDE.md Appendix C
 
 Which would you like to work on next?

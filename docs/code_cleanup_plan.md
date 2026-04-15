@@ -10,9 +10,9 @@
 ### Baseline Test Counts (current snapshot, must be re-recorded)
 | Suite | Command | Expected |
 |-------|---------|----------|
-| pytest | `.venv/Scripts/python.exe -m pytest tests/ -q` | **930 passed, 1 skipped** (validated 2026-04-10 after `3b Wave 2`) |
-| Playwright summary surfaces | `npx playwright test e2e/summary-pages.spec.ts --project=chromium --reporter=line` | **21 passed** (validated 2026-04-10 in current repo) |
-| Full Playwright | `npx playwright test --project=chromium --reporter=line` | **315 passed** (validated 2026-04-10 in current repo) |
+| pytest | `.venv/Scripts/python.exe -m pytest tests/ -q` | **938 passed, 1 skipped** (validated 2026-04-15 after Phase 5 test hardening) |
+| Playwright summary surfaces | `npx playwright test e2e/summary-pages.spec.ts --project=chromium --reporter=line` | **20 passed** (validated 2026-04-15 after summary UX follow-up close) |
+| Full Playwright | `npx playwright test --project=chromium --reporter=line` | **315 passed** (latest recorded full run from Phase 4 close-out) |
 
 > **Important:** These counts drift as tests are added/removed. Treat them as a snapshot, not an invariant. Always re-record in this environment before starting. For rollback, prefer a saved patch or checkpoint commit over `git stash push` in a dirty worktree.
 
@@ -147,7 +147,7 @@
 | `3b Wave 2` Package-surface contraction | `95-96%` | Completed | Explicit API retirement decision granted; legacy package exports, modules, and paired tests were removed together, and full pytest stayed green. |
 | `3j` Export write-path optimization | `95%+` | Completed | Retroactively validated by `docs/phase5_3i_plan.md` sub-phase 5J. See `debug/5J_recalculate_exercise_order.md`. |
 | `3i` Large function decomposition | `95%+` | Completed | Retroactively validated by `docs/phase5_3i_plan.md` sub-phases 5A-5H. See `debug/5A_*.md`..`debug/5H_*.md` for per-function audits. |
-| `Phase 4` Validation & regression | `N/A` | Completed | Closed via `phase4_option_c_plan.md`: audits ran, 4J orphan removal landed, 4M smoke failures were triaged, Progression was fixed forward in `ec748ba`, and the current full pytest baseline is `936 passed, 1 skipped`. |
+| `Phase 4` Validation & regression | `N/A` | Completed | Closed via `phase4_option_c_plan.md`: audits ran, 4J orphan removal landed, 4M smoke failures were triaged, Progression was fixed forward in `ec748ba`, and the current full pytest baseline is `938 passed, 1 skipped` after Phase 5 test hardening. |
 
 ### Current Evidence Snapshot
 
@@ -160,7 +160,7 @@
 | Hardening regression test (`4N`) | `2 passed` (`tests/test_seed_db_paths.py`) |
 | Full pytest after seed-path hardening (`4N`) | `934 passed, 1 skipped` (`phase4n_seed_path_pytest.txt`) |
 | Full pytest after Progression fixed-forward bugfix (`ec748ba`) | `936 passed, 1 skipped` |
-| 4M manual smoke triage | Progression fixed forward in `ec748ba`; Weekly/Session counter toggles remain out-of-cycle follow-up bugs |
+| 4M manual smoke triage | Progression fixed forward in `ec748ba`; Weekly/Session summary counter UX resolved by `b058d19`, `73bc1eb`, and `571a365`; reverified 2026-04-15 with focused pytest and summary Playwright |
 | Workout-plan Playwright after seed-path hardening (`4N`) | `17 passed` (`phase4n_seed_path_workout_plan_e2e.txt`) |
 | Smoke-navigation Playwright after `3c` | `10 passed` |
 | Full pytest after `3d` | `963 passed, 1 skipped` |
@@ -178,7 +178,7 @@
 | Full Chromium Playwright from Phase 0 | `315 passed` |
 | Summary-page Playwright from Phase 0 | `21 passed` |
 
-> **Note:** The current full-suite pytest snapshot is `936 passed, 1 skipped`. Earlier `930`, `932`, and `934` snapshots were point-in-time results recorded after intermediate cleanup/hardening steps; the higher current count reflects later regression coverage, including the 4M Progression fixed-forward tests.
+> **Note:** The current full-suite pytest snapshot is `938 passed, 1 skipped` after Phase 5 test hardening. Earlier `930`, `932`, `934`, and `936` snapshots were point-in-time results recorded after intermediate cleanup/hardening steps; the higher current count reflects later regression coverage, including the 4M Progression fixed-forward tests and the Phase 5 export-order characterization tests.
 
 ---
 
@@ -200,9 +200,11 @@
 
 Execute in this order, stopping at the first item the user approves. **Do not start any of these without explicit user confirmation** — the user decides, not you.
 
-1. **Merge `spring-cleanup` → `main`.** This is the baseline exit from Phase 4. Long-lived cleanup branches lose value over time.
-2. **Fix remaining 4M bugs.** The 2026-04-11 manual smoke surfaced 3 failures: Weekly Summary counter toggle, Session Summary counter toggle, and Progression rendering. Progression was fixed forward in `ec748ba`; Weekly and Session counter toggles remain out-of-cycle follow-up bugs per `debug/4M_triage.md`. Write a **small dedicated bugfix plan per bug** — do not bundle.
-3. **(Optional) db_seed_fix_plan.md Phase F** — `SEED_DB_PATH` retirement. Architectural cleanup, no user-visible payoff. Only if the user specifically asks.
+1. **Merge `spring-cleanup` → `main`.** This is the baseline exit from Phase 4/5. Long-lived cleanup branches lose value over time.
+2. **(Optional) db_seed_fix_plan.md Phase F** — `SEED_DB_PATH` retirement. Architectural cleanup, no user-visible payoff. Only if the user specifically asks.
+3. **(Optional) `create_performance_indexes()` startup decision.** Still tracked as an open architectural question in CLAUDE.md Appendix C/current-risk notes.
+
+**4M status update (2026-04-15):** no 4M summary bugs remain open. Progression was fixed forward in `ec748ba`; Weekly/Session summary counter UX was resolved by surfacing both Effective Sets and Raw Sets directly, removing the confusing Raw/Effective selector, and keeping only the Total/Direct contribution selector. Verified with `pytest tests/test_weekly_summary.py tests/test_session_summary.py tests/test_weekly_summary_routes.py tests/test_session_summary_routes.py -q` (`95 passed`) and `npx playwright test e2e/summary-pages.spec.ts --project=chromium --reporter=line` (`20 passed`).
 
 ### What's NOT next — retired items that must not auto-resume
 
@@ -233,7 +235,7 @@ Phase 4 status: <closed per debug/4O_commit.txt at <hash>> OR <in progress, next
 
 If closed, remaining open items:
   1. Merge spring-cleanup → main (ready)
-  2. 4M bugs: <N> open per debug/4M_triage.md
+  2. 4M bugs: closed as of 2026-04-15
   3. 3i/3j retired by docs/phase5_3i_plan.md (do not auto-resume)
   4. db_seed Phase F deferred
   5. create_performance_indexes() open question from CLAUDE.md Appendix C

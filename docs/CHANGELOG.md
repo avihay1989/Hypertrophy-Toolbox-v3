@@ -14,14 +14,15 @@ All notable changes to Hypertrophy Toolbox v3.
 
 ### Bug Fixes
 - Fixed plan-only Progression suggestions and current-value prefill before workout-log history exists in `ec748ba`.
+- Closed the 4M Weekly/Session summary counter UX follow-up by showing Effective Sets and Raw Sets side-by-side and keeping contribution mode as the only summary-page selector.
 
 ### Data
 - Regenerated the catalog-only seed database in `0e0ca3b` and verified the seed path hardening against `data/backup/database.db`.
 
 ### Validation
-- Current pytest baseline: `936 passed, 1 skipped`.
-- Full Chromium Playwright remains green at `315 passed`; summary-page Playwright remains green at `21 passed`.
-- 4M manual smoke triage recorded Progression as fixed forward and left Weekly/Session counter-toggle issues as out-of-cycle follow-up bugs.
+- Current pytest baseline: `938 passed, 1 skipped`.
+- Full Chromium Playwright's latest recorded full run remains `315 passed`; summary-page Playwright is green at `20 passed`.
+- 4M summary follow-up reverified on 2026-04-15 with focused summary pytest (`95 passed`) and summary-page Playwright (`20 passed`).
 
 ### Migration Notes
 - Stop importing `DataHandler` or `BusinessLogic`; use the concrete live modules that now own those responsibilities instead.

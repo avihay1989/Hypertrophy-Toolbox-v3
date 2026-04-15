@@ -12,7 +12,7 @@ A local-first Flask web app for designing, logging, and analyzing hypertrophy (m
 ### Core Workflows
 1. **Plan** (`/workout_plan`) — Build routines: choose exercises via filters, set reps/sets/weight/RIR. Or auto-generate via starter plan generator.
 2. **Log** (`/workout_log`) — Record actual performance (scored reps, weight, RIR) against plan.
-3. **Analyze** (`/weekly_summary`, `/session_summary`) — Volume per muscle, toggleable raw/effective sets, direct/total contribution.
+3. **Analyze** (`/weekly_summary`, `/session_summary`) — Volume per muscle with Effective Sets and Raw Sets shown side-by-side, plus direct/total contribution mode.
 4. **Progress** (`/progression`) — Double-progression suggestions (increase weight vs reps).
 5. **Distribute** (`/volume_splitter`) — Optimize weekly set allocation across muscles.
 6. **Backup** (via `/api/backups`) — Snapshot/restore entire programs.
@@ -375,9 +375,10 @@ Routes validate bounds before calling utils. Example pattern in `routes/workout_
 
 ## 8. Current State & Risks
 
-### Verified Test Counts (last verified: 2026-04-11)
-- **pytest**: 936 passed, 1 skipped (~125s) — command: `.venv/Scripts/python.exe -m pytest tests/ -q`
-- **E2E Playwright**: 315 passed (~7.1m, Chromium project) — command: `npx playwright test --project=chromium --reporter=line`
+### Verified Test Counts (last refreshed: 2026-04-15)
+- **pytest**: 938 passed, 1 skipped (~118s) — command: `.venv/Scripts/python.exe -m pytest tests/ -q`
+- **E2E Playwright**: 315 passed (~7.1m, Chromium project; last full-suite verification 2026-04-11) — command: `npx playwright test --project=chromium --reporter=line`
+- **Summary-page Playwright**: 20 passed (~25s, Chromium project) — command: `npx playwright test e2e/summary-pages.spec.ts --project=chromium --reporter=line`
 
 > Re-verify after significant changes: run both suites and update counts + date above.
 
@@ -411,7 +412,7 @@ All 17 Playwright spec files in `e2e/` (315 total tests from `npx playwright tes
 | `dark-mode.spec.ts` | 6 | Toggle dark mode, localStorage persistence, cross-page | `GET /`, `GET /workout_plan` | None |
 | `workout-plan.spec.ts` | 17 | Routine cascade, add exercise, filters, export, plan generator | `GET /workout_plan`, `POST /add_exercise`, `/generate_starter_plan` | Needs exercises in DB |
 | `workout-log.spec.ts` | 19 | Table structure, import from plan, edit scored fields, date filter, clear | `GET /workout_log`, `POST /update_workout_log` | Needs plan + log entries |
-| `summary-pages.spec.ts` | 16 | Weekly + session summary structure, counting/contribution mode toggle, pattern coverage | `GET /weekly_summary`, `GET /session_summary`, `GET /api/pattern_coverage` | Needs exercises for pattern data |
+| `summary-pages.spec.ts` | 20 | Weekly + session summary structure, Effective/Raw columns, contribution mode selector, pattern coverage | `GET /weekly_summary`, `GET /session_summary`, `GET /api/pattern_coverage` | Needs exercises for pattern data |
 | `progression.spec.ts` | 24 | Page structure, exercise selector, goals CRUD, methodology display, status indicators | `GET /progression` | Needs exercises + log data |
 | `volume-splitter.spec.ts` | 26 | Page structure, slider controls, mode toggle, calculate, reset, export | `GET /volume_splitter` | None |
 | `program-backup.spec.ts` | 18 | Modal open/close, create/list/restore/delete backups, API endpoints | `GET /workout_plan`, `GET/POST/DELETE /api/backups` | Needs plan data for backup |
