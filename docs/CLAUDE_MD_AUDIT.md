@@ -10,14 +10,9 @@ These are the current non-helper call sites that still matter:
 
 - `utils/user_selection.py:34` - direct `sqlite3.connect(...)` read path
 - `utils/volume_export.py:8` - raw `get_db_connection()` write path
-- `utils/database_indexes.py:51` - raw `get_db_connection()` maintenance path for `ANALYZE` / `PRAGMA optimize`
 - `routes/volume_splitter.py:154`
 - `routes/volume_splitter.py:199`
 - `routes/volume_splitter.py:234`
-
-Important nuance:
-
-- `DatabaseHandler.execute_query()` does not currently classify `ANALYZE` or `PRAGMA optimize` as write operations for lock handling, so `optimize_database()` is not a drop-in migration without an explicit locking decision.
 
 ## 2. Response Contract Standardization Is Still Deferred
 

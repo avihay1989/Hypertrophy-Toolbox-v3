@@ -68,10 +68,9 @@ app.py                 ← startup + middleware only; no business logic
 - All JSON responses via `success_response()` / `error_response()` (`utils/errors.py:22,67`)
 - All logging via `get_logger()` (`utils/logger.py:121`)
 
-**Current Exceptions** (verified 2026-04-11):
+**Current Exceptions** (verified 2026-04-18):
 | Rule | Violating File(s) | Detail |
 |---|---|---|
-| DatabaseHandler | `utils/database_indexes.py:60,65` | `optimize_database()` intentionally uses raw maintenance commands with explicit `_DB_LOCK` handling |
 | success/error_response | `routes/weekly_summary.py:133,139` | Pattern coverage endpoint still returns legacy `success`/`error` JSON |
 | success/error_response | `routes/workout_plan.py:1079,1093,1114,1125` | Replace-exercise fallback paths return legacy ad-hoc JSON with 200 error payloads |
 
@@ -374,9 +373,9 @@ Routes validate bounds before calling utils. Example pattern in `routes/workout_
 
 ## 8. Current State & Risks
 
-### Verified Test Counts (last refreshed: 2026-04-15)
-- **pytest**: 938 passed, 1 skipped (~118s) — command: `.venv/Scripts/python.exe -m pytest tests/ -q`
-- **E2E Playwright**: 315 passed (~7.1m, Chromium project; last full-suite verification 2026-04-11) — command: `npx playwright test --project=chromium --reporter=line`
+### Verified Test Counts (last refreshed: 2026-04-18)
+- **pytest**: 913 passed, 1 skipped (~116s) — command: `.venv/Scripts/python.exe -m pytest tests/ -q`
+- **E2E Playwright**: 314 passed (~7.2m, Chromium project; last full-suite verification 2026-04-18) — command: `npx playwright test --project=chromium --reporter=line`
 - **Summary-page Playwright**: 20 passed (~25s, Chromium project) — command: `npx playwright test e2e/summary-pages.spec.ts --project=chromium --reporter=line`
 
 > Re-verify after significant changes: run both suites and update counts + date above.
@@ -445,11 +444,9 @@ Full file-by-file audit log and violation details moved to `docs/CLAUDE_MD_AUDIT
 
 ### Open
 
-| Item | What's Unknown | How to Confirm |
-|---|---|---|
-| `create_performance_indexes()` not in startup | 14 indexes defined but never created in production — potential query performance gap | Decide whether to add call to `app.py` startup or keep as manual optimization |
+_None at present._
 
-### Resolved (2026-03-01)
+### Resolved
 
 | Item | Finding | Evidence |
 |---|---|---|
@@ -457,3 +454,4 @@ Full file-by-file audit log and violation details moved to `docs/CLAUDE_MD_AUDIT
 | `filter_cache.py:85` SQL injection | **Latent risk only — no active user-input callers** | Only caller is `warm_cache()` (line 113) with hardcoded column/table names. No routes call `get_cached_unique_values()` directly. |
 | `utils/business_logic.py` active callers | **Retired in Cleanup Wave 2** | Zero repo callers remained after the `routes/weekly_summary.py` dead import was removed, so the module and `tests/test_business_logic.py` were deleted on 2026-04-10. |
 | `utils/data_handler.py` active callers | **Retired in Cleanup Wave 2** | Zero repo callers remained outside its dedicated test file, so the module and `tests/test_data_handler.py` were deleted on 2026-04-10. |
+| `utils/database_indexes.py` never wired into startup | **Retired 2026-04-18** | All 4 functions (`create_performance_indexes`, `optimize_database`, `analyze_query_plan`, `get_index_list`) had zero production callers. Module and `tests/test_database_indexes.py` deleted after zero-caller audit + green pytest. |
