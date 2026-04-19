@@ -89,68 +89,68 @@ If the first three commands find a stable ID/class/data-attribute selector not l
 Grouped by subsystem. Every ID listed is frozen.
 
 **Navbar / global chrome**
-- [ ] `#navbar`, `#nav-brand`, `#nav-workout-plan`, `#nav-workout-log`, `#nav-weekly-summary`, `#nav-session-summary`, `#nav-progression-plan`, `#nav-volume-splitter`
-- [ ] `#navbarNav` — Bootstrap collapse target (`data-bs-target="#navbarNav"` on toggler at `base.html:83`; collapse container at `base.html:91`; also queried by `navbar-enhancements.js:14`). **P5 blocker: must not be renamed or removed during navbar restructure.**
-- [ ] `#darkModeToggle`, `#muscleModeToggle`
-- [ ] `#scale-decrease`, `#scale-increase`, `#scale-indicator` — A- / A+ scale control
-- [ ] `#liveToast`, `#toast-body` — global toast
-- [ ] `#global-loading-indicator`, `#error-message-container`
-- [ ] `#auto-backup-banner`, `#restore-auto-backup-btn` — auto-backup banner injected into the main content container
+- [x] `#navbar`, `#nav-brand`, `#nav-workout-plan`, `#nav-workout-log`, `#nav-weekly-summary`, `#nav-session-summary`, `#nav-progression-plan`, `#nav-volume-splitter`
+- [x] `#navbarNav` — Bootstrap collapse target (`data-bs-target="#navbarNav"` on toggler at `base.html:83`; collapse container at `base.html:91`; also queried by `navbar-enhancements.js:14`). **P5 blocker: must not be renamed or removed during navbar restructure.**
+- [x] `#darkModeToggle`, `#muscleModeToggle`
+- [x] `#scale-decrease`, `#scale-increase`, `#scale-indicator` — A- / A+ scale control
+- [x] `#liveToast`, `#toast-body` — global toast
+- [x] `#global-loading-indicator`, `#error-message-container`
+- [x] `#auto-backup-banner`, `#restore-auto-backup-btn` — auto-backup banner injected into the main content container
 
 **Backup / Program Library**
-- [ ] `#programLibraryModal`, `#saveBackupModal`, `#confirmRestoreModal`, `#confirmDeleteModal` — Bootstrap modal IDs (referenced by `bootstrap.Modal.getInstance(document.getElementById(...))` — 6 call sites in program-backup.js)
-- [ ] `#backup-list`, `#backup-name`, `#backup-note`
-- [ ] `#saveBackupSubmit`, `#openSaveFromLibrary`
-- [ ] `#restoreBackupName`, `#deleteBackupName`, `#confirmRestoreBtn`, `#confirmDeleteBtn`
-- [ ] `#save-program-btn`, `#load-program-btn` — workout-plan toolbar triggers, directly referenced by E2E
+- [x] `#programLibraryModal`, `#saveBackupModal`, `#confirmRestoreModal`, `#confirmDeleteModal` — Bootstrap modal IDs (referenced by `bootstrap.Modal.getInstance(document.getElementById(...))` — 6 call sites in program-backup.js)
+- [x] `#backup-list`, `#backup-name`, `#backup-note`
+- [x] `#saveBackupSubmit`, `#openSaveFromLibrary`
+- [x] `#restoreBackupName`, `#deleteBackupName`, `#confirmRestoreBtn`, `#confirmDeleteBtn`
+- [x] `#save-program-btn`, `#load-program-btn` — workout-plan toolbar triggers, directly referenced by E2E
 
 **Workout plan page (`/workout_plan`)**
-- [ ] `#routine-env`, `#routine-program`, `#routine-day` — routine cascade selects
-- [ ] `#routine`, `#routineType`, `#exercise`, `#exerciseSelect`, `#exerciseName`
-- [ ] `#routine-breadcrumb`, `#routine-cascade-container`, `#routine-filter`, `#routine-tabs`
-- [ ] `#add_exercise_btn`, `#add-exercise-btn` (both variants exist — both frozen)
-- [ ] `#sets`, `#min_rep`, `#max_rep_range`, `#rir`, `#rpe`, `#weight` — inline edit fields
-- [ ] `#clear-filters-btn`, `#export-to-log-btn`, `#export-to-excel-btn`, `#import-from-plan-btn`, `#workout_plan_table_body`
-- [ ] `#filters-form`, `#search-filter`, `#muscle_filter`, `#isolated_muscles_filter`
-- [ ] `#exercise-details`, `#workout-stats`, `#tab-count-all`
-- [ ] `#link-superset-btn`, `#unlink-superset-btn`, `#superset-actions`, `#superset-selection-info`
-- [ ] `#suggestionsContainer`, `#suggestionsList` — exercise suggestions
-- [ ] `#clear-plan-btn`, `#clearPlanModal`, `#confirmClearPlanBtn` — clear-plan confirmation
-- [ ] `#generate-plan-btn`, `#generatePlanModal`, `#generatePlanSubmit`, `#generatePlanForm` — starter plan generator
-- [ ] `#gen-training-days`, `#gen-environment`, `#gen-experience`, `#gen-goal`, `#gen-volume-scale`, `#volume-scale-value`, `#gen-overwrite`, `#gen-no-overhead`, `#gen-no-deadlift`, `#plan-preview-content` — generator form fields and preview
+- [x] `#routine-env`, `#routine-program`, `#routine-day` — routine cascade selects
+- [x] `#routine`, `#routineType`, `#exercise`, `#exerciseSelect`, `#exerciseName`
+- [x] `#routine-breadcrumb`, `#routine-cascade-container`, `#routine-filter`, `#routine-tabs`
+- [x] `#add_exercise_btn`, `#add-exercise-btn` (both variants exist — both frozen)
+- [x] `#sets`, `#min_rep`, `#max_rep_range`, `#rir`, `#rpe`, `#weight` — inline edit fields
+- [x] `#clear-filters-btn`, `#export-to-log-btn`, `#export-to-excel-btn`, `#import-from-plan-btn`, `#workout_plan_table_body`
+- [x] `#filters-form`, `#search-filter`, `#muscle_filter`, `#isolated_muscles_filter`
+- [x] `#exercise-details`, `#workout-stats`, `#tab-count-all`
+- [x] `#link-superset-btn`, `#unlink-superset-btn`, `#superset-actions`, `#superset-selection-info`
+- [x] `#suggestionsContainer`, `#suggestionsList` — exercise suggestions
+- [x] `#clear-plan-btn`, `#clearPlanModal`, `#confirmClearPlanBtn` — clear-plan confirmation
+- [x] `#generate-plan-btn`, `#generatePlanModal`, `#generatePlanSubmit`, `#generatePlanForm` — starter plan generator
+- [x] `#gen-training-days`, `#gen-environment`, `#gen-experience`, `#gen-goal`, `#gen-volume-scale`, `#volume-scale-value`, `#gen-overwrite`, `#gen-no-overhead`, `#gen-no-deadlift`, `#plan-preview-content` — generator form fields and preview
 
 **Welcome / erase-data flow (`/`)**
-- [ ] `#eraseDataBtn`, `#eraseDataModal`, `#confirmEraseBtn`
-- [ ] `#successToast`, `#errorToast` — legacy welcome-page toasts used by inline script
+- [x] `#eraseDataBtn`, `#eraseDataModal`, `#confirmEraseBtn`
+- [x] `#successToast`, `#errorToast` — legacy welcome-page toasts used by inline script
 
 **Workout log (`/workout_log`)**
-- [ ] `#clear-log-btn`, `#confirm-clear-log-btn`, `#clearLogModal`
-- [ ] `#history-body`, `#workout`, `#date-filter`
+- [x] `#clear-log-btn`, `#confirm-clear-log-btn`, `#clearLogModal`
+- [x] `#history-body`, `#workout`, `#date-filter`
 
 **Weekly / session summary**
-- [ ] `#summary-method` — counting-mode toggle
-- [ ] `#results-body`
-- [ ] `#contribution-mode`, `#weekly-summary-table`, `#session-summary-table`, `#categories-table-body`, `#volume-formula-text`, `#pattern-coverage-container`
+- [x] `#summary-method` — counting-mode toggle
+- [x] `#results-body`
+- [x] `#contribution-mode`, `#weekly-summary-table`, `#session-summary-table`, `#categories-table-body`, `#volume-formula-text`, `#pattern-coverage-container`
 
 **Progression (`/progression`)**
-- [ ] `#goalForm`, `#goalModalLabel`, `#goalSettingModal`, `#saveGoal`
-- [ ] `#goalType`, `#goalDate`, `#currentValue`, `#targetValue`
-- [ ] `#confirmDeleteGoal`, `#deleteGoalModal`, `#closeGoalModal`
+- [x] `#goalForm`, `#goalModalLabel`, `#goalSettingModal`, `#saveGoal`
+- [x] `#goalType`, `#goalDate`, `#currentValue`, `#targetValue`
+- [x] `#confirmDeleteGoal`, `#deleteGoalModal`, `#closeGoalModal`
 
 **Volume splitter (`/volume_splitter`)**
-- [ ] `#volume-splitter-app`, `#sliders`, `#training-days`
-- [ ] `#calculate-volume`, `#reset-volume`, `#export-volume`
-- [ ] `#confirmDeleteVolumePlan`, `#deleteVolumePlanModal`
+- [x] `#volume-splitter-app`, `#sliders`, `#training-days`
+- [x] `#calculate-volume`, `#reset-volume`, `#export-volume`
+- [x] `#confirmDeleteVolumePlan`, `#deleteVolumePlanModal`
 
 ### 3.2 `data-testid` attributes
 
 Full list from `e2e/fixtures.ts` — every value below is frozen:
 
-- [ ] `navbar`, `nav-brand`, `nav-workout-plan`, `nav-workout-log`, `nav-weekly-summary`, `nav-session-summary`, `nav-progression-plan`, `nav-volume-splitter`
-- [ ] `dark-mode-toggle`, `toast-container`
-- [ ] `routine-env`, `routine-program`, `routine-day`
-- [ ] `add-exercise-btn`, `exercise-search`, `exercise-table`
-- [ ] `export-excel-btn`, `export-to-log-btn`, `clear-filters-btn`
+- [x] `navbar`, `nav-brand`, `nav-workout-plan`, `nav-workout-log`, `nav-weekly-summary`, `nav-session-summary`, `nav-progression-plan`, `nav-volume-splitter`
+- [x] `dark-mode-toggle`, `toast-container`
+- [x] `routine-env`, `routine-program`, `routine-day`
+- [x] `add-exercise-btn`, `exercise-search`, `exercise-table`
+- [x] `export-excel-btn`, `export-to-log-btn`, `clear-filters-btn`
 - [ ] Any new `data-testid` added in §3.5 unfreeze process must be appended here in the same commit
 
 ### 3.3 Class names used as JS selectors
@@ -158,41 +158,41 @@ Full list from `e2e/fixtures.ts` — every value below is frozen:
 Audited via the §3.0 selector commands across `static/js`, inline template scripts, and E2E. These class names are state machines or selector contracts — restyle, but do not rename or remove.
 
 **Structural selectors (fallback to data-testid/id; JS assumes both may exist)**
-- [ ] `.workout-plan-table`, `#workout-plan-table tbody`, `#workout_plan_table_body` — all three forms appear; keep all
-- [ ] `.btn-export-excel` — fallback for Excel export button
-- [ ] `.toast-container` — toast injection target
-- [ ] `.container-fluid`, `main` — banner injection target (`document.querySelector('main') || document.querySelector('.container-fluid')`)
-- [ ] `.welcome-container` — app.js uses presence to detect the welcome page
-- [ ] `#successToast .toast-body span`, `#errorToast .toast-body span` — welcome inline script updates legacy toast text
-- [ ] `.collapse-toggle`, `.toggle-text`, `.collapsible-frame`, `.workout-plan.table-container` — inline collapse script in `workout_plan.html`
-- [ ] `#generatePlanForm select`, `#generatePlanForm input` — generator inline preview script
+- [x] `.workout-plan-table`, `#workout-plan-table tbody`, `#workout_plan_table_body` — all three forms appear; keep all
+- [x] `.btn-export-excel` — fallback for Excel export button
+- [x] `.toast-container` — toast injection target
+- [x] `.container-fluid`, `main` — banner injection target (`document.querySelector('main') || document.querySelector('.container-fluid')`)
+- [x] `.welcome-container` — app.js uses presence to detect the welcome page
+- [x] `#successToast .toast-body span`, `#errorToast .toast-body span` — welcome inline script updates legacy toast text
+- [x] `.collapse-toggle`, `.toggle-text`, `.collapsible-frame`, `.workout-plan.table-container` — inline collapse script in `workout_plan.html`
+- [x] `#generatePlanForm select`, `#generatePlanForm input` — generator inline preview script
 
 **Backup list rendering**
-- [ ] `.backup-list-item`, `.backup-restore-btn`, `.backup-delete-btn`, `.backup-list`
+- [x] `.backup-list-item`, `.backup-restore-btn`, `.backup-delete-btn`, `.backup-list`
 
 **Workout-plan row machinery**
-- [ ] `.editable`, `.btn-swap`, `.superset-checkbox`, `.execution-style-cell`, `.execution-style-picker`, `.execution-option`, `.amrap-params`, `.emom-params`, `.btn-close-picker`, `.btn-cancel-exec`, `.btn-save-exec`
-- [ ] `.exercise-name`, `.wpdd-container`, `.wpdd-button`, `.filter-dropdown`
-- [ ] `.routine-tab`, `.routine-tab-btn`, `[data-routine="all"]`, `[data-dynamic="true"]`
-- [ ] `[data-exercise-id="..."]`, `[data-superset-group]`, `[data-raw-value]`, `[data-label="..."]`
+- [x] `.editable`, `.btn-swap`, `.superset-checkbox`, `.execution-style-cell`, `.execution-style-picker`, `.execution-option`, `.amrap-params`, `.emom-params`, `.btn-close-picker`, `.btn-cancel-exec`, `.btn-save-exec`
+- [x] `.exercise-name`, `.wpdd-container`, `.wpdd-button`, `.filter-dropdown`
+- [x] `.routine-tab`, `.routine-tab-btn`, `[data-routine="all"]`, `[data-dynamic="true"]`
+- [x] `[data-exercise-id="..."]`, `[data-superset-group]`, `[data-raw-value]`, `[data-label="..."]`
 
 **State classes (toggled by JS — template must not pre-apply or strip)**
-- [ ] `.active`, `.loading`, `.open`, `.theme-animating`
-- [ ] `.value-changed` — workout-controls-animation.js
-- [ ] `.filter-applied`, `.is-invalid-required`, `.has-validation-error`
-- [ ] `.superset-selected`, `.superset-partner-dragging`, `.row-swapped`
-- [ ] `.tbl--view-simple`, `.tbl--view-advanced` — table-responsiveness.js
-- [ ] `.picker-dropup`, `.mode-text`
-- [ ] `.cascade-dropdown-wrapper`, `.cascade-connector`, `.cascade-connector-1`, `.cascade-connector-2`
-- [ ] `.equipment-check` (checkbox class queried by `querySelectorAll`)
-- [ ] `.scale-btn[data-scale]`, `.accessibility-toggle`, `.accessibility-dropdown`
+- [x] `.active`, `.loading`, `.open`, `.theme-animating`
+- [x] `.value-changed` — workout-controls-animation.js
+- [x] `.filter-applied`, `.is-invalid-required`, `.has-validation-error`
+- [x] `.superset-selected`, `.superset-partner-dragging`, `.row-swapped`
+- [x] `.tbl--view-simple`, `.tbl--view-advanced` — table-responsiveness.js
+- [x] `.picker-dropup`, `.mode-text`
+- [x] `.cascade-dropdown-wrapper`, `.cascade-connector`, `.cascade-connector-1`, `.cascade-connector-2`
+- [x] `.equipment-check` (checkbox class queried by `querySelectorAll`)
+- [x] `.scale-btn[data-scale]`, `.accessibility-toggle`, `.accessibility-dropdown`
 
 ### 3.4 Bootstrap / third-party contracts
 
-- [ ] Bootstrap 5.1.3 JS must stay loaded — `bootstrap.Modal.getInstance(...)` is used in `program-backup.js` (6 call sites) + `app.js` (generatePlanModal)
-- [ ] `data-bs-toggle`, `data-bs-target`, `data-bs-dismiss` attributes on any modal-triggering element must remain
-- [ ] Font Awesome 5.15.4 icon classes (`fa-*`) are used inline across templates — do not remove the CDN link
-- [ ] `navbar-toggler`, `navbar-collapse`, `navbar-nav` Bootstrap classes must stay on the navbar structure for mobile toggle to work
+- [x] Bootstrap 5.1.3 JS must stay loaded — `bootstrap.Modal.getInstance(...)` is used in `program-backup.js` (6 call sites) + `app.js` (generatePlanModal)
+- [x] `data-bs-toggle`, `data-bs-target`, `data-bs-dismiss` attributes on any modal-triggering element must remain
+- [x] Font Awesome 5.15.4 icon classes (`fa-*`) are used inline across templates — do not remove the CDN link
+- [x] `navbar-toggler`, `navbar-collapse`, `navbar-nav` Bootstrap classes must stay on the navbar structure for mobile toggle to work
 
 ### 3.5 Unfreezing process
 
@@ -216,7 +216,7 @@ Before starting P6 (component overlays) and again before P9 (consolidation):
 
 ## 4. Feature / flow inventory — every journey that must still work
 
-Each box is a manual smoke test. Run the full list at the end of every phase.
+Each box is a recurring manual smoke test. Leave it unchecked until that exact manual pass is run for the current phase; automated E2E coverage alone does not flip these boxes.
 
 ### 4.1 Navigation
 - [ ] Click every navbar link — each loads the correct page
@@ -288,15 +288,15 @@ npm run test:e2e                                             # expect 314 passed
 
 ## 6. Global prerequisites — before P0 starts
 
-- [ ] Working tree clean (`git status` shows no modifications)
-- [ ] Branch `redesign/calm-glass-2026` reset to last known-good commit (NOT `d1618be`)
-- [ ] `npm run test:py` → 913 passed / 1 skipped
-- [ ] `npm run test:e2e` → 314 passed
-- [ ] `npm run build:css` → no errors
-- [ ] App starts: `python app.py`, `/` renders, navbar links work
-- [ ] Playwright screenshot baseline refreshed (command in P0)
-- [ ] This plan file approved by Human + Gemini + Codex (audit trail in §14)
-- [ ] Mockup [docs/mockups/redesign-preview.html](mockups/redesign-preview.html) opened in browser; locked palette/font/background/neumorphism-dial confirmed (§13)
+- [x] Working tree clean (`git status` shows no modifications)
+- [x] Branch `redesign/calm-glass-2026` reset to last known-good commit (NOT `d1618be`)
+- [x] `npm run test:py` → 913 passed / 1 skipped
+- [x] `npm run test:e2e` → 314 passed
+- [x] `npm run build:css` → no errors
+- [x] App starts: `python app.py`, `/` renders, navbar links work
+- [x] Playwright screenshot baseline refreshed (command in P0)
+- [x] This plan file approved by Human + Gemini + Codex (audit trail in §14)
+- [x] Mockup [docs/mockups/redesign-preview.html](mockups/redesign-preview.html) opened in browser; locked palette/font/background/neumorphism-dial confirmed (§13)
 
 ---
 
