@@ -24,7 +24,7 @@
         <!-- Filters for Exercises -->
         <div class="unified-frames-container">
             <!-- Filters Section -->
-            <div class="collapsible-frame filters-section" data-section="filters">
+            <div class="collapsible-frame filters-section frame-calm-glass" data-section="filters">
                 <div class="frame-header frame-header-2025">
                     <div class="frame-header-left">
                         <span class="filters-title">Filter Exercises</span>
@@ -43,7 +43,7 @@
                             {% set filter_id = filter_name | lower | replace(' ', '_') %}
                             <div class="col-lg-3 col-md-4 col-sm-6">
                                 <label for="{{ filter_id }}" class="form-label">{{ filter_name }}</label>
-                                <select id="{{ filter_id }}" name="{{ filter_id }}" data-filter-key="{{ filter_name }}" class="form-select uniform-dropdown filter-dropdown" aria-label="{{ filter_name }} filter">
+                                <select id="{{ filter_id }}" name="{{ filter_id }}" data-filter-key="{{ filter_name }}" class="form-select uniform-dropdown filter-dropdown input-calm-inset" aria-label="{{ filter_name }} filter">
                                     <option value="">All</option>
                                     {% for option in filter_options %}
                                     <option value="{{ option }}">{{ option }}</option>
@@ -57,7 +57,7 @@
         </div>
 
         <!-- Workout Controls Section -->
-        <div class="collapsible-frame action-frame" data-section="controls">
+        <div class="collapsible-frame action-frame frame-calm-glass" data-section="controls">
             <div class="frame-header frame-header-2025">
                 <div class="frame-header-left">
                     <span class="frame-title">Workout Controls</span>
@@ -75,27 +75,27 @@
                     <div class="input-fields-group" role="group" aria-label="Exercise parameters">
                         <div class="input-group">
                             <label for="weight" class="form-label">Weight</label>
-                            <input type="number" id="weight" name="weight" class="form-control" min="0" step="any" value="25" aria-label="Weight in kilograms">
+                            <input type="number" id="weight" name="weight" class="form-control input-calm-inset" min="0" step="any" value="25" aria-label="Weight in kilograms">
                         </div>
                         <div class="input-group">
                             <label for="sets" class="form-label">Sets</label>
-                            <input type="number" id="sets" name="sets" class="form-control" min="1" value="3" aria-label="Number of sets">
+                            <input type="number" id="sets" name="sets" class="form-control input-calm-inset" min="1" value="3" aria-label="Number of sets">
                         </div>
                         <div class="input-group">
                             <label for="rir" class="form-label">RIR</label>
-                            <input type="number" id="rir" name="rir" class="form-control" placeholder="RIR" min="0" max="10" value="3" aria-label="Reps in Reserve">
+                            <input type="number" id="rir" name="rir" class="form-control input-calm-inset" placeholder="RIR" min="0" max="10" value="3" aria-label="Reps in Reserve">
                         </div>
                         <div class="input-group">
                             <label for="rpe" class="form-label">RPE</label>
-                            <input type="number" id="rpe" name="rpe" class="form-control" placeholder="RPE" min="1" max="10" step="0.5" value="7" aria-label="Rate of Perceived Exertion">
+                            <input type="number" id="rpe" name="rpe" class="form-control input-calm-inset" placeholder="RPE" min="1" max="10" step="0.5" value="7" aria-label="Rate of Perceived Exertion">
                         </div>
                         <div class="input-group">
                             <label for="min_rep" class="form-label">Min Rep</label>
-                            <input type="number" id="min_rep" name="min_rep" class="form-control" placeholder="Min Rep" min="1" value="6" aria-label="Minimum repetitions">
+                            <input type="number" id="min_rep" name="min_rep" class="form-control input-calm-inset" placeholder="Min Rep" min="1" value="6" aria-label="Minimum repetitions">
                         </div>
                         <div class="input-group">
                             <label for="max_rep_range" class="form-label">Max Rep</label>
-                            <input type="number" id="max_rep_range" name="max_rep_range" class="form-control" min="1" value="8" aria-label="Maximum repetitions">
+                            <input type="number" id="max_rep_range" name="max_rep_range" class="form-control input-calm-inset" min="1" value="8" aria-label="Maximum repetitions">
                         </div>
                     </div>
                 </div>
@@ -103,7 +103,7 @@
         </div>
 
         <!-- Exercise Selection Section -->
-        <div id="exercise-selection-frame" class="collapsible-frame action-frame" data-section="exercise selection">
+        <div id="exercise-selection-frame" class="collapsible-frame action-frame frame-calm-glass" data-section="exercise selection">
             <div class="frame-header frame-header-2025">
                 <div class="frame-header-left">
                     <span class="frame-title">Exercise Selection</span>
@@ -183,7 +183,7 @@
                     <!-- Exercise Dropdown -->
                     <div class="col-12 exercise-selector selection-field">
                         <label for="exercise" class="form-label">Exercise</label>
-                        <select id="exercise" name="exercise" data-testid="exercise-search" class="form-select uniform-dropdown exercise-dropdown" aria-label="Select exercise">
+                        <select id="exercise" name="exercise" data-testid="exercise-search" class="form-select uniform-dropdown exercise-dropdown input-calm-inset" aria-label="Select exercise">
                             {% for exercise in exercises %}
                             {% if exercise %}
                             <option value="{{ exercise }}">{{ exercise }}</option>
@@ -197,55 +197,55 @@
                         <div class="selection-actions buttons-row" id="action-buttons-row" role="group" aria-label="Exercise selection actions">
                             <!-- Add Exercise Button -->
                             <div class="inline-control-item" data-order="3">
-                                <button id="add_exercise_btn" data-testid="add-exercise-btn" class="btn btn-primary" type="button" aria-label="Add exercise to workout plan">
+                                <button id="add_exercise_btn" data-testid="add-exercise-btn" class="btn btn-primary btn-calm-primary" type="button" aria-label="Add exercise to workout plan">
                                     <i class="fas fa-plus" aria-hidden="true"></i> Add Exercise
                                 </button>
                             </div>
 
                             <!-- Clear Filters Button -->
                             <div class="inline-control-item" data-order="4">
-                                <button id="clear-filters-btn" data-testid="clear-filters-btn" class="btn btn-outline-secondary" type="button" aria-label="Clear all filters">
+                                <button id="clear-filters-btn" data-testid="clear-filters-btn" class="btn btn-outline-secondary btn-calm-ghost" type="button" aria-label="Clear all filters">
                                     <i class="fas fa-times" aria-hidden="true"></i> Clear Filters
                                 </button>
                             </div>
 
                             <!-- Export All Tables Button -->
                             <div class="inline-control-item" data-order="5">
-                                <button type="button" data-testid="export-excel-btn" class="btn btn-export-excel" onclick="exportToExcel()" aria-label="Export workout plan to Excel">
+                                <button type="button" data-testid="export-excel-btn" class="btn btn-export-excel btn-calm-ghost" onclick="exportToExcel()" aria-label="Export workout plan to Excel">
                                     <i class="fas fa-file-excel" aria-hidden="true"></i> Export All Tables
                                 </button>
                             </div>
 
                             <!-- Export to Workout Log Button -->
                             <div class="inline-control-item" data-order="6">
-                                <button id="export-to-log-btn" data-testid="export-to-log-btn" class="btn btn-export-log" type="button" onclick="exportToWorkoutLog()" aria-label="Export to workout log">
+                                <button id="export-to-log-btn" data-testid="export-to-log-btn" class="btn btn-export-log btn-calm-primary" type="button" onclick="exportToWorkoutLog()" aria-label="Export to workout log">
                                     <i class="fas fa-clipboard-list" aria-hidden="true"></i> Export to Workout Log
                                 </button>
                             </div>
 
                             <!-- Generate Starter Plan Button -->
                             <div class="inline-control-item" data-order="7">
-                                <button id="generate-plan-btn" class="btn btn-success" type="button" data-bs-toggle="modal" data-bs-target="#generatePlanModal" aria-label="Generate a starter workout plan">
+                                <button id="generate-plan-btn" class="btn btn-success btn-calm-primary" type="button" data-bs-toggle="modal" data-bs-target="#generatePlanModal" aria-label="Generate a starter workout plan">
                                     <i class="fas fa-magic" aria-hidden="true"></i> Generate Starter Plan
                                 </button>
                             </div>
                             
                             <!-- Program Library Buttons -->
                             <div class="inline-control-item" data-order="8">
-                                <button id="save-program-btn" class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#saveBackupModal" aria-label="Save current program">
+                                <button id="save-program-btn" class="btn btn-outline-primary btn-calm-ghost" type="button" data-bs-toggle="modal" data-bs-target="#saveBackupModal" aria-label="Save current program">
                                     <i class="fas fa-save" aria-hidden="true"></i> Save Program
                                 </button>
                             </div>
                             
                             <div class="inline-control-item" data-order="9">
-                                <button id="load-program-btn" class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#programLibraryModal" aria-label="Load saved program">
+                                <button id="load-program-btn" class="btn btn-outline-secondary btn-calm-ghost" type="button" data-bs-toggle="modal" data-bs-target="#programLibraryModal" aria-label="Load saved program">
                                     <i class="fas fa-folder-open" aria-hidden="true"></i> Program Library
                                 </button>
                             </div>
                             
                             <!-- Clear Plan Button -->
                             <div class="inline-control-item" data-order="10">
-                                <button id="clear-plan-btn" class="btn btn-outline-danger" type="button" data-bs-toggle="modal" data-bs-target="#clearPlanModal" aria-label="Clear entire workout plan">
+                                <button id="clear-plan-btn" class="btn btn-outline-danger btn-calm-danger" type="button" data-bs-toggle="modal" data-bs-target="#clearPlanModal" aria-label="Clear entire workout plan">
                                     <i class="fas fa-trash-alt" aria-hidden="true"></i> Clear Plan
                                 </button>
                             </div>
@@ -258,14 +258,14 @@
 
         <!-- Display the Workout Plan -->
         <!-- AGENT:START B-1 PRIORITY-CLASSES -->
-        <section class="workout-plan table-container" aria-labelledby="workout-plan-table-heading">
+        <section class="workout-plan table-container frame-calm-glass" aria-labelledby="workout-plan-table-heading">
             <div class="table-header">
                 <h2 id="workout-plan-table-heading" class="text-center">Workout Plan Table</h2>
                 <div class="table-header-underline" aria-hidden="true"></div>
             </div>
             
             <!-- Routine Tabs Navigation -->
-            <nav class="routine-tabs-container" aria-label="Filter workout plan by routine">
+            <nav class="routine-tabs-container frame-calm-glass" aria-label="Filter workout plan by routine">
                 <ul class="routine-tabs" id="routine-tabs" role="tablist">
                     <li class="routine-tab active" role="presentation">
                         <button class="routine-tab-btn active" 
@@ -283,17 +283,17 @@
             </nav>
             
             <!-- Superset Action Buttons (shown when exercises are selected) -->
-            <div id="superset-actions" class="superset-actions" style="display: none;">
-                <button id="link-superset-btn" class="btn btn-link-superset" type="button" disabled>
+            <div id="superset-actions" class="superset-actions frame-calm-glass" style="display: none;">
+                <button id="link-superset-btn" class="btn btn-link-superset btn-calm-primary" type="button" disabled>
                     <i class="fas fa-link" aria-hidden="true"></i> Link as Superset
                 </button>
-                <button id="unlink-superset-btn" class="btn btn-unlink-superset" type="button" style="display: none;">
+                <button id="unlink-superset-btn" class="btn btn-unlink-superset btn-calm-danger" type="button" style="display: none;">
                     <i class="fas fa-unlink" aria-hidden="true"></i> Unlink Superset
                 </button>
                 <span id="superset-selection-info" class="superset-selection-info"></span>
             </div>
             
-            <div class="tbl-wrap tbl-wrap--full" role="region" aria-label="Workout plan exercises table">
+            <div class="tbl-wrap tbl-wrap--full frame-calm-glass" role="region" aria-label="Workout plan exercises table">
                 <table class="table table-striped workout-plan-table table-calm tbl tbl--responsive"
                        role="table" 
                        aria-label="Workout plan exercises"
@@ -340,7 +340,7 @@
     <!-- Generate Starter Plan Modal -->
     <div class="modal fade" id="generatePlanModal" tabindex="-1" aria-labelledby="generatePlanModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" style="max-width: 90vw; width: 1600px;">
-            <div class="modal-content">
+            <div class="modal-content frame-calm-glass">
                 <div class="modal-header py-2">
                     <h5 class="modal-title" id="generatePlanModalLabel">
                         <i class="fas fa-magic me-2"></i>Generate Starter Plan
@@ -353,7 +353,7 @@
                         <div class="row g-2 mb-3">
                             <div class="col-xl-2 col-lg-4 col-md-6">
                                 <label for="gen-training-days" class="form-label small mb-1">Training Days</label>
-                                <select id="gen-training-days" class="form-select form-select-sm" required>
+                                <select id="gen-training-days" class="form-select form-select-sm input-calm-inset" required>
                                     <option value="1">1 day (Full-Body)</option>
                                     <option value="2">2 days (A/B)</option>
                                     <option value="3" selected>3 days (A/B/C)</option>
@@ -363,14 +363,14 @@
                             </div>
                             <div class="col-xl-2 col-lg-4 col-md-6">
                                 <label for="gen-environment" class="form-label small mb-1">Environment</label>
-                                <select id="gen-environment" class="form-select form-select-sm" required>
+                                <select id="gen-environment" class="form-select form-select-sm input-calm-inset" required>
                                     <option value="gym" selected>🏋️ Gym</option>
                                     <option value="home">🏠 Home</option>
                                 </select>
                             </div>
                             <div class="col-xl-2 col-lg-4 col-md-6">
                                 <label for="gen-experience" class="form-label small mb-1">Experience</label>
-                                <select id="gen-experience" class="form-select form-select-sm" required>
+                                <select id="gen-experience" class="form-select form-select-sm input-calm-inset" required>
                                     <option value="novice" selected>Novice (&lt;1yr)</option>
                                     <option value="intermediate">Intermediate</option>
                                     <option value="advanced">Advanced</option>
@@ -378,7 +378,7 @@
                             </div>
                             <div class="col-xl-2 col-lg-4 col-md-6">
                                 <label for="gen-goal" class="form-label small mb-1">Goal</label>
-                                <select id="gen-goal" class="form-select form-select-sm" required>
+                                <select id="gen-goal" class="form-select form-select-sm input-calm-inset" required>
                                     <option value="hypertrophy" selected>💪 Hypertrophy</option>
                                     <option value="strength">🏆 Strength</option>
                                     <option value="general">⚖️ General</option>
@@ -386,7 +386,7 @@
                             </div>
                             <div class="col-xl-2 col-lg-4 col-md-6">
                                 <label for="gen-volume-scale" class="form-label small mb-1">Volume: <span id="volume-scale-value" class="fw-bold">1.0x</span></label>
-                                <input type="range" class="form-range" id="gen-volume-scale" min="0.6" max="2.0" step="0.1" value="1.0">
+                                <input type="range" class="form-range range-calm" id="gen-volume-scale" min="0.6" max="2.0" step="0.1" value="1.0">
                             </div>
                             <div class="col-xl-2 col-lg-4 col-md-6">
                                 <label class="form-label small mb-1">Options</label>
@@ -461,8 +461,8 @@
                                         <label class="form-check-label small" for="gen-eq-medicine"><i class="fas fa-basketball-ball text-secondary"></i> Medicine Ball</label>
                                     </div>
                                     <span class="ms-2">
-                                        <button type="button" class="btn btn-sm btn-link p-0 me-1" onclick="document.querySelectorAll('.equipment-check').forEach(c => c.checked = true)">All</button>
-                                        <button type="button" class="btn btn-sm btn-link p-0" onclick="document.querySelectorAll('.equipment-check').forEach(c => c.checked = false)">None</button>
+                                        <button type="button" class="btn btn-sm btn-link p-0 me-1 btn-calm-link" onclick="document.querySelectorAll('.equipment-check').forEach(c => c.checked = true)">All</button>
+                                        <button type="button" class="btn btn-sm btn-link p-0 btn-calm-link" onclick="document.querySelectorAll('.equipment-check').forEach(c => c.checked = false)">None</button>
                                     </span>
                                 </div>
                             </div>
@@ -471,7 +471,7 @@
                         <!-- Row 3: Preview -->
                         <div class="row g-2 mb-3">
                             <div class="col-12">
-                                <div class="plan-preview-box" id="plan-preview">
+                                <div class="plan-preview-box frame-calm-glass" id="plan-preview">
                                     <span class="preview-label"><i class="fas fa-info-circle me-1"></i>Preview</span>
                                     <div class="preview-badges" id="plan-preview-content">
                                         <span class="preview-badge badge-routines"><i class="fas fa-calendar-alt me-1"></i><span class="badge-value">A, B, C</span></span>
@@ -502,8 +502,8 @@
                         <i class="fas fa-info-circle me-1"></i>
                         Plan covers all muscle groups. Priority muscles (if selected) get extra sets.
                     </div>
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-success btn-sm" id="generatePlanSubmit" onclick="generateStarterPlan()">
+                    <button type="button" class="btn btn-secondary btn-sm btn-calm-ghost" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success btn-sm btn-calm-primary" id="generatePlanSubmit" onclick="generateStarterPlan()">
                         <i class="fas fa-magic me-1"></i>Generate Plan
                     </button>
                 </div>
@@ -771,7 +771,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- Clear Plan Confirmation Modal -->
 <div class="modal fade" id="clearPlanModal" tabindex="-1" aria-labelledby="clearPlanModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
+        <div class="modal-content frame-calm-glass">
             <div class="modal-header bg-danger text-white">
                 <h5 class="modal-title" id="clearPlanModalLabel">
                     <i class="fas fa-trash-alt me-2"></i>Clear Workout Plan
@@ -783,8 +783,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 <p class="text-danger mb-0"><i class="fas fa-exclamation-triangle me-1"></i>This will remove all exercises and cannot be undone.</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" id="confirmClearPlanBtn" onclick="clearWorkoutPlan()">
+                <button type="button" class="btn btn-secondary btn-calm-ghost" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger btn-calm-danger" id="confirmClearPlanBtn" onclick="clearWorkoutPlan()">
                     <i class="fas fa-trash-alt me-1"></i>Clear Plan
                 </button>
             </div>

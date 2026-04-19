@@ -193,7 +193,7 @@ async function showExecutionStylePicker(exerciseId, currentExercise) {
     
     // Create picker element
     const picker = document.createElement('div');
-    picker.className = 'execution-style-picker';
+    picker.className = 'execution-style-picker frame-calm-glass';
     picker.innerHTML = `
         <div class="execution-picker-content">
             <div class="execution-picker-header">
@@ -231,7 +231,7 @@ async function showExecutionStylePicker(exerciseId, currentExercise) {
                 <div class="execution-params amrap-params" style="display: ${currentStyle === 'amrap' ? 'block' : 'none'}">
                     <label class="param-label">
                         <span>Time Cap (seconds)</span>
-                        <input type="number" class="form-control form-control-sm" id="time-cap-${exerciseId}" 
+                        <input type="number" class="form-control form-control-sm input-calm-inset" id="time-cap-${exerciseId}"
                                value="${timeCap}" min="10" max="600" step="5">
                     </label>
                 </div>
@@ -239,19 +239,19 @@ async function showExecutionStylePicker(exerciseId, currentExercise) {
                 <div class="execution-params emom-params" style="display: ${currentStyle === 'emom' ? 'block' : 'none'}">
                     <label class="param-label">
                         <span>Interval (seconds)</span>
-                        <input type="number" class="form-control form-control-sm" id="emom-interval-${exerciseId}" 
+                        <input type="number" class="form-control form-control-sm input-calm-inset" id="emom-interval-${exerciseId}"
                                value="${emomInterval}" min="15" max="180" step="5">
                     </label>
                     <label class="param-label">
                         <span>Rounds</span>
-                        <input type="number" class="form-control form-control-sm" id="emom-rounds-${exerciseId}" 
+                        <input type="number" class="form-control form-control-sm input-calm-inset" id="emom-rounds-${exerciseId}"
                                value="${emomRounds}" min="1" max="20">
                     </label>
                 </div>
             </div>
             <div class="execution-picker-footer">
-                <button class="btn btn-sm btn-outline-secondary btn-cancel-exec">Cancel</button>
-                <button class="btn btn-sm btn-primary btn-save-exec" data-exercise-id="${exerciseId}">
+                <button class="btn btn-sm btn-outline-secondary btn-calm-ghost btn-cancel-exec">Cancel</button>
+                <button class="btn btn-sm btn-primary btn-calm-primary btn-save-exec" data-exercise-id="${exerciseId}">
                     <i class="fas fa-check me-1"></i>Apply
                 </button>
             </div>
@@ -618,7 +618,7 @@ export function reloadWorkoutPlan(data) {
             <td>${item.stabilizers || "N/A"}</td>
             <td>${item.synergists || "N/A"}</td>
             <td>
-                <button class="btn btn-danger btn-sm text-white" onclick="removeExercise(${item.id})">
+                <button class="btn btn-danger btn-sm text-white btn-calm-danger" onclick="removeExercise(${item.id})">
                     <i class="fas fa-trash"></i> Remove
                 </button>
             </td>`;
@@ -1327,7 +1327,7 @@ export function updateWorkoutPlanTable(exercises) {
             <td class="col--high exercise-cell" data-label="Exercise">
                 <span class="exercise-name">${exercise.exercise || 'N/A'}</span>
                 ${supersetBadgeHtml}
-                <button class="btn-swap" 
+                <button class="btn btn-swap btn-calm-icon"
                         data-exercise-id="${exercise.id}"
                         title="Replace with similar exercise (same muscle + equipment)"
                         aria-label="Swap exercise">
@@ -1354,7 +1354,7 @@ export function updateWorkoutPlanTable(exercises) {
             <td class="col--low" data-label="Stabilizers">${exercise.stabilizers || 'N/A'}</td>
             <td class="col--low" data-label="Synergists">${exercise.synergists || 'N/A'}</td>
             <td class="col--high" data-label="Actions">
-                <button class="btn btn-danger btn-sm text-white" onclick="removeExercise(${exercise.id})">
+                <button class="btn btn-danger btn-sm text-white btn-calm-danger" onclick="removeExercise(${exercise.id})">
                     <i class="fas fa-trash"></i> Remove
                 </button>
             </td>
@@ -1730,7 +1730,7 @@ function makeTableCellEditable(cell, exerciseId, fieldName) {
     const input = document.createElement('input');
     input.type = 'number';
     input.value = originalValue === 'N/A' ? '' : originalValue;
-    input.className = 'form-control form-control-sm';
+    input.className = 'form-control form-control-sm input-calm-inset';
     input.dataset.originalValue = originalValue;
     
     // Add validation rules based on field type

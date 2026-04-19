@@ -6,7 +6,9 @@
 :where(.btn).btn-calm-ghost,
 .btn.btn-calm-ghost,
 :where(.btn).btn-calm-icon,
-.btn.btn-calm-icon {
+.btn.btn-calm-icon,
+:where(.btn).btn-calm-danger,
+.btn.btn-calm-danger {
   align-items: center !important;
   border-radius: 8px !important;
   display: inline-flex !important;
@@ -106,12 +108,16 @@
 .btn.btn-calm-ghost:disabled,
 :where(.btn).btn-calm-icon:disabled,
 .btn.btn-calm-icon:disabled,
+:where(.btn).btn-calm-danger:disabled,
+.btn.btn-calm-danger:disabled,
 :where(.btn).btn-calm-primary.disabled,
 .btn.btn-calm-primary.disabled,
 :where(.btn).btn-calm-ghost.disabled,
 .btn.btn-calm-ghost.disabled,
 :where(.btn).btn-calm-icon.disabled,
-.btn.btn-calm-icon.disabled {
+.btn.btn-calm-icon.disabled,
+:where(.btn).btn-calm-danger.disabled,
+.btn.btn-calm-danger.disabled {
   box-shadow: none !important;
   opacity: 0.62 !important;
   transform: none !important;
@@ -282,6 +288,170 @@
   background: color-mix(in srgb, var(--accent, #4c6ef5) 14%, var(--surface-2, #1d2238) 86%) !important;
 }
 
+:where(.btn).btn-calm-danger,
+.btn.btn-calm-danger {
+  align-items: center !important;
+  background: color-mix(in srgb, var(--danger, #ef4444) 90%, #7f1d1d 10%) !important;
+  border: 1px solid color-mix(in srgb, var(--danger, #ef4444) 78%, white 22%) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow-elev-1, 0 1px 2px rgba(15, 18, 32, 0.06), 0 2px 8px rgba(15, 18, 32, 0.06)) !important;
+  color: #ffffff !important;
+  display: inline-flex !important;
+  font-weight: 600 !important;
+  gap: var(--s-2, 8px) !important;
+  justify-content: center !important;
+  letter-spacing: 0 !important;
+  min-height: 40px !important;
+  padding: var(--s-2, 8px) var(--s-5, 24px) !important;
+  text-decoration: none !important;
+}
+
+:where(.btn).btn-calm-danger:hover,
+.btn.btn-calm-danger:hover,
+:where(.btn).btn-calm-danger:focus-visible,
+.btn.btn-calm-danger:focus-visible {
+  background: color-mix(in srgb, var(--danger, #ef4444) 82%, #7f1d1d 18%) !important;
+  box-shadow: var(--shadow-elev-2, 0 8px 24px rgba(15, 18, 32, 0.10)) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px) !important;
+}
+
+#workout[data-page="workout-plan"] :where(.btn).btn-calm-link,
+#workout[data-page="workout-plan"] .btn.btn-calm-link {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: var(--accent, #4c6ef5) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0 !important;
+  min-height: 0 !important;
+}
+
+#workout[data-page="workout-plan"] .frame-calm-glass,
+.modal-content.frame-calm-glass,
+.execution-style-picker.frame-calm-glass {
+  background: var(--calm-glass-bg, rgba(255, 255, 255, 0.55)) !important;
+  backdrop-filter: blur(var(--calm-glass-blur, 18px)) saturate(var(--calm-glass-sat, 180%)) !important;
+  -webkit-backdrop-filter: blur(var(--calm-glass-blur, 18px)) saturate(var(--calm-glass-sat, 180%)) !important;
+  border: 1px solid var(--calm-glass-border, rgba(255, 255, 255, 0.65)) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow-neu-out, 8px 8px 20px rgba(167, 175, 200, 0.35), -8px -8px 20px rgba(255, 255, 255, 0.90)) !important;
+  color: var(--ink-1, #0f1220) !important;
+}
+
+#workout[data-page="workout-plan"] .frame-calm-glass .frame-calm-glass,
+.modal-content.frame-calm-glass .frame-calm-glass {
+  box-shadow: none !important;
+}
+
+#workout[data-page="workout-plan"] .frame-calm-glass .frame-header,
+.execution-style-picker.frame-calm-glass .execution-picker-header,
+.execution-style-picker.frame-calm-glass .execution-picker-footer,
+.modal-content.frame-calm-glass .modal-header:not(.bg-danger),
+.modal-content.frame-calm-glass .modal-footer {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 78%, transparent) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 16%, transparent) !important;
+  color: var(--ink-1, #0f1220) !important;
+}
+
+#workout[data-page="workout-plan"] .frame-calm-glass .collapse-toggle {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 70%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 18%, transparent) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow-elev-1, 0 1px 2px rgba(15, 18, 32, 0.06), 0 2px 8px rgba(15, 18, 32, 0.06)) !important;
+  color: var(--ink-2, #4a5170) !important;
+}
+
+#workout[data-page="workout-plan"] .routine-tabs-container.frame-calm-glass,
+#workout[data-page="workout-plan"] .superset-actions.frame-calm-glass,
+#workout[data-page="workout-plan"] .plan-preview-box.frame-calm-glass {
+  padding: var(--s-3, 12px) !important;
+}
+
+#workout[data-page="workout-plan"] .tbl-wrap.frame-calm-glass {
+  padding: var(--s-2, 8px) !important;
+}
+
+#workout[data-page="workout-plan"] .frame-calm-glass .routine-tab-btn {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 68%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 16%, transparent) !important;
+  border-radius: 8px !important;
+  color: var(--ink-2, #4a5170) !important;
+  letter-spacing: 0 !important;
+}
+
+#workout[data-page="workout-plan"] .frame-calm-glass .routine-tab-btn.active,
+#workout[data-page="workout-plan"] .frame-calm-glass .routine-tab-btn[aria-selected="true"] {
+  background: var(--accent, #4c6ef5) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 80%, white 20%) !important;
+  box-shadow: var(--shadow-elev-1, 0 1px 2px rgba(15, 18, 32, 0.06), 0 2px 8px rgba(15, 18, 32, 0.06)) !important;
+  color: var(--accent-ink, #ffffff) !important;
+}
+
+.execution-style-picker.frame-calm-glass {
+  overflow: hidden !important;
+}
+
+.execution-style-picker.frame-calm-glass .execution-picker-content {
+  background: transparent !important;
+  color: var(--ink-1, #0f1220) !important;
+}
+
+.execution-style-picker.frame-calm-glass .execution-option {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 64%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 16%, transparent) !important;
+  border-radius: 8px !important;
+  color: var(--ink-1, #0f1220) !important;
+}
+
+.execution-style-picker.frame-calm-glass .execution-option.active {
+  background: color-mix(in srgb, var(--accent, #4c6ef5) 14%, var(--surface-2, #ffffff) 86%) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 52%, transparent) !important;
+}
+
+#workout[data-page="workout-plan"] .form-range.range-calm {
+  accent-color: var(--accent, #4c6ef5) !important;
+  filter: drop-shadow(0 1px 2px rgba(15, 18, 32, 0.10)) !important;
+}
+
+@layer workout {
+@media (max-width: 991.98px) {
+  #workout[data-page="workout-plan"] #exercise-selection-frame #action-buttons-row.selection-actions {
+    display: grid !important;
+    gap: var(--s-2, 8px) !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    justify-content: stretch !important;
+    overflow: visible !important;
+  }
+
+  #workout[data-page="workout-plan"] #exercise-selection-frame #action-buttons-row .inline-control-item {
+    align-items: stretch !important;
+    flex: 1 1 auto !important;
+    margin: 0 !important;
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
+  #workout[data-page="workout-plan"] #exercise-selection-frame #action-buttons-row .btn.btn-calm-primary,
+  #workout[data-page="workout-plan"] #exercise-selection-frame #action-buttons-row .btn.btn-calm-ghost,
+  #workout[data-page="workout-plan"] #exercise-selection-frame #action-buttons-row .btn.btn-calm-danger {
+    height: auto !important;
+    max-width: 100% !important;
+    min-height: 40px !important;
+    min-width: 0 !important;
+    padding: var(--s-2, 8px) var(--s-3, 12px) !important;
+    white-space: normal !important;
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 575.98px) {
+  #workout[data-page="workout-plan"] #exercise-selection-frame #action-buttons-row.selection-actions {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+}
+
 [data-theme='dark'] .summary-tables .glass-neumorph-card {
   background: var(--calm-glass-bg, rgba(29, 34, 56, 0.55)) !important;
   box-shadow: var(--shadow-neu-out, 8px 8px 20px rgba(0, 0, 0, 0.55), -8px -8px 20px rgba(255, 255, 255, 0.04)) !important;
@@ -301,7 +471,11 @@
   .btn.btn-calm-ghost,
   :where(.btn).btn-calm-icon,
   .btn.btn-calm-icon,
+  :where(.btn).btn-calm-danger,
+  .btn.btn-calm-danger,
   .glass-neumorph-card,
+  #workout[data-page="workout-plan"] .frame-calm-glass,
+  .execution-style-picker.frame-calm-glass,
   :where(.form-control).input-calm-inset,
   .form-control.input-calm-inset,
   :where(.form-select).input-calm-inset,
@@ -311,6 +485,11 @@
   }
 
   .glass-neumorph-card:hover {
+    transform: none !important;
+  }
+
+  :where(.btn).btn-calm-danger:hover,
+  .btn.btn-calm-danger:hover {
     transform: none !important;
   }
 }
