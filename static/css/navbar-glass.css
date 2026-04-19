@@ -98,6 +98,35 @@
   width: 20px;
 }
 
+@media (min-width: 992px) {
+  #navbar > .container-fluid {
+    column-gap: var(--s-4, 16px);
+  }
+
+  #navbar .navbar-brand.nav-link {
+    flex: 0 0 auto;
+    margin-inline: 0 var(--s-4, 16px);
+    min-width: max-content;
+    position: relative;
+    white-space: nowrap;
+    z-index: 2;
+  }
+
+  #navbar nav.navbar-collapse {
+    column-gap: var(--s-4, 16px);
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  #navbar nav.navbar-collapse > .navbar-nav:first-child {
+    margin-inline-start: var(--s-1, 4px);
+  }
+
+  #navbar nav.navbar-collapse > .navbar-nav:first-child .nav-item:first-child .nav-link {
+    margin-inline-start: 0;
+  }
+}
+
 #navbar .dropdown {
   position: relative;
 }
