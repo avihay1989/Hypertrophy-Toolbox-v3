@@ -14,6 +14,7 @@
   --nav-pill-ink-strong: var(--ink-1, #0f1220);
   --nav-pill-shadow: var(--shadow-elev-1, 0 1px 2px rgba(15, 18, 32, 0.06), 0 2px 8px rgba(15, 18, 32, 0.06));
   --nav-pill-inset: var(--shadow-neu-in, inset 4px 4px 10px rgba(167, 175, 200, 0.35), inset -4px -4px 10px rgba(255, 255, 255, 0.90));
+  --nav-primary-pill-width: 116px;
 }
 
 [data-theme="dark"] :where(#navbar) {
@@ -106,7 +107,7 @@
   #navbar > .container-fluid {
     column-gap: var(--s-2, 8px);
     max-width: none;
-    padding-inline: var(--s-5, 24px);
+    padding-inline: var(--s-4, 16px);
   }
 
   #navbar .navbar-brand.nav-link {
@@ -143,6 +144,18 @@
   #navbar #darkModeToggle,
   #navbar #muscleModeToggle {
     margin-inline-start: 0;
+  }
+}
+
+@media (min-width: 1360px) {
+  #navbar nav.navbar-collapse > .navbar-nav:first-child > .nav-item > .nav-link {
+    inline-size: var(--nav-primary-pill-width);
+    justify-content: center;
+    padding-inline: 6px !important;
+  }
+
+  #navbar nav.navbar-collapse > .navbar-nav:first-child > .nav-item > .nav-link > span {
+    min-width: 0;
   }
 }
 
@@ -193,7 +206,7 @@
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28238, 241, 246, 0.9%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2.5' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
 }
 
-@media (min-width: 992px) and (max-width: 1450px) {
+@media (min-width: 992px) and (max-width: 1600px) {
   #navbar #darkModeToggle {
     justify-content: center;
     min-width: 40px;
@@ -204,7 +217,7 @@
   }
 }
 
-@media (min-width: 1200px) and (max-width: 1380px) {
+@media (min-width: 1360px) and (max-width: 1380px) {
   #navbar > .container-fluid {
     padding-inline: var(--s-4, 16px);
   }
@@ -227,13 +240,7 @@
   }
 }
 
-@media (min-width: 1200px) and (max-width: 1239.98px) {
-  #navbar nav.navbar-collapse > .navbar-nav:first-child .nav-link {
-    padding-inline: 6px !important;
-  }
-}
-
-@media (min-width: 992px) and (max-width: 1199.98px) {
+@media (min-width: 992px) and (max-width: 1359.98px) {
   #navbar .navbar-toggler,
   #navbar .nb-menu-btn {
     display: inline-flex;
