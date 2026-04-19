@@ -132,6 +132,7 @@ export const SELECTORS = {
   NAV_WORKOUT_LOG: '[data-testid="nav-workout-log"], #nav-workout-log',
   NAV_PROGRESSION_PLAN: '[data-testid="nav-progression-plan"], #nav-progression-plan',
   NAV_VOLUME_SPLITTER: '[data-testid="nav-volume-splitter"], #nav-volume-splitter',
+  NAV_BACKUP: '[data-testid="nav-backup"], #nav-backup',
   DARK_MODE_TOGGLE: '[data-testid="dark-mode-toggle"], #darkModeToggle',
   
   // Toast notification

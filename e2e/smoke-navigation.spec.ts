@@ -4,7 +4,17 @@
  * Tests that the app loads correctly and navigation works
  * as expected across all main routes.
  */
+import type { Page } from '@playwright/test';
 import { test, expect, ROUTES, SELECTORS, waitForPageReady } from './fixtures';
+
+const ANALYZE_TOGGLE = '#navbar .dropdown-toggle:has-text("Analyze")';
+
+async function openAnalyzeDropdown(page: Page): Promise<void> {
+  const analyzeToggle = page.locator(ANALYZE_TOGGLE);
+  await expect(analyzeToggle).toBeVisible();
+  await analyzeToggle.click();
+  await expect(page.locator('#navbar .dropdown-menu.show')).toBeVisible();
+}
 
 test.describe('Global Smoke and Navigation', () => {
   test.beforeEach(async ({ consoleErrors }) => {
@@ -28,13 +38,17 @@ test.describe('Global Smoke and Navigation', () => {
     await expect(brand).toBeVisible();
     await expect(brand).toContainText('Hypertrophy Toolbox');
 
-    // Assert all nav links are visible
+    // Assert top-level nav links are visible
     await expect(page.locator(SELECTORS.NAV_WORKOUT_PLAN)).toBeVisible();
-    await expect(page.locator(SELECTORS.NAV_WEEKLY_SUMMARY)).toBeVisible();
-    await expect(page.locator(SELECTORS.NAV_SESSION_SUMMARY)).toBeVisible();
     await expect(page.locator(SELECTORS.NAV_WORKOUT_LOG)).toBeVisible();
     await expect(page.locator(SELECTORS.NAV_PROGRESSION_PLAN)).toBeVisible();
     await expect(page.locator(SELECTORS.NAV_VOLUME_SPLITTER)).toBeVisible();
+    await expect(page.locator(SELECTORS.NAV_BACKUP)).toBeVisible();
+
+    // Summary links live inside the Analyze dropdown in the P5 nav flow.
+    await openAnalyzeDropdown(page);
+    await expect(page.locator(SELECTORS.NAV_WEEKLY_SUMMARY)).toBeVisible();
+    await expect(page.locator(SELECTORS.NAV_SESSION_SUMMARY)).toBeVisible();
 
     // Assert dark mode toggle is visible
     await expect(page.locator(SELECTORS.DARK_MODE_TOGGLE)).toBeVisible();
@@ -71,6 +85,7 @@ test.describe('Global Smoke and Navigation', () => {
     await page.goto(ROUTES.HOME);
     await waitForPageReady(page);
 
+    await openAnalyzeDropdown(page);
     await page.locator(SELECTORS.NAV_WEEKLY_SUMMARY).click();
     await waitForPageReady(page);
 
@@ -84,6 +99,7 @@ test.describe('Global Smoke and Navigation', () => {
     await page.goto(ROUTES.HOME);
     await waitForPageReady(page);
 
+    await openAnalyzeDropdown(page);
     await page.locator(SELECTORS.NAV_SESSION_SUMMARY).click();
     await waitForPageReady(page);
 

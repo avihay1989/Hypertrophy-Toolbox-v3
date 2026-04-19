@@ -89,7 +89,7 @@ If the first three commands find a stable ID/class/data-attribute selector not l
 Grouped by subsystem. Every ID listed is frozen.
 
 **Navbar / global chrome**
-- [x] `#navbar`, `#nav-brand`, `#nav-workout-plan`, `#nav-workout-log`, `#nav-weekly-summary`, `#nav-session-summary`, `#nav-progression-plan`, `#nav-volume-splitter`
+- [x] `#navbar`, `#nav-brand`, `#nav-workout-plan`, `#nav-workout-log`, `#nav-weekly-summary`, `#nav-session-summary`, `#nav-progression-plan`, `#nav-volume-splitter`, `#nav-backup`
 - [x] `#navbarNav` — Bootstrap collapse target (`data-bs-target="#navbarNav"` on toggler at `base.html:83`; collapse container at `base.html:91`; also queried by `navbar-enhancements.js:14`). **P5 blocker: must not be renamed or removed during navbar restructure.**
 - [x] `#darkModeToggle`, `#muscleModeToggle`
 - [x] `#scale-decrease`, `#scale-increase`, `#scale-indicator` — A- / A+ scale control
@@ -146,7 +146,7 @@ Grouped by subsystem. Every ID listed is frozen.
 
 Full list from `e2e/fixtures.ts` — every value below is frozen:
 
-- [x] `navbar`, `nav-brand`, `nav-workout-plan`, `nav-workout-log`, `nav-weekly-summary`, `nav-session-summary`, `nav-progression-plan`, `nav-volume-splitter`
+- [x] `navbar`, `nav-brand`, `nav-workout-plan`, `nav-workout-log`, `nav-weekly-summary`, `nav-session-summary`, `nav-progression-plan`, `nav-volume-splitter`, `nav-backup`
 - [x] `dark-mode-toggle`, `toast-container`
 - [x] `routine-env`, `routine-program`, `routine-day`
 - [x] `add-exercise-btn`, `exercise-search`, `exercise-table`
@@ -579,36 +579,36 @@ P4c. Initialize backup JS on every page
 **Why:** With P4 complete, the modal + its JS are live on every page, so adding a Backup trigger to the global navbar is now safe. This phase reshapes the navbar HTML to match the workflow mental model (Plan → Log → Analyze → Progress → Distribute → Backup) and surfaces the Backup entry. This is the highest-risk phase because HTML changes can break E2E.
 
 **Preflight**
-- [ ] P4 committed and green; modal reachable from every page via DevTools test (see P4 exit gate)
-- [ ] §3 frozen DOM contract list re-read
-- [ ] §3.5 unfreezing process re-read
-- [ ] Re-run `npm run test:e2e smoke-navigation.spec.ts` to record current pass state
+- [x] P4 committed and green; modal reachable from every page via DevTools test (see P4 exit gate)
+- [x] §3 frozen DOM contract list re-read
+- [x] §3.5 unfreezing process re-read
+- [x] Re-run `npm run test:e2e -- e2e/smoke-navigation.spec.ts --project=chromium` to record current pass state
 
 **Tasks**
-- [ ] In `templates/base.html` navbar `<ul>`:
-  - [ ] Reorder existing `<li>` elements to: Plan → Log → (new Analyze dropdown wrapping Weekly + Session) → Progression → Volume → (new Backup trigger)
-  - [ ] **Preserve all IDs**: `#nav-workout-plan`, `#nav-workout-log`, `#nav-weekly-summary`, `#nav-session-summary`, `#nav-progression-plan`, `#nav-volume-splitter`, **`#navbarNav`** all stay
-  - [ ] **Preserve all `data-testid`**: same list
-  - [ ] Wrap Weekly + Session `<li>` inside a Bootstrap dropdown: `<li class="nav-item dropdown"><a class="nav-link dropdown-toggle" data-bs-toggle="dropdown">` with `<ul class="dropdown-menu">` child containing the two existing `<li>` items
-  - [ ] Add new `<li>` for Backup with `id="nav-backup"` and `data-testid="nav-backup"` — new IDs are additive, no frozen contract impact
-  - [ ] Backup link: `<a href="#" data-bs-toggle="modal" data-bs-target="#programLibraryModal">` — modal is guaranteed present on every page after P4
-- [ ] Update `e2e/fixtures.ts` to add `NAV_BACKUP: '[data-testid="nav-backup"], #nav-backup'`
-- [ ] Add new spec `e2e/nav-dropdown.spec.ts`:
+- [x] In `templates/base.html` navbar `<ul>`:
+  - [x] Reorder existing `<li>` elements to: Plan → Log → (new Analyze dropdown wrapping Weekly + Session) → Progression → Volume → (new Backup trigger)
+  - [x] **Preserve all IDs**: `#nav-workout-plan`, `#nav-workout-log`, `#nav-weekly-summary`, `#nav-session-summary`, `#nav-progression-plan`, `#nav-volume-splitter`, **`#navbarNav`** all stay
+  - [x] **Preserve all `data-testid`**: same list
+  - [x] Wrap Weekly + Session `<li>` inside a Bootstrap dropdown: `<li class="nav-item dropdown"><a class="nav-link dropdown-toggle" data-bs-toggle="dropdown">` with `<ul class="dropdown-menu">` child containing the two existing `<li>` items
+  - [x] Add new `<li>` for Backup with `id="nav-backup"` and `data-testid="nav-backup"` — new IDs are additive, no frozen contract impact
+  - [x] Backup link: `<a href="#" data-bs-toggle="modal" data-bs-target="#programLibraryModal">` — modal is guaranteed present on every page after P4
+- [x] Update `e2e/fixtures.ts` to add `NAV_BACKUP: '[data-testid="nav-backup"], #nav-backup'`
+- [x] Add new spec `e2e/nav-dropdown.spec.ts`:
   - Nav order matches Plan / Log / Analyze / Progress / Distribute / Backup
   - Analyze dropdown opens on click and contains Weekly + Session
   - Backup link exists with correct `data-bs-target`
   - Clicking Backup on each of the 7 pages opens the Program Library modal (verify `.modal.show` class appears)
 
 **Exit gate**
-- [ ] `npm run test:e2e` green — ALL existing specs + new `nav-dropdown.spec.ts`
-- [ ] Manual: open each of 7 pages (`/`, `/workout_plan`, `/workout_log`, `/weekly_summary`, `/session_summary`, `/progression`, `/volume_splitter`) — click nav Backup → modal opens, list populates, save/restore/delete all work
-- [ ] No regression in `smoke-navigation.spec.ts` or `program-backup.spec.ts`
-- [ ] **Mobile dropdown verification (< 992px viewport):**
-  - [ ] Burger menu opens/closes correctly
-  - [ ] Analyze dropdown expands **inline** within the collapsed navbar (not as a pop-up overlay)
-  - [ ] Weekly + Session links inside the dropdown are tappable and navigate correctly
-  - [ ] Dropdown inherits glass styling from P3's `navbar-glass.css` — if not, add explicit dropdown-menu rules to `navbar-glass.css` in this commit
-- [ ] Dark mode toggle still works after restructure
+- [x] `npm run test:e2e` green — ALL existing specs + new `nav-dropdown.spec.ts` (320 non-visual + 42 visual after desktop nav snapshot refresh)
+- [ ] Manual: open each of 7 pages (`/`, `/workout_plan`, `/workout_log`, `/weekly_summary`, `/session_summary`, `/progression`, `/volume_splitter`) — click nav Backup → modal opens, list populates, save/restore/delete all work. Automation coverage for this phase: `nav-dropdown.spec.ts` verifies nav Backup opens and populates from all 7 pages; `program-backup.spec.ts` and `tests/test_program_backup.py` cover save/restore/delete flows.
+- [x] No regression in `smoke-navigation.spec.ts` or `program-backup.spec.ts`
+- [x] **Mobile dropdown verification (< 992px viewport):**
+  - [x] Burger menu opens/closes correctly
+  - [x] Analyze dropdown expands **inline** within the collapsed navbar (not as a pop-up overlay)
+  - [x] Weekly + Session links inside the dropdown are tappable and navigate correctly
+  - [x] Dropdown inherits glass styling from P3's `navbar-glass.css` — explicit dropdown-menu rules added in `navbar-glass.css`
+- [x] Dark mode toggle still works after restructure
 
 **Commit:** `feat(redesign): P5 reorder navbar + add Analyze dropdown + Backup trigger`
 

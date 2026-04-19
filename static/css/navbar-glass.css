@@ -88,6 +88,58 @@
   border-radius: var(--r-sm, 10px);
 }
 
+:where(#navbar) .nav-fa-icon {
+  align-items: center;
+  display: inline-flex;
+  font-size: 0.95rem;
+  height: 20px;
+  justify-content: center;
+  line-height: 1;
+  width: 20px;
+}
+
+#navbar .dropdown {
+  position: relative;
+}
+
+#navbar .dropdown-menu {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 88%, transparent);
+  backdrop-filter: blur(var(--calm-glass-blur, 18px)) saturate(var(--calm-glass-sat, 150%));
+  -webkit-backdrop-filter: blur(var(--calm-glass-blur, 18px)) saturate(var(--calm-glass-sat, 150%));
+  border: 1px solid var(--nav-glass-border-soft);
+  border-radius: 8px;
+  box-shadow: var(--shadow-elev-2, 0 8px 24px rgba(15, 18, 32, 0.12));
+  margin-top: var(--s-2, 8px);
+  min-width: 12rem;
+  padding: var(--s-1, 4px);
+}
+
+[data-theme="dark"] #navbar .dropdown-menu {
+  background: color-mix(in srgb, var(--surface-2, #1d2238) 88%, transparent);
+}
+
+#navbar .dropdown-menu .nav-item {
+  display: block !important;
+  height: auto !important;
+  width: 100%;
+}
+
+#navbar .dropdown-menu .dropdown-item.nav-link {
+  border-radius: 8px;
+  margin: 0;
+  min-height: 40px;
+  width: 100%;
+}
+
+#navbar .dropdown-menu .dropdown-item.nav-link:hover,
+#navbar .dropdown-menu .dropdown-item.nav-link:focus-visible {
+  background: var(--nav-pill-hover);
+}
+
+#navbar .dropdown-menu .dropdown-item.nav-link.active {
+  background: var(--nav-pill-active);
+}
+
 :where(#navbar) .scale-control-compact {
   background: color-mix(in srgb, var(--nav-pill-bg) 90%, transparent);
   border: 1px solid var(--nav-glass-border-soft);
@@ -112,6 +164,37 @@
 
   :where(#navbar) nav.navbar-collapse.show .nav-link {
     border-radius: var(--r-md, 14px);
+  }
+
+  #navbar nav.navbar-collapse.show .dropdown {
+    align-items: stretch;
+    display: flex !important;
+    flex-direction: column;
+    height: auto !important;
+    width: 100%;
+  }
+
+  #navbar nav.navbar-collapse.show .dropdown-menu {
+    border-color: color-mix(in srgb, var(--accent, #4c6ef5) 18%, transparent);
+    box-shadow: none;
+    inset: auto !important;
+    margin: var(--s-1, 4px) 0 0;
+    min-width: 0;
+    position: static !important;
+    transform: none !important;
+    width: 100%;
+  }
+
+  #navbar nav.navbar-collapse.show .dropdown-menu:not(.show) {
+    display: none;
+  }
+
+  #navbar nav.navbar-collapse.show .dropdown-menu.show {
+    display: block;
+  }
+
+  #navbar nav.navbar-collapse.show .dropdown-menu .dropdown-item.nav-link {
+    padding-left: var(--s-6, 32px) !important;
   }
 }
 

@@ -104,29 +104,7 @@
                                  aria-hidden="true"
                                  width="20"
                                  height="20">
-                            <span>Workout Plan</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link nav-link-with-icon" id="nav-weekly-summary" data-testid="nav-weekly-summary" href="/weekly_summary">
-                            <img src="{{ url_for('static', filename='images/7-days.gif') }}"
-                                 alt=""
-                                 class="nav-icon"
-                                 aria-hidden="true"
-                                 width="20"
-                                 height="20">
-                            <span>Plan Summary</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link nav-link-with-icon" id="nav-session-summary" data-testid="nav-session-summary" href="/session_summary">
-                            <img src="{{ url_for('static', filename='images/icons8-session-50.png') }}"
-                                 alt=""
-                                 class="nav-icon"
-                                 aria-hidden="true"
-                                 width="20"
-                                 height="20">
-                            <span>Session Summary</span>
+                            <span>Plan</span>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -137,8 +115,38 @@
                                  aria-hidden="true"
                                  width="20"
                                  height="20">
-                            <span>Workout Log</span>
+                            <span>Log</span>
                         </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link nav-link-with-icon dropdown-toggle" href="#" id="nav-analyze-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-chart-line nav-icon nav-fa-icon" aria-hidden="true"></i>
+                            <span>Analyze</span>
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="nav-analyze-toggle">
+                            <li class="nav-item">
+                                <a class="dropdown-item nav-link nav-link-with-icon" id="nav-weekly-summary" data-testid="nav-weekly-summary" href="/weekly_summary">
+                                    <img src="{{ url_for('static', filename='images/7-days.gif') }}"
+                                         alt=""
+                                         class="nav-icon"
+                                         aria-hidden="true"
+                                         width="20"
+                                         height="20">
+                                    <span>Weekly</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="dropdown-item nav-link nav-link-with-icon" id="nav-session-summary" data-testid="nav-session-summary" href="/session_summary">
+                                    <img src="{{ url_for('static', filename='images/icons8-session-50.png') }}"
+                                         alt=""
+                                         class="nav-icon"
+                                         aria-hidden="true"
+                                         width="20"
+                                         height="20">
+                                    <span>Session</span>
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link nav-link-with-icon" id="nav-progression-plan" data-testid="nav-progression-plan" href="/progression">
@@ -148,7 +156,7 @@
                                  aria-hidden="true"
                                  width="20"
                                  height="20">
-                            <span>Progression Plan</span>
+                            <span>Progress</span>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -159,7 +167,13 @@
                                  aria-hidden="true"
                                  width="20"
                                  height="20">
-                            <span>Volume Splitter</span>
+                            <span>Distribute</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-with-icon" id="nav-backup" data-testid="nav-backup" href="#" data-bs-toggle="modal" data-bs-target="#programLibraryModal">
+                            <i class="fas fa-folder-open nav-icon nav-fa-icon" aria-hidden="true"></i>
+                            <span>Backup</span>
                         </a>
                     </li>
                 </ul>
