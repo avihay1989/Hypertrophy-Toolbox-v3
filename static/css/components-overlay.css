@@ -117,13 +117,65 @@
   transform: none !important;
 }
 
+.glass-neumorph-card {
+  background: var(--calm-glass-bg, rgba(255, 255, 255, 0.55)) !important;
+  backdrop-filter: blur(var(--calm-glass-blur, 18px)) saturate(var(--calm-glass-sat, 180%)) !important;
+  -webkit-backdrop-filter: blur(var(--calm-glass-blur, 18px)) saturate(var(--calm-glass-sat, 180%)) !important;
+  border-style: solid !important;
+  border-width: 1px !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow-neu-out, 8px 8px 20px rgba(167, 175, 200, 0.35), -8px -8px 20px rgba(255, 255, 255, 0.90)) !important;
+  color: var(--ink-1, #0f1220) !important;
+  overflow: hidden !important;
+  transition:
+    box-shadow var(--dur-base, 240ms) var(--ease-out, ease),
+    transform var(--dur-base, 240ms) var(--ease-out, ease) !important;
+}
+
+.glass-neumorph-card:hover {
+  box-shadow:
+    var(--shadow-neu-out, 8px 8px 20px rgba(167, 175, 200, 0.35), -8px -8px 20px rgba(255, 255, 255, 0.90)),
+    var(--shadow-elev-2, 0 8px 24px rgba(15, 18, 32, 0.10)) !important;
+  transform: translateY(-2px) !important;
+}
+
+.glass-neumorph-card .card-body {
+  color: var(--ink-1, #0f1220) !important;
+}
+
+.glass-neumorph-card .card-title {
+  color: var(--ink-1, #0f1220) !important;
+  letter-spacing: 0 !important;
+}
+
+.glass-neumorph-card .text-muted {
+  color: var(--ink-2, #4a5170) !important;
+}
+
+[data-theme='dark'] .summary-tables .glass-neumorph-card {
+  background: var(--calm-glass-bg, rgba(29, 34, 56, 0.55)) !important;
+  box-shadow: var(--shadow-neu-out, 8px 8px 20px rgba(0, 0, 0, 0.55), -8px -8px 20px rgba(255, 255, 255, 0.04)) !important;
+  color: var(--ink-1, #eef1f6) !important;
+}
+
+[data-theme='dark'] .summary-tables .glass-neumorph-card:hover {
+  box-shadow:
+    var(--shadow-neu-out, 8px 8px 20px rgba(0, 0, 0, 0.55), -8px -8px 20px rgba(255, 255, 255, 0.04)),
+    var(--shadow-elev-2, 0 8px 24px rgba(15, 18, 32, 0.10)) !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   :where(.btn).btn-calm-primary,
   .btn.btn-calm-primary,
   :where(.btn).btn-calm-ghost,
   .btn.btn-calm-ghost,
   :where(.btn).btn-calm-icon,
-  .btn.btn-calm-icon {
+  .btn.btn-calm-icon,
+  .glass-neumorph-card {
     transition: none !important;
+  }
+
+  .glass-neumorph-card:hover {
+    transform: none !important;
   }
 }

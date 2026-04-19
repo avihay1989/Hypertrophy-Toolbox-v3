@@ -636,8 +636,8 @@ P4c. Initialize backup JS on every page
 - [x] P6a: Apply `.btn-calm-primary` to `#saveBackupSubmit` only as a pilot, while preserving existing `.btn` and `.btn-primary`
 - [x] P6a: Verify HTML usage count for `.btn-calm-primary` is exactly 1 in the pilot commit
 - [x] P6a: Visual QA + E2E green → commit
-- [ ] P6b: Cards — add `.glass-neumorph-card` rule; apply to `/weekly_summary` cards first
-- [ ] P6b: Visual QA + E2E → commit
+- [x] P6b: Cards — add `.glass-neumorph-card` rule; apply to `/weekly_summary` cards first
+- [x] P6b: Visual QA + E2E → commit
 - [ ] P6c: Form inputs — add `.input-calm-inset`; apply to `/workout_plan` routine form fields without removing legacy classes
 - [ ] P6c: Visual QA + E2E → commit
 - [ ] P6d: Tables — add `.table-calm`; apply alongside `.workout-plan-table` to pilot one table without changing the frozen `.workout-plan-table` class
