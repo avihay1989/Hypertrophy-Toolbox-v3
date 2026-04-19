@@ -415,6 +415,189 @@
 }
 
 @layer workout {
+#workout[data-page="workout-plan"] .btn.btn-calm-primary,
+#workout[data-page="workout-plan"] :where(.btn).btn-calm-primary,
+#workout[data-page="workout-plan"] .modal-content.frame-calm-glass .btn.btn-calm-primary {
+  background: var(--accent, #4c6ef5) !important;
+  background-image: none !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 78%, white 22%) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow-elev-1, 0 1px 2px rgba(15, 18, 32, 0.06), 0 2px 8px rgba(15, 18, 32, 0.06)) !important;
+  color: var(--accent-ink, #ffffff) !important;
+  text-shadow: none !important;
+}
+
+#workout[data-page="workout-plan"] .btn.btn-calm-primary:hover:not(:disabled),
+#workout[data-page="workout-plan"] :where(.btn).btn-calm-primary:hover:not(:disabled),
+#workout[data-page="workout-plan"] .btn.btn-calm-primary:focus-visible,
+#workout[data-page="workout-plan"] :where(.btn).btn-calm-primary:focus-visible {
+  background: color-mix(in srgb, var(--accent, #4c6ef5) 88%, #243b8f 12%) !important;
+  background-image: none !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 84%, white 16%) !important;
+  color: var(--accent-ink, #ffffff) !important;
+}
+
+#workout[data-page="workout-plan"] .btn.btn-calm-ghost,
+#workout[data-page="workout-plan"] :where(.btn).btn-calm-ghost,
+#workout[data-page="workout-plan"] .modal-content.frame-calm-glass .btn.btn-calm-ghost,
+#workout[data-page="workout-plan"] .frame-calm-glass .collapse-toggle {
+  background: color-mix(in srgb, var(--surface-1, #f4f6fa) 88%, transparent) !important;
+  background-image: none !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 18%, var(--calm-glass-border, rgba(255, 255, 255, 0.65)) 82%) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow-neu-out, 8px 8px 20px rgba(167, 175, 200, 0.35), -8px -8px 20px rgba(255, 255, 255, 0.90)) !important;
+  color: var(--ink-1, #0f1220) !important;
+  text-shadow: none !important;
+}
+
+#workout[data-page="workout-plan"] .btn.btn-calm-ghost:hover:not(:disabled),
+#workout[data-page="workout-plan"] :where(.btn).btn-calm-ghost:hover:not(:disabled),
+#workout[data-page="workout-plan"] .frame-calm-glass .collapse-toggle:hover:not(:disabled),
+#workout[data-page="workout-plan"] .btn.btn-calm-ghost:focus-visible,
+#workout[data-page="workout-plan"] :where(.btn).btn-calm-ghost:focus-visible,
+#workout[data-page="workout-plan"] .frame-calm-glass .collapse-toggle:focus-visible {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 88%, var(--accent, #4c6ef5) 12%) !important;
+  background-image: none !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 30%, transparent) !important;
+  color: var(--ink-1, #0f1220) !important;
+}
+
+#workout[data-page="workout-plan"] .btn.btn-calm-danger,
+#workout[data-page="workout-plan"] :where(.btn).btn-calm-danger,
+#workout[data-page="workout-plan"] .modal-content.frame-calm-glass .btn.btn-calm-danger {
+  background: color-mix(in srgb, var(--danger, #ef4444) 88%, #7f1d1d 12%) !important;
+  background-image: none !important;
+  border: 1px solid color-mix(in srgb, var(--danger, #ef4444) 78%, white 22%) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow-elev-1, 0 1px 2px rgba(15, 18, 32, 0.06), 0 2px 8px rgba(15, 18, 32, 0.06)) !important;
+  color: #ffffff !important;
+  text-shadow: none !important;
+}
+
+#workout[data-page="workout-plan"] .btn.btn-calm-danger:hover:not(:disabled),
+#workout[data-page="workout-plan"] :where(.btn).btn-calm-danger:hover:not(:disabled),
+#workout[data-page="workout-plan"] .btn.btn-calm-danger:focus-visible,
+#workout[data-page="workout-plan"] :where(.btn).btn-calm-danger:focus-visible {
+  background: color-mix(in srgb, var(--danger, #ef4444) 80%, #7f1d1d 20%) !important;
+  background-image: none !important;
+  border-color: color-mix(in srgb, var(--danger, #ef4444) 84%, white 16%) !important;
+  color: #ffffff !important;
+}
+
+#workout[data-page="workout-plan"] .btn.btn-calm-icon,
+#workout[data-page="workout-plan"] :where(.btn).btn-calm-icon {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 72%, transparent) !important;
+  background-image: none !important;
+  border: 1px solid var(--calm-glass-border, rgba(255, 255, 255, 0.65)) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow-elev-1, 0 1px 2px rgba(15, 18, 32, 0.06), 0 2px 8px rgba(15, 18, 32, 0.06)) !important;
+  color: var(--ink-2, #4a5170) !important;
+}
+
+#workout[data-page="workout-plan"] .form-control.input-calm-inset,
+#workout[data-page="workout-plan"] .form-select.input-calm-inset,
+#workout[data-page="workout-plan"] .input-fields-group .input-group .form-control.input-calm-inset,
+#workout[data-page="workout-plan"] .input-fields-group .input-group input.input-calm-inset[type="number"],
+#workout[data-page="workout-plan"] .filter-dropdown.input-calm-inset,
+#workout[data-page="workout-plan"] .exercise-dropdown.input-calm-inset {
+  background: color-mix(in srgb, var(--surface-1, #f4f6fa) 88%, transparent) !important;
+  background-color: color-mix(in srgb, var(--surface-1, #f4f6fa) 88%, transparent) !important;
+  background-image: none !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 18%, var(--calm-glass-border, rgba(255, 255, 255, 0.65)) 82%) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow-neu-in, inset 4px 4px 10px rgba(167, 175, 200, 0.35), inset -4px -4px 10px rgba(255, 255, 255, 0.90)) !important;
+  color: var(--ink-1, #0f1220) !important;
+  text-shadow: none !important;
+}
+
+#workout[data-page="workout-plan"] .input-fields-group .input-group input.input-calm-inset:is(#weight, #sets, #rir, #rpe, #min_rep, #max_rep_range) {
+  background: color-mix(in srgb, var(--surface-1, #f4f6fa) 88%, transparent) !important;
+  background-color: color-mix(in srgb, var(--surface-1, #f4f6fa) 88%, transparent) !important;
+  background-image: none !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 18%, var(--calm-glass-border, rgba(255, 255, 255, 0.65)) 82%) !important;
+  box-shadow: var(--shadow-neu-in, inset 4px 4px 10px rgba(167, 175, 200, 0.35), inset -4px -4px 10px rgba(255, 255, 255, 0.90)) !important;
+  color: var(--ink-1, #0f1220) !important;
+}
+
+#workout[data-page="workout-plan"] .form-control.input-calm-inset:hover:not(:disabled),
+#workout[data-page="workout-plan"] .form-select.input-calm-inset:hover:not(:disabled),
+#workout[data-page="workout-plan"] .input-fields-group .input-group .form-control.input-calm-inset:hover:not(:disabled),
+#workout[data-page="workout-plan"] .input-fields-group .input-group input.input-calm-inset[type="number"]:hover:not(:disabled),
+#workout[data-page="workout-plan"] .filter-dropdown.input-calm-inset:hover:not(:disabled),
+#workout[data-page="workout-plan"] .exercise-dropdown.input-calm-inset:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 88%, var(--accent, #4c6ef5) 12%) !important;
+  background-color: color-mix(in srgb, var(--surface-2, #ffffff) 88%, var(--accent, #4c6ef5) 12%) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 30%, var(--calm-glass-border, rgba(255, 255, 255, 0.65)) 70%) !important;
+}
+
+#workout[data-page="workout-plan"] .input-fields-group .input-group input.input-calm-inset:is(#weight, #sets, #rir, #rpe, #min_rep, #max_rep_range):hover:not(:disabled) {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 88%, var(--accent, #4c6ef5) 12%) !important;
+  background-color: color-mix(in srgb, var(--surface-2, #ffffff) 88%, var(--accent, #4c6ef5) 12%) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 30%, var(--calm-glass-border, rgba(255, 255, 255, 0.65)) 70%) !important;
+  box-shadow: var(--shadow-neu-in, inset 4px 4px 10px rgba(167, 175, 200, 0.35), inset -4px -4px 10px rgba(255, 255, 255, 0.90)) !important;
+  color: var(--ink-1, #0f1220) !important;
+}
+
+#workout[data-page="workout-plan"] .form-control.input-calm-inset:focus,
+#workout[data-page="workout-plan"] .form-select.input-calm-inset:focus,
+#workout[data-page="workout-plan"] .input-fields-group .input-group .form-control.input-calm-inset:focus,
+#workout[data-page="workout-plan"] .input-fields-group .input-group input.input-calm-inset[type="number"]:focus,
+#workout[data-page="workout-plan"] .filter-dropdown.input-calm-inset:focus,
+#workout[data-page="workout-plan"] .exercise-dropdown.input-calm-inset:focus {
+  background: var(--surface-2, #ffffff) !important;
+  background-color: var(--surface-2, #ffffff) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 56%, white 44%) !important;
+  box-shadow:
+    var(--shadow-neu-in, inset 4px 4px 10px rgba(167, 175, 200, 0.35), inset -4px -4px 10px rgba(255, 255, 255, 0.90)),
+    0 0 0 3px color-mix(in srgb, var(--accent, #4c6ef5) 24%, transparent) !important;
+  color: var(--ink-1, #0f1220) !important;
+}
+
+#workout[data-page="workout-plan"] .input-fields-group .input-group input.input-calm-inset:is(#weight, #sets, #rir, #rpe, #min_rep, #max_rep_range):focus {
+  background: var(--surface-2, #ffffff) !important;
+  background-color: var(--surface-2, #ffffff) !important;
+  background-image: none !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 56%, white 44%) !important;
+  box-shadow:
+    var(--shadow-neu-in, inset 4px 4px 10px rgba(167, 175, 200, 0.35), inset -4px -4px 10px rgba(255, 255, 255, 0.90)),
+    0 0 0 3px color-mix(in srgb, var(--accent, #4c6ef5) 24%, transparent) !important;
+  color: var(--ink-1, #0f1220) !important;
+}
+
+[data-theme='dark'] #workout[data-page="workout-plan"] .btn.btn-calm-ghost,
+[data-theme='dark'] #workout[data-page="workout-plan"] :where(.btn).btn-calm-ghost,
+[data-theme='dark'] #workout[data-page="workout-plan"] .frame-calm-glass .collapse-toggle {
+  background: color-mix(in srgb, var(--surface-1, #161a2d) 88%, transparent) !important;
+  background-image: none !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 24%, var(--calm-glass-border, rgba(255, 255, 255, 0.08)) 76%) !important;
+  box-shadow: var(--shadow-neu-out, 8px 8px 20px rgba(0, 0, 0, 0.55), -8px -8px 20px rgba(255, 255, 255, 0.04)) !important;
+  color: var(--ink-1, #eef1f6) !important;
+}
+
+[data-theme='dark'] #workout[data-page="workout-plan"] .form-control.input-calm-inset,
+[data-theme='dark'] #workout[data-page="workout-plan"] .form-select.input-calm-inset,
+[data-theme='dark'] #workout[data-page="workout-plan"] .input-fields-group .input-group .form-control.input-calm-inset,
+[data-theme='dark'] #workout[data-page="workout-plan"] .input-fields-group .input-group input.input-calm-inset[type="number"],
+[data-theme='dark'] #workout[data-page="workout-plan"] .filter-dropdown.input-calm-inset,
+[data-theme='dark'] #workout[data-page="workout-plan"] .exercise-dropdown.input-calm-inset {
+  background: color-mix(in srgb, var(--surface-2, #1d2238) 84%, transparent) !important;
+  background-color: color-mix(in srgb, var(--surface-2, #1d2238) 84%, transparent) !important;
+  background-image: none !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 26%, var(--calm-glass-border, rgba(255, 255, 255, 0.08)) 74%) !important;
+  box-shadow: var(--shadow-neu-in, inset 4px 4px 10px rgba(0, 0, 0, 0.55), inset -4px -4px 10px rgba(255, 255, 255, 0.04)) !important;
+  color: var(--ink-1, #eef1f6) !important;
+}
+
+[data-theme='dark'] #workout[data-page="workout-plan"] .input-fields-group .input-group input.input-calm-inset:is(#weight, #sets, #rir, #rpe, #min_rep, #max_rep_range),
+[data-theme='dark'] #workout[data-page="workout-plan"] .input-fields-group input.input-calm-inset:is(#weight, #sets, #rir, #rpe, #min_rep, #max_rep_range) {
+  background: color-mix(in srgb, var(--surface-2, #1d2238) 84%, transparent) !important;
+  background-color: color-mix(in srgb, var(--surface-2, #1d2238) 84%, transparent) !important;
+  background-image: none !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 26%, var(--calm-glass-border, rgba(255, 255, 255, 0.08)) 74%) !important;
+  box-shadow: var(--shadow-neu-in, inset 4px 4px 10px rgba(0, 0, 0, 0.55), inset -4px -4px 10px rgba(255, 255, 255, 0.04)) !important;
+  color: var(--ink-1, #eef1f6) !important;
+}
+
 @media (max-width: 991.98px) {
   #workout[data-page="workout-plan"] #exercise-selection-frame #action-buttons-row.selection-actions {
     display: grid !important;
