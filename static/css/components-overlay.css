@@ -204,6 +204,84 @@
   opacity: 0.72 !important;
 }
 
+#workout[data-page="workout-plan"] :where(.table).table-calm,
+#workout[data-page="workout-plan"] .table.table-calm {
+  background: var(--calm-glass-bg, rgba(255, 255, 255, 0.55)) !important;
+  backdrop-filter: blur(var(--calm-glass-blur, 18px)) saturate(var(--calm-glass-sat, 180%)) !important;
+  -webkit-backdrop-filter: blur(var(--calm-glass-blur, 18px)) saturate(var(--calm-glass-sat, 180%)) !important;
+  border: 1px solid var(--calm-glass-border, rgba(255, 255, 255, 0.65)) !important;
+  border-collapse: separate !important;
+  border-radius: 8px !important;
+  border-spacing: 0 !important;
+  box-shadow: var(--shadow-neu-out, 8px 8px 20px rgba(167, 175, 200, 0.35), -8px -8px 20px rgba(255, 255, 255, 0.90)) !important;
+  color: var(--ink-1, #0f1220) !important;
+  font-family: var(--font-sans, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif) !important;
+  letter-spacing: 0 !important;
+  overflow: hidden !important;
+}
+
+#workout[data-page="workout-plan"] .table.table-calm > :not(caption) > * > * {
+  border-color: transparent !important;
+  box-shadow: none !important;
+  color: var(--ink-1, #0f1220) !important;
+  font-size: var(--wp-table-fs, 0.88rem) !important;
+  letter-spacing: 0 !important;
+  padding: var(--wp-table-cell-padding, 0.75rem 1rem) !important;
+}
+
+#workout[data-page="workout-plan"] .table.table-calm thead th {
+  background: var(--surface-1, #f4f6fa) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 20%, transparent) !important;
+  color: var(--ink-2, #4a5170) !important;
+  font-weight: 600 !important;
+  text-shadow: none !important;
+}
+
+#workout[data-page="workout-plan"] .table.table-calm tbody td {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 72%, transparent) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--ink-3, #8a90a8) 16%, transparent) !important;
+  transition:
+    background var(--dur-fast, 150ms) var(--ease-out, ease),
+    box-shadow var(--dur-fast, 150ms) var(--ease-out, ease),
+    color var(--dur-fast, 150ms) var(--ease-out, ease) !important;
+}
+
+#workout[data-page="workout-plan"] .table.table-calm tbody tr:nth-child(even) td {
+  background: color-mix(in srgb, var(--surface-1, #f4f6fa) 62%, transparent) !important;
+}
+
+#workout[data-page="workout-plan"] .table.table-calm tbody tr:hover td {
+  background: color-mix(in srgb, var(--accent, #4c6ef5) 10%, transparent) !important;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent, #4c6ef5) 18%, transparent) !important;
+}
+
+#workout[data-page="workout-plan"] .table.table-calm tbody tr:last-child td {
+  border-bottom-color: transparent !important;
+}
+
+[data-theme='dark'] #workout[data-page="workout-plan"] .table.table-calm {
+  background: var(--calm-glass-bg, rgba(29, 34, 56, 0.55)) !important;
+  box-shadow: var(--shadow-neu-out, 8px 8px 20px rgba(0, 0, 0, 0.55), -8px -8px 20px rgba(255, 255, 255, 0.04)) !important;
+}
+
+[data-theme='dark'] #workout[data-page="workout-plan"] .table.table-calm thead th {
+  background: var(--surface-1, #161a2d) !important;
+  color: var(--ink-2, #b4bad0) !important;
+}
+
+[data-theme='dark'] #workout[data-page="workout-plan"] .table.table-calm tbody td {
+  background: color-mix(in srgb, var(--surface-2, #1d2238) 74%, transparent) !important;
+  color: var(--ink-1, #eef1f6) !important;
+}
+
+[data-theme='dark'] #workout[data-page="workout-plan"] .table.table-calm tbody tr:nth-child(even) td {
+  background: color-mix(in srgb, var(--surface-1, #161a2d) 68%, transparent) !important;
+}
+
+[data-theme='dark'] #workout[data-page="workout-plan"] .table.table-calm tbody tr:hover td {
+  background: color-mix(in srgb, var(--accent, #4c6ef5) 14%, var(--surface-2, #1d2238) 86%) !important;
+}
+
 [data-theme='dark'] .summary-tables .glass-neumorph-card {
   background: var(--calm-glass-bg, rgba(29, 34, 56, 0.55)) !important;
   box-shadow: var(--shadow-neu-out, 8px 8px 20px rgba(0, 0, 0, 0.55), -8px -8px 20px rgba(255, 255, 255, 0.04)) !important;
@@ -227,7 +305,8 @@
   :where(.form-control).input-calm-inset,
   .form-control.input-calm-inset,
   :where(.form-select).input-calm-inset,
-  .form-select.input-calm-inset {
+  .form-select.input-calm-inset,
+  #workout[data-page="workout-plan"] .table.table-calm tbody td {
     transition: none !important;
   }
 

@@ -640,8 +640,8 @@ P4c. Initialize backup JS on every page
 - [x] P6b: Visual QA + E2E → commit
 - [x] P6c: Form inputs — add `.input-calm-inset`; apply to `/workout_plan` routine form fields without removing legacy classes
 - [x] P6c: Visual QA + E2E → commit
-- [ ] P6d: Tables — add `.table-calm`; apply alongside `.workout-plan-table` to pilot one table without changing the frozen `.workout-plan-table` class
-- [ ] P6d: Visual QA + E2E → commit
+- [x] P6d: Tables — add `.table-calm`; apply alongside `.workout-plan-table` to pilot one table without changing the frozen `.workout-plan-table` class
+- [x] P6d: Visual QA + E2E → commit
 - [ ] P6e: Roll new classes through remaining pages one at a time, one commit per page
 - [ ] P6f: Global surface background — in a separate visual-change commit, replace [styles_general.css:19-26](static/css/styles_general.css#L19-L26) with `body { background: var(--surface-0); }`; full 42-screenshot review and re-baseline required
 
