@@ -213,7 +213,6 @@ function initializeWorkoutPlan() {
     handleRoutineSelection();
     initializeWorkoutPlanHandlers();
     initializeWorkoutControlsAnimation();
-    initializeProgramBackup(); // Initialize program backup/library functionality
     // fetchWorkoutPlan is already called inside initializeWorkoutPlanHandlers
     return {
         cleanup: () => {
@@ -247,6 +246,7 @@ document.addEventListener("DOMContentLoaded", () => {
         initializeTooltips();
         initializeDropdowns();
         handleTableSort();
+        initializeProgramBackup();
     };
 
     // Initialize common elements

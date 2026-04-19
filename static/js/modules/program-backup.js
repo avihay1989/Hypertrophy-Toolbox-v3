@@ -167,6 +167,7 @@ export async function populateBackupList() {
 // Store pending action data for confirmation modals
 let pendingRestoreData = null;
 let pendingDeleteData = null;
+let programBackupInitialized = false;
 
 /**
  * Attach event listeners to backup list buttons
@@ -324,6 +325,13 @@ export function showAutoBackupBanner(autoBackup) {
  * Initialize program backup UI handlers
  */
 export function initializeProgramBackup() {
+    const libraryModalEl = document.getElementById('programLibraryModal');
+    if (!libraryModalEl || programBackupInitialized) {
+        return;
+    }
+
+    programBackupInitialized = true;
+
     // Save backup button handler
     const saveBtn = document.getElementById('saveBackupSubmit');
     if (saveBtn) {
@@ -331,12 +339,9 @@ export function initializeProgramBackup() {
     }
     
     // Load backups when library modal is shown (Bootstrap event)
-    const libraryModalEl = document.getElementById('programLibraryModal');
-    if (libraryModalEl) {
-        libraryModalEl.addEventListener('show.bs.modal', () => {
-            populateBackupList();
-        });
-    }
+    libraryModalEl.addEventListener('show.bs.modal', () => {
+        populateBackupList();
+    });
     
     // Handle "Save Current Program" button from within library modal
     const openSaveFromLibrary = document.getElementById('openSaveFromLibrary');
