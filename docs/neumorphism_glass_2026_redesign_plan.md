@@ -311,15 +311,15 @@ Every phase has: **Preflight gate → Tasks → Exit gate → Commit → Rollbac
 **Why:** You cannot detect a regression without a stable "before." A flaky baseline is worse than none — every phase will blame the redesign for drift that's really caret blink, fake dates, or font-swap mid-capture.
 
 **Preflight**
-- [ ] §6 global prerequisites all checked
-- [ ] §5 baseline commands re-run; values recorded in commit message
-- [ ] Confirm `playwright.config.ts` sets a fixed `timezoneId` and `locale` (or add them in P0a)
+- [x] §6 global prerequisites all checked
+- [x] §5 baseline commands re-run; values recorded in commit message
+- [x] Confirm `playwright.config.ts` sets a fixed `timezoneId` and `locale` (or add them in P0a)
 
 **Tasks — split into P0a setup and P0b capture, separate commits**
 
 P0a. Deterministic capture harness
-- [ ] Create `e2e/visual.spec.ts` with the stability fixtures below
-- [ ] Add `e2e/visual-helpers.ts` exporting two helpers:
+- [x] Create `e2e/visual.spec.ts` with the stability fixtures below
+- [x] Add `e2e/visual-helpers.ts` exporting two helpers:
   - `installDeterminism(page)` runs **before navigation** and freezes browser state:
     ```ts
     await page.addInitScript(() => {
@@ -350,8 +350,8 @@ P0a. Deterministic capture harness
   - blocks font loads from going into fallback: `await page.evaluate(() => document.fonts.ready);`
   - sets viewport explicitly: each test calls `page.setViewportSize({ width, height })` before navigation
   - sets `deviceScaleFactor: 1` (default) — do not override
-- [ ] Add `e2e/strict-fixtures.ts` or tighten `e2e/fixtures.ts` for redesign gates so null/undefined selector errors fail tests. Remove the broad ignores for `Cannot read properties of null`, `Cannot read properties of undefined`, and `is not defined` from the fixture used by `visual.spec.ts`, `nav-dropdown.spec.ts`, and every new redesign spec.
-- [ ] In the spec, for each screenshot call, mask known volatile regions:
+- [x] Add `e2e/strict-fixtures.ts` or tighten `e2e/fixtures.ts` for redesign gates so null/undefined selector errors fail tests. Remove the broad ignores for `Cannot read properties of null`, `Cannot read properties of undefined`, and `is not defined` from the fixture used by `visual.spec.ts`, `nav-dropdown.spec.ts`, and every new redesign spec.
+- [x] In the spec, for each screenshot call, mask known volatile regions:
   ```ts
   await expect(page).toHaveScreenshot({
     fullPage: true,
@@ -366,26 +366,26 @@ P0a. Deterministic capture harness
     threshold: 0,
   });
   ```
-- [ ] In `playwright.config.ts` (or the spec's `test.use`), pin:
+- [x] In `playwright.config.ts` (or the spec's `test.use`), pin:
   - `locale: 'en-US'`
   - `timezoneId: 'UTC'`
   - `colorScheme: 'light'` (override per test for dark)
   - `viewport: { width: 1440, height: 900 }` as default
-- [ ] Seed DB to a known state before capture. Preferred: `conftest.py`-style fixture that (a) stops the app, (b) copies `data/database.db` to `data/database.db.pre_visual.bak`, (c) writes a seeded DB with `utils/auto_backup.create_startup_backup()` logic to a temporary snapshot, (d) restarts app against the seed, (e) on teardown restores the bak. Alternative: commit a small `data/database.seed.visual.db` and have P0a point Flask at it via `DB_FILE` env var during visual runs only.
-- [ ] Commit: `test(redesign): P0a add deterministic visual-regression harness`
+- [x] Seed DB to a known state before capture. Preferred: `conftest.py`-style fixture that (a) stops the app, (b) copies `data/database.db` to `data/database.db.pre_visual.bak`, (c) writes a seeded DB with `utils/auto_backup.create_startup_backup()` logic to a temporary snapshot, (d) restarts app against the seed, (e) on teardown restores the bak. Alternative: commit a small `data/database.seed.visual.db` and have P0a point Flask at it via `DB_FILE` env var during visual runs only.
+- [x] Commit: `test(redesign): P0a add deterministic visual-regression harness`
 
 P0b. Baseline capture
-- [ ] Run `npx playwright test e2e/visual.spec.ts --project=chromium` and commit the `__screenshots__/` outputs
-- [ ] Target inventory: 7 pages × 3 widths (375 / 768 / 1440) × 2 themes (light / dark) = **42 screenshots**
-- [ ] Record §5 baseline outputs, the seed-DB hash, and Playwright version in `docs/redesign-audit.md`
-- [ ] Record the Chromium version and OS that captured the baseline (future reviewers can re-verify on the same stack)
-- [ ] Commit: `chore(redesign): P0b capture baseline screenshots and audit`
+- [x] Run `npx playwright test e2e/visual.spec.ts --project=chromium` and commit the `__screenshots__/` outputs
+- [x] Target inventory: 7 pages × 3 widths (375 / 768 / 1440) × 2 themes (light / dark) = **42 screenshots**
+- [x] Record §5 baseline outputs, the seed-DB hash, and Playwright version in `docs/redesign-audit.md`
+- [x] Record the Chromium version and OS that captured the baseline (future reviewers can re-verify on the same stack)
+- [x] Commit: `chore(redesign): P0b capture baseline screenshots and audit`
 
 **Exit gate**
-- [ ] 42 screenshots present under `e2e/__screenshots__/visual.spec.ts-snapshots/`
-- [ ] Re-running `npx playwright test e2e/visual.spec.ts` twice back-to-back produces zero diff with `maxDiffPixels: 0` (proves determinism)
-- [ ] `npm run test:e2e` still → 314+ passed (314 + the new visual spec)
-- [ ] `docs/redesign-audit.md` present and committed
+- [x] 42 screenshots present under `e2e/__screenshots__/visual.spec.ts-snapshots/`
+- [x] Re-running `npx playwright test e2e/visual.spec.ts` twice back-to-back produces zero diff with `maxDiffPixels: 0` (proves determinism)
+- [x] `npm run test:e2e` still → 314+ passed (314 + the new visual spec)
+- [x] `docs/redesign-audit.md` present and committed
 
 **Rollback:** `git revert <P0b sha>` then `git revert <P0a sha>` (harness + baselines are two separate commits; no production impact)
 
@@ -396,18 +396,18 @@ P0b. Baseline capture
 **Why:** Lock palette + font + background before touching production code so downstream phases have a fixed target.
 
 **Preflight**
-- [ ] P0 committed and green
-- [ ] Mockup opened in a modern browser
+- [x] P0 committed and green
+- [x] Mockup opened in a modern browser
 
 **Tasks**
-- [ ] Human reviews the design-locked mockup in light + dark (indigo only)
-- [ ] Human confirms §13 locked answers still stand; no A/B/C palette re-selection in v3.2
-- [ ] Confirm `docs/mockups/redesign-preview.html` contains only the chosen palette + font + background and no interactive palette switcher
-- [ ] Re-capture the mockup screenshots for the record
+- [x] Human reviews the design-locked mockup in light + dark (indigo only)
+- [x] Human confirms §13 locked answers still stand; no A/B/C palette re-selection in v3.2
+- [x] Confirm `docs/mockups/redesign-preview.html` contains only the chosen palette + font + background and no interactive palette switcher
+- [x] Re-capture the mockup screenshots for the record
 
 **Exit gate**
-- [ ] §13 answered with concrete values
-- [ ] Mockup committed in final form
+- [x] §13 answered with concrete values
+- [x] Mockup committed in final form
 
 **Commit:** `docs(redesign): P1 finalize design direction (palette, font, background)`
 
@@ -422,16 +422,16 @@ P0b. Baseline capture
 P2 splits into two commits to separate the zero-visual-diff piece from the font swap, so the gate is unambiguous.
 
 **Preflight**
-- [ ] P1 committed and green
-- [ ] §6 global prerequisites re-run
-- [ ] Current `visual.spec.ts` baseline (from P0) on disk; we'll refresh it at the end of P2b, not P2a
+- [x] P1 committed and green
+- [x] §6 global prerequisites re-run
+- [x] Current `visual.spec.ts` baseline (from P0) on disk; we'll refresh it at the end of P2b, not P2a
 
 **Tasks — split into P2a and P2b, separate commits**
 
 P2a. Tokens + motion CSS only (no font change yet)
-- [ ] Create `static/css/tokens.css` with the token block from §13 locked values
-- [ ] `tokens.css` in P2a contains token declarations only (`:root` and `[data-theme="dark"]`); do **not** add `body`, typography, background, component, or reset selectors yet
-- [ ] Before writing `tokens.css`, run the **full custom-property collision audit** — not just `--glass-*`:
+- [x] Create `static/css/tokens.css` with the token block from §13 locked values
+- [x] `tokens.css` in P2a contains token declarations only (`:root` and `[data-theme="dark"]`); do **not** add `body`, typography, background, component, or reset selectors yet
+- [x] Before writing `tokens.css`, run the **full custom-property collision audit** — not just `--glass-*`:
   ```bash
   # Extract all custom property names from existing styles_tokens.css
   rg -o -- "--[a-z0-9-]+" static/css/styles_tokens.css | sort -u > /tmp/old_tokens.txt
@@ -441,53 +441,53 @@ P2a. Tokens + motion CSS only (no font change yet)
   rg -n "var\(--glass|--glass-" static/css
   ```
   `styles_tokens.css` already defines `--space-*`, `--input-*`, `--btn-*`, `--frame-*`, `--table-*`, `--font-size-*`, and `--container-*` (lines 17-84, with media-query overrides through line 372). Any new token in `tokens.css` that reuses these names will silently override the responsive scaling system.
-- [ ] Use namespaced production tokens for any mockup token that collides with legacy names:
+- [x] Use namespaced production tokens for any mockup token that collides with legacy names:
   - `--glass-bg` → `--calm-glass-bg`
   - `--glass-border` → `--calm-glass-border`
   - `--glass-blur` → `--calm-glass-blur`
   - `--glass-sat` → `--calm-glass-sat`
   - keep legacy `--glass-bg`, `--glass-bg-hover`, `--glass-shadow`, `--glass-inset` untouched until an explicit visual-change phase
   - **do not redefine** any `--space-*`, `--input-*`, `--btn-*`, `--frame-*`, `--table-*`, `--font-size-*`, or `--container-*` token already in `styles_tokens.css` — use `--calm-` prefix if the mockup needs a different value for any of these
-- [ ] Create `static/css/motion.css` with keyframes + `prefers-reduced-motion` block (mockup lines 284-294)
-- [ ] In `templates/base.html`, add the redesign overlay links **after** the existing `{% block page_css %}{% endblock %}` so they load after page-specific CSS. Final order:
+- [x] Create `static/css/motion.css` with keyframes + `prefers-reduced-motion` block (mockup lines 284-294)
+- [x] In `templates/base.html`, add the redesign overlay links **after** the existing `{% block page_css %}{% endblock %}` so they load after page-specific CSS. Final order:
   ```html
   {% block page_css %}{% endblock %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/motion.css') }}">
   ```
-- [ ] Do **not** add the Google Fonts link yet
-- [ ] Do **not** delete or reorder any existing `<link>` tag
-- [ ] Do **not** edit any `styles_*.css` file
+- [x] Do **not** add the Google Fonts link yet
+- [x] Do **not** delete or reorder any existing `<link>` tag
+- [x] Do **not** edit any `styles_*.css` file
 
 **P2a exit gate** (zero-pixel-diff is the gate here)
-- [ ] `npm run test:py` green
-- [ ] `npm run test:e2e` green including `visual.spec.ts` with **zero screenshot diff** (`maxDiffPixels: 0`) — because P2a avoids overriding legacy-used token names and no font changed, pixel output is identical
-- [ ] DevTools Computed confirms `--accent`, `--surface-0`, etc. resolve on `:root`
-- [ ] Manual smoke: §4 full inventory — all 40+ flows still work
-- [ ] C3 size-parity: CSS line count increased (additive)
+- [x] `npm run test:py` green
+- [x] `npm run test:e2e` green including `visual.spec.ts` with **zero screenshot diff** (`maxDiffPixels: 0`) — because P2a avoids overriding legacy-used token names and no font changed, pixel output is identical
+- [x] DevTools Computed confirms `--accent`, `--surface-0`, etc. resolve on `:root`
+- [x] Manual smoke: §4 full inventory — all 40+ flows still work
+- [x] C3 size-parity: CSS line count increased (additive)
 
 **Commit:** `feat(redesign): P2a introduce tokens.css + motion.css (zero visual diff)`
 
 P2b. Inter font load (first intentional visual change)
-- [ ] In `templates/base.html`, add BEFORE the Bootstrap CSS link:
+- [x] In `templates/base.html`, add BEFORE the Bootstrap CSS link:
   ```html
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   ```
-- [ ] In `static/css/tokens.css`, confirm `--font-sans: Inter, ...` is declared (from §13 lock)
-- [ ] Do **not** apply `body { font-family: var(--font-sans); }` yet — the legacy stylesheets still set three different fonts (`Inter` in some rules, `Helvetica Neue`, `Segoe UI`). Letting legacy rules drop their explicit `font-family` is a P6/P9 task. However, all existing `font-family: 'Inter', ...` declarations already in legacy CSS WILL start resolving to the actual loaded Inter webfont, not a fallback — that's where the visible pixel diff comes from.
+- [x] In `static/css/tokens.css`, confirm `--font-sans: Inter, ...` is declared (from §13 lock)
+- [x] Do **not** apply `body { font-family: var(--font-sans); }` yet — the legacy stylesheets still set three different fonts (`Inter` in some rules, `Helvetica Neue`, `Segoe UI`). Letting legacy rules drop their explicit `font-family` is a P6/P9 task. However, all existing `font-family: 'Inter', ...` declarations already in legacy CSS WILL start resolving to the actual loaded Inter webfont, not a fallback — that's where the visible pixel diff comes from.
 
 **P2b exit gate** (visual diff EXPECTED — re-baseline)
-- [ ] `npm run test:py` green
-- [ ] DevTools Network shows Inter font request(s) for weights 400/500/600/700 loading, HTTP 200
-- [ ] DevTools Computed on a navbar element: `font-family` resolves to `Inter` and `font-style` shows `normal` not `fallback`
-- [ ] `npm run test:e2e visual.spec.ts` will FAIL — **expected**. Every page's text rendering differs because Inter now loads where `'Inter'` was previously unresolvable.
-- [ ] Human visually reviews each of the 42 diff images — approve or reject per page.
-- [ ] If all approved: run `npx playwright test e2e/visual.spec.ts --update-snapshots --project=chromium` to regenerate the baselines.
-- [ ] Commit the refreshed `__screenshots__/` outputs in the SAME commit as the font link change, not a separate commit — a future bisect should see "font added" and "new screenshots" together.
-- [ ] All non-visual specs (smoke-navigation, program-backup, dark-mode, accessibility) still green
-- [ ] Manual smoke: §4 full inventory — all flows still work
+- [x] `npm run test:py` green
+- [x] DevTools Network shows Inter font request(s) for weights 400/500/600/700 loading, HTTP 200
+- [x] DevTools Computed on a navbar element: `font-family` resolves to `Inter` and `font-style` shows `normal` not `fallback`
+- [x] `npm run test:e2e visual.spec.ts` will FAIL — **expected**. Every page's text rendering differs because Inter now loads where `'Inter'` was previously unresolvable.
+- [x] Human visually reviews each of the 42 diff images — approve or reject per page.
+- [x] If all approved: run `npx playwright test e2e/visual.spec.ts --update-snapshots --project=chromium` to regenerate the baselines.
+- [x] Commit the refreshed `__screenshots__/` outputs in the SAME commit as the font link change, not a separate commit — a future bisect should see "font added" and "new screenshots" together.
+- [x] All non-visual specs (smoke-navigation, program-backup, dark-mode, accessibility) still green
+- [x] Manual smoke: §4 full inventory — all flows still work
 
 **Commit:** `feat(redesign): P2b load Inter webfont + refresh visual baselines`
 
@@ -500,23 +500,23 @@ P2b. Inter font load (first intentional visual change)
 **Why:** Prove the glass-pill navbar works on the current markup before touching the markup.
 
 **Preflight**
-- [ ] P2 committed and green
-- [ ] Baseline screenshot of current navbar recorded
+- [x] P2 committed and green
+- [x] Baseline screenshot of current navbar recorded
 
 **Tasks**
-- [ ] Create `static/css/navbar-glass.css` with the glass-bar + pill styles from the mockup lines 105-151, scoped to `#navbar` (existing ID — see §3.1)
-- [ ] Use `:where(#navbar)` for low specificity so current rules can still override during transition
-- [ ] Add `<link>` to `navbar-glass.css` in the redesign overlay block after `motion.css`, which is after `page_css`
-- [ ] Do **not** touch the navbar `<ul>` / `<li>` structure
-- [ ] Do **not** remove the counter-zoom `<style>` block yet
-- [ ] Do **not** rename any nav link ID or `data-testid`
+- [x] Create `static/css/navbar-glass.css` with the glass-bar + pill styles from the mockup lines 105-151, scoped to `#navbar` (existing ID — see §3.1)
+- [x] Use `:where(#navbar)` for low specificity so current rules can still override during transition
+- [x] Add `<link>` to `navbar-glass.css` in the redesign overlay block after `motion.css`, which is after `page_css`
+- [x] Do **not** touch the navbar `<ul>` / `<li>` structure
+- [x] Do **not** remove the counter-zoom `<style>` block yet
+- [x] Do **not** rename any nav link ID or `data-testid`
 
 **Exit gate**
-- [ ] `npm run test:e2e` green, including `smoke-navigation.spec.ts` with zero changes
-- [ ] `visual.spec.ts` screenshots may diff — review each visually; approve or refine
-- [ ] Mobile burger toggle still opens at < 992px
-- [ ] Dark mode toggle still flips
-- [ ] UI scale control still scales
+- [x] `npm run test:e2e` green, including `smoke-navigation.spec.ts` with zero changes
+- [x] `visual.spec.ts` screenshots may diff — review each visually; approve or refine
+- [x] Mobile burger toggle still opens at < 992px
+- [x] Dark mode toggle still flips
+- [x] UI scale control still scales
 
 **Commit:** `feat(redesign): P3 apply glass-bar navbar styling (CSS only)`
 
@@ -531,9 +531,9 @@ P2b. Inter font load (first intentional visual change)
 This is the #1 root-cause fix from Codex review: previous v2 ordering surfaced the UI before the plumbing was global.
 
 **Preflight**
-- [ ] P3 committed and green
-- [ ] §3 frozen DOM contract list re-read (every ID listed in §3.1 must stay verbatim after the move)
-- [ ] Re-confirm current state:
+- [x] P3 committed and green
+- [x] §3 frozen DOM contract list re-read (every ID listed in §3.1 must stay verbatim after the move)
+- [x] Re-confirm current state:
   - `grep -c 'id="programLibraryModal"' templates/workout_plan.html` → 1
   - `grep -c 'id="programLibraryModal"' templates/base.html` → 0
   - `grep -n 'initializeProgramBackup' static/js/app.js` → exactly one call, inside `initializeWorkoutPlan`
@@ -541,34 +541,34 @@ This is the #1 root-cause fix from Codex review: previous v2 ordering surfaced t
 **Tasks — in this order, one commit per sub-step**
 
 P4a. Extract modal markup (no functional change yet)
-- [ ] Copy the four modal blocks from `templates/workout_plan.html` — `saveBackupModal` (line ~772), `programLibraryModal` (line ~804), `confirmRestoreModal` (line ~840), `confirmDeleteModal` (line ~864) — into a new partial `templates/_backup_modals.html`
-- [ ] In `templates/workout_plan.html`, replace those four blocks with `{% include '_backup_modals.html' %}`
-- [ ] pytest + E2E green; visual diff on `/workout_plan` shows identical DOM
-- [ ] Commit: `refactor(redesign): P4a extract backup modals to partial`
+- [x] Copy the four modal blocks from `templates/workout_plan.html` — `saveBackupModal`, `programLibraryModal`, `confirmRestoreModal`, `confirmDeleteModal` — into a new partial `templates/partials/_program_backup_modals.html`
+- [x] In `templates/workout_plan.html`, replace those four blocks with `{% include 'partials/_program_backup_modals.html' %}`
+- [x] pytest + E2E green; visual diff on `/workout_plan` shows identical DOM
+- [x] Commit: `refactor(redesign): P4a extract backup modals to partial`
 
 P4b. Mount the partial globally
-- [ ] In `templates/base.html`, add `{% include '_backup_modals.html' %}` immediately before the closing `</body>` (after existing `<script>` tags so Bootstrap JS is already loaded when the modal is parsed)
-- [ ] Remove the include from `templates/workout_plan.html` — the partial is now mounted once, globally, from base.html
-- [ ] Verify NO duplicate IDs on `/workout_plan`: `grep -c 'id="programLibraryModal"' templates/workout_plan.html` → 0; on rendered `/workout_plan` page, `document.querySelectorAll('#programLibraryModal').length` === 1
-- [ ] Verify modal exists on a non-plan page: load `/weekly_summary`, DevTools `document.getElementById('programLibraryModal')` → element
-- [ ] Commit: `refactor(redesign): P4b mount backup modals from base.html (global)`
+- [x] In `templates/base.html`, add `{% include 'partials/_program_backup_modals.html' %}` once in the shared body chrome, before the toast container and shared scripts
+- [x] Remove the include from `templates/workout_plan.html` — the partial is now mounted once, globally, from base.html
+- [x] Verify NO duplicate IDs on `/workout_plan`: `grep -c 'id="programLibraryModal"' templates/workout_plan.html` → 0; on rendered `/workout_plan` page, `document.querySelectorAll('#programLibraryModal').length` === 1
+- [x] Verify modal exists on a non-plan page: load `/weekly_summary`, DevTools `document.getElementById('programLibraryModal')` → element
+- [x] Commit: `refactor(redesign): P4b mount backup modals from base.html (global)`
 
 P4c. Initialize backup JS on every page
-- [ ] In [static/js/app.js](static/js/app.js): add `initializeProgramBackup()` call to the **top-level common init** (the same place `initializeUIHandlers()` / `initializeFormHandlers()` etc. run, around line 244-250) so it runs on every page
-- [ ] **Remove** the existing `initializeProgramBackup()` call from inside `initializeWorkoutPlan()` (app.js:216). The global call replaces it; leaving a dead call is confusing and risks double-init if the guard ever regresses.
-- [ ] Make `initializeProgramBackup()` idempotent before calling it globally. Current code attaches listeners every time it runs; add a module-level `programBackupInitialized` guard or per-element `data-listener-attached` guards before P4c exits.
-- [ ] `showAutoBackupBanner` already hangs off `window` (app.js:60) — leave as-is
-- [ ] **P4c exit check:** `grep -c 'initializeProgramBackup' static/js/app.js` → exactly **2** (one import, one call in common init). If more, a stale call was left behind.
-- [ ] Manual smoke: load `/weekly_summary`, open DevTools, run `bootstrap.Modal.getOrCreateInstance(document.getElementById('programLibraryModal')).show()` — modal opens, list populates via AJAX
-- [ ] Commit: `feat(redesign): P4c initialize program backup on every page`
+- [x] In [static/js/app.js](static/js/app.js): add `initializeProgramBackup()` call to the **top-level common init** (the same place `initializeUIHandlers()` / `initializeFormHandlers()` etc. run, around line 244-250) so it runs on every page
+- [x] **Remove** the existing `initializeProgramBackup()` call from inside `initializeWorkoutPlan()` (app.js:216). The global call replaces it; leaving a dead call is confusing and risks double-init if the guard ever regresses.
+- [x] Make `initializeProgramBackup()` idempotent before calling it globally. Current code attaches listeners every time it runs; add a module-level `programBackupInitialized` guard or per-element `data-listener-attached` guards before P4c exits.
+- [x] `showAutoBackupBanner` already hangs off `window` (app.js:60) — leave as-is
+- [x] **P4c exit check:** `grep -c 'initializeProgramBackup' static/js/app.js` → exactly **2** (one import, one call in common init). If more, a stale call was left behind.
+- [x] Manual smoke: load `/weekly_summary`, open DevTools, run `bootstrap.Modal.getOrCreateInstance(document.getElementById('programLibraryModal')).show()` — modal opens, list populates via AJAX
+- [x] Commit: `feat(redesign): P4c initialize program backup on every page`
 
 **Exit gate (for all of P4)**
-- [ ] `npm run test:py` green (913/1)
-- [ ] `npm run test:e2e` green (314) — **especially `program-backup.spec.ts`**
-- [ ] On every page in §4.1, DevTools `getElementById('programLibraryModal')` returns the element
-- [ ] On every page, manually triggering the modal via DevTools shows list, save, restore, delete all functional
-- [ ] Visual: no visible UI change yet (modal markup is hidden by `.modal` default)
-- [ ] Dark-mode: unchanged
+- [x] `npm run test:py` green (913/1)
+- [x] `npm run test:e2e` green (314) — **especially `program-backup.spec.ts`**
+- [x] On every page in §4.1, DevTools `getElementById('programLibraryModal')` returns the element
+- [x] On every page, manually triggering the modal via DevTools shows list, save, restore, delete all functional
+- [x] Visual: no visible UI change yet (modal markup is hidden by `.modal` default)
+- [x] Dark-mode: unchanged
 
 **Rollback:** P4c → P4b → P4a are each a separate commit; `git revert <sha>` for any that breaks. Bottom-up revert restores original in-plan-only state.
 
