@@ -621,8 +621,8 @@ P4c. Initialize backup JS on every page
 **Why:** Introduce opt-in presentation classes via a new `static/css/components-overlay.css`, layered **after** legacy and page CSS. Do not redefine Bootstrap/global classes like `.btn-primary` directly; pages adopt the new look by adding a new class alongside existing legacy classes.
 
 **Preflight**
-- [ ] P5 committed and green
-- [ ] Mockup component CSS lines 152-236 ready to copy, with production selectors remapped to opt-in names:
+- [x] P5 committed and green
+- [x] Mockup component CSS lines 152-236 ready to copy, with production selectors remapped to opt-in names:
   - `.btn-primary` → `.btn-calm-primary`
   - `.btn-ghost` → `.btn-calm-ghost`
   - `.btn-icon` → `.btn-calm-icon`
@@ -631,11 +631,11 @@ P4c. Initialize backup JS on every page
   - copied glass token references use `--calm-glass-*`, not legacy `--glass-*`
 
 **Tasks** (repeat for each component — commit between each)
-- [ ] P6a: Buttons — create `components-overlay.css` with `:where(.btn).btn-calm-primary`, `:where(.btn).btn-calm-ghost`, `:where(.btn).btn-calm-icon`
-- [ ] P6a: Link `components-overlay.css` in the redesign overlay block after `navbar-glass.css`, which is after `page_css`
-- [ ] P6a: Apply `.btn-calm-primary` to `#saveBackupSubmit` only as a pilot, while preserving existing `.btn` and `.btn-primary`
-- [ ] P6a: Verify HTML usage count for `.btn-calm-primary` is exactly 1 in the pilot commit
-- [ ] P6a: Visual QA + E2E green → commit
+- [x] P6a: Buttons — create `components-overlay.css` with `:where(.btn).btn-calm-primary`, `:where(.btn).btn-calm-ghost`, `:where(.btn).btn-calm-icon`
+- [x] P6a: Link `components-overlay.css` in the redesign overlay block after `navbar-glass.css`, which is after `page_css`
+- [x] P6a: Apply `.btn-calm-primary` to `#saveBackupSubmit` only as a pilot, while preserving existing `.btn` and `.btn-primary`
+- [x] P6a: Verify HTML usage count for `.btn-calm-primary` is exactly 1 in the pilot commit
+- [x] P6a: Visual QA + E2E green → commit
 - [ ] P6b: Cards — add `.glass-neumorph-card` rule; apply to `/weekly_summary` cards first
 - [ ] P6b: Visual QA + E2E → commit
 - [ ] P6c: Form inputs — add `.input-calm-inset`; apply to `/workout_plan` routine form fields without removing legacy classes
@@ -646,10 +646,10 @@ P4c. Initialize backup JS on every page
 - [ ] P6f: Global surface background — in a separate visual-change commit, replace [styles_general.css:19-26](static/css/styles_general.css#L19-L26) with `body { background: var(--surface-0); }`; full 42-screenshot review and re-baseline required
 
 **Exit gate (after each sub-phase)**
-- [ ] pytest + E2E green
-- [ ] Visual smoke on the touched page in light + dark + mobile
-- [ ] C3 size-parity: each sub-phase should add ≤ 200 CSS lines — if more, you're doing too much in one step
-- [ ] No new rule in `components-overlay.css` targets a Bootstrap/global class by itself (`.btn-primary`, `.form-control`, `.table`, `.card`) unless it is paired with an opt-in calm class
+- [x] pytest + E2E green
+- [x] Visual smoke on the touched page in light + dark + mobile
+- [x] C3 size-parity: each sub-phase should add ≤ 200 CSS lines — if more, you're doing too much in one step
+- [x] No new rule in `components-overlay.css` targets a Bootstrap/global class by itself (`.btn-primary`, `.form-control`, `.table`, `.card`) unless it is paired with an opt-in calm class
 
 **Commits:** `feat(redesign): P6[a-f] introduce <component/background> overlay on <page|global>`
 
