@@ -73,21 +73,6 @@ export async function prepareForScreenshot(page: Page): Promise<void> {
         box-shadow: none !important;
         text-shadow: none !important;
       }
-      #navbar .nav-link,
-      #navbar button,
-      #navbar .scale-control-compact,
-      #navbar .scale-btn-compact,
-      #navbar .scale-indicator {
-        border-radius: 0 !important;
-        box-shadow: none !important;
-        text-shadow: none !important;
-      }
-      #navbar .scale-btn-compact,
-      #navbar .scale-indicator {
-        background: transparent !important;
-        border-color: transparent !important;
-        color: transparent !important;
-      }
       #navbar .nav-link::before,
       #navbar .navbar-brand::before,
       #navbar #darkModeToggle::before,
@@ -97,19 +82,20 @@ export async function prepareForScreenshot(page: Page): Promise<void> {
         transform: none !important;
         transition: none !important;
       }
-      #navbar .nav-link.active {
+      #navbar .dropdown-toggle::after {
         border-color: transparent !important;
-        box-shadow: none !important;
       }
-      #navbar #darkModeToggle,
-      #navbar #muscleModeToggle,
-      #navbar .nav-signature-link {
-        border-radius: 0 !important;
-      }
+      #navbar .nav-fa-icon,
       #navbar #darkModeToggle i,
       #navbar #muscleModeToggle i,
       #navbar .signature-icon {
         visibility: hidden !important;
+      }
+      #navbar .scale-btn-compact,
+      #navbar .scale-indicator {
+        background: transparent !important;
+        border-color: transparent !important;
+        color: transparent !important;
       }
       input[type="number"]::-webkit-outer-spin-button,
       input[type="number"]::-webkit-inner-spin-button {
@@ -124,7 +110,7 @@ export async function prepareForScreenshot(page: Page): Promise<void> {
   await page.evaluate(async () => {
     document
       .querySelectorAll<HTMLElement>(
-        '.wpdd-button, .form-control, .form-select, input[type="number"], #navbar .scale-btn-compact, #navbar .scale-indicator',
+        '.wpdd-button, .form-control, .form-select, input[type="number"]',
       )
       .forEach((element) => {
         element.style.setProperty('border-radius', '0', 'important');
