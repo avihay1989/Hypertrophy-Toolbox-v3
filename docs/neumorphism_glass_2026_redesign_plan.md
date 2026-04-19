@@ -124,8 +124,8 @@ Grouped by subsystem. Every ID listed is frozen.
 - [x] `#successToast`, `#errorToast` — legacy welcome-page toasts used by inline script
 
 **Workout log (`/workout_log`)**
-- [x] `#clear-log-btn`, `#confirm-clear-log-btn`, `#clearLogModal`
-- [x] `#history-body`, `#workout`, `#date-filter`
+- [x] `#import-from-plan-btn`, `#clear-log-btn`, `#confirm-clear-log-btn`, `#clearLogModal`
+- [x] `#workout-log-table`, `#history-body`, `#workout`, `#date-filter`, `#routine-filter`
 
 **Weekly / session summary**
 - [x] `#summary-method` — counting-mode toggle
@@ -159,6 +159,7 @@ Audited via the §3.0 selector commands across `static/js`, inline template scri
 
 **Structural selectors (fallback to data-testid/id; JS assumes both may exist)**
 - [x] `.workout-plan-table`, `#workout-plan-table tbody`, `#workout_plan_table_body` — all three forms appear; keep all
+- [x] `.workout-log-table`, `#workout-log-table tbody` — workout-log sorting/filter rendering contract
 - [x] `.btn-export-excel` — fallback for Excel export button
 - [x] `.toast-container` — toast injection target
 - [x] `.container-fluid`, `main` — banner injection target (`document.querySelector('main') || document.querySelector('.container-fluid')`)
@@ -643,6 +644,7 @@ P4c. Initialize backup JS on every page
 - [x] P6d: Tables — add `.table-calm`; apply alongside `.workout-plan-table` to pilot one table without changing the frozen `.workout-plan-table` class
 - [x] P6d: Visual QA + E2E → commit
 - [ ] P6e: Roll new classes through remaining pages one at a time, one commit per page
+  - [x] `/workout_log`: apply `.btn-calm-primary`, `.btn-calm-ghost`, `.input-calm-inset`, and `.table-calm` additively; preserve `#import-from-plan-btn`, `#clear-log-btn`, `#confirm-clear-log-btn`, and `.workout-log-table`
 - [ ] P6f: Global surface background — in a separate visual-change commit, replace [styles_general.css:19-26](static/css/styles_general.css#L19-L26) with `body { background: var(--surface-0); }`; full 42-screenshot review and re-baseline required
 
 **Exit gate (after each sub-phase)**

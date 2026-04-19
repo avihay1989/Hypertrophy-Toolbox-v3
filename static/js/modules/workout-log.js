@@ -581,17 +581,17 @@ function createWorkoutLogRow(log) {
             <td>${log.exercise}</td>
             <td class="editable-cell" data-field="scored_sets">
                 <span class="editable-text">${log.scored_sets || 'Click to edit'}</span>
-                <input type="number" class="editable-input form-control" 
+                <input type="number" class="editable-input form-control input-calm-inset"
                     value="${log.scored_sets || ''}" style="display: none;">
             </td>
             <td class="editable-cell" data-field="scored_reps">
                 <span class="editable-text">${log.scored_reps || 'Click to edit'}</span>
-                <input type="number" class="editable-input form-control" 
+                <input type="number" class="editable-input form-control input-calm-inset"
                     value="${log.scored_reps || ''}" style="display: none;">
             </td>
             <td class="editable-cell" data-field="scored_weight">
                 <span class="editable-text">${log.scored_weight || 'Click to edit'}</span>
-                <input type="number" class="editable-input form-control" 
+                <input type="number" class="editable-input form-control input-calm-inset"
                     value="${log.scored_weight || ''}" style="display: none;">
             </td>
             <td>

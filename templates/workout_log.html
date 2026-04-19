@@ -37,7 +37,7 @@
                         </p>
                     </div>
                     <div class="import-actions">
-                        <button id="import-from-plan-btn" class="btn btn-primary btn-lg" type="button" onclick="importFromWorkoutPlan()">
+                        <button id="import-from-plan-btn" class="btn btn-primary btn-lg btn-calm-primary" type="button" onclick="importFromWorkoutPlan()">
                             <i class="fas fa-file-import me-2"></i> Import Current Workout Plan
                         </button>
                         <button id="clear-log-btn" class="btn btn-outline-danger ms-2" type="button" data-bs-toggle="modal" data-bs-target="#clearLogModal">
@@ -62,7 +62,8 @@
     <div class="workout-log-frame">
         <!-- AGENT:START B-2 PRIORITY-CLASSES -->
         <div class="tbl-wrap tbl-wrap--full" role="region" aria-label="Workout log table">
-            <table class="table table-striped workout-log-table tbl tbl--responsive" 
+            <table id="workout-log-table"
+                   class="table table-striped workout-log-table table-calm tbl tbl--responsive"
                    role="table" 
                    aria-label="Workout log entries">
                 <thead>
@@ -102,7 +103,7 @@
                         <td data-label="Scored Min Reps" class="editable scored-cell" data-field="scored_min_reps">
                             <div class="scored-value-container">
                                 <input type="number" 
-                                       class="editable-input number-input" 
+                                       class="editable-input number-input form-control input-calm-inset"
                                        value="{{ log.scored_min_reps if log.scored_min_reps and log.scored_min_reps != 'None' else '' }}"
                                        onchange="updateScoredValue('{{ log.id }}', 'scored_min_reps', this.value)"
                                        min="0"
@@ -122,7 +123,7 @@
                         <td data-label="Scored Max Reps" class="editable scored-cell" data-field="scored_max_reps">
                             <div class="scored-value-container">
                                 <input type="number" 
-                                       class="editable-input number-input" 
+                                       class="editable-input number-input form-control input-calm-inset"
                                        value="{{ log.scored_max_reps if log.scored_max_reps and log.scored_max_reps != 'None' else '' }}"
                                        onchange="updateScoredValue('{{ log.id }}', 'scored_max_reps', this.value)"
                                        min="0"
@@ -142,7 +143,7 @@
                         <td data-label="Scored RIR" class="editable scored-cell" data-field="scored_rir">
                             <div class="scored-value-container">
                                 <input type="number" 
-                                       class="editable-input number-input" 
+                                       class="editable-input number-input form-control input-calm-inset"
                                        value="{{ log.scored_rir if log.scored_rir and log.scored_rir != 'None' else '' }}"
                                        min="0"
                                        onchange="updateScoredValue('{{ log.id }}', 'scored_rir', this.value)"
@@ -163,7 +164,7 @@
                         <td data-label="Scored RPE" class="editable scored-cell" data-field="scored_rpe">
                             <div class="scored-value-container">
                                 <input type="number" 
-                                       class="editable-input number-input" 
+                                       class="editable-input number-input form-control input-calm-inset"
                                        value="{{ log.scored_rpe if log.scored_rpe and log.scored_rpe != 'None' else '' }}"
                                        min="0"
                                        onchange="updateScoredValue('{{ log.id }}', 'scored_rpe', this.value)"
@@ -184,7 +185,7 @@
                         <td data-label="Scored Weight" class="editable scored-cell" data-field="scored_weight">
                             <div class="scored-value-container">
                                 <input type="number" 
-                                       class="editable-input number-input" 
+                                       class="editable-input number-input form-control input-calm-inset"
                                        value="{{ log.scored_weight if log.scored_weight and log.scored_weight != 'None' else '' }}"
                                        step="0.5"
                                        min="0"
@@ -204,7 +205,7 @@
                         </td>
                         <td data-label="Last Progression" class="editable date-editable" data-field="last_progression_date" title="Click to set date">
                             <input type="date" 
-                                   class="editable-input date-input" 
+                                   class="editable-input date-input form-control input-calm-inset"
                                    value="{{ log.last_progression_date if log.last_progression_date and log.last_progression_date != 'None' else '' }}"
                                    data-log-id="{{ log.id }}"
                                    style="display: none;">
@@ -264,7 +265,7 @@
                 </p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                <button type="button" class="btn btn-secondary btn-calm-ghost" data-bs-dismiss="modal">
                     <i class="fas fa-times me-1"></i>Cancel
                 </button>
                 <button type="button" class="btn btn-danger" id="confirm-clear-log-btn" onclick="window.confirmClearWorkoutLog()">
