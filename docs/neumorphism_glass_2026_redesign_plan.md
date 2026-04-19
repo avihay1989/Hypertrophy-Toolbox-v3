@@ -638,8 +638,8 @@ P4c. Initialize backup JS on every page
 - [x] P6a: Visual QA + E2E green → commit
 - [x] P6b: Cards — add `.glass-neumorph-card` rule; apply to `/weekly_summary` cards first
 - [x] P6b: Visual QA + E2E → commit
-- [ ] P6c: Form inputs — add `.input-calm-inset`; apply to `/workout_plan` routine form fields without removing legacy classes
-- [ ] P6c: Visual QA + E2E → commit
+- [x] P6c: Form inputs — add `.input-calm-inset`; apply to `/workout_plan` routine form fields without removing legacy classes
+- [x] P6c: Visual QA + E2E → commit
 - [ ] P6d: Tables — add `.table-calm`; apply alongside `.workout-plan-table` to pilot one table without changing the frozen `.workout-plan-table` class
 - [ ] P6d: Visual QA + E2E → commit
 - [ ] P6e: Roll new classes through remaining pages one at a time, one commit per page

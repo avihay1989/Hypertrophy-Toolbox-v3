@@ -152,6 +152,58 @@
   color: var(--ink-2, #4a5170) !important;
 }
 
+:where(.form-control).input-calm-inset,
+.form-control.input-calm-inset,
+:where(.form-select).input-calm-inset,
+.form-select.input-calm-inset {
+  background: color-mix(in srgb, var(--surface-1, #f4f6fa) 86%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 18%, var(--calm-glass-border, rgba(255, 255, 255, 0.65)) 82%) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow-neu-in, inset 4px 4px 10px rgba(167, 175, 200, 0.35), inset -4px -4px 10px rgba(255, 255, 255, 0.90)) !important;
+  color: var(--ink-1, #0f1220) !important;
+  font-family: var(--font-sans, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif) !important;
+  letter-spacing: 0 !important;
+  transition:
+    background var(--dur-fast, 150ms) var(--ease-out, ease),
+    border-color var(--dur-fast, 150ms) var(--ease-out, ease),
+    box-shadow var(--dur-fast, 150ms) var(--ease-out, ease) !important;
+}
+
+:where(.form-control).input-calm-inset:not(:disabled):hover,
+.form-control.input-calm-inset:not(:disabled):hover,
+:where(.form-select).input-calm-inset:not(:disabled):hover,
+.form-select.input-calm-inset:not(:disabled):hover {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 88%, var(--accent, #4c6ef5) 12%) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 30%, var(--calm-glass-border, rgba(255, 255, 255, 0.65)) 70%) !important;
+}
+
+:where(.form-control).input-calm-inset:focus,
+.form-control.input-calm-inset:focus,
+:where(.form-control).input-calm-inset:focus-visible,
+.form-control.input-calm-inset:focus-visible,
+:where(.form-select).input-calm-inset:focus,
+.form-select.input-calm-inset:focus,
+:where(.form-select).input-calm-inset:focus-visible,
+.form-select.input-calm-inset:focus-visible {
+  background: var(--surface-2, #ffffff) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 56%, white 44%) !important;
+  box-shadow:
+    var(--shadow-neu-in, inset 4px 4px 10px rgba(167, 175, 200, 0.35), inset -4px -4px 10px rgba(255, 255, 255, 0.90)),
+    0 0 0 3px color-mix(in srgb, var(--accent, #4c6ef5) 24%, transparent) !important;
+  outline: 0 !important;
+}
+
+:where(.form-control).input-calm-inset:disabled,
+.form-control.input-calm-inset:disabled,
+:where(.form-select).input-calm-inset:disabled,
+.form-select.input-calm-inset:disabled {
+  background: color-mix(in srgb, var(--surface-1, #f4f6fa) 72%, var(--ink-3, #8a90a8) 28%) !important;
+  box-shadow: none !important;
+  color: var(--ink-3, #8a90a8) !important;
+  cursor: not-allowed !important;
+  opacity: 0.72 !important;
+}
+
 [data-theme='dark'] .summary-tables .glass-neumorph-card {
   background: var(--calm-glass-bg, rgba(29, 34, 56, 0.55)) !important;
   box-shadow: var(--shadow-neu-out, 8px 8px 20px rgba(0, 0, 0, 0.55), -8px -8px 20px rgba(255, 255, 255, 0.04)) !important;
@@ -171,7 +223,11 @@
   .btn.btn-calm-ghost,
   :where(.btn).btn-calm-icon,
   .btn.btn-calm-icon,
-  .glass-neumorph-card {
+  .glass-neumorph-card,
+  :where(.form-control).input-calm-inset,
+  .form-control.input-calm-inset,
+  :where(.form-select).input-calm-inset,
+  .form-select.input-calm-inset {
     transition: none !important;
   }
 
