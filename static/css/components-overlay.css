@@ -598,7 +598,177 @@
   color: var(--ink-1, #eef1f6) !important;
 }
 
+#workout[data-page="workout-plan"] .frame-calm-glass .frame-header.frame-header-2025 {
+  align-items: center !important;
+  display: grid !important;
+  gap: var(--s-3, 12px) !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  padding: var(--s-4, 16px) var(--s-5, 24px) !important;
+}
+
+#workout[data-page="workout-plan"] .frame-calm-glass .frame-header-left,
+#workout[data-page="workout-plan"] .frame-calm-glass .frame-header-right {
+  align-items: center !important;
+  display: flex !important;
+  min-width: 0 !important;
+}
+
+#workout[data-page="workout-plan"] .frame-calm-glass .frame-header-right {
+  justify-content: flex-end !important;
+  padding: 0 !important;
+}
+
+#workout[data-page="workout-plan"] .frame-calm-glass .frame-title,
+#workout[data-page="workout-plan"] .frame-calm-glass .filters-title {
+  align-items: center !important;
+  display: inline-flex !important;
+  line-height: 1.15 !important;
+  max-width: 100% !important;
+  overflow-wrap: anywhere !important;
+  padding-bottom: 7px !important;
+  white-space: normal !important;
+}
+
+#workout[data-page="workout-plan"] .frame-calm-glass .collapse-toggle {
+  flex: 0 0 auto !important;
+  min-height: 40px !important;
+  min-width: 96px !important;
+  padding: var(--s-2, 8px) var(--s-4, 16px) !important;
+}
+
+#workout[data-page="workout-plan"] .wpdd {
+  display: block !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  width: 100% !important;
+}
+
+#workout[data-page="workout-plan"] .wpdd-button,
+#workout[data-page="workout-plan"] .wpdd-button.wpdd-filter,
+#workout[data-page="workout-plan"] .wpdd-button.wpdd-filter.filter-active,
+#workout[data-page="workout-plan"] .wpdd-button.wpdd-routine,
+#workout[data-page="workout-plan"] .wpdd-button.wpdd-exercise,
+#workout[data-page="workout-plan"] .cascade-dropdown.input-calm-inset {
+  align-items: center !important;
+  background: color-mix(in srgb, var(--surface-1, #f4f6fa) 88%, transparent) !important;
+  background-color: color-mix(in srgb, var(--surface-1, #f4f6fa) 88%, transparent) !important;
+  background-image: none !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 18%, var(--calm-glass-border, rgba(255, 255, 255, 0.65)) 82%) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow-neu-in, inset 4px 4px 10px rgba(167, 175, 200, 0.35), inset -4px -4px 10px rgba(255, 255, 255, 0.90)) !important;
+  color: var(--ink-1, #0f1220) !important;
+  display: inline-flex !important;
+  font-size: 0.9rem !important;
+  justify-content: space-between !important;
+  letter-spacing: 0 !important;
+  min-height: 42px !important;
+  padding: 0 var(--s-4, 16px) !important;
+  text-shadow: none !important;
+  width: 100% !important;
+}
+
+#workout[data-page="workout-plan"] .wpdd-button:hover:not(:disabled),
+#workout[data-page="workout-plan"] .wpdd-button.wpdd-filter:hover:not(:disabled),
+#workout[data-page="workout-plan"] .wpdd-button.wpdd-filter.filter-active:hover:not(:disabled),
+#workout[data-page="workout-plan"] .wpdd-button.wpdd-routine:hover:not(:disabled),
+#workout[data-page="workout-plan"] .wpdd-button.wpdd-exercise:hover:not(:disabled),
+#workout[data-page="workout-plan"] .cascade-dropdown.input-calm-inset:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 88%, var(--accent, #4c6ef5) 12%) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 30%, var(--calm-glass-border, rgba(255, 255, 255, 0.65)) 70%) !important;
+  color: var(--ink-1, #0f1220) !important;
+}
+
+#workout[data-page="workout-plan"] .wpdd-button:disabled,
+#workout[data-page="workout-plan"] .cascade-dropdown.input-calm-inset:disabled {
+  cursor: not-allowed !important;
+  opacity: 0.68 !important;
+}
+
+#workout[data-page="workout-plan"] .wpdd-button-text {
+  min-width: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+#workout[data-page="workout-plan"] .input-fields-group {
+  align-items: end !important;
+  display: grid !important;
+  gap: var(--s-5, 24px) !important;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  justify-content: stretch !important;
+}
+
+#workout[data-page="workout-plan"] .input-fields-group .input-group {
+  flex: none !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  width: 100% !important;
+}
+
+#workout[data-page="workout-plan"] .input-fields-group .input-group input.input-calm-inset[type="number"] {
+  -moz-appearance: textfield !important;
+  -webkit-appearance: none !important;
+  appearance: textfield !important;
+  padding-left: var(--s-4, 16px) !important;
+  padding-right: var(--s-4, 16px) !important;
+  text-align: center !important;
+}
+
+#workout[data-page="workout-plan"] .input-fields-group .input-group input.input-calm-inset[type="number"]::-webkit-inner-spin-button,
+#workout[data-page="workout-plan"] .input-fields-group .input-group input.input-calm-inset[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none !important;
+  display: none !important;
+  height: 0 !important;
+  margin: 0 !important;
+  opacity: 0 !important;
+  width: 0 !important;
+}
+
+#workout[data-page="workout-plan"] #exercise-selection-frame #action-buttons-row.selection-actions {
+  align-items: center !important;
+  background: color-mix(in srgb, var(--surface-1, #f4f6fa) 78%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 16%, var(--calm-glass-border, rgba(255, 255, 255, 0.65)) 84%) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow-neu-in, inset 4px 4px 10px rgba(167, 175, 200, 0.25), inset -4px -4px 10px rgba(255, 255, 255, 0.72)) !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: var(--s-3, 12px) !important;
+  justify-content: center !important;
+  padding: var(--s-3, 12px) !important;
+  transform: none !important;
+}
+
+#workout[data-page="workout-plan"] #exercise-selection-frame #action-buttons-row .inline-control-item {
+  align-items: stretch !important;
+  display: flex !important;
+  flex: 0 1 auto !important;
+  margin: 0 !important;
+  min-width: 0 !important;
+}
+
+#workout[data-page="workout-plan"] #exercise-selection-frame #action-buttons-row .btn {
+  min-height: 42px !important;
+}
+
+[data-theme='dark'] #workout[data-page="workout-plan"] .wpdd-button,
+[data-theme='dark'] #workout[data-page="workout-plan"] .wpdd-button.wpdd-filter,
+[data-theme='dark'] #workout[data-page="workout-plan"] .wpdd-button.wpdd-filter.filter-active,
+[data-theme='dark'] #workout[data-page="workout-plan"] .wpdd-button.wpdd-routine,
+[data-theme='dark'] #workout[data-page="workout-plan"] .wpdd-button.wpdd-exercise,
+[data-theme='dark'] #workout[data-page="workout-plan"] .cascade-dropdown.input-calm-inset {
+  background: color-mix(in srgb, var(--surface-2, #1d2238) 84%, transparent) !important;
+  background-color: color-mix(in srgb, var(--surface-2, #1d2238) 84%, transparent) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 26%, var(--calm-glass-border, rgba(255, 255, 255, 0.08)) 74%) !important;
+  box-shadow: var(--shadow-neu-in, inset 4px 4px 10px rgba(0, 0, 0, 0.55), inset -4px -4px 10px rgba(255, 255, 255, 0.04)) !important;
+  color: var(--ink-1, #eef1f6) !important;
+}
+
 @media (max-width: 991.98px) {
+  #workout[data-page="workout-plan"] .input-fields-group {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
   #workout[data-page="workout-plan"] #exercise-selection-frame #action-buttons-row.selection-actions {
     display: grid !important;
     gap: var(--s-2, 8px) !important;
@@ -629,6 +799,14 @@
 }
 
 @media (max-width: 575.98px) {
+  #workout[data-page="workout-plan"] .frame-calm-glass .frame-header.frame-header-2025 {
+    padding: var(--s-3, 12px) var(--s-4, 16px) !important;
+  }
+
+  #workout[data-page="workout-plan"] .input-fields-group {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
   #workout[data-page="workout-plan"] #exercise-selection-frame #action-buttons-row.selection-actions {
     grid-template-columns: minmax(0, 1fr) !important;
   }
