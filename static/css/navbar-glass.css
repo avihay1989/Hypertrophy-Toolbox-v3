@@ -1,0 +1,122 @@
+/* Calm Glass 2026 navbar overlay.
+   CSS-only P3: keep the existing navbar DOM and frozen selectors intact. */
+
+:where(#navbar) {
+  --nav-glass-surface: var(--calm-glass-bg, rgba(255, 255, 255, 0.55));
+  --nav-glass-border-soft: var(--calm-glass-border, rgba(255, 255, 255, 0.65));
+  --nav-pill-bg: color-mix(in srgb, var(--surface-1, #f4f6fa) 88%, white 12%);
+  --nav-pill-hover: color-mix(in srgb, var(--surface-2, #ffffff) 88%, var(--accent, #4c6ef5) 12%);
+  --nav-pill-active: color-mix(in srgb, var(--surface-1, #f4f6fa) 78%, var(--accent, #4c6ef5) 22%);
+  --nav-pill-ink: var(--ink-2, #4a5170);
+  --nav-pill-ink-strong: var(--ink-1, #0f1220);
+  --nav-pill-shadow: var(--shadow-elev-1, 0 1px 2px rgba(15, 18, 32, 0.06), 0 2px 8px rgba(15, 18, 32, 0.06));
+  --nav-pill-inset: var(--shadow-neu-in, inset 4px 4px 10px rgba(167, 175, 200, 0.35), inset -4px -4px 10px rgba(255, 255, 255, 0.90));
+}
+
+[data-theme="dark"] :where(#navbar) {
+  --nav-pill-bg: color-mix(in srgb, var(--surface-1, #161a2d) 86%, white 4%);
+  --nav-pill-hover: color-mix(in srgb, var(--surface-2, #1d2238) 82%, var(--accent, #4c6ef5) 18%);
+  --nav-pill-active: color-mix(in srgb, var(--surface-2, #1d2238) 72%, var(--accent, #4c6ef5) 28%);
+  --nav-pill-ink: var(--ink-2, #b4bad0);
+  --nav-pill-ink-strong: var(--ink-1, #eef1f6);
+}
+
+:where(#navbar) > .container-fluid {
+  max-width: 1200px;
+  gap: var(--s-3, 12px);
+}
+
+:where(#navbar) .navbar-brand,
+:where(#navbar) .nav-link,
+:where(#navbar) #darkModeToggle,
+:where(#navbar) #muscleModeToggle,
+:where(#navbar) .scale-control-compact,
+:where(#navbar) .scale-btn-compact,
+:where(#navbar) .scale-indicator {
+  border-radius: var(--r-pill, 999px);
+}
+
+:where(#navbar) .navbar-brand {
+  color: var(--nav-pill-ink-strong);
+  font-family: var(--font-sans, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  letter-spacing: 0;
+}
+
+:where(#navbar) .navbar-nav {
+  gap: var(--s-1, 4px);
+}
+
+:where(#navbar) .nav-link {
+  border: 1px solid transparent;
+  color: var(--nav-pill-ink);
+  font-family: var(--font-sans, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  letter-spacing: 0;
+  transition:
+    background var(--dur-fast, 150ms) var(--ease-out, ease),
+    border-color var(--dur-fast, 150ms) var(--ease-out, ease),
+    box-shadow var(--dur-fast, 150ms) var(--ease-out, ease),
+    color var(--dur-fast, 150ms) var(--ease-out, ease),
+    transform var(--dur-fast, 150ms) var(--ease-out, ease);
+}
+
+:where(#navbar) .nav-link:hover,
+:where(#navbar) .nav-link:focus-visible {
+  background: var(--nav-pill-hover);
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 22%, transparent);
+  box-shadow: var(--nav-pill-shadow);
+  color: var(--nav-pill-ink-strong);
+  transform: translateY(-1px);
+}
+
+:where(#navbar) .nav-link.active,
+:where(#navbar) .navbar-brand.active {
+  background: var(--nav-pill-active);
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 30%, transparent);
+  box-shadow: var(--nav-pill-inset);
+  color: var(--nav-pill-ink-strong);
+}
+
+:where(#navbar) .nav-link::before,
+:where(#navbar) .navbar-brand::before,
+:where(#navbar) #darkModeToggle::before,
+:where(#navbar) #muscleModeToggle::before {
+  display: none;
+}
+
+:where(#navbar) .nav-icon,
+:where(#navbar) .navbar-brand-icon {
+  border-radius: var(--r-sm, 10px);
+}
+
+:where(#navbar) .scale-control-compact {
+  background: color-mix(in srgb, var(--nav-pill-bg) 90%, transparent);
+  border: 1px solid var(--nav-glass-border-soft);
+  box-shadow: var(--nav-pill-shadow);
+}
+
+:where(#navbar) .scale-btn-compact:hover,
+:where(#navbar) .scale-btn-compact:focus-visible {
+  background: var(--nav-pill-hover);
+  color: var(--nav-pill-ink-strong);
+}
+
+@media (max-width: 991.98px) {
+  :where(#navbar) nav.navbar-collapse.show {
+    background: color-mix(in srgb, var(--surface-2, #ffffff) 88%, transparent);
+    border-top: 1px solid var(--nav-glass-border-soft);
+  }
+
+  :where(#navbar) nav.navbar-collapse.show .navbar-nav {
+    gap: var(--s-2, 8px);
+  }
+
+  :where(#navbar) nav.navbar-collapse.show .nav-link {
+    border-radius: var(--r-md, 14px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(#navbar) .nav-link {
+    transition: none;
+  }
+}
