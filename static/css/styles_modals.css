@@ -35,6 +35,13 @@
     }
 }
 
+/* The page-enter animation leaves the main wrapper with an identity transform,
+   which traps fixed-position modals inside the scrolled page. */
+body.modal-open > .container-fluid.mt-4 {
+    animation: none !important;
+    transform: none !important;
+}
+
 /* Add subtle shadow to modal content to maintain visual separation */
 .modal-content {
     box-shadow: 0 0 40px rgba(0, 0, 0, 0.3), 0 0 100px rgba(0, 0, 0, 0.15) !important;
@@ -148,6 +155,21 @@
 
 #generatePlanModal .modal-footer {
     padding: 0.5rem 1.25rem;
+}
+
+/* Fix Generate Starter Plan open flicker by removing nested blur/radius mismatch. */
+#generatePlanModal .modal-content.frame-calm-glass {
+    overflow: hidden;
+}
+
+#generatePlanModal .modal-content.frame-calm-glass .modal-header,
+#generatePlanModal .modal-content.frame-calm-glass .modal-footer {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
 }
 
 /* Compact form controls for the plan generator */
