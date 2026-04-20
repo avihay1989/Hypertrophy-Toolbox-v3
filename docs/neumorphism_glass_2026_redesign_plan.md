@@ -676,19 +676,19 @@ P4c. Initialize backup JS on every page
 **Why:** Replace 148 `!important` with a tokens-only dark theme, without deleting the old file yet.
 
 **Preflight**
-- [ ] P6 committed and green
-- [ ] Tokens.css has the `[data-theme="dark"]` block (mockup lines 64-72), with legacy-colliding glass tokens still namespaced as `--calm-*`
+- [x] P6 committed and green
+- [x] Tokens.css has the `[data-theme="dark"]` block (mockup lines 64-72), with legacy-colliding glass tokens still namespaced as `--calm-*`
 
 **Tasks**
-- [ ] Create `static/css/theme-dark-v2.css` with dark overrides using **only token overrides** — zero `!important`
-- [ ] Link it in the redesign overlay block after `components-overlay.css`, which is after `page_css`, so page-specific dark rules do not silently override the new token layer
-- [ ] Do not delete `styles_dark_mode.css` yet
-- [ ] Verify `static/js/darkMode.js` writes `data-theme="dark"` on `<html>` — if it only toggles a class, add a line to also set the attribute
+- [x] Create `static/css/theme-dark-v2.css` with dark overrides using **only token overrides** — zero `!important`
+- [x] Link it in the redesign overlay block after `components-overlay.css`, which is after `page_css`, so page-specific dark rules do not silently override the new token layer
+- [x] Do not delete `styles_dark_mode.css` yet
+- [x] Verify `static/js/darkMode.js` writes `data-theme="dark"` on `<html>` — if it only toggles a class, add a line to also set the attribute
 
 **Exit gate**
-- [ ] `npm run test:e2e` green — especially `dark-mode.spec.ts`
-- [ ] Visual smoke in dark mode across all 7 pages
-- [ ] `grep -c '!important' static/css/theme-dark-v2.css` → 0
+- [x] `npm run test:e2e` green — especially `dark-mode.spec.ts`
+- [x] Visual smoke in dark mode across all 7 pages
+- [x] `grep -c '!important' static/css/theme-dark-v2.css` → 0
 
 **Commit:** `feat(redesign): P7 tokens-only dark theme (additive)`
 
@@ -699,18 +699,18 @@ P4c. Initialize backup JS on every page
 ### Phase P8 — Motion + accessibility polish
 
 **Preflight**
-- [ ] P7 committed and green
+- [x] P7 committed and green
 
 **Tasks**
-- [ ] Wire `page-enter` in `motion.css` to the existing main content wrapper (`body > .container-fluid.mt-4`) unless a prior phase adds an explicit `#app-main`. Do not target `main.container-fluid`; `base.html` currently has no `<main>`.
-- [ ] Add `.skeleton` class to exercise picker / weekly summary placeholders
-- [ ] Add `.is-success` pulse to save buttons via small JS hook in `program-backup.js` and `workout-plan.js`
-- [ ] Confirm `prefers-reduced-motion` media query actually disables animations
+- [x] Wire `page-enter` in `motion.css` to the existing main content wrapper (`body > .container-fluid.mt-4`) unless a prior phase adds an explicit `#app-main`. Do not target `main.container-fluid`; `base.html` currently has no `<main>`.
+- [x] Add `.skeleton` class to exercise picker / weekly summary placeholders
+- [x] Add `.is-success` pulse to save buttons via small JS hook in `program-backup.js` and `workout-plan.js`
+- [x] Confirm `prefers-reduced-motion` media query actually disables animations
 
 **Exit gate**
-- [ ] `accessibility.spec.ts` green
-- [ ] Manual: OS-level "reduce motion" ON → no animations fire
-- [ ] Manual: save a backup → green pulse flashes on the button
+- [x] `accessibility.spec.ts` green
+- [x] Manual: OS-level "reduce motion" ON → no animations fire
+- [x] Manual: save a backup → green pulse flashes on the button
 
 **Commit:** `feat(redesign): P8 motion + reduced-motion honoring`
 
