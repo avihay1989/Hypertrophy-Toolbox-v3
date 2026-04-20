@@ -340,9 +340,7 @@ class MuscleSelector {
                 <div class="muscle-selector-content">
                     <div class="body-diagram-wrapper">
                         <div id="svg-container" class="svg-container">
-                            <div class="loading-spinner">
-                                <i class="fas fa-spinner fa-spin"></i> Loading...
-                            </div>
+                            <div class="skeleton" style="height: 400px; width: 100%;"></div>
                         </div>
                         <div class="muscle-tooltip" id="muscle-tooltip">
                             <div class="tooltip-label"></div>

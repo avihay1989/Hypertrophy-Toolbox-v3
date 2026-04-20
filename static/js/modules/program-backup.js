@@ -240,6 +240,10 @@ export async function handleSaveBackup() {
         
         showToast('success', `Backup "${backup.name}" created with ${backup.item_count} exercises`);
         
+        // Add success pulse
+        saveBtn.classList.add('is-success');
+        setTimeout(() => saveBtn.classList.remove('is-success'), 1000);
+        
         // Clear form
         nameInput.value = '';
         if (noteInput) noteInput.value = '';

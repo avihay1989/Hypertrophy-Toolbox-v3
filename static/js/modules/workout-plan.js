@@ -1097,6 +1097,11 @@ async function sendExerciseData(exerciseData) {
         const message = data.message || data.data?.message || 'Exercise added successfully';
         
         showToast('success', message);
+        const addBtn = document.getElementById('add_exercise_btn');
+        if (addBtn) {
+            addBtn.classList.add('is-success');
+            setTimeout(() => addBtn.classList.remove('is-success'), 1000);
+        }
         fetchWorkoutPlan(); // Refresh the table
         resetFormFields();
     } catch (error) {
