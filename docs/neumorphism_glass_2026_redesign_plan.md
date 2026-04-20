@@ -734,11 +734,11 @@ P4c. Initialize backup JS on every page
 > 5. The following page-scoped files must **not** silently become globally loaded: `styles_frames.css`, `styles_dropdowns.css`, `styles_filters.css`, `styles_routine_cascade.css`, `styles_workout_dropdowns.css`, `styles_muscle_selector.css`, `styles_workout_plan.css`, `workout_log.css`, `styles_welcome.css`, `styles_progression.css`, `styles_volume_splitter.css`, `styles_volume.css`, `styles_muscle_groups.css`, `session_summary.css`.
 
 **Preflight**
-- [ ] P8 committed ≥ 7 days ago, CI green every day
-- [ ] Human explicitly approves starting P9
-- [ ] Update [docs/CSS_OWNERSHIP_MAP.md](CSS_OWNERSHIP_MAP.md) with the target map below before the first P9 commit
-- [ ] Confirm actual CSS inventory: `Get-ChildItem static/css -Filter *.css | Sort-Object Name`
-- [ ] Tag every source file's current load scope (GLOBAL vs PAGE) in [docs/CSS_OWNERSHIP_MAP.md](CSS_OWNERSHIP_MAP.md)
+- [x] P8 committed ≥ 7 days ago, CI green every day
+- [x] Human explicitly approves starting P9
+- [x] Update [docs/CSS_OWNERSHIP_MAP.md](CSS_OWNERSHIP_MAP.md) with the target map below before the first P9 commit
+- [x] Confirm actual CSS inventory: `Get-ChildItem static/css -Filter *.css | Sort-Object Name`
+- [x] Tag every source file's current load scope (GLOBAL vs PAGE) in [docs/CSS_OWNERSHIP_MAP.md](CSS_OWNERSHIP_MAP.md)
 
 **Target map (≤ 15 CSS files excluding Bootstrap: 8 global + 7 page bundles)**
 

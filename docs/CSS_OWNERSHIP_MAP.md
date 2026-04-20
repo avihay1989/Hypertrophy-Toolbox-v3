@@ -100,3 +100,40 @@ These items still remain outside the completed Tier 1 and Tier 5a cleanup:
 1. Update this map when template CSS loading changes.
 2. Prefer documenting the live template loading model over the legacy aggregate file.
 3. Do not mark CSS consolidation as complete unless the stale file is actually removed and template references stay clean.
+
+
+## Phase 9/10 Target Map
+
+**Target map (≤ 15 CSS files excluding Bootstrap: 8 global + 7 page bundles)**
+
+> The prior ≤10 target was set before the route-scope contract split page CSS into per-route bundles. Preserving route scope is more important than hitting an arbitrary file count; 15 files is still a major improvement from 35.
+
+*GLOBAL targets (linked in `base.html`):*
+
+| Target file after P10 | Load scope | Sources / disposition |
+|---|---|---|
+| `tokens.css` | GLOBAL | existing `styles_tokens.css` (GLOBAL) + P2 `tokens.css` (GLOBAL) |
+| `motion.css` | GLOBAL | P2 `motion.css` (GLOBAL, kept as its own target) |
+| `base.css` | GLOBAL | `styles_general.css` (GLOBAL), `styles_utilities.css` (GLOBAL), plus any still-used unique rules from legacy `styles.css` (orphan — see P9i) |
+| `layout.css` | GLOBAL | `styles_layout.css` (GLOBAL), `styles_responsive.css` (GLOBAL), `responsive.css` (GLOBAL). **`styles_frames.css` removed from this target** — it is PAGE-scoped (loaded in 4 templates) and belongs in page-level bundles. |
+| `components.css` | GLOBAL | `styles_buttons.css` (GLOBAL), `styles_forms.css` (GLOBAL), `styles_tables.css` (GLOBAL), `styles_cards.css` (GLOBAL), `styles_tooltips.css` (GLOBAL), `styles_modals.css` (GLOBAL), `styles_notifications.css` (GLOBAL), `components-overlay.css` (GLOBAL). **`styles_dropdowns.css`, `styles_filters.css`, `styles_routine_cascade.css`, `styles_workout_dropdowns.css`, `styles_muscle_selector.css` removed from this target** — they are PAGE-scoped. |
+| `navbar.css` | GLOBAL | `styles_navbar.css` (GLOBAL), `navbar-glass.css` (GLOBAL) |
+| `theme-dark.css` | GLOBAL | `styles_dark_mode.css` (GLOBAL), `theme-dark-v2.css` (GLOBAL), plus any dark rules moved out of component/page files during consolidation |
+| `a11y.css` | GLOBAL | `styles_accessibility.css` (GLOBAL), `styles_error.css` (GLOBAL) |
+| `bootstrap.custom.min.css` | GLOBAL | Keep as Bootstrap build artifact; excluded from file count |
+
+*PAGE-SCOPED targets (loaded via `{% block page_css %}` in child templates — one bundle per route):*
+
+| Target file after P10 | Load scope | Route(s) | Current `{% block page_css %}` sources (verified against templates) |
+|---|---|---|---|
+| `pages-workout-plan.css` | PAGE | `/workout_plan` | `styles_filters.css`, `styles_dropdowns.css`, `styles_workout_dropdowns.css`, `styles_workout_plan.css`, `styles_frames.css`, `styles_routine_cascade.css`, `styles_muscle_selector.css` |
+| `pages-workout-log.css` | PAGE | `/workout_log` | `workout_log.css`, `styles_frames.css` |
+| `pages-weekly-summary.css` | PAGE | `/weekly_summary` | `styles_volume.css`, `session_summary.css`, `styles_frames.css`, `styles_muscle_groups.css` |
+| `pages-session-summary.css` | PAGE | `/session_summary` | `styles_volume.css`, `session_summary.css`, `styles_frames.css` |
+| `pages-welcome.css` | PAGE | `/` | `styles_welcome.css` |
+| `pages-progression.css` | PAGE | `/progression` | `styles_progression.css`, `styles_dropdowns.css` |
+| `pages-volume-splitter.css` | PAGE | `/volume_splitter` | `styles_volume_splitter.css`, `styles_volume.css`, `styles_muscle_groups.css` |
+
+> **Note:** `styles_frames.css` (37,655 bytes) appears in three page bundles because it is loaded from 4 page templates today. `styles_volume.css` and `styles_muscle_groups.css` appear in multiple bundles for the same reason. Duplicating shared rules across bundles preserves the current route scope. During P9f, if the duplicated content is identical, it can be extracted into a shared page-level partial (e.g., `_frames-common.css`) included by each page bundle — but it must not become globally loaded without explicit reviewer approval.
+>
+> **Note:** `/weekly_summary` and `/session_summary` share `session_summary.css`, `styles_volume.css`, and `styles_frames.css`. They could share a single `pages-summary.css` bundle because they load nearly identical CSS today (`/weekly_summary` additionally loads `styles_muscle_groups.css`). However, separate bundles are safer and the implementer can merge them during P9f if a reviewer explicitly approves.
