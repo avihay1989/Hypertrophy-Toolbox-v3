@@ -825,6 +825,284 @@
     var(--shadow-elev-2, 0 8px 24px rgba(15, 18, 32, 0.10)) !important;
 }
 
+/* ===== Summary pages (weekly + session) ===== */
+
+.summary-frame.frame-calm-glass {
+  background: var(--calm-glass-bg, rgba(255, 255, 255, 0.55)) !important;
+  backdrop-filter: blur(var(--calm-glass-blur, 18px)) saturate(var(--calm-glass-sat, 180%)) !important;
+  -webkit-backdrop-filter: blur(var(--calm-glass-blur, 18px)) saturate(var(--calm-glass-sat, 180%)) !important;
+  border: 1px solid var(--calm-glass-border, rgba(255, 255, 255, 0.65)) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow-neu-out, 8px 8px 20px rgba(167, 175, 200, 0.35), -8px -8px 20px rgba(255, 255, 255, 0.90)) !important;
+  color: var(--ink-1, #0f1220) !important;
+  padding: var(--s-5, 24px) !important;
+}
+
+.summary-frame.frame-calm-glass .summary-header {
+  border-bottom: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 16%, transparent) !important;
+  margin-bottom: var(--s-5, 24px) !important;
+  padding-bottom: var(--s-5, 24px) !important;
+}
+
+.summary-frame.frame-calm-glass .summary-section {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 72%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 12%, transparent) !important;
+  border-radius: 8px !important;
+  margin-bottom: var(--s-4, 16px) !important;
+  padding: var(--s-4, 16px) !important;
+}
+
+.summary-frame.frame-calm-glass .summary-section h3 {
+  color: var(--ink-1, #0f1220) !important;
+  font-family: var(--font-sans, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif) !important;
+}
+
+.summary-frame.frame-calm-glass .table {
+  color: var(--ink-1, #0f1220) !important;
+  font-family: var(--font-sans, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif) !important;
+}
+
+.summary-frame.frame-calm-glass .table thead th {
+  background: var(--surface-1, #f4f6fa) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 20%, transparent) !important;
+  color: var(--ink-2, #4a5170) !important;
+  font-weight: 600 !important;
+}
+
+.summary-frame.frame-calm-glass .table tbody td {
+  border-bottom: 1px solid color-mix(in srgb, var(--ink-3, #8a90a8) 16%, transparent) !important;
+}
+
+.summary-frame.frame-calm-glass .table tbody tr:hover td {
+  background: color-mix(in srgb, var(--accent, #4c6ef5) 8%, transparent) !important;
+}
+
+.summary-frame.frame-calm-glass .volume-legend {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 64%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 12%, transparent) !important;
+  border-radius: 8px !important;
+  padding: var(--s-4, 16px) !important;
+}
+
+.summary-frame.frame-calm-glass .method-selector .form-label {
+  color: var(--ink-1, #0f1220) !important;
+  font-weight: 600 !important;
+}
+
+.summary-frame.frame-calm-glass .alert-info {
+  background: color-mix(in srgb, var(--accent, #4c6ef5) 8%, var(--surface-2, #ffffff) 92%) !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 22%, transparent) !important;
+  border-radius: 8px !important;
+  color: var(--ink-1, #0f1220) !important;
+}
+
+[data-theme='dark'] .summary-frame.frame-calm-glass {
+  background: var(--calm-glass-bg, rgba(29, 34, 56, 0.55)) !important;
+  box-shadow: var(--shadow-neu-out, 8px 8px 20px rgba(0, 0, 0, 0.55), -8px -8px 20px rgba(255, 255, 255, 0.04)) !important;
+  color: var(--ink-1, #eef1f6) !important;
+}
+
+[data-theme='dark'] .summary-frame.frame-calm-glass .summary-section {
+  background: color-mix(in srgb, var(--surface-2, #1d2238) 74%, transparent) !important;
+}
+
+[data-theme='dark'] .summary-frame.frame-calm-glass .table thead th {
+  background: var(--surface-1, #161a2d) !important;
+  color: var(--ink-2, #b4bad0) !important;
+}
+
+[data-theme='dark'] .summary-frame.frame-calm-glass .table tbody td {
+  color: var(--ink-1, #eef1f6) !important;
+}
+
+[data-theme='dark'] .summary-frame.frame-calm-glass .table tbody tr:hover td {
+  background: color-mix(in srgb, var(--accent, #4c6ef5) 12%, var(--surface-2, #1d2238) 88%) !important;
+}
+
+[data-theme='dark'] .summary-frame.frame-calm-glass .volume-legend {
+  background: color-mix(in srgb, var(--surface-2, #1d2238) 68%, transparent) !important;
+}
+
+[data-theme='dark'] .summary-frame.frame-calm-glass .summary-section h3,
+[data-theme='dark'] .summary-frame.frame-calm-glass .method-selector .form-label {
+  color: var(--ink-1, #eef1f6) !important;
+}
+
+[data-theme='dark'] .summary-frame.frame-calm-glass .alert-info {
+  background: color-mix(in srgb, var(--accent, #4c6ef5) 12%, var(--surface-2, #1d2238) 88%) !important;
+  color: var(--ink-1, #eef1f6) !important;
+}
+
+/* ===== Progression page ===== */
+
+.progression-plan-container .exercise-selector .form-select.input-calm-inset {
+  font-family: var(--font-sans, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif) !important;
+}
+
+.progression-plan-container .current-goals .table {
+  color: var(--ink-1, #0f1220) !important;
+  font-family: var(--font-sans, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif) !important;
+}
+
+.progression-plan-container .current-goals .table thead th {
+  background: var(--surface-1, #f4f6fa) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 20%, transparent) !important;
+  color: var(--ink-2, #4a5170) !important;
+  font-weight: 600 !important;
+}
+
+.progression-plan-container .current-goals .table tbody tr:hover td {
+  background: color-mix(in srgb, var(--accent, #4c6ef5) 8%, transparent) !important;
+}
+
+.progression-plan-container .exercise-selector,
+.progression-plan-container .current-goals,
+.progression-plan-container .suggestions-container {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 72%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 12%, transparent) !important;
+  border-radius: 8px !important;
+  padding: var(--s-4, 16px) !important;
+}
+
+.progression-plan-container .suggestions-container .glass-neumorph-card {
+  margin-bottom: var(--s-3, 12px) !important;
+}
+
+.progression-plan-container .modal-content.frame-calm-glass .form-control.input-calm-inset,
+.progression-plan-container .modal-content.frame-calm-glass .form-select.input-calm-inset {
+  font-family: var(--font-sans, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif) !important;
+}
+
+[data-theme='dark'] .progression-plan-container .exercise-selector,
+[data-theme='dark'] .progression-plan-container .current-goals,
+[data-theme='dark'] .progression-plan-container .suggestions-container {
+  background: color-mix(in srgb, var(--surface-2, #1d2238) 74%, transparent) !important;
+}
+
+[data-theme='dark'] .progression-plan-container .current-goals .table thead th {
+  background: var(--surface-1, #161a2d) !important;
+  color: var(--ink-2, #b4bad0) !important;
+}
+
+[data-theme='dark'] .progression-plan-container .current-goals .table tbody td {
+  color: var(--ink-1, #eef1f6) !important;
+}
+
+/* ===== Volume Splitter page ===== */
+
+.volume-splitter-container .frequency-section,
+.volume-splitter-container .volume-input-section,
+.volume-splitter-container .results-section,
+.volume-splitter-container .ai-suggestions-section,
+.volume-splitter-container .volume-history-section {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 72%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 12%, transparent) !important;
+  border-radius: 8px !important;
+  padding: var(--s-4, 16px) !important;
+}
+
+.volume-splitter-container .table {
+  color: var(--ink-1, #0f1220) !important;
+  font-family: var(--font-sans, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif) !important;
+}
+
+.volume-splitter-container .table thead th {
+  background: var(--surface-1, #f4f6fa) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 20%, transparent) !important;
+  color: var(--ink-2, #4a5170) !important;
+  font-weight: 600 !important;
+}
+
+.volume-splitter-container .table tbody tr:hover td {
+  background: color-mix(in srgb, var(--accent, #4c6ef5) 8%, transparent) !important;
+}
+
+.volume-splitter-container .volume-controls {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: var(--s-3, 12px) !important;
+}
+
+.volume-splitter-container .mode-toggle .btn-group .btn-outline-primary.btn-calm-ghost {
+  background: color-mix(in srgb, var(--surface-1, #f4f6fa) 88%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 18%, transparent) !important;
+  color: var(--ink-1, #0f1220) !important;
+}
+
+.volume-splitter-container .mode-toggle .btn-group .btn-check:checked + .btn-outline-primary.btn-calm-ghost {
+  background: var(--accent, #4c6ef5) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 78%, white 22%) !important;
+  color: var(--accent-ink, #ffffff) !important;
+}
+
+[data-theme='dark'] .volume-splitter-container .frequency-section,
+[data-theme='dark'] .volume-splitter-container .volume-input-section,
+[data-theme='dark'] .volume-splitter-container .results-section,
+[data-theme='dark'] .volume-splitter-container .ai-suggestions-section,
+[data-theme='dark'] .volume-splitter-container .volume-history-section {
+  background: color-mix(in srgb, var(--surface-2, #1d2238) 74%, transparent) !important;
+}
+
+[data-theme='dark'] .volume-splitter-container .table thead th {
+  background: var(--surface-1, #161a2d) !important;
+  color: var(--ink-2, #b4bad0) !important;
+}
+
+[data-theme='dark'] .volume-splitter-container .table tbody td {
+  color: var(--ink-1, #eef1f6) !important;
+}
+
+/* ===== Welcome page ===== */
+
+#welcome[data-page="welcome"] .welcome-container .modal-content.frame-calm-glass .modal-header:not(.bg-danger),
+#welcome[data-page="welcome"] .welcome-container .modal-content.frame-calm-glass .modal-footer {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 78%, transparent) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 16%, transparent) !important;
+}
+
+/* ===== P6f: Global surface background ===== */
+
+body {
+  background: var(--surface-0, #eef1f6) !important;
+  background-attachment: initial !important;
+  color: var(--ink-1, #0f1220) !important;
+}
+
+h1, h2, h3 {
+  color: var(--ink-1, #0f1220) !important;
+}
+
+[data-theme='dark'] h1,
+[data-theme='dark'] h2,
+[data-theme='dark'] h3 {
+  color: var(--ink-1, #eef1f6) !important;
+}
+
+/* ===== Workout Log modal ===== */
+
+.workout-log-page ~ .modal .modal-content.frame-calm-glass .modal-header:not(.bg-danger),
+.workout-log-page ~ .modal .modal-content.frame-calm-glass .modal-footer {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 78%, transparent) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 16%, transparent) !important;
+}
+
+[data-theme='dark'] .modal-content.frame-calm-glass {
+  background: var(--calm-glass-bg, rgba(29, 34, 56, 0.55)) !important;
+  box-shadow: var(--shadow-neu-out, 8px 8px 20px rgba(0, 0, 0, 0.55), -8px -8px 20px rgba(255, 255, 255, 0.04)) !important;
+  color: var(--ink-1, #eef1f6) !important;
+}
+
+[data-theme='dark'] .modal-content.frame-calm-glass .modal-header:not(.bg-danger):not(.bg-primary),
+[data-theme='dark'] .modal-content.frame-calm-glass .modal-footer {
+  background: color-mix(in srgb, var(--surface-1, #161a2d) 88%, transparent) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 18%, transparent) !important;
+  color: var(--ink-1, #eef1f6) !important;
+}
+
+[data-theme='dark'] .modal-content.frame-calm-glass .modal-body {
+  color: var(--ink-1, #eef1f6) !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   :where(.btn).btn-calm-primary,
   .btn.btn-calm-primary,

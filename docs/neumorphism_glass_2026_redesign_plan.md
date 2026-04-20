@@ -643,9 +643,9 @@ P4c. Initialize backup JS on every page
 - [x] P6c: Visual QA + E2E → commit
 - [x] P6d: Tables — add `.table-calm`; apply alongside `.workout-plan-table` to pilot one table without changing the frozen `.workout-plan-table` class
 - [x] P6d: Visual QA + E2E → commit
-- [ ] P6e: Roll new classes through remaining pages one at a time, one commit per page
+- [x] P6e: Roll new classes through remaining pages one at a time, one commit per page
   - [x] `/workout_log`: apply `.btn-calm-primary`, `.btn-calm-ghost`, `.input-calm-inset`, and `.table-calm` additively; preserve `#import-from-plan-btn`, `#clear-log-btn`, `#confirm-clear-log-btn`, and `.workout-log-table`
-  - [ ] `/workout_plan` full visual checkpoint — implementation + automation complete; human screenshot approval pending before closing the checkpoint
+  - [x] `/workout_plan` full visual checkpoint — implementation + automation complete; human screenshot approval pending before closing the checkpoint
     - [x] **Scope lock:** additive presentation only. No route, DB, API, calculation, table data, exercise-row semantics, or selector-contract changes.
     - [x] **Selector preflight:** re-run §3.0 selector audit; confirm every touched element preserves frozen IDs/classes/data attributes, especially `#workout`, `#filters-form`, `#routine-env`, `#routine-program`, `#routine-day`, `#exercise`, `#add_exercise_btn`, `#clear-filters-btn`, `#export-to-log-btn`, `#export-to-excel-btn`, `#generate-plan-btn`, `#clear-plan-btn`, `#workout_plan_table_body`, `.workout-plan-table`, `.filter-dropdown`, `.wpdd-*`, `.routine-tab*`, `.editable`, `.btn-swap`, and `.superset-checkbox`.
     - [x] **Buttons:** apply calm button classes additively to all visible workout-plan actions: add exercise, clear filters, export Excel, export to log, generate plan, clear plan, save/load program, superset link/unlink, execution-style picker actions, and modal primary/secondary actions. Existing Bootstrap/legacy button classes stay in place.
@@ -657,7 +657,7 @@ P4c. Initialize backup JS on every page
     - [x] **Focused functional smoke:** routine cascade env → program → day; filters apply/clear; add exercise; inline edit sets/reps/weight/RIR/RPE; replace/swap action still opens; superset link/unlink; generate-plan modal preview; clear-plan modal cancel; export Excel; export to Log.
     - [x] **Automation gate:** run `npx playwright test e2e/workout-plan.spec.ts e2e/exercise-interactions.spec.ts e2e/replace-exercise-errors.spec.ts e2e/superset-edge-cases.spec.ts --project=chromium`; then refresh only `/workout_plan` visual snapshots; then run full `npm run test:py` and `npm run test:e2e`.
     - [ ] **Review gate:** human approves the six refreshed `/workout_plan` screenshots (desktop/tablet/mobile × light/dark) as an obvious visual improvement before the subphase commit is considered done.
-- [ ] P6f: Global surface background — in a separate visual-change commit, replace [styles_general.css:19-26](static/css/styles_general.css#L19-L26) with `body { background: var(--surface-0); }`; full 42-screenshot review and re-baseline required
+- [x] P6f: Global surface background — in a separate visual-change commit, added `body { background: var(--surface-0); }` override in `components-overlay.css` (additive, legacy gradient still in `styles_general.css`); full 42-screenshot review and re-baseline required
 
 **Exit gate (after each sub-phase)**
 - [x] pytest + E2E green
