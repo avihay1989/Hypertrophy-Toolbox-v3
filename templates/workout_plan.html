@@ -182,7 +182,10 @@
 
                     <!-- Exercise Dropdown -->
                     <div class="col-12 exercise-selector selection-field">
-                        <label for="exercise" class="form-label">Exercise</label>
+                        <label for="exercise" class="form-label">
+                            Exercise
+                            <span id="exercise-match-count" class="exercise-match-count" aria-live="polite" aria-label="Matching exercises count"></span>
+                        </label>
                         <select id="exercise" name="exercise" data-testid="exercise-search" class="form-select uniform-dropdown exercise-dropdown input-calm-inset" aria-label="Select exercise">
                             {% for exercise in exercises %}
                             {% if exercise %}

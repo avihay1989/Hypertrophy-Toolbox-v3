@@ -2363,6 +2363,24 @@
   display: none;
 }
 
+/* Matching-exercises badge next to "Exercise" label */
+#workout[data-page="workout-plan"] .exercise-match-count {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: var(--wp-fw-medium, 500);
+  color: var(--wp-text-muted, #6b7280);
+  background: var(--wp-border, rgba(0, 0, 0, 0.06));
+  border-radius: 10px;
+  vertical-align: middle;
+}
+
+#workout[data-page="workout-plan"] .exercise-match-count:empty {
+  display: none;
+}
+
 /* Responsive: wrap tabs on smaller screens if needed */
 @media (max-width: 768px) {
   #workout[data-page="workout-plan"] .routine-tabs {
