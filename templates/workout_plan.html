@@ -198,59 +198,65 @@
                     <!-- Action Buttons -->
                     <div class="col-12">
                         <div class="selection-actions buttons-row" id="action-buttons-row" role="group" aria-label="Exercise selection actions">
-                            <!-- Add Exercise Button -->
-                            <div class="inline-control-item" data-order="3">
-                                <button id="add_exercise_btn" data-testid="add-exercise-btn" class="btn btn-primary btn-calm-primary" type="button" aria-label="Add exercise to workout plan">
-                                    <i class="fas fa-plus" aria-hidden="true"></i> Add Exercise
-                                </button>
+                            <div class="action-toolbar-group action-toolbar-group-left" role="group" aria-label="Export actions">
+                                <!-- Export to Workout Log Button -->
+                                <div class="inline-control-item">
+                                    <button id="export-to-log-btn" data-testid="export-to-log-btn" class="btn btn-export-log btn-calm-primary" type="button" onclick="exportToWorkoutLog()" aria-label="Export to workout log">
+                                        <i class="fas fa-clipboard-list" aria-hidden="true"></i> Export to Workout Log
+                                    </button>
+                                </div>
+
+                                <!-- Export All Tables Button -->
+                                <div class="inline-control-item">
+                                    <button type="button" data-testid="export-excel-btn" class="btn btn-export-excel btn-calm-ghost" onclick="exportToExcel()" aria-label="Export workout plan to Excel">
+                                        <i class="fas fa-file-excel" aria-hidden="true"></i> Export All Tables
+                                    </button>
+                                </div>
                             </div>
 
-                            <!-- Clear Filters Button -->
-                            <div class="inline-control-item" data-order="4">
-                                <button id="clear-filters-btn" data-testid="clear-filters-btn" class="btn btn-outline-secondary btn-calm-ghost" type="button" aria-label="Clear all filters">
-                                    <i class="fas fa-times" aria-hidden="true"></i> Clear Filters
-                                </button>
+                            <div class="action-toolbar-group action-toolbar-group-center" role="group" aria-label="Plan editing actions">
+                                <!-- Add Exercise Button -->
+                                <div class="inline-control-item">
+                                    <button id="add_exercise_btn" data-testid="add-exercise-btn" class="btn btn-primary btn-calm-primary" type="button" aria-label="Add exercise to workout plan">
+                                        <i class="fas fa-plus" aria-hidden="true"></i> Add Exercise
+                                    </button>
+                                </div>
+
+                                <!-- Generate Starter Plan Button -->
+                                <div class="inline-control-item">
+                                    <button id="generate-plan-btn" class="btn btn-success btn-calm-primary" type="button" data-bs-toggle="modal" data-bs-target="#generatePlanModal" aria-label="Generate a starter workout plan">
+                                        <i class="fas fa-magic" aria-hidden="true"></i> Generate Starter Plan
+                                    </button>
+                                </div>
+
+                                <!-- Clear Filters Button -->
+                                <div class="inline-control-item">
+                                    <button id="clear-filters-btn" data-testid="clear-filters-btn" class="btn btn-outline-secondary btn-calm-ghost" type="button" aria-label="Clear all filters">
+                                        <i class="fas fa-times" aria-hidden="true"></i> Clear Filters
+                                    </button>
+                                </div>
                             </div>
 
-                            <!-- Export All Tables Button -->
-                            <div class="inline-control-item" data-order="5">
-                                <button type="button" data-testid="export-excel-btn" class="btn btn-export-excel btn-calm-ghost" onclick="exportToExcel()" aria-label="Export workout plan to Excel">
-                                    <i class="fas fa-file-excel" aria-hidden="true"></i> Export All Tables
-                                </button>
-                            </div>
+                            <div class="action-toolbar-group action-toolbar-group-right" role="group" aria-label="Program actions">
+                                <!-- Program Library Buttons -->
+                                <div class="inline-control-item">
+                                    <button id="save-program-btn" class="btn btn-outline-primary btn-calm-ghost" type="button" data-bs-toggle="modal" data-bs-target="#saveBackupModal" aria-label="Save current program">
+                                        <i class="fas fa-save" aria-hidden="true"></i> Save Program
+                                    </button>
+                                </div>
 
-                            <!-- Export to Workout Log Button -->
-                            <div class="inline-control-item" data-order="6">
-                                <button id="export-to-log-btn" data-testid="export-to-log-btn" class="btn btn-export-log btn-calm-primary" type="button" onclick="exportToWorkoutLog()" aria-label="Export to workout log">
-                                    <i class="fas fa-clipboard-list" aria-hidden="true"></i> Export to Workout Log
-                                </button>
-                            </div>
+                                <div class="inline-control-item">
+                                    <button id="load-program-btn" class="btn btn-outline-secondary btn-calm-ghost" type="button" data-bs-toggle="modal" data-bs-target="#programLibraryModal" aria-label="Load saved program">
+                                        <i class="fas fa-folder-open" aria-hidden="true"></i> Program Library
+                                    </button>
+                                </div>
 
-                            <!-- Generate Starter Plan Button -->
-                            <div class="inline-control-item" data-order="7">
-                                <button id="generate-plan-btn" class="btn btn-success btn-calm-primary" type="button" data-bs-toggle="modal" data-bs-target="#generatePlanModal" aria-label="Generate a starter workout plan">
-                                    <i class="fas fa-magic" aria-hidden="true"></i> Generate Starter Plan
-                                </button>
-                            </div>
-                            
-                            <!-- Program Library Buttons -->
-                            <div class="inline-control-item" data-order="8">
-                                <button id="save-program-btn" class="btn btn-outline-primary btn-calm-ghost" type="button" data-bs-toggle="modal" data-bs-target="#saveBackupModal" aria-label="Save current program">
-                                    <i class="fas fa-save" aria-hidden="true"></i> Save Program
-                                </button>
-                            </div>
-                            
-                            <div class="inline-control-item" data-order="9">
-                                <button id="load-program-btn" class="btn btn-outline-secondary btn-calm-ghost" type="button" data-bs-toggle="modal" data-bs-target="#programLibraryModal" aria-label="Load saved program">
-                                    <i class="fas fa-folder-open" aria-hidden="true"></i> Program Library
-                                </button>
-                            </div>
-                            
-                            <!-- Clear Plan Button -->
-                            <div class="inline-control-item" data-order="10">
-                                <button id="clear-plan-btn" class="btn btn-outline-danger btn-calm-danger" type="button" data-bs-toggle="modal" data-bs-target="#clearPlanModal" aria-label="Clear entire workout plan">
-                                    <i class="fas fa-trash-alt" aria-hidden="true"></i> Clear Plan
-                                </button>
+                                <!-- Clear Plan Button -->
+                                <div class="inline-control-item">
+                                    <button id="clear-plan-btn" class="btn btn-outline-danger btn-calm-danger" type="button" data-bs-toggle="modal" data-bs-target="#clearPlanModal" aria-label="Clear entire workout plan">
+                                        <i class="fas fa-trash-alt" aria-hidden="true"></i> Clear Plan
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
