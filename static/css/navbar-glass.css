@@ -55,7 +55,9 @@
   border: 1px solid var(--nav-pill-border);
   color: var(--nav-pill-ink);
   font-family: var(--font-sans, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  justify-content: center;
   letter-spacing: 0;
+  text-align: center;
   transition:
     background var(--dur-fast, 150ms) var(--ease-out, ease),
     border-color var(--dur-fast, 150ms) var(--ease-out, ease),
