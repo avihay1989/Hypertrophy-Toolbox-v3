@@ -1,3 +1,376 @@
+/* ============================================================
+   CSS DESIGN TOKENS - Responsive Scaling System
+   ============================================================
+   These custom properties provide consistent, responsive spacing
+   and sizing across all viewport sizes.
+   
+   Supported Resolutions:
+   - 1280x720 (HD)
+   - 1366x768 (Common laptops)
+   - 1536x864 (125% scaled laptops)
+   - 1440x900, 1600x900 (HD+)
+   - 1920x1080 (Full HD)
+   - 2560x1440 (QHD)
+   - 3840x2160 (4K)
+   ============================================================ */
+
+:root {
+  /* ============================================================
+     SPACING SCALE - Base/Default values
+     ============================================================ */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 0.75rem;
+  --space-lg: 1rem;
+  --space-xl: 1.5rem;
+  --space-2xl: 2rem;
+
+  /* ============================================================
+     CONTAINER WIDTHS
+     ============================================================ */
+  --container-max-sm: 540px;
+  --container-max-md: 720px;
+  --container-max-lg: 960px;
+  --container-max-xl: 1140px;
+  --container-max-xxl: 1320px;
+  --container-max-fhd: 1800px;
+  --container-max-qhd: 2200px;
+
+  /* ============================================================
+     INPUT SIZING - Base values
+     ============================================================ */
+  --input-height-sm: 32px;
+  --input-height-md: 38px;
+  --input-height-lg: 45px;
+  
+  --input-padding-x: 0.75rem;
+  --input-padding-y: 0.375rem;
+  
+  --input-font-size: 0.9rem;
+  --input-min-width: 100px;
+
+  /* ============================================================
+     BUTTON SIZING
+     ============================================================ */
+  --btn-padding-x: 1rem;
+  --btn-padding-y: 0.5rem;
+  --btn-font-size: 0.875rem;
+  --btn-height: 36px;
+
+  /* ============================================================
+     FRAME/CARD SPACING
+     ============================================================ */
+  --frame-padding: 1rem;
+  --frame-gap: 0.75rem;
+  --frame-border-radius: 8px;
+
+  /* ============================================================
+     TABLE SIZING
+     ============================================================ */
+  --table-cell-padding-x: 0.625rem;
+  --table-cell-padding-y: 0.5rem;
+  --table-font-size: 0.875rem;
+
+  /* ============================================================
+     TYPOGRAPHY SCALE
+     ============================================================ */
+  --font-size-xs: 0.7rem;
+  --font-size-sm: 0.75rem;
+  --font-size-base: 0.875rem;
+  --font-size-lg: 1rem;
+  --font-size-xl: 1.125rem;
+  --font-size-2xl: 1.25rem;
+  --font-size-3xl: 1.5rem;
+}
+
+/* ============================================================
+   720p / HD (max-width: 1280px) - Very Compact
+   ============================================================ */
+@media screen and (max-width: 1280px) {
+  :root {
+    --space-xs: 0.125rem;
+    --space-sm: 0.25rem;
+    --space-md: 0.375rem;
+    --space-lg: 0.5rem;
+    --space-xl: 0.75rem;
+    
+    --input-height-sm: 24px;
+    --input-height-md: 26px;
+    --input-height-lg: 32px;
+    --input-padding-x: 0.375rem;
+    --input-padding-y: 0.125rem;
+    --input-font-size: 0.7rem;
+    --input-min-width: 55px;
+    
+    --btn-padding-x: 0.4rem;
+    --btn-padding-y: 0.2rem;
+    --btn-font-size: 0.68rem;
+    --btn-height: 24px;
+    
+    --frame-padding: 0.5rem;
+    --frame-gap: 0.375rem;
+    
+    --table-cell-padding-x: 0.25rem;
+    --table-cell-padding-y: 0.25rem;
+    --table-font-size: 0.7rem;
+    
+    --font-size-xs: 0.6rem;
+    --font-size-sm: 0.65rem;
+    --font-size-base: 0.7rem;
+    --font-size-lg: 0.75rem;
+    --font-size-xl: 0.85rem;
+    --font-size-2xl: 0.95rem;
+    --font-size-3xl: 1.1rem;
+  }
+}
+
+/* ============================================================
+   1366x768 (Common laptops) - Compact
+   ============================================================ */
+@media screen and (min-width: 1281px) and (max-width: 1366px) {
+  :root {
+    --space-xs: 0.15rem;
+    --space-sm: 0.3rem;
+    --space-md: 0.4rem;
+    --space-lg: 0.6rem;
+    --space-xl: 0.85rem;
+    
+    --input-height-sm: 25px;
+    --input-height-md: 28px;
+    --input-height-lg: 34px;
+    --input-padding-x: 0.4rem;
+    --input-padding-y: 0.15rem;
+    --input-font-size: 0.72rem;
+    --input-min-width: 60px;
+    
+    --btn-padding-x: 0.45rem;
+    --btn-padding-y: 0.22rem;
+    --btn-font-size: 0.7rem;
+    --btn-height: 26px;
+    
+    --frame-padding: 0.55rem;
+    --frame-gap: 0.4rem;
+    
+    --table-cell-padding-x: 0.3rem;
+    --table-cell-padding-y: 0.3rem;
+    --table-font-size: 0.72rem;
+    
+    --font-size-xs: 0.62rem;
+    --font-size-sm: 0.68rem;
+    --font-size-base: 0.72rem;
+    --font-size-lg: 0.78rem;
+    --font-size-xl: 0.88rem;
+    --font-size-2xl: 1rem;
+    --font-size-3xl: 1.15rem;
+  }
+}
+
+/* ============================================================
+   1536x864 (125% scaled laptops) - Compact+
+   ============================================================ */
+@media screen and (min-width: 1367px) and (max-width: 1536px) {
+  :root {
+    --space-xs: 0.175rem;
+    --space-sm: 0.325rem;
+    --space-md: 0.45rem;
+    --space-lg: 0.65rem;
+    --space-xl: 0.9rem;
+    
+    --input-height-sm: 26px;
+    --input-height-md: 30px;
+    --input-height-lg: 36px;
+    --input-padding-x: 0.45rem;
+    --input-padding-y: 0.175rem;
+    --input-font-size: 0.75rem;
+    --input-min-width: 65px;
+    
+    --btn-padding-x: 0.5rem;
+    --btn-padding-y: 0.25rem;
+    --btn-font-size: 0.73rem;
+    --btn-height: 28px;
+    
+    --frame-padding: 0.6rem;
+    --frame-gap: 0.45rem;
+    
+    --table-cell-padding-x: 0.325rem;
+    --table-cell-padding-y: 0.325rem;
+    --table-font-size: 0.75rem;
+    
+    --font-size-xs: 0.65rem;
+    --font-size-sm: 0.7rem;
+    --font-size-base: 0.75rem;
+    --font-size-lg: 0.8rem;
+    --font-size-xl: 0.9rem;
+    --font-size-2xl: 1.05rem;
+    --font-size-3xl: 1.2rem;
+  }
+}
+
+/* ============================================================
+   HD+ 1600x900 (1537px - 1600px) - Medium Compact
+   ============================================================ */
+@media screen and (min-width: 1537px) and (max-width: 1600px) {
+  :root {
+    --space-xs: 0.185rem;
+    --space-sm: 0.35rem;
+    --space-md: 0.475rem;
+    --space-lg: 0.7rem;
+    --space-xl: 0.95rem;
+    
+    --input-height-sm: 27px;
+    --input-height-md: 30px;
+    --input-height-lg: 36px;
+    --input-padding-x: 0.475rem;
+    --input-padding-y: 0.2rem;
+    --input-font-size: 0.78rem;
+    --input-min-width: 68px;
+    
+    --btn-padding-x: 0.55rem;
+    --btn-padding-y: 0.275rem;
+    --btn-font-size: 0.76rem;
+    --btn-height: 29px;
+    
+    --frame-padding: 0.65rem;
+    --frame-gap: 0.475rem;
+    
+    --table-cell-padding-x: 0.35rem;
+    --table-cell-padding-y: 0.35rem;
+    --table-font-size: 0.78rem;
+    
+    --font-size-xs: 0.68rem;
+    --font-size-sm: 0.72rem;
+    --font-size-base: 0.78rem;
+    --font-size-lg: 0.85rem;
+    --font-size-xl: 0.95rem;
+    --font-size-2xl: 1.1rem;
+    --font-size-3xl: 1.25rem;
+  }
+}
+
+/* ============================================================
+   FHD 1920x1080 (1601px - 1920px) - Standard Compact
+   ============================================================ */
+@media screen and (min-width: 1601px) and (max-width: 1920px) {
+  :root {
+    --space-xs: 0.2rem;
+    --space-sm: 0.375rem;
+    --space-md: 0.5rem;
+    --space-lg: 0.75rem;
+    --space-xl: 1rem;
+    
+    --input-height-sm: 28px;
+    --input-height-md: 32px;
+    --input-height-lg: 38px;
+    --input-padding-x: 0.5rem;
+    --input-padding-y: 0.25rem;
+    --input-font-size: 0.8rem;
+    --input-min-width: 70px;
+    
+    --btn-padding-x: 0.625rem;
+    --btn-padding-y: 0.3rem;
+    --btn-font-size: 0.8rem;
+    --btn-height: 30px;
+    
+    --frame-padding: 0.75rem;
+    --frame-gap: 0.5rem;
+    
+    --table-cell-padding-x: 0.375rem;
+    --table-cell-padding-y: 0.375rem;
+    --table-font-size: 0.8rem;
+    
+    --font-size-xs: 0.7rem;
+    --font-size-sm: 0.75rem;
+    --font-size-base: 0.8rem;
+    --font-size-lg: 0.875rem;
+    --font-size-xl: 1rem;
+    --font-size-2xl: 1.125rem;
+    --font-size-3xl: 1.375rem;
+  }
+}
+
+/* ============================================================
+   QHD 2560x1440 (1921px - 2560px) - Standard
+   ============================================================ */
+@media screen and (min-width: 1921px) and (max-width: 2560px) {
+  :root {
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 0.75rem;
+    --space-lg: 1rem;
+    --space-xl: 1.25rem;
+    
+    --input-height-sm: 32px;
+    --input-height-md: 38px;
+    --input-height-lg: 44px;
+    --input-padding-x: 0.625rem;
+    --input-padding-y: 0.375rem;
+    --input-font-size: 0.85rem;
+    --input-min-width: 90px;
+    
+    --btn-padding-x: 0.875rem;
+    --btn-padding-y: 0.4rem;
+    --btn-font-size: 0.85rem;
+    --btn-height: 36px;
+    
+    --frame-padding: 1rem;
+    --frame-gap: 0.75rem;
+    
+    --table-cell-padding-x: 0.625rem;
+    --table-cell-padding-y: 0.5rem;
+    --table-font-size: 0.85rem;
+    
+    --font-size-xs: 0.75rem;
+    --font-size-sm: 0.8rem;
+    --font-size-base: 0.85rem;
+    --font-size-lg: 0.95rem;
+    --font-size-xl: 1.05rem;
+    --font-size-2xl: 1.2rem;
+    --font-size-3xl: 1.5rem;
+  }
+}
+
+/* ============================================================
+   4K 3840x2160 (2561px+) - Large
+   ============================================================ */
+@media screen and (min-width: 2561px) {
+  :root {
+    --space-xs: 0.375rem;
+    --space-sm: 0.75rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    
+    --input-height-sm: 40px;
+    --input-height-md: 48px;
+    --input-height-lg: 56px;
+    --input-padding-x: 1rem;
+    --input-padding-y: 0.5rem;
+    --input-font-size: 1rem;
+    --input-min-width: 140px;
+    
+    --btn-padding-x: 1.25rem;
+    --btn-padding-y: 0.625rem;
+    --btn-font-size: 1rem;
+    --btn-height: 44px;
+    
+    --frame-padding: 1.5rem;
+    --frame-gap: 1rem;
+    
+    --table-cell-padding-x: 0.875rem;
+    --table-cell-padding-y: 0.75rem;
+    --table-font-size: 1rem;
+    
+    --font-size-xs: 0.85rem;
+    --font-size-sm: 0.9rem;
+    --font-size-base: 1rem;
+    --font-size-lg: 1.125rem;
+    --font-size-xl: 1.25rem;
+    --font-size-2xl: 1.5rem;
+    --font-size-3xl: 1.875rem;
+  }
+}
+
+
 /* Calm Glass 2026 redesign tokens.
    Additive only: do not override legacy responsive or glass token names. */
 
