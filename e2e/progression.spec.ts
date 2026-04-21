@@ -352,9 +352,9 @@ test.describe('Progression Goal Lifecycle Smoke', () => {
     await exerciseSelector.selectOption(selectedValue!);
 
     await expect(page.locator('#suggestionsContainer')).toBeVisible();
-    await expect(page.locator('.suggestion-card[data-goal-type="weight"]')).toBeVisible();
-    await expect(page.locator('.suggestion-card[data-goal-type="reps"]')).toBeVisible();
-    await expect(page.locator('.suggestion-card[data-goal-type="sets"]')).toBeVisible();
+    await expect(page.locator('.suggestion-card[data-goal-type="weight"]').first()).toBeVisible();
+    await expect(page.locator('.suggestion-card[data-goal-type="reps"]').first()).toBeVisible();
+    await expect(page.locator('.suggestion-card[data-goal-type="sets"]').first()).toBeVisible();
 
     const weightGoalButton = page.locator('.set-goal-btn[data-goal-type="weight"]').first();
     await expect(weightGoalButton).toBeVisible();

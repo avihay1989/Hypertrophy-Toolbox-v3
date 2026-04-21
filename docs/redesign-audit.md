@@ -71,6 +71,17 @@ Captured: 2026-04-22
 - No legacy CSS files were unlinked or deleted in P9b.
 - The visual baselines were refreshed after the post-bugfix UI state and screenshot-only harness stabilization. Production CSS and templates are not changed by the harness rules.
 
+## P9c Additive Layout Bundle
+
+Captured: 2026-04-22
+
+- `static/css/layout.css` is the additive consolidation target for `styles_layout.css`, `styles_responsive.css`, and `responsive.css`.
+- `layout.css` matches those three GLOBAL source files line-for-line with one blank separator between files: source sum 1,989 lines, target 1,991 lines (+0.10%).
+- `styles_frames.css` remains PAGE-scoped and is not included in `layout.css`.
+- `templates/base.html` links `layout.css` immediately after `styles_layout.css` and `styles_responsive.css`, while keeping all legacy source links present. `responsive.css` remains in its legacy position after `styles_tables.css` to preserve the existing table/component cascade during the additive period.
+- No legacy CSS files were unlinked or deleted in P9c.
+- The focused progression spec now uses `.first()` for non-unique suggestion-card goal-type assertions so duplicate valid suggestions do not trip Playwright strict mode.
+
 ## Capture Environment
 
 | Tool | Version |
@@ -85,7 +96,8 @@ Captured: 2026-04-22
 | --- | --- |
 | `npm run build:css` | Passed; Sass emitted existing Bootstrap deprecation warnings |
 | `npm run test:py` | 913 passed, 1 skipped |
-| `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-playwright.ps1 e2e/visual.spec.ts --project=chromium` | 42 passed after P9b baseline refresh |
+| `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-playwright.ps1 e2e/progression.spec.ts --project=chromium` | 25 passed |
+| `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-playwright.ps1 e2e/visual.spec.ts --project=chromium` | 42 passed after P9c link-order adjustment; no snapshot refresh needed |
 | `npm run test:e2e` | 320 non-visual tests passed, then 42 visual tests passed |
 
 ## Notes
