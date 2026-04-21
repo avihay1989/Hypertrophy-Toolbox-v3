@@ -349,17 +349,17 @@ export function initializeProgressionPlan() {
         
         suggestions.forEach(suggestion => {
             const card = document.createElement('div');
-            card.className = 'col-md-6 col-lg-3';
+            card.className = 'col-md-6 col-lg-3 d-flex';
             // Include current_value and suggested_value as data attributes if available
             // Check for both undefined and null to handle cases where Python None becomes JSON null
             const currentValue = (suggestion.current_value !== undefined && suggestion.current_value !== null) ? suggestion.current_value : '';
             const suggestedValue = (suggestion.suggested_value !== undefined && suggestion.suggested_value !== null) ? suggestion.suggested_value : '';
             card.innerHTML = `
-                <div class="card suggestion-card" data-goal-type="${suggestion.type}">
+                <div class="card suggestion-card glass-neumorph-card h-100 w-100" data-goal-type="${suggestion.type}">
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title">${suggestion.title}</h5>
                         <p class="card-text">${suggestion.description}</p>
-                        <button class="btn btn-primary set-goal-btn mt-auto" 
+                        <button class="btn btn-primary btn-calm-primary set-goal-btn mt-auto" 
                                 data-goal-type="${suggestion.type}"
                                 data-exercise="${exercise}"
                                 data-current-value="${currentValue}"
@@ -472,12 +472,12 @@ export function initializeProgressionPlan() {
 
 function createSuggestionCard(suggestion) {
     return `
-        <div class="col-md-6 col-lg-3 mb-4">
-            <div class="card suggestion-card h-100">
+        <div class="col-md-6 col-lg-3 mb-4 d-flex">
+            <div class="card suggestion-card glass-neumorph-card h-100 w-100">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">${suggestion.title}</h5>
                     <p class="card-text">${suggestion.description}</p>
-                    <button class="btn btn-primary set-goal-btn mt-auto" 
+                    <button class="btn btn-primary btn-calm-primary set-goal-btn mt-auto" 
                             data-goal-type="${suggestion.type}"
                             onclick="openGoalModal(this)">
                         ${suggestion.action}

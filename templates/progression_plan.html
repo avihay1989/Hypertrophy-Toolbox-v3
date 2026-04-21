@@ -17,9 +17,9 @@
     </div>
     
     <!-- Exercise Selection -->
-    <div class="exercise-selector mb-4">
+    <div class="exercise-selector frame-calm-glass mb-4">
         <h4>Select Exercise to Progress</h4>
-        <div class="debug-info" style="margin-bottom: 1rem; font-size: 0.8rem; color: #666;">
+        <div class="debug-info text-muted small mb-3">
             Available exercises: {{ exercises|length }}
         </div>
         <select id="exerciseSelect" class="form-select input-calm-inset">
@@ -33,7 +33,7 @@
     </div>
     
     <!-- Suggestions Container -->
-    <div id="suggestionsContainer" class="suggestions-container" style="display: none;">
+    <div id="suggestionsContainer" class="suggestions-container frame-calm-glass" style="display: none;">
         <h4>Progression Suggestions</h4>
         <div id="suggestionsList" class="row g-4">
             <!-- Suggestions will be populated here -->
@@ -41,43 +41,47 @@
     </div>
     
     <!-- Current Goals -->
-    <div class="current-goals mt-4">
+    <div class="current-goals frame-calm-glass mt-4">
         <h4>Current Goals</h4>
-        <div class="table-responsive">
-            <table class="table">
+        <div class="tbl-wrap tbl-wrap--full" role="region" aria-label="Current progression goals table">
+            <table class="table table-striped table-calm tbl tbl--responsive"
+                   role="table"
+                   aria-label="Current progression goals">
                 <thead>
                     <tr>
-                        <th>Exercise</th>
-                        <th>Goal Type</th>
-                        <th>Current Value</th>
-                        <th>Target Value</th>
-                        <th>Goal Date</th>
-                        <th>Status</th>
-                        <th>Actions</th>
+                        <th scope="col" class="col--high" data-label="Exercise">Exercise</th>
+                        <th scope="col" class="col--med" data-label="Goal Type">Goal Type</th>
+                        <th scope="col" class="col--med is-num" data-label="Current Value">Current Value</th>
+                        <th scope="col" class="col--med is-num" data-label="Target Value">Target Value</th>
+                        <th scope="col" class="col--med" data-label="Goal Date">Goal Date</th>
+                        <th scope="col" class="col--med" data-label="Status">Status</th>
+                        <th scope="col" class="col--high" data-label="Actions">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for goal in goals %}
                     <tr>
-                        <td>{{ goal.exercise }}</td>
-                        <td>{{ goal.goal_type }}</td>
-                        <td>{{ goal.current_value }}</td>
-                        <td>{{ goal.target_value }}</td>
-                        <td>{{ goal.goal_date|datetime('%d-%m-%Y') }}</td>
-                        <td>
-                            <span class="badge bg-primary">In Progress</span>
+                        <td data-label="Exercise">{{ goal.exercise }}</td>
+                        <td data-label="Goal Type">{{ goal.goal_type }}</td>
+                        <td data-label="Current Value" class="is-num">{{ goal.current_value }}</td>
+                        <td data-label="Target Value" class="is-num">{{ goal.target_value }}</td>
+                        <td data-label="Goal Date">{{ goal.goal_date|datetime('%d-%m-%Y') }}</td>
+                        <td data-label="Status">
+                            <span class="badge bg-primary goal-status-badge">In Progress</span>
                         </td>
-                        <td>
-                            <button class="btn btn-success btn-sm complete-goal btn-calm-primary" 
-                                    data-goal-id="{{ goal.id }}"
-                                    title="Mark as Completed">
-                                <i class="fas fa-check"></i> Complete
-                            </button>
-                            <button class="btn btn-danger btn-sm delete-goal btn-calm-danger" 
-                                    data-goal-id="{{ goal.id }}"
-                                    title="Delete Goal">
-                                <i class="fas fa-trash"></i> Remove
-                            </button>
+                        <td data-label="Actions">
+                            <div class="goal-actions">
+                                <button class="btn btn-success btn-sm complete-goal btn-calm-primary"
+                                        data-goal-id="{{ goal.id }}"
+                                        title="Mark as Completed">
+                                    <i class="fas fa-check"></i> Complete
+                                </button>
+                                <button class="btn btn-danger btn-sm delete-goal btn-calm-danger"
+                                        data-goal-id="{{ goal.id }}"
+                                        title="Delete Goal">
+                                    <i class="fas fa-trash"></i> Remove
+                                </button>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}

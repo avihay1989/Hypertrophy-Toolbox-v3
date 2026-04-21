@@ -210,8 +210,8 @@
   opacity: 0.72 !important;
 }
 
-:is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass) :where(.table).table-calm,
-:is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass) .table.table-calm {
+:is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass, .progression-plan-container) :where(.table).table-calm,
+:is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass, .progression-plan-container) .table.table-calm {
   background: var(--calm-glass-bg, rgba(255, 255, 255, 0.55)) !important;
   backdrop-filter: blur(var(--calm-glass-blur, 18px)) saturate(var(--calm-glass-sat, 180%)) !important;
   -webkit-backdrop-filter: blur(var(--calm-glass-blur, 18px)) saturate(var(--calm-glass-sat, 180%)) !important;
@@ -226,7 +226,7 @@
   overflow: hidden !important;
 }
 
-:is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass) .table.table-calm > :not(caption) > * > * {
+:is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass, .progression-plan-container) .table.table-calm > :not(caption) > * > * {
   border-color: transparent !important;
   box-shadow: none !important;
   color: var(--ink-1, #0f1220) !important;
@@ -235,7 +235,7 @@
   padding: var(--wp-table-cell-padding, 0.75rem 1rem) !important;
 }
 
-:is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass) .table.table-calm thead th {
+:is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass, .progression-plan-container) .table.table-calm thead th {
   background: var(--surface-1, #f4f6fa) !important;
   border-bottom: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 20%, transparent) !important;
   color: var(--ink-2, #4a5170) !important;
@@ -243,7 +243,7 @@
   text-shadow: none !important;
 }
 
-:is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass) .table.table-calm tbody td {
+:is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass, .progression-plan-container) .table.table-calm tbody td {
   background: color-mix(in srgb, var(--surface-2, #ffffff) 72%, transparent) !important;
   border-bottom: 1px solid color-mix(in srgb, var(--ink-3, #8a90a8) 16%, transparent) !important;
   transition:
@@ -252,39 +252,39 @@
     color var(--dur-fast, 150ms) var(--ease-out, ease) !important;
 }
 
-:is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass) .table.table-calm tbody tr:nth-child(even) td {
+:is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass, .progression-plan-container) .table.table-calm tbody tr:nth-child(even) td {
   background: color-mix(in srgb, var(--surface-1, #f4f6fa) 62%, transparent) !important;
 }
 
-:is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass) .table.table-calm tbody tr:hover td {
+:is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass, .progression-plan-container) .table.table-calm tbody tr:hover td {
   background: color-mix(in srgb, var(--accent, #4c6ef5) 10%, transparent) !important;
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent, #4c6ef5) 18%, transparent) !important;
 }
 
-:is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass) .table.table-calm tbody tr:last-child td {
+:is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass, .progression-plan-container) .table.table-calm tbody tr:last-child td {
   border-bottom-color: transparent !important;
 }
 
-[data-theme='dark'] :is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass) .table.table-calm {
+[data-theme='dark'] :is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass, .progression-plan-container) .table.table-calm {
   background: var(--calm-glass-bg, rgba(29, 34, 56, 0.55)) !important;
   box-shadow: var(--shadow-neu-out, 8px 8px 20px rgba(0, 0, 0, 0.55), -8px -8px 20px rgba(255, 255, 255, 0.04)) !important;
 }
 
-[data-theme='dark'] :is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass) .table.table-calm thead th {
+[data-theme='dark'] :is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass, .progression-plan-container) .table.table-calm thead th {
   background: var(--surface-1, #161a2d) !important;
   color: var(--ink-2, #b4bad0) !important;
 }
 
-[data-theme='dark'] :is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass) .table.table-calm tbody td {
+[data-theme='dark'] :is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass, .progression-plan-container) .table.table-calm tbody td {
   background: color-mix(in srgb, var(--surface-2, #1d2238) 74%, transparent) !important;
   color: var(--ink-1, #eef1f6) !important;
 }
 
-[data-theme='dark'] :is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass) .table.table-calm tbody tr:nth-child(even) td {
+[data-theme='dark'] :is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass, .progression-plan-container) .table.table-calm tbody tr:nth-child(even) td {
   background: color-mix(in srgb, var(--surface-1, #161a2d) 68%, transparent) !important;
 }
 
-[data-theme='dark'] :is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass) .table.table-calm tbody tr:hover td {
+[data-theme='dark'] :is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass, .progression-plan-container) .table.table-calm tbody tr:hover td {
   background: color-mix(in srgb, var(--accent, #4c6ef5) 14%, var(--surface-2, #1d2238) 86%) !important;
 }
 
@@ -971,25 +971,7 @@
   font-family: var(--font-sans, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif) !important;
 }
 
-.progression-plan-container .current-goals .table {
-  color: var(--ink-1, #0f1220) !important;
-  font-family: var(--font-sans, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif) !important;
-}
-
-.progression-plan-container .current-goals .table thead th {
-  background: var(--surface-1, #f4f6fa) !important;
-  border-bottom: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 20%, transparent) !important;
-  color: var(--ink-2, #4a5170) !important;
-  font-weight: 600 !important;
-}
-
-.progression-plan-container .current-goals .table tbody tr:hover td {
-  background: color-mix(in srgb, var(--accent, #4c6ef5) 8%, transparent) !important;
-}
-
-.progression-plan-container .exercise-selector,
-.progression-plan-container .current-goals,
-.progression-plan-container .suggestions-container {
+.progression-plan-container .frame-calm-glass {
   background: color-mix(in srgb, var(--surface-2, #ffffff) 72%, transparent) !important;
   border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 12%, transparent) !important;
   border-radius: 8px !important;
@@ -1005,18 +987,57 @@
   font-family: var(--font-sans, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif) !important;
 }
 
-[data-theme='dark'] .progression-plan-container .exercise-selector,
-[data-theme='dark'] .progression-plan-container .current-goals,
-[data-theme='dark'] .progression-plan-container .suggestions-container {
+[data-theme='dark'] .progression-plan-container .frame-calm-glass {
   background: color-mix(in srgb, var(--surface-2, #1d2238) 74%, transparent) !important;
 }
 
-[data-theme='dark'] .progression-plan-container .current-goals .table thead th {
-  background: var(--surface-1, #161a2d) !important;
+[data-theme='dark'] .progression-plan-container .glass-neumorph-card {
+  background: var(--calm-glass-bg, rgba(29, 34, 56, 0.55)) !important;
+  box-shadow: var(--shadow-neu-out, 8px 8px 20px rgba(0, 0, 0, 0.55), -8px -8px 20px rgba(255, 255, 255, 0.04)) !important;
+  color: var(--ink-1, #eef1f6) !important;
+}
+
+[data-theme='dark'] .progression-plan-container .glass-neumorph-card .card-body,
+[data-theme='dark'] .progression-plan-container .glass-neumorph-card .card-title {
+  color: var(--ink-1, #eef1f6) !important;
+}
+
+[data-theme='dark'] .progression-plan-container .glass-neumorph-card .card-text,
+[data-theme='dark'] .progression-plan-container .glass-neumorph-card .text-muted {
   color: var(--ink-2, #b4bad0) !important;
 }
 
-[data-theme='dark'] .progression-plan-container .current-goals .table tbody td {
+[data-theme='dark'] .progression-plan-container .form-control.input-calm-inset,
+[data-theme='dark'] .progression-plan-container .form-select.input-calm-inset {
+  background: color-mix(in srgb, var(--surface-2, #1d2238) 84%, transparent) !important;
+  background-color: color-mix(in srgb, var(--surface-2, #1d2238) 84%, transparent) !important;
+  background-image: none !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 26%, var(--calm-glass-border, rgba(255, 255, 255, 0.08)) 74%) !important;
+  box-shadow: var(--shadow-neu-in, inset 4px 4px 10px rgba(0, 0, 0, 0.55), inset -4px -4px 10px rgba(255, 255, 255, 0.04)) !important;
+  color: var(--ink-1, #eef1f6) !important;
+}
+
+[data-theme='dark'] .progression-plan-container .form-control.input-calm-inset:not(:disabled)::placeholder {
+  color: var(--ink-3, #8a90a8) !important;
+}
+
+[data-theme='dark'] .progression-plan-container .form-control.input-calm-inset:hover:not(:disabled),
+[data-theme='dark'] .progression-plan-container .form-select.input-calm-inset:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--surface-1, #161a2d) 82%, var(--accent, #4c6ef5) 18%) !important;
+  background-color: color-mix(in srgb, var(--surface-1, #161a2d) 82%, var(--accent, #4c6ef5) 18%) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 34%, var(--calm-glass-border, rgba(255, 255, 255, 0.08)) 66%) !important;
+}
+
+[data-theme='dark'] .progression-plan-container .form-control.input-calm-inset:focus,
+[data-theme='dark'] .progression-plan-container .form-control.input-calm-inset:focus-visible,
+[data-theme='dark'] .progression-plan-container .form-select.input-calm-inset:focus,
+[data-theme='dark'] .progression-plan-container .form-select.input-calm-inset:focus-visible {
+  background: var(--surface-2, #1d2238) !important;
+  background-color: var(--surface-2, #1d2238) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 48%, white 12%) !important;
+  box-shadow:
+    var(--shadow-neu-in, inset 4px 4px 10px rgba(0, 0, 0, 0.55), inset -4px -4px 10px rgba(255, 255, 255, 0.04)),
+    0 0 0 3px color-mix(in srgb, var(--accent, #4c6ef5) 24%, transparent) !important;
   color: var(--ink-1, #eef1f6) !important;
 }
 
@@ -1151,7 +1172,7 @@ h1, h2, h3 {
   .form-control.input-calm-inset,
   :where(.form-select).input-calm-inset,
   .form-select.input-calm-inset,
-  :is(#workout[data-page="workout-plan"], .workout-log-page) .table.table-calm tbody td {
+  :is(#workout[data-page="workout-plan"], .workout-log-page, .progression-plan-container) .table.table-calm tbody td {
     transition: none !important;
   }
 
