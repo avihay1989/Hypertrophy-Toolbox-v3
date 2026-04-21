@@ -203,17 +203,23 @@ test.describe('Workout Log with Data', () => {
     await page.locator('#import-from-plan-btn').click();
     await page.waitForTimeout(1000);
 
-    const weightInput = page.locator('input[name*="weight"], .scored-weight-input').first();
-    const count = await weightInput.count();
+    const weightCell = page.locator('td[data-field="scored_weight"]').first();
+    const count = await weightCell.count();
 
     if (count > 0) {
+      const weightDisplay = weightCell.locator('.editable-text').first();
+      await weightDisplay.click();
+
+      const weightInput = weightCell.locator('input').first();
+      await expect(weightInput).toBeVisible();
       await weightInput.fill('100');
       await weightInput.blur();
       
-      await page.waitForTimeout(500);
-      
-      const value = await weightInput.inputValue();
-      expect(value).toBe('100');
+      await page.waitForTimeout(700);
+
+      await expect(weightInput).toBeHidden();
+      await expect(weightDisplay).toBeVisible();
+      await expect(weightDisplay).toContainText('100');
     }
   });
 
