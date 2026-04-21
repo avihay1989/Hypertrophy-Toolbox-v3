@@ -776,9 +776,9 @@ P4c. Initialize backup JS on every page
 
 **Tasks** (one target at a time, one commit each)
 - [ ] P9a-add: Create/refresh `tokens.css`; link it in the redesign overlay block while leaving `styles_tokens.css` linked. Test. Commit.
-- [ ] P9b-add: Create `base.css`; link it after legacy base files while leaving source links/imports present. Test. Commit. **Local implementation + validation complete 2026-04-22; commit pending.**
-- [ ] P9c-add: Create `layout.css` (GLOBAL sources only — no `styles_frames.css`); link it after legacy layout files while leaving source links/imports present. Test. Commit. **Local implementation + validation complete 2026-04-22; commit pending.**
-- [ ] P9d-add: Create `components.css` (GLOBAL sources only — no page-scoped files); link it after legacy component files while leaving source links/imports present. Test. Commit. **If line-count delta exceeds -15% versus source sum, halt.**
+- [x] P9b-add: Create `base.css`; link it after legacy base files while leaving source links/imports present. Test. Commit. **Committed 2026-04-22 in `b4ab1be`.**
+- [x] P9c-add: Create `layout.css` (GLOBAL sources only — no `styles_frames.css`); link it after legacy layout files while leaving source links/imports present. Test. Commit. **Committed 2026-04-22 in `cc1a4b4`.**
+- [x] P9d-add: Create `components.css` (GLOBAL sources only — no page-scoped files); link it additively in the legacy component block while leaving source links/imports present. Test. Commit. **Local implementation + validation complete 2026-04-22; checkpoint commit created. Source sum 4,547 lines, target 4,554 lines (+0.15%).**
 - [ ] P9e-add: Create `navbar.css`; link it after `styles_navbar.css` and `navbar-glass.css` while leaving both source links present. Test. Commit.
 - [ ] P9f-add: Create per-route page bundles (`pages-workout-plan.css`, `pages-workout-log.css`, `pages-weekly-summary.css`, `pages-session-summary.css`, `pages-welcome.css`, `pages-progression.css`, `pages-volume-splitter.css`). For each: replace the legacy `{% block page_css %}` links in the relevant child template with the new bundle link while leaving legacy files present. Each bundle's source list must exactly match what the template loads today — verified against the route-scope contract. Migrate one page bundle at a time, test, and commit per bundle.
 - [ ] P9g-add: Create `theme-dark.css`; link it after all legacy dark/theme sources while leaving source links present. Test. Commit.

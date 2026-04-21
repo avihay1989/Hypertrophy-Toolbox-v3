@@ -82,6 +82,17 @@ Captured: 2026-04-22
 - No legacy CSS files were unlinked or deleted in P9c.
 - The focused progression spec now uses `.first()` for non-unique suggestion-card goal-type assertions so duplicate valid suggestions do not trip Playwright strict mode.
 
+## P9d Additive Components Bundle
+
+Captured: 2026-04-22
+
+- `static/css/components.css` is the additive consolidation target for the GLOBAL component sources: `styles_buttons.css`, `styles_forms.css`, `styles_tables.css`, `styles_cards.css`, `styles_notifications.css`, `styles_modals.css`, `styles_tooltips.css`, and `components-overlay.css`.
+- `components.css` was generated from committed source content to avoid pulling unrelated dirty `components-overlay.css` working-tree changes into the checkpoint.
+- `components.css` matches the committed source files line-for-line with one blank separator between files: source sum 4,547 lines, target 4,554 lines (+0.15%).
+- PAGE-scoped files remain excluded: `styles_dropdowns.css`, `styles_filters.css`, `styles_routine_cascade.css`, `styles_workout_dropdowns.css`, `styles_muscle_selector.css`, `styles_frames.css`, `workout_log.css`, and volume/page CSS.
+- `templates/base.html` links `components.css` additively immediately after `styles_tables.css` and before `responsive.css`. This keeps `responsive.css` and the remaining legacy component links in their existing final cascade positions during the additive period.
+- No legacy CSS files were unlinked or deleted in P9d.
+
 ## Capture Environment
 
 | Tool | Version |
@@ -97,11 +108,12 @@ Captured: 2026-04-22
 | `npm run build:css` | Passed; Sass emitted existing Bootstrap deprecation warnings |
 | `npm run test:py` | 913 passed, 1 skipped |
 | `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-playwright.ps1 e2e/progression.spec.ts --project=chromium` | 25 passed |
-| `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-playwright.ps1 e2e/visual.spec.ts --project=chromium` | 42 passed after P9c link-order adjustment; no snapshot refresh needed |
+| `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-playwright.ps1 e2e/visual.spec.ts --project=chromium` | 42 passed after P9d components link-order adjustment; no snapshot refresh needed |
 | `npm run test:e2e` | 320 non-visual tests passed, then 42 visual tests passed |
 
 ## Notes
 
 - The baseline was initially unstable around animated GIFs, browser-native controls, and the navbar scale widget. Those are now handled in the screenshot harness without changing production CSS or templates.
 - A helper bug in the early `addInitScript` path was caught by the strict page-error fixture and fixed before screenshots were accepted.
+- Playwright web-server output still includes intermittent Windows log rollover `PermissionError` noise for `logs/app.log`, but the affected validation commands exit successfully.
 - Artifacts under `artifacts/` are generated output. The committed visual contract is the seed DB plus the 42 screenshots under `e2e/__screenshots__/`.
