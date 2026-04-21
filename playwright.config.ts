@@ -14,6 +14,7 @@ const playwrightArtifactsDir = path.join(artifactsRoot, 'playwright');
 const defaultViewport = { width: 1440, height: 900 };
 const deterministicChromiumArgs = [
   '--disable-font-subpixel-positioning',
+  '--disable-gpu',
   '--force-color-profile=srgb',
 ];
 

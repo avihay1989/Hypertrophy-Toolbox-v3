@@ -44,9 +44,52 @@ export async function prepareForScreenshot(page: Page): Promise<void> {
         animation-iteration-count: 1 !important;
         transition-duration: 0s !important;
         transition-delay: 0s !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
       }
 
       html { scroll-behavior: auto !important; }
+      html {
+        --visual-surface-0: #eef1f6;
+        --visual-surface-1: #f7f9fc;
+      }
+      html[data-theme='dark'] {
+        --visual-surface-0: #090c16;
+        --visual-surface-1: #0d101d;
+      }
+      html[data-theme] body,
+      body {
+        background: var(--visual-surface-0) !important;
+        background-attachment: scroll !important;
+      }
+
+      html[data-theme='dark'] :is(
+        .card,
+        .collapsible-frame,
+        .frame-calm-glass,
+        .glass-neumorph-card,
+        .page-header,
+        .summary-frame,
+        .table-header,
+        .table.table-calm
+      ) {
+        background: var(--visual-surface-1) !important;
+        background-image: none !important;
+        border-color: #273145 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+      }
+      html[data-theme='dark'] #workout[data-page="workout-plan"] .table-header::before {
+        background: transparent !important;
+      }
+      html[data-theme='dark'] #workout[data-page="workout-plan"] .table-header-underline {
+        background: #4f8cff !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        transform: none !important;
+        transition: none !important;
+      }
 
       input, textarea { caret-color: transparent !important; }
       select,
@@ -85,6 +128,9 @@ export async function prepareForScreenshot(page: Page): Promise<void> {
       #navbar .dropdown-toggle::after {
         border-color: transparent !important;
       }
+      #navbar .nav-icon,
+      #navbar .navbar-brand-icon,
+      #navbar .navbar-toggler-icon,
       #navbar .nav-fa-icon,
       #navbar #darkModeToggle i,
       #navbar #muscleModeToggle i,
@@ -96,6 +142,10 @@ export async function prepareForScreenshot(page: Page): Promise<void> {
         background: transparent !important;
         border-color: transparent !important;
         color: transparent !important;
+      }
+      .toggle-icon,
+      .collapsible-frame .toggle-icon {
+        visibility: hidden !important;
       }
       input[type="number"]::-webkit-outer-spin-button,
       input[type="number"]::-webkit-inner-spin-button {

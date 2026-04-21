@@ -283,11 +283,12 @@ test.describe('Progression Goal Management', () => {
       await page.waitForTimeout(500);
       
       // Modal should have confirm and cancel buttons
-      const confirmBtn = modal.locator('.btn-danger, [data-action="confirm-delete"]');
-      const cancelBtn = modal.locator('.btn-secondary, [data-bs-dismiss="modal"]');
+      const confirmBtn = modal.getByRole('button', { name: 'Delete' });
+      const cancelBtn = modal.getByRole('button', { name: 'Cancel' });
       
       if (await modal.isVisible()) {
-        await expect(confirmBtn.or(cancelBtn)).toBeVisible();
+        await expect(confirmBtn).toBeVisible();
+        await expect(cancelBtn).toBeVisible();
         
         // Close modal
         await page.keyboard.press('Escape');

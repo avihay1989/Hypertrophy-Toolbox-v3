@@ -45,11 +45,11 @@ Screenshots are stored under `e2e/__screenshots__/visual.spec.ts-snapshots/`.
 - `e2e/visual.spec.ts` uses `e2e/strict-fixtures.ts`, not the legacy broad-error fixture.
 - Browser state is frozen before navigation with `Date.now()` and no-argument `new Date()` fixed to `2026-04-18T09:00:00Z`.
 - Locale is `en-US`, timezone is `UTC`, color scheme starts as `light`, default viewport is `1440 x 900`, and `deviceScaleFactor` is `1`.
-- Chromium is launched with `--disable-font-subpixel-positioning` and `--force-color-profile=srgb`.
+- Chromium is launched with `--disable-font-subpixel-positioning`, `--disable-gpu`, and `--force-color-profile=srgb`.
 - Screenshot assertions use `maxDiffPixels: 0` and `threshold: 0`.
 - Known volatile regions are masked: auto-backup banner, timestamp/data-volatile nodes, toast container, and animated GIFs.
-- Screenshot-only CSS disables animations/transitions, hides carets/scrollbars, and neutralizes native/custom control antialiasing that drifted at strict zero tolerance.
-- The navbar scale widget, toggle glyphs, and decorative active indicators are neutralized only inside the screenshot harness.
+- Screenshot-only CSS disables animations/transitions/backdrop filters, hides carets/scrollbars, and neutralizes native/custom control antialiasing that drifted at strict zero tolerance.
+- The navbar scale widget, navbar/toggle glyphs, decorative active indicators, fixed dark canvas, and dark glass/card/table/header surfaces are neutralized only inside the screenshot harness.
 
 ## Seed Database
 
@@ -60,6 +60,16 @@ Visual runs use a committed seed database:
 | `e2e/fixtures/database.visual.seed.db` | `C4755A592D020A770EB6B197795FC382CF8A41628701F149E2A0815EEEF727B0` |
 
 `e2e/scripts/prepare_visual_db.py` copies that seed into `artifacts/visual/database.visual.db` before visual capture. `scripts/run-playwright.ps1` runs normal E2E specs first, then runs `e2e/visual.spec.ts` separately against a freshly prepared visual DB so mutating specs cannot dirty the screenshot baseline.
+
+## P9b Additive Base Bundle
+
+Captured: 2026-04-22
+
+- `static/css/base.css` is the additive consolidation target for `styles_general.css` and `styles_utilities.css`.
+- `templates/base.html` links `base.css` after the legacy base stylesheets while keeping those legacy source links present.
+- Scope remains GLOBAL only; no page-scoped CSS was moved into `base.css`.
+- No legacy CSS files were unlinked or deleted in P9b.
+- The visual baselines were refreshed after the post-bugfix UI state and screenshot-only harness stabilization. Production CSS and templates are not changed by the harness rules.
 
 ## Capture Environment
 
@@ -75,8 +85,8 @@ Visual runs use a committed seed database:
 | --- | --- |
 | `npm run build:css` | Passed; Sass emitted existing Bootstrap deprecation warnings |
 | `npm run test:py` | 913 passed, 1 skipped |
-| `npx playwright test e2e/visual.spec.ts --project=chromium` | 42 passed; repeated twice back-to-back with zero diff |
-| `npm run test:e2e` | 314 non-visual tests passed, then 42 visual tests passed |
+| `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-playwright.ps1 e2e/visual.spec.ts --project=chromium` | 42 passed after P9b baseline refresh |
+| `npm run test:e2e` | 320 non-visual tests passed, then 42 visual tests passed |
 
 ## Notes
 

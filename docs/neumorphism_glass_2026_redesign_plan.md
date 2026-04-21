@@ -776,7 +776,7 @@ P4c. Initialize backup JS on every page
 
 **Tasks** (one target at a time, one commit each)
 - [ ] P9a-add: Create/refresh `tokens.css`; link it in the redesign overlay block while leaving `styles_tokens.css` linked. Test. Commit.
-- [ ] P9b-add: Create `base.css`; link it after legacy base files while leaving source links/imports present. Test. Commit.
+- [ ] P9b-add: Create `base.css`; link it after legacy base files while leaving source links/imports present. Test. Commit. **Local implementation + validation complete 2026-04-22; commit pending.**
 - [ ] P9c-add: Create `layout.css` (GLOBAL sources only — no `styles_frames.css`); link it after legacy layout files while leaving source links/imports present. Test. Commit.
 - [ ] P9d-add: Create `components.css` (GLOBAL sources only — no page-scoped files); link it after legacy component files while leaving source links/imports present. Test. Commit. **If line-count delta exceeds -15% versus source sum, halt.**
 - [ ] P9e-add: Create `navbar.css`; link it after `styles_navbar.css` and `navbar-glass.css` while leaving both source links present. Test. Commit.
