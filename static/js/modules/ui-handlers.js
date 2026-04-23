@@ -14,7 +14,8 @@ function addCustomSpinnerButtons(input) {
     // Create wrapper for the input + buttons
     const wrapper = document.createElement('div');
     wrapper.className = 'number-input-wrapper';
-    wrapper.style.cssText = 'display: flex; align-items: center; gap: 2px;';
+    // Start hidden; the edit-click handler switches to inline-flex when the user opens the editor
+    wrapper.style.cssText = 'display: none; align-items: center; gap: 2px;';
     
     // Insert wrapper in place of input
     input.parentNode.insertBefore(wrapper, input);
