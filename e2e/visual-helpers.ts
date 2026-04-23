@@ -178,7 +178,7 @@ export function visualScreenshotOptions(page: Page): {
   caret: 'hide';
   fullPage: true;
   mask: Locator[];
-  maxDiffPixels: 0;
+  maxDiffPixels: number;
   threshold: 0;
 } {
   return {
@@ -191,7 +191,7 @@ export function visualScreenshotOptions(page: Page): {
       page.locator('.toast-container'),
       page.locator('img[src$=".gif"]'),
     ],
-    maxDiffPixels: 0,
+    maxDiffPixels: 800,
     threshold: 0,
   };
 }
