@@ -1,6 +1,6 @@
 # CSS Ownership Map
 
-Last updated: 2026-04-09
+Last updated: 2026-04-23
 
 This document reflects the CSS that is actually loaded by the current templates.
 
@@ -10,7 +10,7 @@ The app no longer relies on `static/css/styles.css` as its runtime entry point. 
 
 1. `templates/base.html` loads the always-on core styles directly.
 2. Each page template adds its own CSS through `{% block page_css %}`.
-3. `static/css/styles.css` remains on disk as a legacy aggregate file, but it is not referenced by the current templates.
+3. `static/css/styles.css` remains on disk as a delete-only legacy aggregate file, but it is not referenced by the current templates.
 
 ## Always-Loaded Core CSS
 
@@ -72,7 +72,7 @@ These files are not globally loaded from `base.html`, but they are the current s
 | `styles_workout_plan.css` | workout plan page |
 | `workout_log.css` | workout log page |
 | `session_summary.css` | summary-page-specific table fixes and dark-mode summary layout |
-| `styles_science.css` | science/research content styling when used |
+| `styles_science.css` | delete-only orphan; only imported by unused `styles.css` |
 
 ## Tier 1 Cleanup Status
 
@@ -89,11 +89,14 @@ Important naming note:
 - The user-facing label is **Excessive Volume**
 - The shared CSS class name is still `.ultra-volume`
 
-## Live Follow-Up Work
+## P9i Delete-Only Orphans
 
-These items still remain outside the completed Tier 1 and Tier 5a cleanup:
+These files are confirmed unused by the live template loading graph as of 2026-04-23:
 
-- `styles.css` is still present as a legacy aggregate file and could be retired later if the team wants to remove unused build-era artifacts.
+| File | Status | Notes |
+|------|--------|-------|
+| `styles.css` | delete-only orphan | Not linked from any template. Its only remaining role is a legacy aggregate/import file. |
+| `styles_science.css` | delete-only orphan | Not linked from any template. The only current reference is `styles.css` importing it, and `styles.css` is not loaded. |
 
 ## Maintenance Rules
 
@@ -114,7 +117,7 @@ These items still remain outside the completed Tier 1 and Tier 5a cleanup:
 |---|---|---|
 | `tokens.css` | GLOBAL | existing `styles_tokens.css` (GLOBAL) + P2 `tokens.css` (GLOBAL) |
 | `motion.css` | GLOBAL | P2 `motion.css` (GLOBAL, kept as its own target) |
-| `base.css` | GLOBAL | `styles_general.css` (GLOBAL), `styles_utilities.css` (GLOBAL), plus any still-used unique rules from legacy `styles.css` (orphan — see P9i) |
+| `base.css` | GLOBAL | `styles_general.css` (GLOBAL), `styles_utilities.css` (GLOBAL). `styles.css` is a delete-only orphan; no live rules migrate from it. |
 | `layout.css` | GLOBAL | `styles_layout.css` (GLOBAL), `styles_responsive.css` (GLOBAL), `responsive.css` (GLOBAL). **`styles_frames.css` removed from this target** — it is PAGE-scoped (loaded in 4 templates) and belongs in page-level bundles. |
 | `components.css` | GLOBAL | `styles_buttons.css` (GLOBAL), `styles_forms.css` (GLOBAL), `styles_tables.css` (GLOBAL), `styles_cards.css` (GLOBAL), `styles_tooltips.css` (GLOBAL), `styles_modals.css` (GLOBAL), `styles_notifications.css` (GLOBAL), `components-overlay.css` (GLOBAL). **`styles_dropdowns.css`, `styles_filters.css`, `styles_routine_cascade.css`, `styles_workout_dropdowns.css`, `styles_muscle_selector.css` removed from this target** — they are PAGE-scoped. |
 | `navbar.css` | GLOBAL | `styles_navbar.css` (GLOBAL), `navbar-glass.css` (GLOBAL) |
