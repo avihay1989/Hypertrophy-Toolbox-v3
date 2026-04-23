@@ -148,7 +148,7 @@
 }
 
 /* Shared volume badges, indicators, and classification colors now live in
-   styles_volume.css so session and weekly summary stay on the same tokens. */
+   the shared summary tokens so session and weekly summary stay aligned. */
 
 /* ============================================
    DARK MODE STYLES FOR SUMMARY TABLES
@@ -792,7 +792,7 @@
     border-spacing: 0;
 }
 
-/* Table Header - Glass Style - Deferred to workout_log.css for specificity */
+/* Table Header - Glass Style - Deferred to the workout-log-derived rules for specificity */
 
 /* ============================================================
    RESPONSIVE FRAME ADJUSTMENTS - Multi-Resolution

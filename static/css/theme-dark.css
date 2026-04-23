@@ -35,8 +35,8 @@
 }
 
 /* Navbar Specific - Dark Mode */
-/* Note: All navbar styling is handled by styles_navbar.css to prevent double-layer glitch */
-/* Background removed - #navbar in styles_navbar.css controls this */
+/* Note: All navbar styling is handled by navbar.css to prevent double-layer glitch */
+/* Background removed - #navbar in navbar.css controls this */
 :where([data-theme="dark"] #navbar) {
     border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
@@ -251,7 +251,7 @@
 /* Dark Mode Toggle Button */
 :where(#darkModeToggle) {
     background: none;
-    /* border styling handled by styles_navbar.css */
+    /* border styling handled by navbar.css */
     padding: 0.5rem;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -591,7 +591,7 @@
 }
 
 /* Calm Glass 2026 dark mode tokens.
-   Replaces styles_dark_mode.css variables to use the new tokens.
+   Replaces the legacy dark-mode variables with the new tokens.
    Zero !important. */
 
 [data-theme="dark"] {

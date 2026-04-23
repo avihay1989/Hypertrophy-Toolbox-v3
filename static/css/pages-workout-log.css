@@ -1746,7 +1746,7 @@ table.workout-log-table tbody tr:nth-child(even) td.metric-lane,
 }
 
 /* Table-calm compatibility:
-   components-overlay.css resets background-image and box-shadow on table-calm cells,
+   the shared component bundle resets background-image and box-shadow on table-calm cells,
    so use solid fills + side borders here with higher specificity. */
 .workout-log-page #workout-log-table.table.table-calm thead th.metric-lane.metric-lane--planned {
     background: none !important;
@@ -2502,7 +2502,7 @@ table.workout-log-table tbody tr:nth-child(even) td.metric-lane,
     border-spacing: 0;
 }
 
-/* Table Header - Glass Style - Deferred to workout_log.css for specificity */
+/* Table Header - Glass Style - Deferred to the workout-log-derived rules for specificity */
 
 /* ============================================================
    RESPONSIVE FRAME ADJUSTMENTS - Multi-Resolution

@@ -254,7 +254,7 @@ body:not(:has(#navbar)) .navbar,
    RESPONSIVE STYLES
    ============================================================
    Organized by breakpoint from smallest to largest.
-   Uses CSS custom properties from styles_tokens.css.
+   Uses CSS custom properties from the shared token bundle.
    
    Supported Resolutions:
    - 1280x720 (HD)

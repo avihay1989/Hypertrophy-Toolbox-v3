@@ -88,7 +88,7 @@
 
 /* Modal Styles - Progression Page Specific */
 /* Custom backdrop REMOVED - causes visual artifacts with CSS zoom scaling */
-/* The modal shadow from styles_modals.css provides visual separation */
+/* The shared modal shadow provides visual separation */
 
 #goalSettingModal {
     z-index: 1060 !important;

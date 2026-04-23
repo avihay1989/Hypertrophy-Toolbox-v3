@@ -18,7 +18,7 @@ Interactive SVG body diagram component for selecting target muscle groups in the
 | File | Purpose |
 |------|---------|
 | [static/js/modules/muscle-selector.js](../static/js/modules/muscle-selector.js) | Main JavaScript module |
-| [static/css/styles_muscle_selector.css](../static/css/styles_muscle_selector.css) | Styling for the component |
+| [static/css/pages-workout-plan.css](../static/css/pages-workout-plan.css) | Bundled styling for the component |
 | [static/vendor/react-body-highlighter/body_anterior.svg](../static/vendor/react-body-highlighter/body_anterior.svg) | Front view body SVG |
 | [static/vendor/react-body-highlighter/body_posterior.svg](../static/vendor/react-body-highlighter/body_posterior.svg) | Back view body SVG |
 | [templates/workout_plan.html](../templates/workout_plan.html) | Integration in Generate Plan modal |

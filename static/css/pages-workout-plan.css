@@ -74,7 +74,7 @@ select.filter-dropdown:focus {
 
 /* Active Filter Indicator - Glass style with warm amber tint
    Selectors carry 3 classes so they outrank the `.form-select.input-calm-inset`
-   base styles in components-overlay.css (which loads after this file). */
+   base styles in the shared component bundle (which loads after this file). */
 .filter-dropdown.filter-active,
 .form-select.filter-dropdown.filter-active,
 .filter-dropdown.input-calm-inset.filter-active,
@@ -5942,7 +5942,7 @@ tr.superset-partner-dragging {
     border-spacing: 0;
 }
 
-/* Table Header - Glass Style - Deferred to workout_log.css for specificity */
+/* Table Header - Glass Style - Deferred to the workout-log-derived rules for specificity */
 
 /* ============================================================
    RESPONSIVE FRAME ADJUSTMENTS - Multi-Resolution
