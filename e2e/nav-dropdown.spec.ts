@@ -33,6 +33,22 @@ async function openMobileNavbar(page: Page): Promise<void> {
   await expect(collapse).toHaveClass(/show/);
 }
 
+function waitForModalEvent(page: Page, selector: string, eventName: string): Promise<void> {
+  return page.evaluate(
+    ({ selector, eventName }) =>
+      new Promise<void>((resolve) => {
+        const modal = document.querySelector(selector);
+        if (!modal) {
+          resolve();
+          return;
+        }
+
+        modal.addEventListener(eventName, () => resolve(), { once: true });
+      }),
+    { selector, eventName },
+  );
+}
+
 test.describe('P5 navbar dropdown and backup trigger', () => {
   test('top-level nav order matches the redesigned workflow', async ({ page }) => {
     await page.goto(ROUTES.HOME);
@@ -77,14 +93,18 @@ test.describe('P5 navbar dropdown and backup trigger', () => {
       await page.goto(route);
       await waitForPageReady(page);
 
+      const modalShown = waitForModalEvent(page, '#programLibraryModal', 'shown.bs.modal');
       await page.locator(SELECTORS.NAV_BACKUP).click();
 
       const modal = page.locator('#programLibraryModal');
+      await modalShown;
       await expect(modal).toHaveClass(/show/);
       await expect(modal).toBeVisible();
       await expect(modal.locator('#backup-list')).toBeVisible();
 
+      const modalHidden = waitForModalEvent(page, '#programLibraryModal', 'hidden.bs.modal');
       await modal.locator('.btn-close').click();
+      await modalHidden;
       await expect(modal).not.toBeVisible();
     }
   });
