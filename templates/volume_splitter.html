@@ -22,110 +22,117 @@
      data-advanced-ranges='{{ advanced_recommended_ranges|tojson }}'
      data-default-mode='{{ default_mode }}'>
 
-    <!-- Main Form -->
-    <div class="volume-form-container">
-        <!-- Training Frequency Section -->
-        <div class="frequency-section mb-4">
-            <h3>Step 1: Weekly Training Frequency</h3>
-            <div class="form-group">
-                <label for="training-days">How many days per week can you train consistently?</label>
+    <div class="volume-dashboard">
+        <section class="volume-toolbar" aria-labelledby="volume-setup-heading">
+            <div class="volume-toolbar__intro">
+                <h2 id="volume-setup-heading">Setup</h2>
+                <p>Plan weekly set targets and distribution from one workspace.</p>
+            </div>
+
+            <div class="frequency-section volume-toolbar__field">
+                <label for="training-days">Training Days</label>
                 <select id="training-days" class="form-select input-calm-inset">
                     {% for i in range(1, 8) %}
                     <option value="{{ i }}" {% if i == 3 %}selected{% endif %}>{{ i }} days</option>
                     {% endfor %}
                 </select>
-                <small class="form-text text-muted">
-                    This will help distribute your volume across your training week
-                </small>
             </div>
-        </div>
 
-        <!-- Volume Input Section -->
-        <div class="volume-input-section mb-4">
-            <h3>Step 2: Muscle Group Volume</h3>
-            <p class="text-muted mb-3">Adjust the weekly sets for each muscle group. Toggle modes to choose between concise or granular muscle lists.</p>
+            <div class="volume-toolbar__field">
+                <span class="volume-toolbar__label">Muscle Detail</span>
+                <div class="mode-toggle" role="radiogroup" aria-label="Muscle list detail level">
+                    <div class="btn-group" role="group">
+                        <input type="radio" class="btn-check" name="volume-mode" id="mode-basic" value="basic" {% if default_mode == 'basic' %}checked{% endif %}>
+                        <label class="btn btn-outline-primary btn-calm-ghost" for="mode-basic">Basic</label>
 
-            <div class="mode-toggle mb-3" role="radiogroup" aria-label="Muscle list detail level">
-                <div class="btn-group" role="group">
-                    <input type="radio" class="btn-check" name="volume-mode" id="mode-basic" value="basic" {% if default_mode == 'basic' %}checked{% endif %}>
-                    <label class="btn btn-outline-primary btn-calm-ghost" for="mode-basic">Basic</label>
-
-                    <input type="radio" class="btn-check" name="volume-mode" id="mode-advanced" value="advanced" {% if default_mode == 'advanced' %}checked{% endif %}>
-                    <label class="btn btn-outline-primary btn-calm-ghost" for="mode-advanced">Advanced</label>
+                        <input type="radio" class="btn-check" name="volume-mode" id="mode-advanced" value="advanced" {% if default_mode == 'advanced' %}checked{% endif %}>
+                        <label class="btn btn-outline-primary btn-calm-ghost" for="mode-advanced">Advanced</label>
+                    </div>
                 </div>
             </div>
 
-            <div id="sliders" class="volume-sliders"></div>
-
-            <div class="volume-controls">
+            <div class="volume-controls volume-toolbar__actions">
                 <button id="calculate-volume" class="btn btn-primary btn-calm-primary">
-                    <i class="fas fa-calculator"></i> Calculate Distribution
+                    <i class="fas fa-calculator"></i> Calculate
                 </button>
                 <button id="reset-volume" class="btn btn-secondary btn-calm-ghost">
-                    <i class="fas fa-undo"></i> Reset Values
+                    <i class="fas fa-undo"></i> Reset
                 </button>
                 <button id="export-to-excel-btn" class="btn btn-calm-ghost">
                     <i class="fas fa-file-excel"></i> Export to Excel
                 </button>
             </div>
-        </div>
+        </section>
 
-        <!-- Results Section -->
-        <div class="results-section mb-4 d-none">
-            <h3>Step 3: Volume Distribution</h3>
-            <!-- AGENT:START B-5 PRIORITY-CLASSES -->
-            <div class="tbl-wrap tbl-wrap--full" role="region" aria-label="Volume distribution table">
-                <table class="table table-hover tbl tbl--responsive" 
-                       role="table" 
-                       aria-label="Volume distribution results">
-                    <thead>
-                        <tr>
-                            <th scope="col" class="col--high" data-label="Muscle Group">Muscle Group</th>
-                            <th scope="col" class="col--high is-num" data-label="Weekly Sets">Weekly Sets</th>
-                            <th scope="col" class="col--high is-num" data-label="Sets per Session">Sets per Session</th>
-                            <th scope="col" class="col--high" data-label="Status">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="results-body">
-                        <!-- Populated by JavaScript -->
-                    </tbody>
-                </table>
-            </div>
-            <button id="export-volume" class="btn btn-success btn-calm-primary mt-3">
-                Export Volume Plan
-            </button>
-        </div>
-
-        <!-- AI Suggestions Section -->
-        <div class="ai-suggestions-section mb-4 d-none">
-            <h3>AI Suggestions</h3>
-            <div class="suggestions-container">
-                <!-- Populated by JavaScript -->
-            </div>
-        </div>
-
-        <div class="volume-history-section mb-4">
-            <h3>Volume History</h3>
-            <div class="history-container">
-                <div class="tbl-wrap tbl-wrap--full" role="region" aria-label="Volume history table">
-                    <table class="table table-hover tbl tbl--responsive" 
-                           role="table" 
-                           aria-label="Volume plan history">
-                        <thead>
-                            <tr>
-                                <th scope="col" class="col--high" data-label="Date">Date</th>
-                                <th scope="col" class="col--high is-num" data-label="Training Days">Training Days</th>
-                                <th scope="col" class="col--high is-num" data-label="Total Volume">Total Volume</th>
-                                <th scope="col" class="col--high" data-label="Actions">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="history-body">
-                            <!-- Populated by JavaScript -->
-                        </tbody>
-                    </table>
+        <div class="volume-dashboard__body">
+            <section class="volume-input-section volume-workspace" aria-labelledby="volume-input-heading">
+                <div class="volume-section-heading">
+                    <h2 id="volume-input-heading">Muscle Volume</h2>
+                    <p>Weekly sets per muscle group</p>
                 </div>
-            </div>
-            <!-- AGENT:END B-5 PRIORITY-CLASSES -->
+
+                <div id="sliders" class="volume-sliders"></div>
+            </section>
+
+            <aside class="volume-insights-panel" aria-label="Volume insights">
+                <!-- Results Section -->
+                <div class="results-section d-none">
+                    <h2>Distribution</h2>
+                    <!-- AGENT:START B-5 PRIORITY-CLASSES -->
+                    <div class="tbl-wrap tbl-wrap--full" role="region" aria-label="Volume distribution table">
+                        <table class="table table-hover tbl tbl--responsive"
+                               role="table"
+                               aria-label="Volume distribution results">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="col--high" data-label="Muscle Group">Muscle Group</th>
+                                    <th scope="col" class="col--high is-num" data-label="Weekly Sets">Weekly Sets</th>
+                                    <th scope="col" class="col--high is-num" data-label="Sets per Session">Sets per Session</th>
+                                    <th scope="col" class="col--high" data-label="Status">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="results-body">
+                                <!-- Populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <button id="export-volume" class="btn btn-success btn-calm-primary mt-3">
+                        Export Volume Plan
+                    </button>
+                </div>
+
+                <!-- AI Suggestions Section -->
+                <div class="ai-suggestions-section d-none">
+                    <h2>AI Suggestions</h2>
+                    <div class="suggestions-container">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="volume-history-section">
+                    <h2>Volume History</h2>
+                    <div class="history-container">
+                        <div class="tbl-wrap tbl-wrap--full" role="region" aria-label="Volume history table">
+                            <table class="table table-hover tbl tbl--responsive"
+                                   role="table"
+                                   aria-label="Volume plan history">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" class="col--high" data-label="Date">Date</th>
+                                        <th scope="col" class="col--high is-num" data-label="Training Days">Training Days</th>
+                                        <th scope="col" class="col--high is-num" data-label="Total Volume">Total Volume</th>
+                                        <th scope="col" class="col--high" data-label="Actions">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="history-body">
+                                    <!-- Populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- AGENT:END B-5 PRIORITY-CLASSES -->
+                </div>
+            </aside>
         </div>
     </div>
 </div>
