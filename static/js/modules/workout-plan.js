@@ -80,6 +80,28 @@ function getRelevantIsolatedMuscles(muscleGroup, isolatedMusclesStr) {
     }).join(', ');
 }
 
+function getSwapButtonMarkup() {
+    return `
+        <span class="btn-swap-icon" aria-hidden="true">
+            <svg viewBox="0 0 16 16" focusable="false">
+                <path d="M10.75 3.25h2.7L11.8 1.6a.75.75 0 1 1 1.06-1.06l2.93 2.93a.75.75 0 0 1 0 1.06l-2.93 2.93A.75.75 0 1 1 11.8 6.4l1.65-1.65h-2.7a3.25 3.25 0 0 0-2.82 1.63.75.75 0 1 1-1.3-.75 4.75 4.75 0 0 1 4.12-2.38Zm-5.5 8.5h-2.7L4.2 13.4a.75.75 0 1 1-1.06 1.06L.21 11.53a.75.75 0 0 1 0-1.06l2.93-2.93A.75.75 0 1 1 4.2 8.6L2.55 10.25h2.7a3.25 3.25 0 0 0 2.82-1.63.75.75 0 1 1 1.3.75 4.75 4.75 0 0 1-4.12 2.38Z" fill="currentColor"/>
+            </svg>
+        </span>
+        <span class="btn-swap-label">Swap</span>
+    `;
+}
+
+function getSwapButtonLoadingMarkup() {
+    return `
+        <span class="btn-swap-icon btn-swap-icon--spinner" aria-hidden="true">
+            <svg viewBox="0 0 16 16" focusable="false">
+                <circle cx="8" cy="8" r="5.25" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.75" stroke-dasharray="24 12"/>
+            </svg>
+        </span>
+        <span class="btn-swap-label">Swap</span>
+    `;
+}
+
 /**
  * Helper function to handle standardized API responses
  * @param {Response} response - Fetch response object
@@ -1330,14 +1352,18 @@ export function updateWorkoutPlanTable(exercises) {
             </td>
             <td class="col--high routine-cell" data-label="Routine">${formatRoutineForDisplay(exercise.routine)}</td>
             <td class="col--high exercise-cell" data-label="Exercise">
-                <span class="exercise-name">${exercise.exercise || 'N/A'}</span>
-                ${supersetBadgeHtml}
-                <button class="btn btn-swap btn-calm-icon"
-                        data-exercise-id="${exercise.id}"
-                        title="Replace with similar exercise (same muscle + equipment)"
-                        aria-label="Swap exercise">
-                    <i class="fas fa-sync-alt"></i>
-                </button>
+                <div class="exercise-cell-content">
+                    <span class="exercise-name">${exercise.exercise || 'N/A'}</span>
+                    ${supersetBadgeHtml}
+                    <button type="button"
+                            class="btn btn-swap btn-calm-ghost"
+                            data-action="replace"
+                            data-exercise-id="${exercise.id}"
+                            title="Replace with similar exercise (same muscle + equipment)"
+                            aria-label="Swap exercise">
+                        ${getSwapButtonMarkup()}
+                    </button>
+                </div>
             </td>
             <td class="col--med" data-label="Primary Muscle" data-raw-value="${exercise.primary_muscle_group || ''}">${transformMuscleDisplay(exercise.primary_muscle_group, 'primary', exercise.advanced_isolated_muscles)}</td>
             <td class="col--low" data-label="Secondary Muscle" data-raw-value="${exercise.secondary_muscle_group || ''}">${transformMuscleDisplay(exercise.secondary_muscle_group, 'primary', exercise.advanced_isolated_muscles)}</td>
@@ -1598,7 +1624,7 @@ async function handleSwapExercise(exerciseId, currentExerciseName) {
     // Disable button and show loading state
     swapBtn.disabled = true;
     const originalIcon = swapBtn.innerHTML;
-    swapBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    swapBtn.innerHTML = getSwapButtonLoadingMarkup();
     swapBtn.classList.add('loading');
     
     try {

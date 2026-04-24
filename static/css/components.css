@@ -2262,13 +2262,20 @@ tr.sortable-drag {
 
 /* Exercise cell with swap button */
 .exercise-cell {
-    display: flex;
+    min-width: 0;
+}
+
+.exercise-cell .exercise-cell-content {
+    display: inline-flex;
     align-items: center;
     gap: 6px;
+    min-width: 0;
+    max-width: 100%;
 }
 
 .exercise-cell .exercise-name {
-    flex: 1;
+    flex: 0 1 auto;
+    min-width: 0;
 }
 
 /* Swap/Replace button */
@@ -2294,7 +2301,7 @@ tr.sortable-drag {
 }
 
 /* Rotate only the icon on hover, not the button itself */
-.btn-swap:hover:not(:disabled) i {
+.btn-swap:hover:not(:disabled) .btn-swap-icon {
     transform: rotate(180deg);
 }
 
@@ -2312,9 +2319,33 @@ tr.sortable-drag {
     background-color: rgba(79, 140, 255, 0.15);
 }
 
-.btn-swap i {
-    font-size: 12px;
+.btn-swap .btn-swap-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
     transition: transform 0.3s ease;
+}
+
+.btn-swap .btn-swap-icon svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.btn-swap.loading .btn-swap-icon {
+    transform: none;
+}
+
+.btn-swap .btn-swap-icon--spinner {
+    animation: swapButtonSpin 0.7s linear infinite;
+}
+
+@keyframes swapButtonSpin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* Row highlight after swap */

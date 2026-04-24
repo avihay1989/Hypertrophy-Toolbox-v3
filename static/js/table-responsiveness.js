@@ -39,6 +39,7 @@ tableDebugLog('[TableResponsiveness] Version 2024-11-11-03 loaded');
   const qsa = (selector, root = document) => Array.from(root.querySelectorAll(selector));
 
   const STORAGE_KEY = 'hypertrophy_tbl_prefs';
+  const WORKOUT_PLAN_TABLE_KEY = 'workout_plan';
 
   /**
    * Get preferences from localStorage
@@ -134,6 +135,45 @@ tableDebugLog('[TableResponsiveness] Version 2024-11-11-03 loaded');
     'Synergists'
   ];
 
+  function normalizeViewMode(mode) {
+    return mode === 'advanced' ? 'advanced' : 'simple';
+  }
+
+  function persistViewMode(pageKey, mode) {
+    if (!pageKey) {
+      return;
+    }
+
+    const prefs = getPrefs();
+    if (!prefs[pageKey]) {
+      prefs[pageKey] = {};
+    }
+    prefs[pageKey].viewMode = normalizeViewMode(mode);
+    setPrefs(prefs);
+  }
+
+  function getEffectiveViewMode(pageKey) {
+    if (
+      pageKey === WORKOUT_PLAN_TABLE_KEY &&
+      window.FilterViewMode &&
+      typeof window.FilterViewMode.getViewMode === 'function'
+    ) {
+      return normalizeViewMode(window.FilterViewMode.getViewMode());
+    }
+
+    const prefs = getPrefs();
+    return normalizeViewMode(prefs[pageKey]?.viewMode);
+  }
+
+  function getToggleElement(tableEl, pageKey) {
+    const wrapper = tableEl?.closest('.tbl-wrap');
+    if (!wrapper) {
+      return null;
+    }
+
+    return qs('.tbl-view-mode-toggle[data-table-key="' + pageKey + '"]', wrapper);
+  }
+
   /**
    * Initialize column chooser for a table (Simple/Advanced mode toggle)
    * @param {HTMLElement} tableEl - Table element
@@ -170,15 +210,14 @@ tableDebugLog('[TableResponsiveness] Version 2024-11-11-03 loaded');
     // Mark with page key to prevent duplicate initialization
     toggleEl.dataset.tableKey = pageKey;
 
+    // Keep the workout-plan table synced with the global muscle naming mode.
+    bindExternalViewModeSync(tableEl, pageKey);
+
     // Load preferences - default to 'simple' mode
-    const prefs = getPrefs();
-    const currentMode = prefs[pageKey]?.viewMode || 'simple';
-    
+    const currentMode = getEffectiveViewMode(pageKey);
+
     // Apply initial mode
-    applyViewMode(tableEl, currentMode, pageKey);
-    
-    // Update button state
-    updateViewModeButton(toggleEl, currentMode);
+    syncViewMode(tableEl, currentMode, pageKey, toggleEl);
   }
 
   /**
@@ -207,24 +246,22 @@ tableDebugLog('[TableResponsiveness] Version 2024-11-11-03 loaded');
       e.preventDefault();
       e.stopPropagation();
       
-      const prefs = getPrefs();
-      const currentMode = prefs[pageKey]?.viewMode || 'simple';
+      const currentMode = getEffectiveViewMode(pageKey);
       const newMode = currentMode === 'simple' ? 'advanced' : 'simple';
       
       tableDebugLog('[View Mode] Switching from', currentMode, 'to', newMode);
-      
-      // Save preference
-      if (!prefs[pageKey]) {
-        prefs[pageKey] = {};
+
+      // On workout plan, the global filter/muscle mode is the source of truth.
+      if (
+        pageKey === WORKOUT_PLAN_TABLE_KEY &&
+        window.FilterViewMode &&
+        typeof window.FilterViewMode.setViewMode === 'function'
+      ) {
+        window.FilterViewMode.setViewMode(newMode);
+        return;
       }
-      prefs[pageKey].viewMode = newMode;
-      setPrefs(prefs);
-      
-      // Apply mode
-      applyViewMode(tableEl, newMode, pageKey);
-      
-      // Update button
-      updateViewModeButton(toggle, newMode);
+
+      syncViewMode(tableEl, newMode, pageKey, toggle);
     });
 
     controls.appendChild(toggle);
@@ -237,10 +274,17 @@ tableDebugLog('[TableResponsiveness] Version 2024-11-11-03 loaded');
    * @param {string} mode - Current mode ('simple' or 'advanced')
    */
   function updateViewModeButton(button, mode) {
+    if (!button) {
+      return;
+    }
+
     const modeText = button.querySelector('.mode-text');
     const icon = button.querySelector('i');
+    const normalizedMode = normalizeViewMode(mode);
     
-    if (mode === 'advanced') {
+    button.dataset.viewMode = normalizedMode;
+
+    if (normalizedMode === 'advanced') {
       if (modeText) modeText.textContent = 'Advanced';
       if (icon) {
         icon.className = 'fas fa-th';
@@ -255,6 +299,25 @@ tableDebugLog('[TableResponsiveness] Version 2024-11-11-03 loaded');
       button.setAttribute('aria-pressed', 'false');
       button.classList.remove('active');
     }
+  }
+
+  function syncViewMode(tableEl, mode, pageKey, button = null) {
+    const normalizedMode = normalizeViewMode(mode);
+    persistViewMode(pageKey, normalizedMode);
+    applyViewMode(tableEl, normalizedMode, pageKey);
+    updateViewModeButton(button || getToggleElement(tableEl, pageKey), normalizedMode);
+  }
+
+  function bindExternalViewModeSync(tableEl, pageKey) {
+    if (!tableEl || pageKey !== WORKOUT_PLAN_TABLE_KEY || tableEl.dataset.filterViewModeSync === 'true') {
+      return;
+    }
+
+    tableEl.dataset.filterViewModeSync = 'true';
+    document.addEventListener('filterViewModeChanged', (event) => {
+      const mode = normalizeViewMode(event.detail?.mode);
+      syncViewMode(tableEl, mode, pageKey);
+    });
   }
 
   /**
@@ -449,4 +512,3 @@ tableDebugLog('[TableResponsiveness] Version 2024-11-11-03 loaded');
   };
 
 })();
-

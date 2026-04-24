@@ -539,6 +539,8 @@ function updateMuscleFilterDropdowns(mode) {
         'advanced_isolated_muscles'
     ];
     
+    const changedSelections = [];
+
     muscleFilterIds.forEach(filterId => {
         const select = document.getElementById(filterId);
         if (!select) return;
@@ -551,6 +553,10 @@ function updateMuscleFilterDropdowns(mode) {
         if (filterId.includes('secondary')) muscleType = 'secondary';
         else if (filterId.includes('tertiary')) muscleType = 'tertiary';
         else if (filterId.includes('isolated')) muscleType = 'isolated';
+
+        const resolvedSelection = currentValue
+            ? window.FilterViewMode.resolveFilterSelection(currentValue, muscleType, mode)
+            : null;
         
         // Get new options from FilterViewMode
         const options = window.FilterViewMode.getMuscleFilterOptions(muscleType, mode);
@@ -558,6 +564,14 @@ function updateMuscleFilterDropdowns(mode) {
         // Clear existing options (except "All")
         while (select.options.length > 1) {
             select.remove(1);
+        }
+
+        if (resolvedSelection?.isSynthetic) {
+            const preservedOption = document.createElement('option');
+            preservedOption.value = resolvedSelection.value;
+            preservedOption.textContent = resolvedSelection.label;
+            preservedOption.dataset.syntheticGroup = 'true';
+            select.appendChild(preservedOption);
         }
         
         // Add new options
@@ -568,13 +582,23 @@ function updateMuscleFilterDropdowns(mode) {
             select.appendChild(option);
         });
         
-        // Try to restore selection if it exists in new options
-        const optionExists = Array.from(select.options).some(opt => opt.value === currentValue);
+        // Restore translated selection if it exists in the new option set
+        const nextValue = resolvedSelection?.value || '';
+        const optionExists = Array.from(select.options).some(opt => opt.value === nextValue);
         if (optionExists) {
-            select.value = currentValue;
+            select.value = nextValue;
         } else {
             select.value = '';  // Reset to "All"
         }
+
+        if (currentValue && select.value !== currentValue) {
+            changedSelections.push(select);
+        }
+    });
+
+    // Re-run filtering only when a mode switch changes the underlying filter value.
+    changedSelections.forEach(select => {
+        select.dispatchEvent(new Event('change', { bubbles: true }));
     });
     
     // Dispatch event so other components can react (e.g., table display)
