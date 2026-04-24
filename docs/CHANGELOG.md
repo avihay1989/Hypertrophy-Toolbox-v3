@@ -2,6 +2,25 @@
 
 All notable changes to Hypertrophy Toolbox v3.
 
+## Unreleased - April 24, 2026
+
+### UI / Redesign
+- Completed the Calm Glass redesign cleanup and merged the redesigned CSS/runtime surface to `main`.
+- Consolidated runtime CSS to 8 global bundles plus 8 route-specific page bundles, including the Backup Center page.
+- Removed the legacy CSS sources after the P9/P10 migration and refreshed visual baselines.
+
+### Backup Center
+- Hardened the dedicated `/backup` workspace with restore safety, save-current-plan-first flow, inline restore results, skipped-exercise visibility, warning state for zero-restored restores, metadata editing, search, sorting, empty-save warning, and program auto-backup retention support.
+- Added Backup Center route/navigation coverage and focused backup E2E coverage.
+
+### Data / Recovery
+- Retired the old `SEED_DB_PATH` contract after seed recovery was replaced with quarantine-only recovery plus normal startup initialization.
+- Added startup database snapshots under `data/auto_backup/` for local disaster recovery.
+
+### Documentation
+- Removed completed execution plans and obsolete redesign/backup handoff artifacts from the active `docs/` surface.
+- Refreshed the docs index, CSS ownership map, E2E inventory, Backup Center doc, and live Claude audit snapshot.
+
 ## Unreleased - April 11, 2026
 
 ### Cleanup

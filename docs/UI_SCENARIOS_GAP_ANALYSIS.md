@@ -1,7 +1,7 @@
 # UI Scenarios Gap Analysis - Current State and Remaining Risks
 
 > **Date**: January 2025  
-> **Updated**: April 8, 2026
+> **Updated**: April 24, 2026
 > **Purpose**: Track UI risk scenarios, confirm what is already implemented, and highlight only the remaining gaps.
 > **Current Scope (Locked)**: Single-user, local runtime, single-tab usage mode.
 
@@ -16,6 +16,9 @@
 | [e2e/empty-states.spec.ts](../e2e/empty-states.spec.ts) | Empty exports, empty log flows, empty filters/states | ✅ Present |
 | [e2e/browser-navigation-state.spec.ts](../e2e/browser-navigation-state.spec.ts) | Stateless contract for routine cascade (`back`, `refresh`, deep-link query ignore) | ✅ Present |
 | [e2e/replace-exercise-errors.spec.ts](../e2e/replace-exercise-errors.spec.ts) | Replace-exercise error toasts (`no_candidates`, `duplicate`, `missing_metadata`) | ✅ Present |
+| [e2e/nav-dropdown.spec.ts](../e2e/nav-dropdown.spec.ts) | Navbar dropdown and Backup Center navigation | ✅ Present |
+| [e2e/program-backup.spec.ts](../e2e/program-backup.spec.ts) | Backup Center save, restore, delete, metadata, and safety flows | ✅ Present |
+| [e2e/visual.spec.ts](../e2e/visual.spec.ts) | Deterministic visual regression coverage across routes, themes, and viewports | ✅ Present |
 
 ### Code Fixes Verified
 | File | Fix | Status |
@@ -58,6 +61,11 @@
 ## Executive Summary
 
 Most high-risk gaps from the original analysis are now addressed in both code and E2E coverage.
+
+April 24, 2026 docs refresh:
+1. Confirmed the Backup Center, navbar dropdown, and visual regression specs are part of the live E2E inventory.
+2. Confirmed the Calm Glass redesign execution docs are no longer active; current styling ownership is tracked in `CSS_OWNERSHIP_MAP.md`.
+3. Kept the remaining medium-risk UX items below as backlog-quality work rather than release blockers.
 
 Latest completed work (February 28, 2026):
 1. Fixed Raw-mode summary display path by forwarding and rendering raw totals in both Plan Summary and Session Summary.
