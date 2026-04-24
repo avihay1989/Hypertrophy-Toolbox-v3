@@ -11,6 +11,7 @@ Tests cover:
 import pytest
 import sqlite3
 from datetime import datetime
+import utils.program_backup as program_backup_module
 from utils.program_backup import (
     initialize_backup_tables,
     create_backup,
@@ -154,6 +155,53 @@ class TestProgramBackup:
             assert exercises["Bench Press"]['weight'] == 100.0
             assert exercises["Squat"]['sets'] == 4
             assert exercises["Squat"]['weight'] == 120.0
+
+    def test_restore_rollback_preserves_active_program_on_failure(
+        self,
+        clean_db,
+        exercise_factory,
+        workout_plan_factory,
+        monkeypatch,
+    ):
+        """Test that restore rolls back cleanly when an insert fails."""
+        ex1 = exercise_factory("Exercise A", primary_muscle_group="Chest")
+        ex2 = exercise_factory("Exercise B", primary_muscle_group="Back")
+        ex3 = exercise_factory("Exercise C", primary_muscle_group="Legs")
+        ex4 = exercise_factory("Exercise D", primary_muscle_group="Shoulders")
+
+        workout_plan_factory(exercise_name=ex1, routine="Workout A", sets=3, weight=100.0)
+        workout_plan_factory(exercise_name=ex2, routine="Workout A", sets=4, weight=110.0)
+        workout_plan_factory(exercise_name=ex3, routine="Workout A", sets=5, weight=120.0)
+
+        backup = create_backup(name="Rollback Program")
+
+        with DatabaseHandler() as db:
+            db.execute_query("DELETE FROM user_selection")
+            workout_plan_factory(exercise_name=ex3, routine="Workout B", sets=2, weight=130.0)
+            workout_plan_factory(exercise_name=ex4, routine="Workout B", sets=2, weight=140.0)
+
+        original_execute_query = DatabaseHandler.execute_query
+        insert_calls = {"count": 0}
+
+        def flaky_execute_query(self, query, params=None, *, commit=True):
+            if "INSERT INTO user_selection" in query:
+                insert_calls["count"] += 1
+                if insert_calls["count"] == 3:
+                    raise sqlite3.Error("forced")
+            return original_execute_query(self, query, params, commit=commit)
+
+        monkeypatch.setattr(DatabaseHandler, "execute_query", flaky_execute_query)
+
+        with pytest.raises(sqlite3.Error, match="forced"):
+            restore_backup(backup["id"])
+
+        with DatabaseHandler() as db:
+            rows = db.fetch_all("SELECT exercise, sets, weight FROM user_selection ORDER BY exercise")
+            assert len(rows) == 2
+            exercises = {row["exercise"] for row in rows}
+            assert exercises == {"Exercise C", "Exercise D"}
+            assert "Exercise A" not in exercises
+            assert "Exercise B" not in exercises
     
     # -------------------------------------------------------------------------
     # Test 3: Restore skips missing exercises
@@ -197,7 +245,59 @@ class TestProgramBackup:
         """Test that restoring a non-existent backup raises ValueError."""
         with pytest.raises(ValueError, match="not found"):
             restore_backup(99999)
-    
+
+    def test_restore_commits_once_on_success(self, clean_db, exercise_factory, workout_plan_factory, monkeypatch):
+        """Test that restore closes an active transaction exactly once on success.
+
+        The counter only increments when ``in_transaction`` is True at commit time,
+        so DatabaseHandler.__exit__'s idempotent post-commit does not inflate the
+        count. A regression to per-statement commits would bump this well past 1.
+        """
+        ex1 = exercise_factory("Bench Press", primary_muscle_group="Chest")
+        ex2 = exercise_factory("Squat", primary_muscle_group="Quadriceps")
+        ex3 = exercise_factory("Deadlift", primary_muscle_group="Back")
+
+        workout_plan_factory(exercise_name=ex1, routine="Workout A", sets=3, weight=100.0)
+        workout_plan_factory(exercise_name=ex2, routine="Workout A", sets=4, weight=120.0)
+        workout_plan_factory(exercise_name=ex3, routine="Workout B", sets=5, weight=150.0)
+
+        backup = create_backup(name="Commit Count Program")
+
+        commit_calls = {"count": 0}
+
+        class CommitCountingConnection:
+            def __init__(self, connection):
+                self._connection = connection
+
+            def commit(self):
+                if self._connection.in_transaction:
+                    commit_calls["count"] += 1
+                return self._connection.commit()
+
+            def rollback(self):
+                return self._connection.rollback()
+
+            def execute(self, *args, **kwargs):
+                return self._connection.execute(*args, **kwargs)
+
+            def close(self):
+                return self._connection.close()
+
+            def __getattr__(self, name):
+                return getattr(self._connection, name)
+
+        class CommitCountingDatabaseHandler(DatabaseHandler):
+            def __init__(self, database_path=None):
+                super().__init__(database_path)
+                self.connection = CommitCountingConnection(self.connection)
+
+        monkeypatch.setattr("utils.program_backup.DatabaseHandler", CommitCountingDatabaseHandler)
+
+        result = restore_backup(backup["id"])
+
+        assert result["restored_count"] == 3
+        assert commit_calls["count"] == 1
+
     # -------------------------------------------------------------------------
     # Test 4: Delete backup removes it
     # -------------------------------------------------------------------------
@@ -260,6 +360,161 @@ class TestProgramBackup:
         auto_backup = create_auto_backup_before_erase()
         
         assert auto_backup is None
+
+    def test_two_auto_backups_same_second_both_succeed(
+        self,
+        clean_db,
+        exercise_factory,
+        workout_plan_factory,
+        monkeypatch,
+    ):
+        """Test that same-second auto-backups get distinct names."""
+        exercise_factory("Test Exercise")
+        workout_plan_factory(exercise_name="Test Exercise")
+
+        class SameSecondDatetime:
+            calls = 0
+
+            @classmethod
+            def now(cls):
+                cls.calls += 1
+                return datetime(2026, 4, 24, 12, 0, 0, cls.calls)
+
+        monkeypatch.setattr(program_backup_module, "datetime", SameSecondDatetime)
+
+        first = create_auto_backup_before_erase()
+        second = create_auto_backup_before_erase()
+
+        assert first is not None
+        assert second is not None
+        assert first["name"] != second["name"]
+
+        auto_backups = [backup for backup in list_backups() if backup["backup_type"] == "auto"]
+        assert len(auto_backups) == 2
+
+    def test_auto_backup_retention_keeps_latest_n(
+        self,
+        clean_db,
+        exercise_factory,
+        workout_plan_factory,
+        monkeypatch,
+    ):
+        """Test that auto-backup retention keeps only the latest ten."""
+        exercise_factory("Test Exercise")
+        workout_plan_factory(exercise_name="Test Exercise")
+
+        class AdvancingDatetime:
+            calls = 0
+
+            @classmethod
+            def now(cls):
+                cls.calls += 1
+                return datetime(2026, 4, 24, 12, 0, 0, cls.calls)
+
+        monkeypatch.setattr(program_backup_module, "datetime", AdvancingDatetime)
+
+        for _ in range(12):
+            create_auto_backup_before_erase()
+
+        auto_backups = [backup for backup in list_backups() if backup["backup_type"] == "auto"]
+        assert len(auto_backups) == 10
+
+        names = {backup["name"] for backup in auto_backups}
+        assert "Pre-Erase Auto-Backup (2026-04-24 12:00:00.000001)" not in names
+        assert "Pre-Erase Auto-Backup (2026-04-24 12:00:00.000004)" not in names
+        assert "Pre-Erase Auto-Backup (2026-04-24 12:00:00.000034)" in names
+
+    def test_auto_backup_retention_ignores_manual(
+        self,
+        clean_db,
+        exercise_factory,
+        workout_plan_factory,
+        monkeypatch,
+    ):
+        """Test that pruning auto-backups does not remove manual backups."""
+        exercise_factory("Test Exercise")
+        workout_plan_factory(exercise_name="Test Exercise")
+
+        for index in range(12):
+            create_backup(name=f"Manual {index}")
+
+        class AdvancingDatetime:
+            calls = 0
+
+            @classmethod
+            def now(cls):
+                cls.calls += 1
+                return datetime(2026, 4, 24, 12, 0, 0, cls.calls)
+
+        monkeypatch.setattr(program_backup_module, "datetime", AdvancingDatetime)
+
+        for _ in range(3):
+            create_auto_backup_before_erase()
+
+        backups = list_backups()
+        manual_backups = [backup for backup in backups if backup["backup_type"] == "manual"]
+        auto_backups = [backup for backup in backups if backup["backup_type"] == "auto"]
+
+        assert len(manual_backups) == 12
+        assert len(auto_backups) == 3
+
+    def test_auto_backup_prune_cascades_items(
+        self,
+        clean_db,
+        exercise_factory,
+        workout_plan_factory,
+        monkeypatch,
+    ):
+        """Test that pruned auto-backups do not leave orphaned item rows."""
+        exercise_factory("Test Exercise")
+        workout_plan_factory(exercise_name="Test Exercise")
+
+        class AdvancingDatetime:
+            calls = 0
+
+            @classmethod
+            def now(cls):
+                cls.calls += 1
+                return datetime(2026, 4, 24, 12, 0, 0, cls.calls)
+
+        monkeypatch.setattr(program_backup_module, "datetime", AdvancingDatetime)
+
+        for _ in range(12):
+            create_auto_backup_before_erase()
+
+        with DatabaseHandler() as db:
+            orphaned = db.fetch_one(
+                """
+                SELECT COUNT(*) AS count
+                  FROM program_backup_items
+                 WHERE backup_id NOT IN (SELECT id FROM program_backups)
+                """
+            )
+
+        assert orphaned["count"] == 0
+
+    def test_create_plus_prune_atomic_on_failure(
+        self,
+        clean_db,
+        exercise_factory,
+        workout_plan_factory,
+        monkeypatch,
+    ):
+        """Test that a prune failure rolls back the newly created auto-backup."""
+        exercise_factory("Test Exercise")
+        workout_plan_factory(exercise_name="Test Exercise")
+
+        existing_count = len(list_backups())
+
+        def fail_prune(*args, **kwargs):
+            raise sqlite3.Error("forced prune failure")
+
+        monkeypatch.setattr(program_backup_module, "prune_auto_backups", fail_prune)
+
+        with pytest.raises(sqlite3.Error, match="forced prune failure"):
+            create_auto_backup_before_erase()
+
+        assert len(list_backups()) == existing_count
     
     def test_backups_survive_table_drop(self, clean_db, exercise_factory, workout_plan_factory):
         """Test that backups survive when user_selection is dropped."""
@@ -304,6 +559,16 @@ class TestProgramBackup:
 
 class TestProgramBackupAPI:
     """Test suite for program backup API endpoints."""
+
+    def test_backup_center_page_renders(self, client, clean_db):
+        """The dedicated backup page should render successfully."""
+        response = client.get('/backup')
+
+        assert response.status_code == 200
+        body = response.get_data(as_text=True)
+        assert "Backup Center" in body
+        assert "Save Current Program" in body
+        assert "programLibraryModal" not in body
     
     def test_api_list_backups(self, client, clean_db, exercise_factory, workout_plan_factory):
         """Test GET /api/backups returns list of backups."""
@@ -407,6 +672,141 @@ class TestProgramBackupAPI:
         
         # Verify backup is gone
         assert get_backup_details(backup['id']) is None
+
+    def test_api_patch_backup_updates_name(self, client, clean_db, exercise_factory, workout_plan_factory):
+        """Test PATCH /api/backups/<id> updates the backup name."""
+        exercise_factory("Test Exercise")
+        workout_plan_factory(exercise_name="Test Exercise")
+
+        backup = create_backup(name="Before", note="Original note")
+
+        response = client.patch(
+            f'/api/backups/{backup["id"]}',
+            json={'name': 'After'},
+            content_type='application/json'
+        )
+
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['ok'] is True
+        assert data['data']['name'] == 'After'
+        assert data['data']['note'] == 'Original note'
+
+        refreshed = get_backup_details(backup['id'])
+        assert refreshed['name'] == 'After'
+
+    def test_api_patch_backup_updates_note(self, client, clean_db, exercise_factory, workout_plan_factory):
+        """Test PATCH /api/backups/<id> updates the backup note."""
+        exercise_factory("Test Exercise")
+        workout_plan_factory(exercise_name="Test Exercise")
+
+        backup = create_backup(name="Before", note="Original note")
+
+        response = client.patch(
+            f'/api/backups/{backup["id"]}',
+            json={'note': 'Updated note'},
+            content_type='application/json'
+        )
+
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['ok'] is True
+        assert data['data']['name'] == 'Before'
+        assert data['data']['note'] == 'Updated note'
+
+        refreshed = get_backup_details(backup['id'])
+        assert refreshed['note'] == 'Updated note'
+
+    def test_api_patch_backup_rejects_empty_name(self, client, clean_db, exercise_factory, workout_plan_factory):
+        """Test PATCH /api/backups/<id> rejects an empty name."""
+        exercise_factory("Test Exercise")
+        workout_plan_factory(exercise_name="Test Exercise")
+
+        backup = create_backup(name="Before")
+
+        response = client.patch(
+            f'/api/backups/{backup["id"]}',
+            json={'name': ''},
+            content_type='application/json'
+        )
+
+        assert response.status_code == 400
+        data = response.get_json()
+        assert data['ok'] is False
+        assert data['error']['code'] == 'VALIDATION_ERROR'
+
+    def test_api_patch_backup_rejects_oversized_name(self, client, clean_db, exercise_factory, workout_plan_factory):
+        """Test PATCH /api/backups/<id> rejects a name longer than 100 characters."""
+        exercise_factory("Test Exercise")
+        workout_plan_factory(exercise_name="Test Exercise")
+
+        backup = create_backup(name="Before")
+
+        response = client.patch(
+            f'/api/backups/{backup["id"]}',
+            json={'name': 'x' * 101},
+            content_type='application/json'
+        )
+
+        assert response.status_code == 400
+        data = response.get_json()
+        assert data['ok'] is False
+        assert data['error']['code'] == 'VALIDATION_ERROR'
+
+    def test_api_patch_backup_rejects_oversized_note(self, client, clean_db, exercise_factory, workout_plan_factory):
+        """Test PATCH /api/backups/<id> rejects a note longer than 500 characters."""
+        exercise_factory("Test Exercise")
+        workout_plan_factory(exercise_name="Test Exercise")
+
+        backup = create_backup(name="Before")
+
+        response = client.patch(
+            f'/api/backups/{backup["id"]}',
+            json={'note': 'x' * 501},
+            content_type='application/json'
+        )
+
+        assert response.status_code == 400
+        data = response.get_json()
+        assert data['ok'] is False
+        assert data['error']['code'] == 'VALIDATION_ERROR'
+
+    def test_api_patch_backup_not_found(self, client, clean_db):
+        """Test PATCH /api/backups/<id> returns 404 when the backup does not exist."""
+        response = client.patch(
+            '/api/backups/99999',
+            json={'name': 'Missing'},
+            content_type='application/json'
+        )
+
+        assert response.status_code == 404
+        data = response.get_json()
+        assert data['ok'] is False
+        assert data['error']['code'] == 'NOT_FOUND'
+
+    def test_api_patch_preserves_created_at_and_id(self, client, clean_db, exercise_factory, workout_plan_factory):
+        """Test PATCH /api/backups/<id> keeps immutable fields unchanged."""
+        exercise_factory("Test Exercise")
+        workout_plan_factory(exercise_name="Test Exercise")
+
+        backup = create_backup(name="Before", note="Original note")
+        original = get_backup_details(backup['id'])
+
+        response = client.patch(
+            f'/api/backups/{backup["id"]}',
+            json={'name': 'After'},
+            content_type='application/json'
+        )
+
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['data']['id'] == original['id']
+        assert data['data']['backup_type'] == original['backup_type']
+
+        refreshed = get_backup_details(backup['id'])
+        assert refreshed['id'] == original['id']
+        assert refreshed['created_at'] == original['created_at']
+        assert refreshed['backup_type'] == original['backup_type']
 
 
 class TestEraseDataDeletesBackups:

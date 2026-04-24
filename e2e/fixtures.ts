@@ -85,6 +85,7 @@ export const ROUTES = {
   SESSION_SUMMARY: '/session_summary',
   PROGRESSION: '/progression',
   VOLUME_SPLITTER: '/volume_splitter',
+  BACKUP: '/backup',
 } as const;
 
 /**
@@ -148,6 +149,7 @@ export const SELECTORS = {
   PAGE_SESSION_SUMMARY: '#session-summary-container',
   PAGE_PROGRESSION: '.progression-plan-container',
   PAGE_VOLUME_SPLITTER: '#volume-splitter-app',
+  PAGE_BACKUP: '[data-testid="backup-center-page"], [data-page="backup-center"]',
   
   // Workout Plan page elements (use ID as fallback)
   ROUTINE_ENV: '[data-testid="routine-env"], #routine-env',

@@ -15,7 +15,9 @@ from utils.logger import get_logger
 
 logger = get_logger()
 
-# Schema version for future migration support
+# TODO: schema_version is written but not yet consumed. First consumer should
+# read it in restore_backup to trigger field migration. Until then it is purely
+# informational.
 BACKUP_SCHEMA_VERSION = 1
 
 
@@ -109,7 +111,8 @@ def _check_column_exists(db: DatabaseHandler, table: str, column: str) -> bool:
 def create_backup(
     name: str,
     note: Optional[str] = None,
-    backup_type: str = "manual"
+    backup_type: str = "manual",
+    db: Optional[DatabaseHandler] = None
 ) -> Dict[str, Any]:
     """
     Create a backup (snapshot) of the current active program.
@@ -118,6 +121,7 @@ def create_backup(
         name: Required name for the backup
         note: Optional note/description
         backup_type: 'manual' (user-initiated) or 'auto' (system-initiated)
+        db: Optional shared database handler for callers managing a transaction
     
     Returns:
         Dict with backup metadata including id, name, item_count, etc.
@@ -128,13 +132,26 @@ def create_backup(
     """
     if not name or not name.strip():
         raise ValueError("Backup name is required")
-    
+
     name = name.strip()
+    if len(name) > 100:
+        raise ValueError("Backup name must be 100 characters or fewer")
+
+    if note is not None:
+        note = note.strip()
+        if len(note) > 500:
+            raise ValueError("Backup note must be 500 characters or fewer")
+        note = note or None
     
-    with DatabaseHandler() as db:
-        # Ensure backup tables exist
-        initialize_backup_tables(db)
-        
+    should_close = False
+    if db is None:
+        db = DatabaseHandler()
+        db.__enter__()
+        should_close = True
+
+    commit_writes = should_close
+
+    try:
         # Check if user_selection table exists
         table_check = db.fetch_one(
             "SELECT name FROM sqlite_master WHERE type='table' AND name='user_selection'"
@@ -171,7 +188,7 @@ def create_backup(
         db.execute_query("""
             INSERT INTO program_backups (name, note, backup_type, schema_version, item_count, created_at)
             VALUES (?, ?, ?, ?, ?, ?)
-        """, (name, note, backup_type, BACKUP_SCHEMA_VERSION, item_count, datetime.now()))
+        """, (name, note, backup_type, BACKUP_SCHEMA_VERSION, item_count, datetime.now()), commit=commit_writes)
         
         # Get the newly created backup ID
         result = db.fetch_one("SELECT last_insert_rowid() as id")
@@ -199,7 +216,7 @@ def create_backup(
                     item.get('weight'),
                     item.get('exercise_order'),  # Will be None if column doesn't exist
                     item.get('superset_group')   # Will be None if column doesn't exist
-                ))
+                ), commit=commit_writes)
         
         logger.info(
             "Backup created successfully",
@@ -220,6 +237,86 @@ def create_backup(
             'item_count': item_count,
             'created_at': datetime.now().isoformat()
         }
+    except BaseException as exc:
+        if should_close:
+            db.__exit__(type(exc), exc, exc.__traceback__)
+            should_close = False
+        raise
+    finally:
+        if should_close:
+            db.__exit__(None, None, None)
+
+
+def update_backup_metadata(
+    backup_id: int,
+    name: Optional[str] = None,
+    note: Optional[str] = None
+) -> Optional[Dict[str, Any]]:
+    """
+    Update the editable metadata for a backup.
+
+    Args:
+        backup_id: The ID of the backup to update
+        name: Optional new backup name
+        note: Optional new backup note
+
+    Returns:
+        Updated backup metadata, or None if the backup does not exist
+
+    Raises:
+        ValueError: If neither field is provided or validation fails
+        sqlite3.Error: On database errors
+    """
+    if name is None and note is None:
+        raise ValueError("At least one of 'name' or 'note' must be provided")
+
+    with DatabaseHandler() as db:
+        existing = db.fetch_one(
+            """
+            SELECT id, name, note, backup_type, schema_version, item_count, created_at
+            FROM program_backups
+            WHERE id = ?
+            """,
+            (backup_id,),
+        )
+
+        if not existing:
+            return None
+
+        updates = []
+        params = []
+
+        if name is not None:
+            normalized_name = name.strip()
+            if not normalized_name:
+                raise ValueError("Backup name is required")
+            if len(normalized_name) > 100:
+                raise ValueError("Backup name must be 100 characters or fewer")
+            updates.append("name = ?")
+            params.append(normalized_name)
+
+        if note is not None:
+            normalized_note = note.strip()
+            if len(normalized_note) > 500:
+                raise ValueError("Backup note must be 500 characters or fewer")
+            updates.append("note = ?")
+            params.append(normalized_note or None)
+
+        db.execute_query(
+            f"UPDATE program_backups SET {', '.join(updates)} WHERE id = ?",
+            tuple(params + [backup_id]),
+        )
+
+        row = db.fetch_one(
+            """
+            SELECT id, name, note, backup_type, schema_version, item_count, created_at
+            FROM program_backups
+            WHERE id = ?
+            """,
+            (backup_id,),
+        )
+
+        return dict(row) if row else None
 
 
 def list_backups() -> List[Dict[str, Any]]:
@@ -230,9 +327,6 @@ def list_backups() -> List[Dict[str, Any]]:
         List of backup metadata dicts, ordered by created_at DESC
     """
     with DatabaseHandler() as db:
-        # Ensure backup tables exist
-        initialize_backup_tables(db)
-        
         backups = db.fetch_all("""
             SELECT id, name, note, backup_type, schema_version, item_count, created_at
             FROM program_backups
@@ -329,105 +423,121 @@ def restore_backup(backup_id: int) -> Dict[str, Any]:
         has_order = _check_column_exists(db, 'user_selection', 'exercise_order')
         has_superset = _check_column_exists(db, 'user_selection', 'superset_group')
         
-        # Clear current active program (user_selection)
-        # First delete workout_log entries that reference user_selection
-        db.execute_query("DELETE FROM workout_log")
-        db.execute_query("DELETE FROM user_selection")
-        
-        restored_count = 0
-        skipped = []
-        
-        for item in items:
-            exercise_name = item.get('exercise')
-            
-            # Check if exercise exists in catalog (FK constraint)
-            if exercise_name not in valid_exercise_names:
-                skipped.append(exercise_name)
-                logger.warning(
-                    f"Skipping exercise during restore: '{exercise_name}' not in catalog"
-                )
-                continue
-            
-            # Insert item
-            try:
+        try:
+            db.execute_query("BEGIN IMMEDIATE", commit=False)
+
+            # Clear current active program (user_selection)
+            # FK CASCADE from user_selection also clears workout_log; explicit DELETE documents intent.
+            db.execute_query("DELETE FROM workout_log", commit=False)
+            db.execute_query("DELETE FROM user_selection", commit=False)
+
+            restored_count = 0
+            skipped = []
+
+            for item in items:
+                exercise_name = item.get('exercise')
+
+                # Check if exercise exists in catalog (FK constraint)
+                if exercise_name not in valid_exercise_names:
+                    skipped.append(exercise_name)
+                    logger.warning(
+                        f"Skipping exercise during restore: '{exercise_name}' not in catalog"
+                    )
+                    continue
+
+                # Insert item
                 # Build INSERT based on available columns
                 if has_order and has_superset:
-                    db.execute_query("""
-                        INSERT INTO user_selection 
-                        (routine, exercise, sets, min_rep_range, max_rep_range, 
+                    db.execute_query(
+                        """
+                        INSERT INTO user_selection
+                        (routine, exercise, sets, min_rep_range, max_rep_range,
                          rir, rpe, weight, exercise_order, superset_group)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    """, (
-                        item.get('routine'),
-                        exercise_name,
-                        item.get('sets'),
-                        item.get('min_rep_range'),
-                        item.get('max_rep_range'),
-                        item.get('rir'),
-                        item.get('rpe'),
-                        item.get('weight'),
-                        item.get('exercise_order'),
-                        item.get('superset_group')
-                    ))
+                        """,
+                        (
+                            item.get('routine'),
+                            exercise_name,
+                            item.get('sets'),
+                            item.get('min_rep_range'),
+                            item.get('max_rep_range'),
+                            item.get('rir'),
+                            item.get('rpe'),
+                            item.get('weight'),
+                            item.get('exercise_order'),
+                            item.get('superset_group')
+                        ),
+                        commit=False,
+                    )
                 elif has_order:
-                    db.execute_query("""
-                        INSERT INTO user_selection 
-                        (routine, exercise, sets, min_rep_range, max_rep_range, 
+                    db.execute_query(
+                        """
+                        INSERT INTO user_selection
+                        (routine, exercise, sets, min_rep_range, max_rep_range,
                          rir, rpe, weight, exercise_order)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    """, (
-                        item.get('routine'),
-                        exercise_name,
-                        item.get('sets'),
-                        item.get('min_rep_range'),
-                        item.get('max_rep_range'),
-                        item.get('rir'),
-                        item.get('rpe'),
-                        item.get('weight'),
-                        item.get('exercise_order')
-                    ))
+                        """,
+                        (
+                            item.get('routine'),
+                            exercise_name,
+                            item.get('sets'),
+                            item.get('min_rep_range'),
+                            item.get('max_rep_range'),
+                            item.get('rir'),
+                            item.get('rpe'),
+                            item.get('weight'),
+                            item.get('exercise_order')
+                        ),
+                        commit=False,
+                    )
                 elif has_superset:
-                    db.execute_query("""
-                        INSERT INTO user_selection 
-                        (routine, exercise, sets, min_rep_range, max_rep_range, 
+                    db.execute_query(
+                        """
+                        INSERT INTO user_selection
+                        (routine, exercise, sets, min_rep_range, max_rep_range,
                          rir, rpe, weight, superset_group)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    """, (
-                        item.get('routine'),
-                        exercise_name,
-                        item.get('sets'),
-                        item.get('min_rep_range'),
-                        item.get('max_rep_range'),
-                        item.get('rir'),
-                        item.get('rpe'),
-                        item.get('weight'),
-                        item.get('superset_group')
-                    ))
+                        """,
+                        (
+                            item.get('routine'),
+                            exercise_name,
+                            item.get('sets'),
+                            item.get('min_rep_range'),
+                            item.get('max_rep_range'),
+                            item.get('rir'),
+                            item.get('rpe'),
+                            item.get('weight'),
+                            item.get('superset_group')
+                        ),
+                        commit=False,
+                    )
                 else:
-                    db.execute_query("""
-                        INSERT INTO user_selection 
-                        (routine, exercise, sets, min_rep_range, max_rep_range, 
+                    db.execute_query(
+                        """
+                        INSERT INTO user_selection
+                        (routine, exercise, sets, min_rep_range, max_rep_range,
                          rir, rpe, weight)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                    """, (
-                        item.get('routine'),
-                        exercise_name,
-                        item.get('sets'),
-                        item.get('min_rep_range'),
-                        item.get('max_rep_range'),
-                        item.get('rir'),
-                        item.get('rpe'),
-                        item.get('weight')
-                    ))
+                        """,
+                        (
+                            item.get('routine'),
+                            exercise_name,
+                            item.get('sets'),
+                            item.get('min_rep_range'),
+                            item.get('max_rep_range'),
+                            item.get('rir'),
+                            item.get('rpe'),
+                            item.get('weight')
+                        ),
+                        commit=False,
+                    )
                 restored_count += 1
-            except sqlite3.IntegrityError as e:
-                # Handle duplicate entries gracefully
-                logger.warning(
-                    f"Skipping duplicate entry during restore: {exercise_name} - {e}"
-                )
-                skipped.append(f"{exercise_name} (duplicate)")
-        
-        # Remove duplicates from skipped list while preserving order
+            db.connection.commit()
+        except sqlite3.Error:
+            db.connection.rollback()
+            raise
+
+        # Normalize skipped entries while preserving order
         skipped_unique = list(dict.fromkeys(skipped))
         
         logger.info(
@@ -516,14 +626,62 @@ def create_auto_backup_before_erase() -> Optional[Dict[str, Any]]:
             return None
     
     # Create timestamped auto-backup
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
     backup_name = f"Pre-Erase Auto-Backup ({timestamp})"
-    
-    return create_backup(
-        name=backup_name,
-        note="Automatically created before erase/reset operation",
-        backup_type="auto"
-    )
+
+    with DatabaseHandler() as db:
+        db.execute_query("BEGIN IMMEDIATE", commit=False)
+        try:
+            backup = create_backup(
+                name=backup_name,
+                note="Automatically created before erase/reset operation",
+                backup_type="auto",
+                db=db,
+            )
+            prune_auto_backups(keep_count=10, db=db)
+            db.connection.commit()
+            return backup
+        except sqlite3.Error:
+            db.connection.rollback()
+            raise
+
+
+def prune_auto_backups(keep_count: int = 10, db: Optional[DatabaseHandler] = None) -> int:
+    """Delete auto-backups beyond the latest keep_count. Manual backups are never touched.
+
+    Returns the number of rows deleted.
+    """
+    should_close = False
+    if db is None:
+        db = DatabaseHandler()
+        db.__enter__()
+        should_close = True
+
+    try:
+        rowcount = db.execute_query(
+            """
+            DELETE FROM program_backups
+             WHERE backup_type = 'auto'
+               AND id NOT IN (
+                     SELECT id FROM program_backups
+                      WHERE backup_type = 'auto'
+                      ORDER BY created_at DESC
+                      LIMIT ?
+                   )
+            """,
+            (keep_count,),
+            commit=should_close,
+        )
+        logger.info("Pruned auto-backups", extra={'kept': keep_count, 'deleted': rowcount})
+        return rowcount
+    except BaseException as exc:
+        if should_close:
+            db.__exit__(type(exc), exc, exc.__traceback__)
+            should_close = False
+        raise
+    finally:
+        if should_close:
+            db.__exit__(None, None, None)
 
 
 def get_latest_auto_backup() -> Optional[Dict[str, Any]]:
@@ -534,9 +692,6 @@ def get_latest_auto_backup() -> Optional[Dict[str, Any]]:
         Backup metadata dict or None if no auto-backups exist
     """
     with DatabaseHandler() as db:
-        # Ensure backup tables exist
-        initialize_backup_tables(db)
-        
         backup = db.fetch_one("""
             SELECT id, name, note, backup_type, schema_version, item_count, created_at
             FROM program_backups

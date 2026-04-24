@@ -1,16 +1,11 @@
 /**
- * E2E Test: Program Backup (Program Library)
- * 
- * Tests the program backup/library functionality including:
- * - Creating backups
- * - Listing backups
- * - Restoring backups
- * - Deleting backups
- * - Backup modal interactions
+ * E2E Test: Backup Center
+ *
+ * Covers the dedicated backup page plus its entry points from Workout Plan.
  */
 import { test, expect, ROUTES, SELECTORS, waitForPageReady, expectToast } from './fixtures';
 
-test.describe('Program Backup Feature', () => {
+test.describe('Backup Center Entry Points', () => {
   test.beforeEach(async ({ page, consoleErrors }) => {
     consoleErrors.startCollecting();
     await page.goto(ROUTES.WORKOUT_PLAN);
@@ -21,226 +16,335 @@ test.describe('Program Backup Feature', () => {
     consoleErrors.assertNoErrors();
   });
 
-  test('program library button is visible', async ({ page }) => {
+  test('save program link is visible and targets the save intent', async ({ page }) => {
+    const saveBtn = page.locator('#save-program-btn');
+    await expect(saveBtn).toBeVisible();
+    await expect(saveBtn).toContainText('Save Program');
+    await expect(saveBtn).toHaveAttribute('href', '/backup?intent=save');
+  });
+
+  test('backup center link is visible and targets the browse intent', async ({ page }) => {
     const libraryBtn = page.locator('#load-program-btn');
     await expect(libraryBtn).toBeVisible();
-    await expect(libraryBtn).toContainText('Program Library');
+    await expect(libraryBtn).toContainText('Backup Center');
+    await expect(libraryBtn).toHaveAttribute('href', '/backup?intent=browse');
   });
 
-  test('program library modal opens', async ({ page }) => {
-    const libraryBtn = page.locator('#load-program-btn');
-    await libraryBtn.click();
-
-    const modal = page.locator('#programLibraryModal');
-    await expect(modal).toBeVisible({ timeout: 5000 });
-    await expect(modal.locator('.modal-title')).toContainText('Program Library');
+  test('save program link lands on the save pane in Backup Center', async ({ page }) => {
+    await page.locator('#save-program-btn').click();
+    await waitForPageReady(page);
+    await expect(page).toHaveURL(/\/backup\?intent=save/);
+    await expect(page.locator('#backup-center-name')).toBeFocused();
+    await expect(page.locator('#backup-save-panel')).toHaveClass(/is-targeted/);
   });
 
-  test('save program button exists in modal', async ({ page }) => {
+  test('backup center link lands on the browse pane', async ({ page }) => {
     await page.locator('#load-program-btn').click();
-    const modal = page.locator('#programLibraryModal');
-    await expect(modal).toBeVisible({ timeout: 5000 });
+    await waitForPageReady(page);
+    await expect(page).toHaveURL(/\/backup\?intent=browse/);
+    await expect(page.locator('#backup-search')).toBeFocused();
+    await expect(page.locator('#backup-library-panel')).toHaveClass(/is-targeted/);
+  });
+});
 
-    // The save button in library modal opens another modal
-    const saveBtn = modal.locator('#openSaveFromLibrary, [data-action="save-program"]');
-    await expect(saveBtn).toBeVisible();
+test.describe('Backup Center Page', () => {
+  test.beforeEach(async ({ page, consoleErrors }) => {
+    consoleErrors.startCollecting();
+    await page.request.post('/clear_workout_plan', { failOnStatusCode: false });
+    const seedResponse = await page.request.post('/add_exercise', {
+      data: {
+        routine: 'GYM - Full Body - Workout A',
+        exercise: 'Bench Press',
+        sets: 3,
+        min_rep_range: 6,
+        max_rep_range: 8,
+        weight: 100,
+      },
+    });
+    expect(seedResponse.ok()).toBeTruthy();
+    await page.goto(ROUTES.BACKUP);
+    await waitForPageReady(page);
   });
 
-  test('backup list container is present', async ({ page }) => {
-    await page.locator('#load-program-btn').click();
-    const modal = page.locator('#programLibraryModal');
-    await expect(modal).toBeVisible({ timeout: 5000 });
-
-    const backupList = modal.locator('#backup-list, .backup-list');
-    await expect(backupList).toBeVisible();
+  test.afterEach(async ({ consoleErrors }) => {
+    consoleErrors.assertNoErrors();
   });
 
-  test('can close program library modal', async ({ page }) => {
-    await page.locator('#load-program-btn').click();
-    const modal = page.locator('#programLibraryModal');
-    await expect(modal).toBeVisible({ timeout: 5000 });
-
-    // Close via close button
-    await modal.locator('.btn-close').click();
-    await expect(modal).not.toBeVisible({ timeout: 3000 });
+  test('dedicated backup center page renders', async ({ page }) => {
+    await expect(page.locator(SELECTORS.PAGE_BACKUP)).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Backup Center' })).toBeVisible();
+    await expect(page.locator('#backup-center-save-form')).toBeVisible();
+    await expect(page.locator('#backup-center-list')).toBeVisible();
   });
 
-  test('save backup form has name input', async ({ page }) => {
-    // Open the library modal first
-    await page.locator('#load-program-btn').click();
-    const libraryModal = page.locator('#programLibraryModal');
-    await expect(libraryModal).toBeVisible({ timeout: 5000 });
-
-    // Click the save button to open the save modal
-    await page.locator('#openSaveFromLibrary').click();
-    
-    // Check the save modal has the name input
-    const saveModal = page.locator('#saveBackupModal');
-    await expect(saveModal).toBeVisible({ timeout: 5000 });
-    
-    const nameInput = saveModal.locator('#backup-name');
-    await expect(nameInput).toBeVisible();
+  test('backup center requires a backup name', async ({ page }) => {
+    await page.locator('#backup-center-name').fill('');
+    await page.locator('#backup-center-save-submit').click();
+    await expectToast(page, 'Please enter a name for the backup.');
+    await expect(page.locator('#backup-center-name')).toBeFocused();
   });
 
-  test('save backup form has note input', async ({ page }) => {
-    // Open the library modal first
-    await page.locator('#load-program-btn').click();
-    const libraryModal = page.locator('#programLibraryModal');
-    await expect(libraryModal).toBeVisible({ timeout: 5000 });
+  test('can create a backup from the dedicated page', async ({ page }) => {
+    const backupName = `Backup Center E2E ${Date.now()}`;
 
-    // Click the save button to open the save modal
-    await page.locator('#openSaveFromLibrary').click();
-    
-    // Check the save modal has the note input
-    const saveModal = page.locator('#saveBackupModal');
-    await expect(saveModal).toBeVisible({ timeout: 5000 });
-    
-    const noteInput = saveModal.locator('#backup-note');
-    await expect(noteInput).toBeVisible();
+    await page.locator('#backup-center-name').fill(backupName);
+    await page.locator('#backup-center-note').fill('Created from the dedicated backup center.');
+    await page.locator('#backup-center-save-submit').click();
+
+    await expectToast(page, backupName);
+    await page.locator('#backup-search').fill(backupName);
+    await expect(page.locator('#backup-center-list')).toContainText(backupName);
   });
 
-  test('can create a backup with valid name', async ({ page }) => {
-    // Open the library modal first
-    await page.locator('#load-program-btn').click();
-    const libraryModal = page.locator('#programLibraryModal');
-    await expect(libraryModal).toBeVisible({ timeout: 5000 });
+  test('restore and delete actions use inline confirmation on the detail pane', async ({ page }) => {
+    const backupName = `Backup Action E2E ${Date.now()}`;
 
-    // Click the save button to open the save modal
-    await page.locator('#openSaveFromLibrary').click();
-    
-    const saveModal = page.locator('#saveBackupModal');
-    await expect(saveModal).toBeVisible({ timeout: 5000 });
+    await page.locator('#backup-center-name').fill(backupName);
+    await page.locator('#backup-center-save-submit').click();
+    await expectToast(page, backupName);
 
-    // Fill in backup name
-    const nameInput = saveModal.locator('#backup-name');
-    await nameInput.fill('E2E Test Backup ' + Date.now());
+    await page.locator('#backup-search').fill(backupName);
 
-    // Click save button
-    const saveBtn = saveModal.locator('#saveBackupSubmit');
-    await saveBtn.click();
+    const record = page.locator('[data-role="backup-record"]').filter({ hasText: backupName }).first();
+    await expect(record).toBeVisible();
+    await record.click();
 
-    // Wait for success - either toast or modal closes
-    await Promise.race([
-      page.waitForSelector('.toast', { timeout: 5000 }),
-      page.waitForTimeout(2000)
-    ]);
+    await expect(page.locator('#backup-detail-name')).toContainText(backupName);
+
+    await page.locator('#backup-detail-restore').click();
+    await expect(page.locator('#backup-action-confirm')).toBeVisible();
+    await expect(page.locator('#backup-action-title')).toContainText('Confirm restore');
+    await expect(page.locator('#confirmRestoreModal')).toHaveCount(0);
+
+    await page.locator('#backup-action-cancel').click();
+    await expect(page.locator('#backup-action-confirm')).not.toBeVisible();
+
+    await page.locator('#backup-detail-delete').click();
+    await expect(page.locator('#backup-action-confirm')).toBeVisible();
+    await expect(page.locator('#backup-action-title')).toContainText('Confirm delete');
+    await expect(page.locator('#confirmDeleteModal')).toHaveCount(0);
   });
 
-  test('backup requires a name', async ({ page }) => {
-    // Open the library modal first
-    await page.locator('#load-program-btn').click();
-    const libraryModal = page.locator('#programLibraryModal');
-    await expect(libraryModal).toBeVisible({ timeout: 5000 });
+  test('restore confirmation mentions logged sessions and offers a save-first snapshot', async ({ page }) => {
+    const backupName = `Restore Copy E2E ${Date.now()}`;
 
-    // Click the save button to open the save modal
-    await page.locator('#openSaveFromLibrary').click();
-    
-    const saveModal = page.locator('#saveBackupModal');
-    await expect(saveModal).toBeVisible({ timeout: 5000 });
+    await page.locator('#backup-center-name').fill(backupName);
+    await page.locator('#backup-center-save-submit').click();
+    await expectToast(page, backupName);
 
-    // Try to save without name
-    const nameInput = saveModal.locator('#backup-name');
-    await nameInput.clear();
+    await page.locator('#backup-search').fill(backupName);
+    await page.locator('[data-role="backup-record"]').filter({ hasText: backupName }).first().click();
 
-    const saveBtn = saveModal.locator('#saveBackupSubmit');
-    await saveBtn.click();
+    await page.locator('#backup-detail-restore').click();
 
-    // Should show validation error or prevent submission
-    await page.waitForTimeout(500);
-    
-    // Check if form validation kicked in or error message appears
-    const isInvalid = await nameInput.evaluate(el => (el as HTMLInputElement).validity.valid === false);
-    const errorMessage = saveModal.locator('.error-message, .invalid-feedback, .text-danger');
-    const hasError = await errorMessage.count() > 0;
-    
-    expect(isInvalid || hasError || await nameInput.getAttribute('required')).toBeTruthy();
+    await expect(page.locator('#backup-action-text')).toContainText('logged sessions will be cleared');
+    await expect(page.locator('#backup-restore-save-first')).toBeVisible();
+
+    await page.locator('#backup-action-cancel').click();
+    await expect(page.locator('#backup-action-confirm')).not.toBeVisible();
   });
 
-  test('backup list shows existing backups', async ({ page }) => {
-    await page.locator('#load-program-btn').click();
-    const modal = page.locator('#programLibraryModal');
-    await expect(modal).toBeVisible({ timeout: 5000 });
+  test('save-first snapshot creates a pre-restore backup before restore', async ({ page }) => {
+    const backupName = `Save First E2E ${Date.now()}`;
 
-    // Wait for backup list to load
-    await page.waitForTimeout(1000);
+    await page.locator('#backup-center-name').fill(backupName);
+    await page.locator('#backup-center-save-submit').click();
+    await expectToast(page, backupName);
 
-    const backupList = modal.locator('#backup-list, .backup-list');
-    await expect(backupList).toBeVisible();
-    
-    // Either shows backups or "no backups" message
-    const content = await backupList.textContent();
-    expect(content).toBeTruthy();
+    await page.locator('#backup-search').fill(backupName);
+    await page.locator('[data-role="backup-record"]').filter({ hasText: backupName }).first().click();
+
+    await page.locator('#backup-detail-restore').click();
+    await page.locator('#backup-restore-save-first').click();
+
+    await expectToast(page, 'Current plan saved as');
+    await page.locator('#backup-search').fill('Pre-restore snapshot');
+    await expect(page.locator('#backup-center-list')).toContainText('Pre-restore snapshot');
+    await expect(page.locator('#backup-action-confirm')).not.toBeVisible();
   });
 
-  test('backup items have restore and delete actions', async ({ page }) => {
-    await page.locator('#load-program-btn').click();
-    const modal = page.locator('#programLibraryModal');
-    await expect(modal).toBeVisible({ timeout: 5000 });
+  test('restore renders a warning inline result panel when nothing can be restored', async ({ page }) => {
+    const backupName = `Restore Result E2E ${Date.now()}`;
 
-    // Wait for list to load (give extra time for network)
-    await page.waitForTimeout(2000);
+    await page.locator('#backup-center-name').fill(backupName);
+    await page.locator('#backup-center-save-submit').click();
+    await expectToast(page, backupName);
 
-    const backupItems = modal.locator('[data-backup-id], .backup-item');
-    const count = await backupItems.count();
+    await page.locator('#backup-search').fill(backupName);
+    await page.locator('[data-role="backup-record"]').filter({ hasText: backupName }).first().click();
 
-    if (count > 0) {
-      const firstItem = backupItems.first();
-      
-      // Check for restore button with correct class
-      const restoreBtn = firstItem.locator('.backup-restore-btn, [data-action="restore"], button:has-text("Restore")');
-      await expect(restoreBtn).toBeVisible();
+    await page.locator('#backup-detail-restore').click();
+    await page.route('**/api/backups/*/restore', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          ok: true,
+          status: 'success',
+          data: {
+            backup_id: 1,
+            backup_name: backupName,
+            restored_count: 0,
+            skipped: ['Missing from catalog'],
+          },
+        }),
+      });
+    });
+    await page.locator('#backup-action-confirm-btn').click();
 
-      // Check for delete button with correct class
-      const deleteBtn = firstItem.locator('.backup-delete-btn, [data-action="delete"], button:has-text("Delete")');
-      await expect(deleteBtn).toBeVisible();
-    }
-    // If no backups exist, test passes (nothing to verify)
+    await expect(page.locator('#backup-restore-result')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('#backup-restore-result')).toHaveClass(/is-warning/);
+    await expect(page.locator('#backup-restore-result-title')).toContainText('Nothing was restored');
+    await expect(page.locator('#backup-restore-result-list li')).toHaveCount(1);
   });
 
-  test('confirm restore modal appears before restoring', async ({ page }) => {
-    await page.locator('#load-program-btn').click();
-    const modal = page.locator('#programLibraryModal');
-    await expect(modal).toBeVisible({ timeout: 5000 });
+  test('restore with missing exercises shows skipped names inline', async ({ page }) => {
+    const backupName = `Partial Restore E2E ${Date.now()}`;
 
-    await page.waitForTimeout(2000);
+    await page.locator('#backup-center-name').fill(backupName);
+    await page.locator('#backup-center-save-submit').click();
+    await expectToast(page, backupName);
 
-    const backupItems = modal.locator('[data-backup-id], .backup-item');
-    const count = await backupItems.count();
+    await page.locator('#backup-search').fill(backupName);
+    await page.locator('[data-role="backup-record"]').filter({ hasText: backupName }).first().click();
 
-    if (count > 0) {
-      const restoreBtn = backupItems.first().locator('.backup-restore-btn, [data-action="restore"]');
-      if (await restoreBtn.count() > 0) {
-        await restoreBtn.click();
+    await page.locator('#backup-detail-restore').click();
+    await page.route('**/api/backups/*/restore', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          ok: true,
+          status: 'success',
+          data: {
+            backup_id: 1,
+            backup_name: backupName,
+            restored_count: 3,
+            skipped: ['Missing Exercise A', 'Missing Exercise B'],
+          },
+        }),
+      });
+    });
+    await page.locator('#backup-action-confirm-btn').click();
 
-        // Confirm modal should appear
-        const confirmModal = page.locator('#confirmRestoreModal');
-        await expect(confirmModal).toBeVisible({ timeout: 3000 });
-      }
-    }
-    // If no backups exist, test passes
+    await expect(page.locator('#backup-restore-result')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('#backup-restore-result')).not.toHaveClass(/is-warning/);
+    await expect(page.locator('#backup-restore-result-title')).toContainText('3 exercises restored');
+    await expect(page.locator('#backup-restore-result-title')).toContainText('2 skipped');
+    await expect(page.locator('#backup-restore-result-list li')).toHaveCount(2);
+    await expect(page.locator('#backup-restore-result-list li').nth(0)).toContainText('Missing Exercise A');
+    await expect(page.locator('#backup-restore-result-list li').nth(1)).toContainText('Missing Exercise B');
   });
 
-  test('confirm delete modal appears before deleting', async ({ page }) => {
-    await page.locator('#load-program-btn').click();
-    const modal = page.locator('#programLibraryModal');
-    await expect(modal).toBeVisible({ timeout: 5000 });
+  test('sort by Name A-Z reorders the library', async ({ page }) => {
+    const zebra = `Zebra ${Date.now()}`;
+    const apple = `Apple ${Date.now()}`;
+    const mango = `Mango ${Date.now()}`;
 
-    await page.waitForTimeout(2000);
+    await page.request.post('/api/backups', { data: { name: zebra } });
+    await page.request.post('/api/backups', { data: { name: apple } });
+    await page.request.post('/api/backups', { data: { name: mango } });
 
-    const backupItems = modal.locator('[data-backup-id], .backup-item');
-    const count = await backupItems.count();
+    await page.reload();
+    await waitForPageReady(page);
 
-    if (count > 0) {
-      const deleteBtn = backupItems.first().locator('.backup-delete-btn, [data-action="delete"]');
-      if (await deleteBtn.count() > 0) {
-        await deleteBtn.click();
+    await page.locator('#backup-sort').selectOption('name-asc');
 
-        // Confirm modal should appear
-        const confirmModal = page.locator('#confirmDeleteModal');
-        await expect(confirmModal).toBeVisible({ timeout: 3000 });
-      }
-    }
-    // If no backups exist, test passes
+    const backupNames = page.locator('[data-role="backup-record"] .backup-record-name');
+    const names = await backupNames.allTextContents();
+    const appleIndex = names.indexOf(apple);
+    const mangoIndex = names.indexOf(mango);
+    const zebraIndex = names.indexOf(zebra);
+
+    expect(appleIndex).toBeGreaterThanOrEqual(0);
+    expect(mangoIndex).toBeGreaterThanOrEqual(0);
+    expect(zebraIndex).toBeGreaterThanOrEqual(0);
+    expect(appleIndex).toBeLessThan(mangoIndex);
+    expect(mangoIndex).toBeLessThan(zebraIndex);
+  });
+
+  test('sort preference persists across reload', async ({ page }) => {
+    await page.locator('#backup-sort').selectOption('oldest');
+    await page.reload();
+    await waitForPageReady(page);
+
+    await expect(page.locator('#backup-sort')).toHaveValue('oldest');
+  });
+
+  test('saving with zero active exercises shows a warning and requires re-confirm', async ({ page }) => {
+    const backupName = `Empty Snapshot ${Date.now()}`;
+
+    await page.request.post('/clear_workout_plan', { failOnStatusCode: false });
+    await page.reload();
+    await waitForPageReady(page);
+
+    const beforeResponse = await page.request.get('/api/backups');
+    const beforeData = await beforeResponse.json();
+    const beforeCount = Array.isArray(beforeData.data) ? beforeData.data.length : 0;
+
+    await page.locator('#backup-center-name').fill(backupName);
+    await page.locator('#backup-center-save-submit').click();
+
+    await expect(page.locator('#backup-save-empty-warning')).toBeVisible();
+    await expect(page.locator('#backup-center-save-submit')).toBeEnabled();
+
+    const afterFirstResponse = await page.request.get('/api/backups');
+    const afterFirstData = await afterFirstResponse.json();
+    const afterFirstCount = Array.isArray(afterFirstData.data) ? afterFirstData.data.length : 0;
+    expect(afterFirstCount).toBe(beforeCount);
+
+    await page.locator('#backup-center-save-submit').click();
+    await expectToast(page, backupName);
+
+    await page.locator('#backup-search').fill(backupName);
+    await expect(page.locator('#backup-center-list')).toContainText(backupName);
+    await expect(page.locator('#backup-save-empty-warning')).toBeHidden();
+  });
+
+  test('multi-line note renders with preserved line breaks', async ({ page }) => {
+    const backupName = `Line Break Note ${Date.now()}`;
+    const note = 'Line 1\nLine 2';
+
+    await page.request.post('/api/backups', {
+      data: {
+        name: backupName,
+        note,
+      },
+    });
+
+    await page.reload();
+    await waitForPageReady(page);
+    await page.locator('#backup-search').fill(backupName);
+    await page.locator('[data-role="backup-record"]').filter({ hasText: backupName }).first().click();
+
+    await expect(page.locator('#backup-detail-note')).toBeVisible();
+    await expect(page.locator('#backup-detail-note')).toHaveJSProperty('textContent', note);
+    await expect(page.locator('#backup-detail-note')).toHaveCSS('white-space', 'pre-wrap');
+  });
+
+  test('rename backup from detail panel persists on reload', async ({ page }) => {
+    const backupName = `Rename E2E ${Date.now()}`;
+    const renamedBackupName = `${backupName} After`;
+
+    await page.locator('#backup-center-name').fill(backupName);
+    await page.locator('#backup-center-save-submit').click();
+    await expectToast(page, backupName);
+
+    await page.locator('#backup-search').fill(backupName);
+    await page.locator('[data-role="backup-record"]').filter({ hasText: backupName }).first().click();
+
+    await page.locator('#backup-detail-edit-name').click();
+    await page.locator('#backup-detail-name-input').fill(renamedBackupName);
+    await page.locator('#backup-detail-name-save').click();
+    await expectToast(page, 'Backup renamed successfully.');
+
+    await page.reload();
+    await waitForPageReady(page);
+    await page.locator('#backup-search').fill(renamedBackupName);
+
+    const renamedRecord = page.locator('[data-role="backup-record"]').filter({ hasText: renamedBackupName }).first();
+    await expect(renamedRecord).toBeVisible();
+    await expect(page.locator('#backup-center-list')).toContainText(renamedBackupName);
   });
 });
 

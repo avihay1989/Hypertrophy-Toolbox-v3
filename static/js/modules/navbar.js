@@ -20,7 +20,8 @@ export function initializeNavHighlighting() {
         '/session_summary': 'nav-session-summary',
         '/workout_log': 'nav-workout-log',
         '/progression': 'nav-progression-plan',
-        '/volume_splitter': 'nav-volume-splitter'
+        '/volume_splitter': 'nav-volume-splitter',
+        '/backup': 'nav-backup'
     };
     
     // Add active class to current page's nav item
@@ -52,4 +53,4 @@ export function initializeNavbar() {
     // Optional: Support for programmatic navigation (if using SPA routing)
     // This allows other scripts to trigger navbar updates
     window.addEventListener('hashchange', initializeNavHighlighting);
-} 
+}

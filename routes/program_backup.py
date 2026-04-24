@@ -1,9 +1,10 @@
 """
 Program Backup / Program Library API routes.
 
-Provides endpoints for creating, listing, restoring, and deleting program backups.
+Provides endpoints for creating, listing, restoring, deleting, and browsing
+program backups.
 """
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, render_template
 from utils.errors import success_response, error_response
 from utils.logger import get_logger
 from utils.program_backup import (
@@ -12,11 +13,35 @@ from utils.program_backup import (
     get_backup_details,
     restore_backup,
     delete_backup,
+    update_backup_metadata,
+    get_active_program_count,
     initialize_backup_tables,
 )
 
 program_backup_bp = Blueprint('program_backup', __name__)
 logger = get_logger()
+
+
+@program_backup_bp.route('/backup', methods=['GET'])
+def backup_center():
+    """Render the dedicated backup center page."""
+    try:
+        backups = list_backups()
+        manual_backups = [backup for backup in backups if backup.get('backup_type') != 'auto']
+        auto_backups = [backup for backup in backups if backup.get('backup_type') == 'auto']
+
+        return render_template(
+            'backup.html',
+            active_program_count=get_active_program_count(),
+            initial_backup_count=len(backups),
+            initial_manual_count=len(manual_backups),
+            initial_auto_count=len(auto_backups),
+            latest_manual_backup=manual_backups[0] if manual_backups else None,
+            latest_auto_backup=auto_backups[0] if auto_backups else None,
+        )
+    except Exception:
+        logger.exception("Error loading backup center page")
+        return render_template("error.html", message="Unable to load backup center."), 500
 
 
 @program_backup_bp.route('/api/backups', methods=['GET'])
@@ -171,6 +196,31 @@ def api_delete_backup(backup_id: int):
     except Exception as e:
         logger.exception(f"Error deleting backup {backup_id}")
         return error_response("INTERNAL_ERROR", "Failed to delete backup", 500)
+
+
+@program_backup_bp.route('/api/backups/<int:backup_id>', methods=['PATCH'])
+def api_update_backup(backup_id: int):
+    """Update the editable metadata for a backup."""
+    try:
+        data = request.get_json() or {}
+        if 'name' not in data and 'note' not in data:
+            return error_response("VALIDATION_ERROR", "At least one of 'name' or 'note' must be provided", 400)
+
+        name = data.get('name')
+        note = data.get('note')
+
+        try:
+            updated = update_backup_metadata(backup_id, name=name, note=note)
+        except ValueError as e:
+            return error_response("VALIDATION_ERROR", str(e), 400)
+
+        if updated is None:
+            return error_response("NOT_FOUND", f"Backup with id {backup_id} not found", 404)
+
+        return jsonify(success_response(data=updated, message="Backup updated"))
+    except Exception:
+        logger.exception(f"Error updating backup {backup_id}")
+        return error_response("INTERNAL_ERROR", "Failed to update backup", 500)
 
 
 # Initialize backup tables when blueprint is registered

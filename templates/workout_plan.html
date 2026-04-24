@@ -232,17 +232,17 @@
                             </div>
 
                             <div class="action-toolbar-group action-toolbar-group-right" role="group" aria-label="Program actions">
-                                <!-- Program Library Buttons -->
+                                <!-- Backup Center Buttons -->
                                 <div class="inline-control-item">
-                                    <button id="save-program-btn" class="btn btn-outline-primary btn-calm-ghost" type="button" data-bs-toggle="modal" data-bs-target="#saveBackupModal" aria-label="Save current program">
+                                    <a id="save-program-btn" class="btn btn-outline-primary btn-calm-ghost" href="/backup?intent=save" aria-label="Save current program in Backup Center">
                                         <i class="fas fa-save" aria-hidden="true"></i> Save Program
-                                    </button>
+                                    </a>
                                 </div>
 
                                 <div class="inline-control-item">
-                                    <button id="load-program-btn" class="btn btn-outline-secondary btn-calm-ghost" type="button" data-bs-toggle="modal" data-bs-target="#programLibraryModal" aria-label="Load saved program">
-                                        <i class="fas fa-folder-open" aria-hidden="true"></i> Program Library
-                                    </button>
+                                    <a id="load-program-btn" class="btn btn-outline-secondary btn-calm-ghost" href="/backup?intent=browse" aria-label="Open Backup Center">
+                                        <i class="fas fa-folder-open" aria-hidden="true"></i> Backup Center
+                                    </a>
                                 </div>
 
                                 <!-- Clear Plan Button -->

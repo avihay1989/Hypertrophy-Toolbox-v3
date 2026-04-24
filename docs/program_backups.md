@@ -1,4 +1,4 @@
-# Program Backup / Program Library
+# Program Backup / Backup Center
 
 ## Overview
 
@@ -6,6 +6,15 @@ The Program Backup feature allows users to save snapshots of their current worko
 
 1. **Experiment safely** with new programs and quickly restore previous ones without rebuilding from scratch
 2. **Recover quickly** after using erase/reset operations, thanks to automatic backups
+
+## Primary UI
+
+The primary user experience is the dedicated `Backup Center` page at `/backup`.
+
+- `Backup` in the main navbar opens `/backup`
+- Workout Plan `Save Program` opens `/backup?intent=save`
+- Workout Plan `Backup Center` opens `/backup?intent=browse`
+- Restore/delete confirmations are handled inline on the detail pane rather than with stacked modals
 
 ## User Stories
 
@@ -315,8 +324,9 @@ Status note: unchecked items below are not auto-promoted to done by test coverag
 - [ ] "Restore Now" banner appears after erase (if auto-backup created)
 
 ### UI/UX
-- [ ] "Save Program" button opens save modal
-- [ ] "Program Library" button opens library modal
+- [ ] Workout Plan `Save Program` opens the Backup Center save pane
+- [ ] Workout Plan `Backup Center` opens the browse pane
+- [ ] Restore/delete confirmations appear inline on the Backup Center detail pane
 - [ ] Restore confirmation dialog works
 - [ ] Delete confirmation dialog works
 - [ ] Toast notifications show success/error messages
