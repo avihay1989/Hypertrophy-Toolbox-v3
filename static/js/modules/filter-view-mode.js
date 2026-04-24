@@ -427,6 +427,54 @@
     }
 
     /**
+     * Resolve a filter selection so it can survive a mode switch.
+     * When a simple group does not map 1:1 to advanced options, keep the
+     * original simple key as a temporary "group" option in advanced mode.
+     * @param {string} filterValue
+     * @param {'primary' | 'secondary' | 'tertiary' | 'isolated'} muscleType
+     * @param {'simple' | 'advanced'} mode
+     * @returns {{value: string, label: string, isSynthetic: boolean} | null}
+     */
+    function resolveFilterSelection(filterValue, muscleType, mode = null) {
+        if (!filterValue) return null;
+
+        mode = mode || getViewMode();
+
+        const options = getMuscleFilterOptions(muscleType, mode);
+        const exactMatch = options.find(option => option.value === filterValue);
+        if (exactMatch) {
+            return {
+                value: exactMatch.value,
+                label: exactMatch.label,
+                isSynthetic: false
+            };
+        }
+
+        if (mode === 'simple') {
+            const simpleKey = ADVANCED_TO_SIMPLE[filterValue];
+            if (!simpleKey || !SIMPLE_MUSCLES[simpleKey]) {
+                return null;
+            }
+
+            return {
+                value: simpleKey,
+                label: SIMPLE_MUSCLES[simpleKey].label,
+                isSynthetic: false
+            };
+        }
+
+        if (SIMPLE_MUSCLES[filterValue]) {
+            return {
+                value: filterValue,
+                label: `${SIMPLE_MUSCLES[filterValue].label} (Group)`,
+                isSynthetic: true
+            };
+        }
+
+        return null;
+    }
+
+    /**
      * Convert a simple filter selection to database query values
      * Used when user selects from simple mode dropdown but we need to query DB
      * @param {string} simpleValue - The simple muscle key
@@ -654,6 +702,7 @@
         
         // Filter options
         getMuscleFilterOptions,
+        resolveFilterSelection,
         simpleToDbValues,
         getFilterQueryConfig,
         

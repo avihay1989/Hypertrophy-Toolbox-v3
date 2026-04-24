@@ -60,7 +60,13 @@ def app(test_db_path):
     original_db_file = utils.config.DB_FILE
     utils.config.DB_FILE = test_db_path
 
-    app = Flask(__name__)
+    repo_root = Path(__file__).resolve().parents[1]
+
+    app = Flask(
+        __name__,
+        template_folder=str(repo_root / "templates"),
+        static_folder=str(repo_root / "static"),
+    )
     app.config['TESTING'] = True
     app.config['WTF_CSRF_ENABLED'] = False
     app.url_map.strict_slashes = False

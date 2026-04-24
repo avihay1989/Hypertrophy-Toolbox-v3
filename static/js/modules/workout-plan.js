@@ -80,6 +80,28 @@ function getRelevantIsolatedMuscles(muscleGroup, isolatedMusclesStr) {
     }).join(', ');
 }
 
+function getSwapButtonMarkup() {
+    return `
+        <span class="btn-swap-icon" aria-hidden="true">
+            <svg viewBox="0 0 16 16" focusable="false">
+                <path d="M10.75 3.25h2.7L11.8 1.6a.75.75 0 1 1 1.06-1.06l2.93 2.93a.75.75 0 0 1 0 1.06l-2.93 2.93A.75.75 0 1 1 11.8 6.4l1.65-1.65h-2.7a3.25 3.25 0 0 0-2.82 1.63.75.75 0 1 1-1.3-.75 4.75 4.75 0 0 1 4.12-2.38Zm-5.5 8.5h-2.7L4.2 13.4a.75.75 0 1 1-1.06 1.06L.21 11.53a.75.75 0 0 1 0-1.06l2.93-2.93A.75.75 0 1 1 4.2 8.6L2.55 10.25h2.7a3.25 3.25 0 0 0 2.82-1.63.75.75 0 1 1 1.3.75 4.75 4.75 0 0 1-4.12 2.38Z" fill="currentColor"/>
+            </svg>
+        </span>
+        <span class="btn-swap-label">Swap</span>
+    `;
+}
+
+function getSwapButtonLoadingMarkup() {
+    return `
+        <span class="btn-swap-icon btn-swap-icon--spinner" aria-hidden="true">
+            <svg viewBox="0 0 16 16" focusable="false">
+                <circle cx="8" cy="8" r="5.25" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.75" stroke-dasharray="24 12"/>
+            </svg>
+        </span>
+        <span class="btn-swap-label">Swap</span>
+    `;
+}
+
 /**
  * Helper function to handle standardized API responses
  * @param {Response} response - Fetch response object
@@ -193,7 +215,7 @@ async function showExecutionStylePicker(exerciseId, currentExercise) {
     
     // Create picker element
     const picker = document.createElement('div');
-    picker.className = 'execution-style-picker';
+    picker.className = 'execution-style-picker frame-calm-glass';
     picker.innerHTML = `
         <div class="execution-picker-content">
             <div class="execution-picker-header">
@@ -231,7 +253,7 @@ async function showExecutionStylePicker(exerciseId, currentExercise) {
                 <div class="execution-params amrap-params" style="display: ${currentStyle === 'amrap' ? 'block' : 'none'}">
                     <label class="param-label">
                         <span>Time Cap (seconds)</span>
-                        <input type="number" class="form-control form-control-sm" id="time-cap-${exerciseId}" 
+                        <input type="number" class="form-control form-control-sm input-calm-inset" id="time-cap-${exerciseId}"
                                value="${timeCap}" min="10" max="600" step="5">
                     </label>
                 </div>
@@ -239,19 +261,19 @@ async function showExecutionStylePicker(exerciseId, currentExercise) {
                 <div class="execution-params emom-params" style="display: ${currentStyle === 'emom' ? 'block' : 'none'}">
                     <label class="param-label">
                         <span>Interval (seconds)</span>
-                        <input type="number" class="form-control form-control-sm" id="emom-interval-${exerciseId}" 
+                        <input type="number" class="form-control form-control-sm input-calm-inset" id="emom-interval-${exerciseId}"
                                value="${emomInterval}" min="15" max="180" step="5">
                     </label>
                     <label class="param-label">
                         <span>Rounds</span>
-                        <input type="number" class="form-control form-control-sm" id="emom-rounds-${exerciseId}" 
+                        <input type="number" class="form-control form-control-sm input-calm-inset" id="emom-rounds-${exerciseId}"
                                value="${emomRounds}" min="1" max="20">
                     </label>
                 </div>
             </div>
             <div class="execution-picker-footer">
-                <button class="btn btn-sm btn-outline-secondary btn-cancel-exec">Cancel</button>
-                <button class="btn btn-sm btn-primary btn-save-exec" data-exercise-id="${exerciseId}">
+                <button class="btn btn-sm btn-outline-secondary btn-calm-ghost btn-cancel-exec">Cancel</button>
+                <button class="btn btn-sm btn-primary btn-calm-primary btn-save-exec" data-exercise-id="${exerciseId}">
                     <i class="fas fa-check me-1"></i>Apply
                 </button>
             </div>
@@ -618,7 +640,7 @@ export function reloadWorkoutPlan(data) {
             <td>${item.stabilizers || "N/A"}</td>
             <td>${item.synergists || "N/A"}</td>
             <td>
-                <button class="btn btn-danger btn-sm text-white" onclick="removeExercise(${item.id})">
+                <button class="btn btn-danger btn-sm text-white btn-calm-danger" onclick="removeExercise(${item.id})">
                     <i class="fas fa-trash"></i> Remove
                 </button>
             </td>`;
@@ -1097,6 +1119,11 @@ async function sendExerciseData(exerciseData) {
         const message = data.message || data.data?.message || 'Exercise added successfully';
         
         showToast('success', message);
+        const addBtn = document.getElementById('add_exercise_btn');
+        if (addBtn) {
+            addBtn.classList.add('is-success');
+            setTimeout(() => addBtn.classList.remove('is-success'), 1000);
+        }
         fetchWorkoutPlan(); // Refresh the table
         resetFormFields();
     } catch (error) {
@@ -1325,14 +1352,18 @@ export function updateWorkoutPlanTable(exercises) {
             </td>
             <td class="col--high routine-cell" data-label="Routine">${formatRoutineForDisplay(exercise.routine)}</td>
             <td class="col--high exercise-cell" data-label="Exercise">
-                <span class="exercise-name">${exercise.exercise || 'N/A'}</span>
-                ${supersetBadgeHtml}
-                <button class="btn-swap" 
-                        data-exercise-id="${exercise.id}"
-                        title="Replace with similar exercise (same muscle + equipment)"
-                        aria-label="Swap exercise">
-                    <i class="fas fa-sync-alt"></i>
-                </button>
+                <div class="exercise-cell-content">
+                    <span class="exercise-name">${exercise.exercise || 'N/A'}</span>
+                    ${supersetBadgeHtml}
+                    <button type="button"
+                            class="btn btn-swap btn-calm-ghost"
+                            data-action="replace"
+                            data-exercise-id="${exercise.id}"
+                            title="Replace with similar exercise (same muscle + equipment)"
+                            aria-label="Swap exercise">
+                        ${getSwapButtonMarkup()}
+                    </button>
+                </div>
             </td>
             <td class="col--med" data-label="Primary Muscle" data-raw-value="${exercise.primary_muscle_group || ''}">${transformMuscleDisplay(exercise.primary_muscle_group, 'primary', exercise.advanced_isolated_muscles)}</td>
             <td class="col--low" data-label="Secondary Muscle" data-raw-value="${exercise.secondary_muscle_group || ''}">${transformMuscleDisplay(exercise.secondary_muscle_group, 'primary', exercise.advanced_isolated_muscles)}</td>
@@ -1354,7 +1385,7 @@ export function updateWorkoutPlanTable(exercises) {
             <td class="col--low" data-label="Stabilizers">${exercise.stabilizers || 'N/A'}</td>
             <td class="col--low" data-label="Synergists">${exercise.synergists || 'N/A'}</td>
             <td class="col--high" data-label="Actions">
-                <button class="btn btn-danger btn-sm text-white" onclick="removeExercise(${exercise.id})">
+                <button class="btn btn-danger btn-sm text-white btn-calm-danger" onclick="removeExercise(${exercise.id})">
                     <i class="fas fa-trash"></i> Remove
                 </button>
             </td>
@@ -1593,7 +1624,7 @@ async function handleSwapExercise(exerciseId, currentExerciseName) {
     // Disable button and show loading state
     swapBtn.disabled = true;
     const originalIcon = swapBtn.innerHTML;
-    swapBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    swapBtn.innerHTML = getSwapButtonLoadingMarkup();
     swapBtn.classList.add('loading');
     
     try {
@@ -1730,7 +1761,7 @@ function makeTableCellEditable(cell, exerciseId, fieldName) {
     const input = document.createElement('input');
     input.type = 'number';
     input.value = originalValue === 'N/A' ? '' : originalValue;
-    input.className = 'form-control form-control-sm';
+    input.className = 'form-control form-control-sm input-calm-inset';
     input.dataset.originalValue = originalValue;
     
     // Add validation rules based on field type

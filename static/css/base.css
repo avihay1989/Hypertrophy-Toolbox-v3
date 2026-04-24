@@ -1,0 +1,123 @@
+/* Override Bootstrap border colors with true neutral grays */
+:root {
+    --bs-border-color: #d0d0d0;
+    --bs-table-border-color: #d0d0d0;
+    
+    /* Glass Effect Tokens */
+    --glass-blur: 16px;
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-bg-hover: rgba(255, 255, 255, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.3);
+    --glass-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+    --glass-shadow-hover: 0 12px 40px rgba(31, 38, 135, 0.2);
+    --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    --type-body: clamp(var(--font-size-base, 0.875rem), 0.2vw + 0.8rem, var(--font-size-lg, 1rem));
+    --type-h2: clamp(calc(var(--font-size-xl, 1.125rem) * 1.3), 1.2vw + 1rem, calc(var(--font-size-3xl, 1.5rem) * 1.333));
+    --type-h3: clamp(calc(var(--font-size-lg, 1rem) * 1.2), 0.85vw + 0.95rem, calc(var(--font-size-2xl, 1.25rem) * 1.15));
+}
+
+/* Modern Mesh Gradient Background */
+body {
+    font-family: 'Inter', Arial, sans-serif;
+    background: 
+        radial-gradient(at 40% 20%, rgba(76, 110, 245, 0.12) 0px, transparent 50%),
+        radial-gradient(at 80% 0%, rgba(139, 92, 246, 0.1) 0px, transparent 50%),
+        radial-gradient(at 0% 50%, rgba(16, 185, 129, 0.08) 0px, transparent 50%),
+        radial-gradient(at 80% 50%, rgba(244, 63, 94, 0.06) 0px, transparent 50%),
+        radial-gradient(at 0% 100%, rgba(79, 140, 255, 0.1) 0px, transparent 50%),
+        linear-gradient(135deg, #f0f4ff 0%, #fafbff 50%, #f8fafc 100%);
+    background-attachment: fixed;
+    margin: 0;
+    padding: 0;
+    color: #333;
+    font-size: var(--type-body);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+h1, h2, h3 {
+    color: #222;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+h2 {
+    font-size: var(--type-h2);
+}
+
+h3 {
+    font-size: var(--type-h3);
+}
+
+p, label {
+    font-size: var(--type-body);
+}
+
+/* Text Utilities */
+.text-center {
+    text-align: center;
+}
+
+.text-muted {
+    color: #6c757d;
+}
+
+.text-danger {
+    color: #dc3545;
+}
+
+/* Animation Utilities */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    display: inline-block;
+    width: 2rem;
+    height: 2rem;
+    border: 3px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top-color: #007bff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+/* Skeleton Loading */
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        #f0f0f0 25%,
+        #e0e0e0 50%,
+        #f0f0f0 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Fade Transitions */
+.fade-enter {
+    opacity: 0;
+    transform: translateY(10px);
+}
+
+.fade-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+} 

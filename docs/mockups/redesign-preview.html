@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-palette="indigo">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hypertrophy Toolbox — Redesign Preview (static mockup)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* =====================================================================
+       TOKENS (single source of truth - same tokens proposed for production)
+       ===================================================================== */
+    :root {
+      --surface-0: #eef1f6;
+      --surface-1: #f4f6fa;
+      --surface-2: #ffffff;
+      --ink-1: #0f1220;
+      --ink-2: #4a5170;
+      --ink-3: #8a90a8;
+      --accent: #4c6ef5;
+      --accent-ink: #ffffff;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger:  #ef4444;
+
+      --shadow-neu-out: 8px 8px 20px rgba(167,175,200,.35), -8px -8px 20px rgba(255,255,255,.90);
+      --shadow-neu-in:  inset 4px 4px 10px rgba(167,175,200,.35), inset -4px -4px 10px rgba(255,255,255,.90);
+      --shadow-elev-1:  0 1px 2px rgba(15,18,32,.06), 0 2px 8px rgba(15,18,32,.06);
+      --shadow-elev-2:  0 8px 24px rgba(15,18,32,.10);
+
+      --glass-bg: rgba(255,255,255,.55);
+      --glass-border: rgba(255,255,255,.65);
+      --glass-blur: 18px;
+      --glass-sat: 180%;
+
+      --r-sm: 10px; --r-md: 14px; --r-lg: 20px; --r-xl: 28px; --r-pill: 999px;
+      --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 24px; --s-6: 32px; --s-7: 48px;
+
+      --ease-out: cubic-bezier(.22, 1, .36, 1);
+      --dur-fast: 150ms; --dur-base: 240ms; --dur-slow: 360ms;
+
+      --font-sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    /* -------- LOCKED palette: Indigo #4c6ef5 (per plan §13) --------
+       Options B (graphite) and C (health green) were evaluated and rejected
+       during design review; see git history for those variants. */
+    [data-palette="indigo"] { --accent: #4c6ef5; }
+
+    /* -------- Dark theme overrides (tokens only, zero !important) -------- */
+    [data-theme="dark"] {
+      --surface-0: #0f1220; --surface-1: #161a2d; --surface-2: #1d2238;
+      --ink-1: #eef1f6; --ink-2: #b4bad0; --ink-3: #7a8099;
+      --shadow-neu-out: 8px 8px 20px rgba(0,0,0,.55), -8px -8px 20px rgba(255,255,255,.04);
+      --shadow-neu-in:  inset 4px 4px 10px rgba(0,0,0,.55), inset -4px -4px 10px rgba(255,255,255,.04);
+      --glass-bg: rgba(29,34,56,.55);
+      --glass-border: rgba(255,255,255,.08);
+    }
+
+    /* =====================================================================
+       BASE
+       ===================================================================== */
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-sans);
+      color: var(--ink-1);
+      /* Flat pastel surface-0, locked per plan §13 (no radial mesh). */
+      background: var(--surface-0);
+      min-height: 100vh;
+      line-height: 1.5;
+      transition: background var(--dur-base) var(--ease-out), color var(--dur-base) var(--ease-out);
+    }
+    h1, h2, h3 { color: var(--ink-1); font-weight: 600; margin: 0 0 var(--s-3); letter-spacing: -0.01em; }
+    h1 { font-size: 2rem; }
+    h2 { font-size: 1.375rem; }
+    h3 { font-size: 1.125rem; }
+    p { color: var(--ink-2); margin: 0 0 var(--s-3); }
+    small { color: var(--ink-3); }
+    a { color: var(--accent); text-decoration: none; }
+
+    main { max-width: 1100px; margin: 0 auto; padding: var(--s-6) var(--s-5); }
+
+    /* =====================================================================
+       NAVBAR (proposed: glass pill, workflow order, Backup surfaced)
+       ===================================================================== */
+    .topbar {
+      position: sticky; top: 0; z-index: 10;
+      background: var(--glass-bg);
+      backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+      border-bottom: 1px solid var(--glass-border);
+      box-shadow: 0 4px 16px rgba(15,18,32,.04);
+    }
+    .topbar-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: flex; align-items: center; gap: var(--s-4);
+      padding: var(--s-3) var(--s-5);
+    }
+    .brand {
+      display: flex; align-items: center; gap: var(--s-2);
+      font-weight: 700; color: var(--ink-1);
+    }
+    .brand-dot {
+      width: 28px; height: 28px; border-radius: var(--r-md);
+      background: linear-gradient(135deg, var(--accent), color-mix(in oklch, var(--accent) 60%, white));
+      box-shadow: var(--shadow-elev-1);
+    }
+    .nav {
+      display: flex; gap: var(--s-1); margin-left: var(--s-5);
+      list-style: none; padding: 0;
+    }
+    .nav a {
+      display: block; padding: var(--s-2) var(--s-4);
+      border-radius: var(--r-pill);
+      color: var(--ink-2); font-weight: 500; font-size: .95rem;
+      transition: background var(--dur-fast) var(--ease-out),
+                  color var(--dur-fast) var(--ease-out),
+                  transform var(--dur-fast) var(--ease-out);
+    }
+    .nav a:hover { color: var(--ink-1); transform: translateY(-1px); }
+    .nav a.active {
+      background: var(--surface-1); color: var(--ink-1);
+      box-shadow: var(--shadow-neu-in);
+    }
+    .nav-dropdown { position: relative; }
+    .nav-dropdown-panel {
+      position: absolute; top: 110%; left: 0;
+      background: var(--surface-2); border: 1px solid var(--glass-border);
+      border-radius: var(--r-md); box-shadow: var(--shadow-elev-2);
+      padding: var(--s-2); min-width: 180px;
+      display: none;
+    }
+    .nav-dropdown:hover .nav-dropdown-panel,
+    .nav-dropdown:focus-within .nav-dropdown-panel { display: block; }
+    .nav-dropdown-panel a { display: block; padding: var(--s-2) var(--s-3); border-radius: var(--r-sm); }
+    .nav-dropdown-panel a:hover { background: var(--surface-1); }
+
+    .topbar-right { margin-left: auto; display: flex; gap: var(--s-2); align-items: center; }
+
+    /* =====================================================================
+       BUTTONS
+       ===================================================================== */
+    .btn {
+      display: inline-flex; align-items: center; gap: var(--s-2);
+      padding: var(--s-2) var(--s-5);
+      border-radius: var(--r-pill);
+      font-family: var(--font-sans); font-weight: 500; font-size: .9rem;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: transform var(--dur-fast) var(--ease-out),
+                  box-shadow var(--dur-fast) var(--ease-out),
+                  background var(--dur-fast) var(--ease-out);
+    }
+    .btn-primary {
+      background: var(--accent); color: var(--accent-ink);
+      box-shadow: var(--shadow-elev-1);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: var(--shadow-elev-2); }
+    .btn-ghost {
+      background: var(--surface-1); color: var(--ink-1);
+      box-shadow: var(--shadow-neu-out);
+    }
+    .btn-ghost:hover { transform: translateY(-2px); }
+    .btn-icon {
+      background: transparent; color: var(--ink-2);
+      border: 1px solid var(--glass-border);
+      width: 36px; height: 36px; padding: 0; justify-content: center;
+      border-radius: var(--r-pill);
+    }
+    .btn-icon:hover { background: var(--surface-1); color: var(--ink-1); }
+
+    /* =====================================================================
+       CARDS (glass over neumorphic surface)
+       ===================================================================== */
+    .cards-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: var(--s-5);
+    }
+    .card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+      border: 1px solid var(--glass-border);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow-neu-out);
+      padding: var(--s-5);
+      transition: transform var(--dur-base) var(--ease-out),
+                  box-shadow var(--dur-base) var(--ease-out);
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-neu-out), var(--shadow-elev-2);
+    }
+    .card-head {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: var(--s-3);
+    }
+    .card-row { display: flex; justify-content: space-between; font-size: .9rem; padding: var(--s-2) 0; }
+    .card-row strong { color: var(--ink-1); }
+    .card-row span { color: var(--ink-2); }
+
+    .progress {
+      height: 10px; background: var(--surface-1);
+      border-radius: var(--r-pill); box-shadow: var(--shadow-neu-in);
+      overflow: hidden; margin: var(--s-3) 0;
+    }
+    .progress-fill {
+      height: 100%; background: linear-gradient(90deg, var(--accent), color-mix(in oklch, var(--accent) 70%, white));
+      border-radius: var(--r-pill);
+    }
+
+    /* =====================================================================
+       FORM
+       ===================================================================== */
+    .form-row { display: flex; flex-direction: column; gap: var(--s-2); margin-bottom: var(--s-4); }
+    .form-row label { font-weight: 500; font-size: .85rem; color: var(--ink-2); }
+    .form-row input, .form-row select, .form-row textarea {
+      font-family: var(--font-sans); font-size: 1rem;
+      padding: var(--s-3) var(--s-4);
+      background: var(--surface-1); color: var(--ink-1);
+      border: none; border-radius: var(--r-md);
+      box-shadow: var(--shadow-neu-in);
+      transition: box-shadow var(--dur-fast) var(--ease-out);
+    }
+    .form-row input:focus, .form-row select:focus, .form-row textarea:focus {
+      outline: none;
+      box-shadow: var(--shadow-neu-in), 0 0 0 3px color-mix(in oklch, var(--accent) 30%, transparent);
+    }
+
+    /* =====================================================================
+       TABLE
+       ===================================================================== */
+    .table-wrap {
+      background: var(--glass-bg);
+      backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+      border: 1px solid var(--glass-border);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow-neu-out);
+      overflow: hidden;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: var(--s-3) var(--s-4); text-align: left; font-size: .9rem; border: none; }
+    thead th { background: var(--surface-1); color: var(--ink-2); font-weight: 600; }
+    tbody tr:nth-child(odd) { background: transparent; }
+    tbody tr:nth-child(even) { background: color-mix(in oklch, var(--surface-1) 60%, transparent); }
+    tbody tr:hover { background: color-mix(in oklch, var(--accent) 10%, transparent); }
+
+    /* =====================================================================
+       CONTROLS (palette + theme toggle)
+       ===================================================================== */
+    .controls {
+      display: flex; flex-wrap: wrap; gap: var(--s-3);
+      padding: var(--s-4); margin-bottom: var(--s-6);
+      background: var(--surface-2); border-radius: var(--r-lg);
+      box-shadow: var(--shadow-elev-1);
+    }
+    .chip {
+      padding: var(--s-2) var(--s-4); border-radius: var(--r-pill);
+      background: var(--surface-1); color: var(--ink-2);
+      box-shadow: var(--shadow-neu-in);
+      font-size: .85rem; cursor: pointer; border: none;
+      font-family: var(--font-sans);
+    }
+    .chip.active {
+      background: var(--accent); color: var(--accent-ink);
+      box-shadow: var(--shadow-elev-1);
+    }
+    .section { margin-bottom: var(--s-7); }
+    .section-label {
+      font-size: .75rem; text-transform: uppercase; letter-spacing: .08em;
+      color: var(--ink-3); font-weight: 600; margin-bottom: var(--s-3);
+    }
+
+    /* =====================================================================
+       MOTION
+       ===================================================================== */
+    @keyframes page-enter { from { opacity:0; transform: translateY(8px) } to { opacity:1; transform:none } }
+    main { animation: page-enter var(--dur-slow) var(--ease-out) both; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+
+    /* =====================================================================
+       RESPONSIVE (mobile-first, 3 breakpoints)
+       ===================================================================== */
+    @media (max-width: 768px) {
+      .nav { display: none; }
+      .topbar-inner { padding: var(--s-3); }
+      main { padding: var(--s-4) var(--s-3); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========== PROPOSED NAVBAR ========== -->
+  <header class="topbar" role="banner">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-dot" aria-hidden="true"></span>
+        <span>Hypertrophy Toolbox</span>
+      </div>
+      <ul class="nav" role="navigation" aria-label="Primary">
+        <li><a href="#" class="active">Plan</a></li>
+        <li><a href="#">Log</a></li>
+        <li class="nav-dropdown">
+          <a href="#" aria-haspopup="true">Analyze &#9662;</a>
+          <div class="nav-dropdown-panel" role="menu">
+            <a href="#">Weekly summary</a>
+            <a href="#">Session summary</a>
+          </div>
+        </li>
+        <li><a href="#">Progress</a></li>
+        <li><a href="#">Distribute</a></li>
+        <li><a href="#">Backup</a></li>
+      </ul>
+      <div class="topbar-right">
+        <button class="btn-icon" aria-label="Decrease UI scale">A-</button>
+        <button class="btn-icon" aria-label="Increase UI scale">A+</button>
+        <button class="btn-icon" id="theme-toggle" aria-label="Toggle dark mode">&#9790;</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ========== DESIGN-LOCK BANNER ========== -->
+    <section class="section">
+      <h1>Redesign preview — static mockup (design-locked)</h1>
+      <p>Locked decisions from plan §13. This file is a standalone artifact for design review — it does <strong>not</strong> touch the production app. Toggle theme with the moon icon in the navbar.</p>
+      <div class="controls" role="group" aria-label="Locked design decisions">
+        <div style="flex:1 1 auto">
+          <div class="section-label">Locked per §13</div>
+          <span class="chip active" aria-disabled="true">Palette · Indigo #4c6ef5</span>
+          <span class="chip active" aria-disabled="true">Font · Inter</span>
+          <span class="chip active" aria-disabled="true">Background · Flat pastel</span>
+          <span class="chip active" aria-disabled="true">Neumorphism · Subtle</span>
+          <span class="chip active" aria-disabled="true">Scope · Includes P4–P5 restructure</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== CARDS ========== -->
+    <section class="section">
+      <div class="section-label">Weekly summary · glass + neumorphic cards</div>
+      <div class="cards-grid">
+        <div class="card">
+          <div class="card-head">
+            <h3>Chest</h3>
+            <button class="btn-icon" aria-label="Card menu">&#8942;</button>
+          </div>
+          <div class="card-row"><span>Effective sets</span><strong>12.4 / 14</strong></div>
+          <div class="card-row"><span>Raw sets</span><strong>18</strong></div>
+          <div class="progress" aria-hidden="true"><div class="progress-fill" style="width: 89%"></div></div>
+          <small>89% of weekly target</small>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <h3>Back</h3>
+            <button class="btn-icon" aria-label="Card menu">&#8942;</button>
+          </div>
+          <div class="card-row"><span>Effective sets</span><strong>15.2 / 16</strong></div>
+          <div class="card-row"><span>Raw sets</span><strong>22</strong></div>
+          <div class="progress" aria-hidden="true"><div class="progress-fill" style="width: 95%"></div></div>
+          <small>95% of weekly target</small>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <h3>Quads</h3>
+            <button class="btn-icon" aria-label="Card menu">&#8942;</button>
+          </div>
+          <div class="card-row"><span>Effective sets</span><strong>8.1 / 12</strong></div>
+          <div class="card-row"><span>Raw sets</span><strong>11</strong></div>
+          <div class="progress" aria-hidden="true"><div class="progress-fill" style="width: 67%"></div></div>
+          <small>67% of weekly target · low volume</small>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== BUTTONS ========== -->
+    <section class="section">
+      <div class="section-label">Buttons · single gradient system (replaces 5 scattered blocks)</div>
+      <div class="card" style="display:flex; gap: var(--s-3); flex-wrap: wrap; align-items:center">
+        <button class="btn btn-primary">Save changes</button>
+        <button class="btn btn-ghost">Cancel</button>
+        <button class="btn btn-ghost">Export</button>
+        <button class="btn-icon" aria-label="More actions">&#8942;</button>
+      </div>
+    </section>
+
+    <!-- ========== FORM ========== -->
+    <section class="section">
+      <div class="section-label">Form · neumorphic inset inputs</div>
+      <div class="card" style="max-width: 520px">
+        <div class="form-row">
+          <label for="routine">Routine name</label>
+          <input id="routine" type="text" value="GYM - Full Body A" />
+        </div>
+        <div class="form-row">
+          <label for="muscle">Primary muscle</label>
+          <select id="muscle">
+            <option>Chest</option><option>Back</option><option>Legs</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label for="note">Note</label>
+          <textarea id="note" rows="3" placeholder="Optional notes..."></textarea>
+        </div>
+        <button class="btn btn-primary">Save routine</button>
+      </div>
+    </section>
+
+    <!-- ========== TABLE ========== -->
+    <section class="section">
+      <div class="section-label">Table · borderless, alternating surface stripes</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Exercise</th><th>Muscle</th><th>Sets</th><th>Reps</th><th>RIR</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Barbell squat</td><td>Quads</td><td>3</td><td>8-10</td><td>2</td></tr>
+            <tr><td>Romanian deadlift</td><td>Hamstrings</td><td>3</td><td>10</td><td>2</td></tr>
+            <tr><td>Leg press</td><td>Quads</td><td>2</td><td>12</td><td>1</td></tr>
+            <tr><td>Leg curl</td><td>Hamstrings</td><td>2</td><td>12-15</td><td>1</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ========== FOOTER NOTE ========== -->
+    <section class="section">
+      <small>
+        Mockup built with the exact tokens proposed in
+        <a href="../neumorphism_glass_2026_redesign_plan.md">the redesign plan</a>.
+        No build step. Edit the inline <code>&lt;style&gt;</code> block to iterate.
+      </small>
+    </section>
+  </main>
+
+  <script>
+    // Theme toggle (light <-> dark). Palette is locked to indigo per plan §13.
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      const cur = document.documentElement.dataset.theme;
+      document.documentElement.dataset.theme = cur === 'dark' ? 'light' : 'dark';
+    });
+  </script>
+</body>
+</html>

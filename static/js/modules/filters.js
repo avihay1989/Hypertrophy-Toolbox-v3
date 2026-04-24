@@ -148,7 +148,14 @@ export function initializeFilters() {
         const exerciseCount = exerciseDropdown.options.length - 1;
         console.log(`[Exercises] ${exerciseCount} exercises loaded and available for selection`);
         filtersDebugLog(`[Exercises] Total available: ${exerciseCount}`);
+        updateExerciseMatchCount(exerciseCount);
     }
+}
+
+function updateExerciseMatchCount(count) {
+    const badge = document.getElementById('exercise-match-count');
+    if (!badge) return;
+    badge.textContent = `${count} matching`;
 }
 
 async function clearFilters() {
@@ -276,6 +283,8 @@ function updateExerciseDropdown(exercises, preserveSelection = false) {
         const rebuildEvent = new CustomEvent('wpdd-rebuild', { bubbles: true });
         exerciseDropdown.dispatchEvent(rebuildEvent);
     }
+
+    updateExerciseMatchCount(exercises.length);
 
     // Add glow effect only if selection was not preserved (meaning filters changed results)
     if (!selectionRestored || !preserveSelection) {

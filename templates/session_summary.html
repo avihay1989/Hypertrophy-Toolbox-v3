@@ -4,9 +4,7 @@
 {% block title %}Session Summary - Hypertrophy Toolbox{% endblock %}
 
 {% block page_css %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_volume.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/session_summary.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_frames.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages-session-summary.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -17,7 +15,7 @@
     </div>
 
     <!-- Add base layer frame -->
-    <div class="summary-frame">
+    <div class="summary-frame frame-calm-glass">
         <!-- Method Selection and Legend with full width -->
         <div class="summary-header">
             <!-- Calculation Method Toggles -->
@@ -94,7 +92,7 @@
             <div class="summary-section">
                 <div id="session-summary-container" class="table-container">
                     <div class="tbl-wrap tbl-wrap--full" role="region" aria-label="Session summary table">
-                        <table class="table table-striped tbl tbl--responsive" 
+                        <table class="table table-striped table-calm tbl tbl--responsive"
                                role="table" 
                                aria-label="Session muscle group summary">
                             <thead>
@@ -118,7 +116,7 @@
             <div class="summary-section">
                 <h3 class="text-center">Exercise Categories Summary</h3>
                 <div class="tbl-wrap tbl-wrap--full" role="region" aria-label="Exercise categories table">
-                    <table class="table table-striped tbl tbl--responsive" 
+                    <table class="table table-striped table-calm tbl tbl--responsive"
                            role="table" 
                            aria-label="Exercise categories">
                         <thead>
@@ -156,7 +154,7 @@
                 <h3 class="text-center">Advanced Isolated Muscles Statistics</h3>
                 <p class="text-center text-muted small mb-2">This table uses raw (unweighted) sets regardless of counting mode.</p>
                 <div class="tbl-wrap tbl-wrap--full" role="region" aria-label="Isolated muscles statistics table">
-                    <table class="table table-striped tbl tbl--responsive" 
+                    <table class="table table-striped table-calm tbl tbl--responsive"
                            role="table" 
                            aria-label="Isolated muscles statistics">
                         <thead>
@@ -204,7 +202,7 @@
 
         <!-- Export Button -->
         <div class="export-section mt-3 text-center">
-            <button type="button" class="btn btn-export-excel" onclick="exportToExcel()" aria-label="Export session summary to Excel">
+            <button type="button" class="btn btn-export-excel btn-calm-primary" onclick="exportToExcel()" aria-label="Export session summary to Excel">
                 <i class="fas fa-file-excel"></i> Export All Tables
             </button>
         </div>

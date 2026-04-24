@@ -8,6 +8,32 @@
  * - Deleting entries
  */
 import { test, expect, ROUTES, SELECTORS, waitForPageReady } from './fixtures';
+import type { Page } from '@playwright/test';
+
+async function importCurrentWorkoutPlan(page: Page): Promise<void> {
+  const importResponse = page.waitForResponse(response => {
+    return response.url().includes('/export_to_workout_log') &&
+      response.request().method() === 'POST';
+  });
+
+  await page.locator('#import-from-plan-btn').click();
+  const response = await importResponse;
+
+  if (response.ok()) {
+    // importFromWorkoutPlan reloads the page after a 1s success toast delay.
+    await page.waitForTimeout(1300);
+    await waitForPageReady(page);
+  }
+
+  await page.locator('#import-from-plan-btn').waitFor({ state: 'visible' });
+  await page.waitForFunction(() => {
+    const inputs = Array.from(
+      document.querySelectorAll<HTMLInputElement>('.workout-log-table input.number-input[type="number"]')
+    );
+
+    return inputs.length === 0 || inputs.every(input => input.dataset.hasCustomSpinners === 'true');
+  });
+}
 
 test.describe('Workout Log Page', () => {
   test.beforeEach(async ({ page, consoleErrors }) => {
@@ -164,11 +190,7 @@ test.describe('Workout Log with Data', () => {
   });
 
   test('import from workout plan copies exercises', async ({ page }) => {
-    // Click import button
-    await page.locator('#import-from-plan-btn').click();
-
-    // Wait for data to load
-    await page.waitForTimeout(1000);
+    await importCurrentWorkoutPlan(page);
 
     // Check if rows appear in the table
     const rows = page.locator('.workout-log-table tbody tr');
@@ -179,9 +201,7 @@ test.describe('Workout Log with Data', () => {
   });
 
   test('scored fields can be edited', async ({ page }) => {
-    // Import data first
-    await page.locator('#import-from-plan-btn').click();
-    await page.waitForTimeout(1000);
+    await importCurrentWorkoutPlan(page);
 
     const editableCells = page.locator('.editable.scored-cell, [data-field*="scored"]');
     const count = await editableCells.count();
@@ -200,26 +220,30 @@ test.describe('Workout Log with Data', () => {
   });
 
   test('weight field accepts valid values', async ({ page }) => {
-    await page.locator('#import-from-plan-btn').click();
-    await page.waitForTimeout(1000);
+    await importCurrentWorkoutPlan(page);
 
-    const weightInput = page.locator('input[name*="weight"], .scored-weight-input').first();
-    const count = await weightInput.count();
+    const weightCell = page.locator('td[data-field="scored_weight"]').first();
+    const count = await weightCell.count();
 
     if (count > 0) {
+      const weightDisplay = weightCell.locator('.editable-text').first();
+      await weightDisplay.click();
+
+      const weightInput = weightCell.locator('input').first();
+      await expect(weightInput).toBeVisible();
       await weightInput.fill('100');
       await weightInput.blur();
       
-      await page.waitForTimeout(500);
-      
-      const value = await weightInput.inputValue();
-      expect(value).toBe('100');
+      await page.waitForTimeout(700);
+
+      await expect(weightInput).toBeHidden();
+      await expect(weightDisplay).toBeVisible();
+      await expect(weightDisplay).toContainText('100');
     }
   });
 
   test('reps field accepts valid values', async ({ page }) => {
-    await page.locator('#import-from-plan-btn').click();
-    await page.waitForTimeout(1000);
+    await importCurrentWorkoutPlan(page);
 
     const repsInput = page.locator('input[name*="reps"], .scored-reps-input').first();
     const count = await repsInput.count();
@@ -236,8 +260,7 @@ test.describe('Workout Log with Data', () => {
   });
 
   test('notes field accepts text', async ({ page }) => {
-    await page.locator('#import-from-plan-btn').click();
-    await page.waitForTimeout(1000);
+    await importCurrentWorkoutPlan(page);
 
     const notesInput = page.locator('input[name*="notes"], textarea[name*="notes"], .notes-input').first();
     const count = await notesInput.count();
@@ -251,8 +274,7 @@ test.describe('Workout Log with Data', () => {
   });
 
   test('delete log entry button works', async ({ page }) => {
-    await page.locator('#import-from-plan-btn').click();
-    await page.waitForTimeout(1000);
+    await importCurrentWorkoutPlan(page);
 
     const rows = page.locator('.workout-log-table tbody tr');
     const initialCount = await rows.count();
@@ -285,8 +307,7 @@ test.describe('Workout Log with Data', () => {
   });
 
   test('progression indicator shows status', async ({ page }) => {
-    await page.locator('#import-from-plan-btn').click();
-    await page.waitForTimeout(1000);
+    await importCurrentWorkoutPlan(page);
 
     const rows = page.locator('.workout-log-table tbody tr');
     const count = await rows.count();

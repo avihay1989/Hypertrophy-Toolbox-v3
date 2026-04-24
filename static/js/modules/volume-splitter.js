@@ -347,6 +347,7 @@ function displaySuggestions(suggestions) {
     list.forEach(suggestion => {
         const card = document.createElement('div');
         card.className = `suggestion-card suggestion-${suggestion.type}`;
+        card.dataset.type = suggestion.type;
         card.innerHTML = `
             <p class="mb-0">${suggestion.message}</p>
         `;

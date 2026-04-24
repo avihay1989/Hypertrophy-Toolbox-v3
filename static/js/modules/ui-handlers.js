@@ -14,7 +14,8 @@ function addCustomSpinnerButtons(input) {
     // Create wrapper for the input + buttons
     const wrapper = document.createElement('div');
     wrapper.className = 'number-input-wrapper';
-    wrapper.style.cssText = 'display: flex; align-items: center; gap: 2px;';
+    // Start hidden; the edit-click handler switches to inline-flex when the user opens the editor
+    wrapper.style.cssText = 'display: none; align-items: center; gap: 2px;';
     
     // Insert wrapper in place of input
     input.parentNode.insertBefore(wrapper, input);
@@ -93,6 +94,28 @@ function addCustomSpinnerButtons(input) {
 }
 
 export function initializeUIHandlers() {
+    function showEditableText(inputElement, nextTextValue = null) {
+        const cell = inputElement.closest('.editable');
+        if (!cell) {
+            return;
+        }
+
+        const text = cell.querySelector('.editable-text');
+        const wrapper = cell.querySelector('.number-input-wrapper');
+
+        if (text) {
+            if (nextTextValue !== null) {
+                text.textContent = nextTextValue === '' ? '--' : nextTextValue;
+            }
+            text.style.display = text.classList.contains('date-display') ? 'flex' : 'block';
+        }
+
+        inputElement.style.display = 'none';
+        if (wrapper) {
+            wrapper.style.display = 'none';
+        }
+    }
+
     // Handle editable fields
     document.querySelectorAll('.editable').forEach(cell => {
         cell.addEventListener('click', function(e) {
@@ -244,36 +267,33 @@ export function initializeUIHandlers() {
                 globalBlurTimeout = null;
             }
         });
-        
-        // For number inputs, don't auto-hide on blur - let click-outside handler manage it
-        // This allows spinners to work properly
-        if (input.type !== 'number') {
-            // Auto-save and close on blur (when focus leaves the input)
-            input.addEventListener('blur', function() {
-                const inputElement = this;
-                // Clear any existing timeout
-                if (globalBlurTimeout) {
-                    clearTimeout(globalBlurTimeout);
+
+        // Auto-close on blur after focus actually leaves the editable control.
+        // Number inputs keep the same path, but custom spinner buttons prevent blur while in use.
+        input.addEventListener('blur', function() {
+            const inputElement = this;
+            if (globalBlurTimeout) {
+                clearTimeout(globalBlurTimeout);
+            }
+
+            globalBlurTimeout = setTimeout(() => {
+                const wrapper = inputElement.closest('.number-input-wrapper');
+                const activeElement = document.activeElement;
+
+                if (
+                    document.activeElement === inputElement ||
+                    activeSpinnerInput === inputElement ||
+                    (wrapper && activeElement && wrapper.contains(activeElement))
+                ) {
+                    return;
                 }
-                // Delay to allow click events to process
-                globalBlurTimeout = setTimeout(() => {
-                    // Check if user clicked back into this input (re-focused it)
-                    if (document.activeElement === inputElement) {
-                        return; // Don't hide if user is still interacting
-                    }
-                    const cell = inputElement.closest('.editable');
-                    if (cell) {
-                        const text = cell.querySelector('.editable-text');
-                        if (text) {
-                            // Use flex for date displays, block for others
-                            text.style.display = text.classList.contains('date-display') ? 'flex' : 'block';
-                        }
-                        inputElement.style.display = 'none';
-                    }
-                    globalBlurTimeout = null;
-                }, 200);
-            });
-        } else {
+
+                showEditableText(inputElement, inputElement.value);
+                globalBlurTimeout = null;
+            }, 200);
+        });
+
+        if (input.type === 'number') {
             // For number inputs, add custom +/- buttons since native spinners can be unreliable
             addCustomSpinnerButtons(input);
         }
@@ -284,17 +304,7 @@ export function initializeUIHandlers() {
                 e.preventDefault();
                 // Trigger change event and blur to close the input
                 this.dispatchEvent(new Event('change', { bubbles: true }));
-                // Hide input and wrapper, show text
-                const cell = this.closest('.editable');
-                if (cell) {
-                    const text = cell.querySelector('.editable-text');
-                    const wrapper = cell.querySelector('.number-input-wrapper');
-                    if (text) {
-                        text.style.display = text.classList.contains('date-display') ? 'flex' : 'block';
-                    }
-                    this.style.display = 'none';
-                    if (wrapper) wrapper.style.display = 'none';
-                }
+                showEditableText(this, this.value);
                 this.blur();
             } else if (e.key === 'Escape') {
                 // Cancel editing on Escape - revert to original value
@@ -302,7 +312,6 @@ export function initializeUIHandlers() {
                 const cell = this.closest('.editable');
                 if (cell) {
                     const text = cell.querySelector('.editable-text');
-                    const wrapper = cell.querySelector('.number-input-wrapper');
                     // Reset input value to original text (don't save)
                     if (text && text.textContent.trim() !== 'Click to set' && 
                         text.textContent.trim() !== 'Click to set date' &&
@@ -311,11 +320,7 @@ export function initializeUIHandlers() {
                         this.value = text.textContent.trim();
                     }
                     // Show text, hide input and wrapper
-                    if (text) {
-                        text.style.display = text.classList.contains('date-display') ? 'flex' : 'block';
-                    }
-                    this.style.display = 'none';
-                    if (wrapper) wrapper.style.display = 'none';
+                    showEditableText(this);
                 }
                 this.blur();
             }

@@ -1,0 +1,621 @@
+/* Dark Mode Styles - Glass Effect */
+:where([data-theme="dark"]) {
+    /* Base Colors */
+    --bg-primary: #0f0f14;
+    --bg-secondary: #1a1a22;
+    --text-primary: #e8eaf0;
+    --text-secondary: #a8adb8;
+    --border-color: rgba(255, 255, 255, 0.1);
+    --card-bg: rgba(26, 26, 34, 0.75);
+    --input-bg: rgba(40, 40, 52, 0.8);
+    --table-stripe: rgba(35, 35, 45, 0.6);
+    --hover-bg: rgba(50, 50, 65, 0.7);
+
+    /* Glass Effect Tokens - Dark Mode */
+    --glass-blur: 16px;
+    --glass-bg: rgba(26, 26, 34, 0.75);
+    --glass-bg-hover: rgba(35, 35, 48, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    --glass-shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.5);
+    --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Base Elements - Dark Glass Background */
+:where([data-theme="dark"] body) {
+    background:
+        radial-gradient(at 40% 20%, rgba(76, 110, 245, 0.08) 0px, transparent 50%),
+        radial-gradient(at 80% 0%, rgba(139, 92, 246, 0.06) 0px, transparent 50%),
+        radial-gradient(at 0% 50%, rgba(16, 185, 129, 0.05) 0px, transparent 50%),
+        radial-gradient(at 80% 50%, rgba(244, 63, 94, 0.04) 0px, transparent 50%),
+        radial-gradient(at 0% 100%, rgba(79, 140, 255, 0.06) 0px, transparent 50%),
+        linear-gradient(135deg, #0a0a0f 0%, #0f0f18 50%, #12121c 100%) !important;
+    background-attachment: fixed !important;
+    color: var(--text-primary) !important;
+}
+
+/* Navbar Specific - Dark Mode */
+/* Note: All navbar styling is handled by navbar.css to prevent double-layer glitch */
+/* Background removed - #navbar in navbar.css controls this */
+:where([data-theme="dark"] #navbar) {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+}
+
+:where([data-theme="dark"] .navbar-dark .navbar-nav .nav-link) {
+    color: var(--text-primary) !important;
+}
+
+/* Cards and Containers - Glass */
+:where([data-theme="dark"] .card) {
+    background: var(--glass-bg) !important;
+    backdrop-filter: blur(var(--glass-blur)) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%) !important;
+    border: 1px solid var(--glass-border) !important;
+    box-shadow: var(--glass-shadow) !important;
+}
+
+:where([data-theme="dark"] .card:hover) {
+    background: var(--glass-bg-hover) !important;
+    box-shadow: var(--glass-shadow-hover) !important;
+}
+
+:where([data-theme="dark"] .container),
+:where([data-theme="dark"] .container-fluid) {
+    background: transparent !important;
+}
+
+:where([data-theme="dark"] .modal-content) {
+    background: var(--glass-bg) !important;
+    backdrop-filter: blur(var(--glass-blur)) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%) !important;
+    border: 1px solid var(--glass-border) !important;
+    box-shadow: var(--glass-shadow) !important;
+}
+
+:where([data-theme="dark"] .dropdown-menu) {
+    background: rgba(26, 26, 34, 0.95) !important;
+    backdrop-filter: blur(var(--glass-blur)) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%) !important;
+    border: 1px solid var(--glass-border) !important;
+    box-shadow: var(--glass-shadow) !important;
+}
+
+/* Frames and Sections - Glass */
+:where([data-theme="dark"] .collapsible-frame),
+:where([data-theme="dark"] .filters-section),
+:where([data-theme="dark"] .summary-frame),
+:where([data-theme="dark"] .workout-log-frame) {
+    background: var(--glass-bg) !important;
+    backdrop-filter: blur(var(--glass-blur)) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%) !important;
+    border: 1px solid var(--glass-border) !important;
+    box-shadow: var(--glass-shadow), var(--glass-inset) !important;
+}
+
+:where([data-theme="dark"] .frame-content) {
+    background: rgba(26, 26, 34, 0.5) !important;
+}
+
+:where([data-theme="dark"] .frame-header) {
+    background: rgba(30, 30, 42, 0.6) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    border-bottom: 1px solid var(--glass-border) !important;
+}
+
+/* Tables */
+:where([data-theme="dark"] .table),
+:where([data-theme="dark"] .results-section .table) {
+    color: var(--text-primary) !important;
+}
+
+:where([data-theme="dark"] .table thead th),
+:where([data-theme="dark"] .results-section .table thead th) {
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+:where([data-theme="dark"] .table tbody tr),
+:where([data-theme="dark"] .results-section .table tbody tr) {
+    background-color: var(--card-bg) !important;
+}
+
+:where([data-theme="dark"] .table tbody tr:nth-of-type(odd)),
+:where([data-theme="dark"] .results-section .table tbody tr:nth-of-type(odd)) {
+    background-color: var(--table-stripe) !important;
+}
+
+:where([data-theme="dark"] .table td),
+:where([data-theme="dark"] .table th),
+:where([data-theme="dark"] .results-section .table td),
+:where([data-theme="dark"] .results-section .table th) {
+    border-color: var(--border-color) !important;
+}
+
+/* Add hover effect for the results table */
+:where([data-theme="dark"] .results-section .table tbody tr:hover) {
+    background-color: var(--hover-bg) !important;
+}
+
+/* Form Elements - Glass */
+:where([data-theme="dark"] .form-control),
+:where([data-theme="dark"] .form-select),
+:where([data-theme="dark"] .input-group-text) {
+    background: rgba(40, 40, 52, 0.7) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #e8eaf0 !important;
+    transition: all 0.2s ease !important;
+}
+
+:where([data-theme="dark"] .form-control:hover),
+:where([data-theme="dark"] .form-select:hover) {
+    background-color: rgba(50, 50, 65, 0.8) !important;
+    border-color: rgba(79, 140, 255, 0.3) !important;
+}
+
+:where([data-theme="dark"] .form-control:focus),
+:where([data-theme="dark"] .form-select:focus) {
+    background-color: rgba(55, 55, 72, 0.85) !important;
+    border-color: rgba(79, 140, 255, 0.5) !important;
+    box-shadow: 0 0 0 3px rgba(79, 140, 255, 0.15), 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Specific styles for the exercise search input */
+:where([data-theme="dark"] #exercise-search.form-control) {
+    background: rgba(40, 40, 52, 0.7) !important;
+    color: #fff !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Placeholder text color */
+:where([data-theme="dark"] #exercise-search.form-control::placeholder) {
+    color: #8b8fa5 !important;
+}
+
+/* Focus state */
+:where([data-theme="dark"] #exercise-search.form-control:focus) {
+    background: rgba(55, 55, 72, 0.85) !important;
+    border-color: rgba(79, 140, 255, 0.5) !important;
+    box-shadow: 0 0 0 3px rgba(79, 140, 255, 0.15) !important;
+    color: #fff !important;
+}
+
+/* Hover state */
+:where([data-theme="dark"] #exercise-search.form-control:hover) {
+    border-color: rgba(79, 140, 255, 0.3) !important;
+}
+
+/* Buttons */
+:where([data-theme="dark"] .btn) {
+    border-color: var(--border-color);
+}
+
+:where([data-theme="dark"] .btn-outline-secondary) {
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+/* View Mode Toggle - Dark Mode Glass Style */
+:where([data-theme="dark"] .tbl-view-mode-toggle) {
+    background: linear-gradient(135deg, rgba(55, 65, 81, 0.9), rgba(75, 85, 99, 0.85));
+    color: #e5e7eb;
+    border: 1px solid rgba(107, 114, 128, 0.4);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+:where([data-theme="dark"] .tbl-view-mode-toggle:hover) {
+    background: linear-gradient(135deg, rgba(75, 85, 99, 0.95), rgba(107, 114, 128, 0.9));
+    border-color: rgba(139, 146, 155, 0.5);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+:where([data-theme="dark"] .tbl-view-mode-toggle.active),
+:where([data-theme="dark"] .tbl-view-mode-toggle[data-view-mode="advanced"]) {
+    background: linear-gradient(135deg, rgba(6, 95, 70, 0.9), rgba(4, 120, 87, 0.85));
+    color: #a7f3d0;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+:where([data-theme="dark"] .tbl-view-mode-toggle.active:hover),
+:where([data-theme="dark"] .tbl-view-mode-toggle[data-view-mode="advanced"]:hover) {
+    background: linear-gradient(135deg, rgba(4, 120, 87, 0.95), rgba(5, 150, 105, 0.9));
+    border-color: rgba(52, 211, 153, 0.5);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* Headers and Text */
+:where([data-theme="dark"] h1),
+:where([data-theme="dark"] h2),
+:where([data-theme="dark"] h3),
+:where([data-theme="dark"] h4),
+:where([data-theme="dark"] h5),
+:where([data-theme="dark"] h6),
+:where([data-theme="dark"] .card-title) {
+    color: var(--text-primary) !important;
+}
+
+/* Transitions */
+:where(body),
+:where(.navbar),
+:where(.card),
+:where(.table),
+:where(.form-control),
+:where(.btn) {
+    transition: all 0.3s ease-in-out;
+}
+
+/* Dark Mode Toggle Button */
+:where(#darkModeToggle) {
+    background: none;
+    /* border styling handled by navbar.css */
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+}
+
+:where(#darkModeToggle i),
+:where(#darkModeToggle span) {
+    color: #0d6efd !important;
+}
+
+:where([data-theme="dark"] #darkModeToggle i) {
+    color: #ffd700 !important;
+}
+
+:where(#darkModeToggle:hover) {
+    opacity: 0.8;
+}
+
+/* Volume Indicators in Dark Mode */
+:where([data-theme="dark"] .volume-indicator) {
+    border: 1px solid var(--border-color);
+}
+
+/* Welcome Page in Dark Mode - Glass */
+:where([data-theme="dark"] .welcome-container) {
+    background: transparent;
+}
+
+:where([data-theme="dark"] .hero-section) {
+    background:
+        radial-gradient(at 30% 20%, rgba(79, 140, 255, 0.15) 0px, transparent 50%),
+        radial-gradient(at 70% 80%, rgba(139, 92, 246, 0.1) 0px, transparent 50%),
+        linear-gradient(135deg, rgba(20, 20, 30, 0.9) 0%, rgba(30, 30, 45, 0.85) 100%);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+/* Tables - Add table-responsive styles */
+:where([data-theme="dark"] .table-responsive) {
+    background-color: var(--card-bg) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Ensure text is visible in all table contexts */
+:where([data-theme="dark"] .table-responsive .table) {
+    color: var(--text-primary) !important;
+    background-color: var(--card-bg) !important;
+}
+
+/* Ensure consistent background color */
+:where([data-theme="dark"] .results-section) {
+    background-color: var(--card-bg) !important;
+}
+
+/* Ensure table header remains visible when scrolling */
+:where([data-theme="dark"] .table-responsive thead th) {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: var(--bg-secondary) !important;
+}
+
+/* Add border to table-responsive to match overall theme */
+:where([data-theme="dark"] .table-responsive) {
+    border: 1px solid var(--border-color);
+    border-radius: 0.25rem;
+}
+
+/* Tables and Results Section */
+:where([data-theme="dark"] .results-section),
+:where([data-theme="dark"] .table-responsive) {
+    background-color: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border-color);
+}
+
+:where([data-theme="dark"] .results-section .table),
+:where([data-theme="dark"] .table-responsive .table) {
+    background-color: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+}
+
+:where([data-theme="dark"] .results-section .table thead th),
+:where([data-theme="dark"] .table-responsive .table thead th) {
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+:where([data-theme="dark"] .results-section .table tbody tr),
+:where([data-theme="dark"] .table-responsive .table tbody tr) {
+    background-color: var(--bg-primary) !important;
+}
+
+:where([data-theme="dark"] .results-section .table tbody tr:nth-of-type(odd)),
+:where([data-theme="dark"] .table-responsive .table tbody tr:nth-of-type(odd)) {
+    background-color: var(--table-stripe) !important;
+}
+
+:where([data-theme="dark"] .results-section .table td),
+:where([data-theme="dark"] .results-section .table th),
+:where([data-theme="dark"] .table-responsive .table td),
+:where([data-theme="dark"] .table-responsive .table th) {
+    border-color: var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Hover effects */
+:where([data-theme="dark"] .results-section .table tbody tr:hover),
+:where([data-theme="dark"] .table-responsive .table tbody tr:hover) {
+    background-color: var(--hover-bg) !important;
+}
+
+/* Remove any white backgrounds that might be overriding */
+:where([data-theme="dark"] .table-responsive),
+:where([data-theme="dark"] .results-section),
+:where([data-theme="dark"] .table) {
+    background: none !important;
+}
+
+/* Results Body Table Specific Styles */
+:where([data-theme="dark"] #results-body) {
+    background-color: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+}
+
+:where([data-theme="dark"] #results-body tr) {
+    background-color: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+}
+
+:where([data-theme="dark"] #results-body tr:nth-of-type(odd)) {
+    background-color: var(--table-stripe) !important;
+}
+
+:where([data-theme="dark"] #results-body td) {
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+:where([data-theme="dark"] #results-body tr:hover) {
+    background-color: var(--hover-bg) !important;
+}
+
+/* Ensure the parent table has proper background */
+:where([data-theme="dark"] #results-body table) {
+    background-color: var(--bg-primary) !important;
+}
+
+/* Target the specific table and its container */
+:where([data-theme="dark"] .table.table-hover) {
+    background-color: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+}
+
+:where([data-theme="dark"] .table.table-hover tbody),
+:where([data-theme="dark"] #results-body) {
+    background-color: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+}
+
+:where([data-theme="dark"] .table.table-hover tr),
+:where([data-theme="dark"] #results-body tr) {
+    background-color: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+}
+
+:where([data-theme="dark"] .table.table-hover td),
+:where([data-theme="dark"] #results-body td) {
+    background-color: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+/* Striped rows */
+:where([data-theme="dark"] .table.table-hover tbody tr:nth-of-type(odd)),
+:where([data-theme="dark"] #results-body tr:nth-of-type(odd)) {
+    background-color: var(--table-stripe) !important;
+}
+
+/* Hover effect */
+:where([data-theme="dark"] .table.table-hover tbody tr:hover),
+:where([data-theme="dark"] #results-body tr:hover) {
+    background-color: var(--hover-bg) !important;
+}
+
+/* Remove any default table backgrounds */
+:where([data-theme="dark"] .table.table-hover),
+:where([data-theme="dark"] .table.table-hover tbody),
+:where([data-theme="dark"] .table.table-hover tr),
+:where([data-theme="dark"] .table.table-hover td) {
+    background-image: none !important;
+}
+
+/* ================================================
+   DARK MODE - WORKOUT CONTROLS TEXT VISIBILITY
+   ================================================ */
+
+/* Workout Controls Frame Title */
+:where([data-theme="dark"] .collapsible-frame .frame-title),
+:where([data-theme="dark"] .action-frame .frame-title) {
+    color: #e9ecef !important;
+}
+
+/* Workout Controls Input Labels */
+:where([data-theme="dark"] .input-fields-group .form-label),
+:where([data-theme="dark"] .input-fields-group .input-group .form-label) {
+    color: #e2e8f0 !important;
+}
+
+/* ================================================
+   DARK MODE - WORKOUT CONTROLS COLOR-CODED BACKGROUNDS
+   Simple solid colors with dark text for readability
+   ================================================ */
+
+/* Pastel Fuchsia - Min Rep & Max Rep (dark text on pastel background) */
+:where([data-theme="dark"] #workout[data-page="workout-plan"] .input-fields-group .input-group input#min_rep),
+:where([data-theme="dark"] #workout[data-page="workout-plan"] .input-fields-group .input-group input#max_rep_range),
+:where([data-theme="dark"] .input-fields-group input#min_rep),
+:where([data-theme="dark"] .input-fields-group input#max_rep_range) {
+    background-color: #fce4ec !important;
+    background: #fce4ec !important;
+    border-color: #f8bbd9 !important;
+    color: #1e293b !important;
+}
+
+:where([data-theme="dark"] #workout[data-page="workout-plan"] .input-fields-group .input-group input#min_rep:hover:not(:disabled)),
+:where([data-theme="dark"] #workout[data-page="workout-plan"] .input-fields-group .input-group input#max_rep_range:hover:not(:disabled)),
+:where([data-theme="dark"] .input-fields-group input#min_rep:hover:not(:disabled)),
+:where([data-theme="dark"] .input-fields-group input#max_rep_range:hover:not(:disabled)) {
+    background-color: #f8bbd9 !important;
+    background: #f8bbd9 !important;
+    border-color: #ec407a !important;
+}
+
+:where([data-theme="dark"] #workout[data-page="workout-plan"] .input-fields-group .input-group input#min_rep:focus),
+:where([data-theme="dark"] #workout[data-page="workout-plan"] .input-fields-group .input-group input#max_rep_range:focus),
+:where([data-theme="dark"] .input-fields-group input#min_rep:focus),
+:where([data-theme="dark"] .input-fields-group input#max_rep_range:focus) {
+    background-color: #fce4ec !important;
+    background: #fce4ec !important;
+    border-color: #ec407a !important;
+    box-shadow: 0 0 0 3px rgba(236, 64, 122, 0.3) !important;
+}
+
+/* Pastel Pistachio - RIR & RPE (dark text on pastel background) */
+:where([data-theme="dark"] #workout[data-page="workout-plan"] .input-fields-group .input-group input#rir),
+:where([data-theme="dark"] #workout[data-page="workout-plan"] .input-fields-group .input-group input#rpe),
+:where([data-theme="dark"] .input-fields-group input#rir),
+:where([data-theme="dark"] .input-fields-group input#rpe) {
+    background-color: #e8f5e9 !important;
+    background: #e8f5e9 !important;
+    border-color: #c8e6c9 !important;
+    color: #1e293b !important;
+}
+
+:where([data-theme="dark"] #workout[data-page="workout-plan"] .input-fields-group .input-group input#rir:hover:not(:disabled)),
+:where([data-theme="dark"] #workout[data-page="workout-plan"] .input-fields-group .input-group input#rpe:hover:not(:disabled)),
+:where([data-theme="dark"] .input-fields-group input#rir:hover:not(:disabled)),
+:where([data-theme="dark"] .input-fields-group input#rpe:hover:not(:disabled)) {
+    background-color: #c8e6c9 !important;
+    background: #c8e6c9 !important;
+    border-color: #66bb6a !important;
+}
+
+:where([data-theme="dark"] #workout[data-page="workout-plan"] .input-fields-group .input-group input#rir:focus),
+:where([data-theme="dark"] #workout[data-page="workout-plan"] .input-fields-group .input-group input#rpe:focus),
+:where([data-theme="dark"] .input-fields-group input#rir:focus),
+:where([data-theme="dark"] .input-fields-group input#rpe:focus) {
+    background-color: #e8f5e9 !important;
+    background: #e8f5e9 !important;
+    border-color: #66bb6a !important;
+    box-shadow: 0 0 0 3px rgba(102, 187, 106, 0.3) !important;
+}
+
+/* Pastel Banana/Yellow - Weight & Sets (dark text on pastel background) */
+:where([data-theme="dark"] #workout[data-page="workout-plan"] .input-fields-group .input-group input#weight),
+:where([data-theme="dark"] #workout[data-page="workout-plan"] .input-fields-group .input-group input#sets),
+:where([data-theme="dark"] .input-fields-group input#weight),
+:where([data-theme="dark"] .input-fields-group input#sets) {
+    background-color: #fff9c4 !important;
+    background: #fff9c4 !important;
+    border-color: #fff176 !important;
+    color: #1e293b !important;
+}
+
+:where([data-theme="dark"] #workout[data-page="workout-plan"] .input-fields-group .input-group input#weight:hover:not(:disabled)),
+:where([data-theme="dark"] #workout[data-page="workout-plan"] .input-fields-group .input-group input#sets:hover:not(:disabled)),
+:where([data-theme="dark"] .input-fields-group input#weight:hover:not(:disabled)),
+:where([data-theme="dark"] .input-fields-group input#sets:hover:not(:disabled)) {
+    background-color: #fff176 !important;
+    background: #fff176 !important;
+    border-color: #fdd835 !important;
+}
+
+:where([data-theme="dark"] #workout[data-page="workout-plan"] .input-fields-group .input-group input#weight:focus),
+:where([data-theme="dark"] #workout[data-page="workout-plan"] .input-fields-group .input-group input#sets:focus),
+:where([data-theme="dark"] .input-fields-group input#weight:focus),
+:where([data-theme="dark"] .input-fields-group input#sets:focus) {
+    background-color: #fff9c4 !important;
+    background: #fff9c4 !important;
+    border-color: #fdd835 !important;
+    box-shadow: 0 0 0 3px rgba(253, 216, 53, 0.3) !important;
+}
+
+/* Dark mode value-changed highlight */
+:where([data-theme="dark"] #workout[data-page="workout-plan"] .input-fields-group .input-group input#min_rep.value-changed),
+:where([data-theme="dark"] #workout[data-page="workout-plan"] .input-fields-group .input-group input#max_rep_range.value-changed) {
+    box-shadow: 0 0 0 3px rgba(236, 64, 122, 0.5) !important;
+    border-color: #ec407a !important;
+}
+
+:where([data-theme="dark"] #workout[data-page="workout-plan"] .input-fields-group .input-group input#rir.value-changed),
+:where([data-theme="dark"] #workout[data-page="workout-plan"] .input-fields-group .input-group input#rpe.value-changed) {
+    box-shadow: 0 0 0 3px rgba(102, 187, 106, 0.5) !important;
+    border-color: #66bb6a !important;
+}
+
+:where([data-theme="dark"] #workout[data-page="workout-plan"] .input-fields-group .input-group input#weight.value-changed),
+:where([data-theme="dark"] #workout[data-page="workout-plan"] .input-fields-group .input-group input#sets.value-changed) {
+    box-shadow: 0 0 0 3px rgba(253, 216, 53, 0.5) !important;
+    border-color: #fdd835 !important;
+}
+
+/* Dark mode reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    :where([data-theme="dark"] .value-changed) {
+        animation: none;
+        box-shadow: none !important;
+        border-width: 2px !important;
+    }
+}
+
+/* Calm Glass 2026 dark mode tokens.
+   Replaces the legacy dark-mode variables with the new tokens.
+   Zero !important. */
+
+[data-theme="dark"] {
+  /* Map legacy dark mode variables to new tokens */
+  --bg-primary: var(--surface-0);
+  --bg-secondary: var(--surface-1);
+  --text-primary: var(--ink-1);
+  --text-secondary: var(--ink-2);
+  --border-color: var(--calm-glass-border);
+  --card-bg: var(--calm-glass-bg);
+  --input-bg: color-mix(in srgb, var(--surface-2) 84%, transparent);
+  --table-stripe: var(--surface-1);
+  --hover-bg: color-mix(in srgb, var(--accent) 14%, var(--surface-2) 86%);
+
+  /* Map legacy glass tokens to calm glass tokens */
+  --glass-blur: var(--calm-glass-blur);
+  --glass-bg: var(--calm-glass-bg);
+  --glass-bg-hover: color-mix(in srgb, var(--surface-2) 88%, var(--accent) 12%);
+  --glass-border: var(--calm-glass-border);
+  --glass-shadow: var(--shadow-neu-out);
+  --glass-shadow-hover: var(--shadow-elev-2);
+  --glass-inset: var(--shadow-neu-in);
+
+  /* Bootstrap body tokens override */
+  --bs-body-bg: var(--surface-0);
+  --bs-body-color: var(--ink-1);
+}

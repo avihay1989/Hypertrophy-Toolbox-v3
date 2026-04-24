@@ -3,10 +3,9 @@
 {% block title %}Progression Plan - Hypertrophy Toolbox{% endblock %}
 
 {% block page_css %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_progression.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_dropdowns.css') }}">
     <!-- Flatpickr for custom date format -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages-progression.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -17,12 +16,12 @@
     </div>
     
     <!-- Exercise Selection -->
-    <div class="exercise-selector mb-4">
+    <div class="exercise-selector frame-calm-glass mb-4">
         <h4>Select Exercise to Progress</h4>
-        <div class="debug-info" style="margin-bottom: 1rem; font-size: 0.8rem; color: #666;">
+        <div class="debug-info text-muted small mb-3">
             Available exercises: {{ exercises|length }}
         </div>
-        <select id="exerciseSelect" class="form-select">
+        <select id="exerciseSelect" class="form-select input-calm-inset">
             <option value="">Choose an exercise...</option>
             {% for exercise in exercises %}
             <option value="{{ exercise.exercise }}" data-routine="{{ exercise.routine }}">
@@ -33,7 +32,7 @@
     </div>
     
     <!-- Suggestions Container -->
-    <div id="suggestionsContainer" class="suggestions-container" style="display: none;">
+    <div id="suggestionsContainer" class="suggestions-container frame-calm-glass" style="display: none;">
         <h4>Progression Suggestions</h4>
         <div id="suggestionsList" class="row g-4">
             <!-- Suggestions will be populated here -->
@@ -41,43 +40,47 @@
     </div>
     
     <!-- Current Goals -->
-    <div class="current-goals mt-4">
+    <div class="current-goals frame-calm-glass mt-4">
         <h4>Current Goals</h4>
-        <div class="table-responsive">
-            <table class="table">
+        <div class="tbl-wrap tbl-wrap--full" role="region" aria-label="Current progression goals table">
+            <table class="table table-striped table-calm tbl tbl--responsive"
+                   role="table"
+                   aria-label="Current progression goals">
                 <thead>
                     <tr>
-                        <th>Exercise</th>
-                        <th>Goal Type</th>
-                        <th>Current Value</th>
-                        <th>Target Value</th>
-                        <th>Goal Date</th>
-                        <th>Status</th>
-                        <th>Actions</th>
+                        <th scope="col" class="col--high" data-label="Exercise">Exercise</th>
+                        <th scope="col" class="col--med" data-label="Goal Type">Goal Type</th>
+                        <th scope="col" class="col--med is-num" data-label="Current Value">Current Value</th>
+                        <th scope="col" class="col--med is-num" data-label="Target Value">Target Value</th>
+                        <th scope="col" class="col--med" data-label="Goal Date">Goal Date</th>
+                        <th scope="col" class="col--med" data-label="Status">Status</th>
+                        <th scope="col" class="col--high" data-label="Actions">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for goal in goals %}
                     <tr>
-                        <td>{{ goal.exercise }}</td>
-                        <td>{{ goal.goal_type }}</td>
-                        <td>{{ goal.current_value }}</td>
-                        <td>{{ goal.target_value }}</td>
-                        <td>{{ goal.goal_date|datetime('%d-%m-%Y') }}</td>
-                        <td>
-                            <span class="badge bg-primary">In Progress</span>
+                        <td data-label="Exercise">{{ goal.exercise }}</td>
+                        <td data-label="Goal Type">{{ goal.goal_type }}</td>
+                        <td data-label="Current Value" class="is-num">{{ goal.current_value }}</td>
+                        <td data-label="Target Value" class="is-num">{{ goal.target_value }}</td>
+                        <td data-label="Goal Date">{{ goal.goal_date|datetime('%d-%m-%Y') }}</td>
+                        <td data-label="Status">
+                            <span class="badge bg-primary goal-status-badge">In Progress</span>
                         </td>
-                        <td>
-                            <button class="btn btn-success btn-sm complete-goal" 
-                                    data-goal-id="{{ goal.id }}"
-                                    title="Mark as Completed">
-                                <i class="fas fa-check"></i> Complete
-                            </button>
-                            <button class="btn btn-danger btn-sm delete-goal" 
-                                    data-goal-id="{{ goal.id }}"
-                                    title="Delete Goal">
-                                <i class="fas fa-trash"></i> Remove
-                            </button>
+                        <td data-label="Actions">
+                            <div class="goal-actions">
+                                <button class="btn btn-success btn-sm complete-goal btn-calm-primary"
+                                        data-goal-id="{{ goal.id }}"
+                                        title="Mark as Completed">
+                                    <i class="fas fa-check"></i> Complete
+                                </button>
+                                <button class="btn btn-danger btn-sm delete-goal btn-calm-danger"
+                                        data-goal-id="{{ goal.id }}"
+                                        title="Delete Goal">
+                                    <i class="fas fa-trash"></i> Remove
+                                </button>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -94,7 +97,7 @@
      aria-labelledby="deleteGoalModalLabel" 
      aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
+        <div class="modal-content frame-calm-glass">
             <div class="modal-header">
                 <h5 class="modal-title" id="deleteGoalModalLabel">Delete Goal</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -103,8 +106,8 @@
                 Are you sure you want to delete this goal?
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" id="confirmDeleteGoal">Delete</button>
+                <button type="button" class="btn btn-secondary btn-calm-ghost" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger btn-calm-danger" id="confirmDeleteGoal">Delete</button>
             </div>
         </div>
     </div>
@@ -117,7 +120,7 @@
      aria-labelledby="goalSettingModalLabel" 
      aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
+        <div class="modal-content frame-calm-glass">
             <div class="modal-header">
                 <h5 class="modal-title" id="goalSettingModalLabel">Set Progression Goal</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -130,7 +133,7 @@
                     <div class="mb-3">
                         <label for="currentValue" class="form-label">Current Value</label>
                         <input type="number" 
-                               class="form-control" 
+                               class="form-control input-calm-inset" 
                                id="currentValue" 
                                required 
                                min="0" 
@@ -142,22 +145,22 @@
                     
                     <div class="mb-3">
                         <label for="targetValue" class="form-label">Target Value</label>
-                        <input type="number" class="form-control" id="targetValue" required min="0" step="any" autocomplete="off">
+                        <input type="number" class="form-control input-calm-inset" id="targetValue" required min="0" step="any" autocomplete="off">
                     </div>
                     
                     <div class="mb-3">
                         <label for="goalDate" class="form-label">Goal Date</label>
-                        <input type="text" class="form-control goal-date-input" id="goalDate" required autocomplete="off" placeholder="DD-MM-YYYY">
+                        <input type="text" class="form-control input-calm-inset goal-date-input" id="goalDate" required autocomplete="off" placeholder="DD-MM-YYYY">
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" 
-                        class="btn btn-secondary" 
+                        class="btn btn-secondary btn-calm-ghost" 
                         data-bs-dismiss="modal" 
                         id="closeGoalModal">Close</button>
                 <button type="button" 
-                        class="btn btn-primary"
+                        class="btn btn-primary btn-calm-primary"
                         form="goalForm"
                         id="saveGoal">Save Goal</button>
             </div>

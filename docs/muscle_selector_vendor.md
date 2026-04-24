@@ -167,7 +167,7 @@ The SVGs include inline styles via `<defs><style>`, but these are overridden by 
 }
 ```
 
-See `static/css/styles_muscle_selector.css` for the full style definitions.
+See `static/css/pages-workout-plan.css` for the current bundled style definitions.
 
 ## Adding New Muscle Regions
 

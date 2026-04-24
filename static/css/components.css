@@ -1,0 +1,4721 @@
+/* Button Base Styles - Glass Effect Enhancement */
+button.btn,
+a.btn,
+input.btn,
+.btn.btn-primary,
+.btn.btn-secondary,
+.btn.btn-success,
+.btn.btn-outline-secondary,
+.btn.btn-export-excel,
+.btn.btn-export-log,
+#clear-filters-btn,
+button[type="submit"].btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: clamp(30px, 3.5vw, 40px) !important;
+    min-width: clamp(100px, 12vw, 160px) !important;
+    padding: 0 var(--btn-padding-x, 0.875rem) !important;
+    margin: 4px 6px !important;
+    border-radius: 18px !important;
+    font-family: 'Inter', Arial, sans-serif !important;
+    font-size: var(--btn-font-size, 0.8rem) !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.3px !important;
+    transition: all 0.3s ease !important;
+    border: none !important;
+    cursor: pointer !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.4) !important;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+/* Button Types - Glass Enhancement */
+.btn-success {
+    background: linear-gradient(135deg, rgba(232, 245, 233, 0.9), rgba(200, 230, 201, 0.85));
+    color: #2e7d32;
+    border: 1px solid rgba(200, 230, 201, 0.6);
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, rgba(200, 230, 201, 0.95), rgba(165, 214, 167, 0.9));
+    border-color: rgba(165, 214, 167, 0.7);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(46, 125, 50, 0.15), inset 0 1px 0 rgba(255,255,255,0.5) !important;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, rgba(227, 242, 253, 0.9), rgba(187, 222, 251, 0.85));
+    color: #1976d2;
+    border: 1px solid rgba(187, 222, 251, 0.6);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, rgba(187, 222, 251, 0.95), rgba(144, 202, 249, 0.9));
+    border-color: rgba(144, 202, 249, 0.7);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(25, 118, 210, 0.15), inset 0 1px 0 rgba(255,255,255,0.5) !important;
+}
+
+.btn-outline-secondary {
+    background: linear-gradient(135deg, rgba(248, 249, 250, 0.9), rgba(233, 236, 239, 0.85));
+    color: #2c3e50;
+    border: 1px solid rgba(233, 236, 239, 0.6);
+}
+
+.btn-outline-secondary:hover {
+    background: linear-gradient(135deg, rgba(233, 236, 239, 0.95), rgba(222, 226, 230, 0.9));
+    border-color: rgba(222, 226, 230, 0.7);
+    color: #2c3e50;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(44, 62, 80, 0.1), inset 0 1px 0 rgba(255,255,255,0.5) !important;
+}
+
+/* Export Buttons - Glass */
+.btn-export-excel {
+    background: linear-gradient(135deg, rgba(252, 228, 236, 0.9), rgba(248, 187, 208, 0.85)) !important;
+    color: #d81b60 !important;
+    border: 1px solid rgba(248, 187, 208, 0.6) !important;
+}
+
+.btn-export-excel:hover {
+    background: linear-gradient(135deg, rgba(248, 187, 208, 0.95), rgba(244, 143, 177, 0.9)) !important;
+    border-color: rgba(244, 143, 177, 0.7) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(216, 27, 96, 0.15), inset 0 1px 0 rgba(255,255,255,0.5) !important;
+}
+
+.btn-export-log {
+    background: linear-gradient(135deg, rgba(232, 227, 247, 0.9), rgba(212, 198, 247, 0.85)) !important;
+    color: #673ab7 !important;
+    border: 1px solid rgba(212, 198, 247, 0.6) !important;
+}
+
+.btn-export-log:hover {
+    background: linear-gradient(135deg, rgba(212, 198, 247, 0.95), rgba(179, 157, 219, 0.9)) !important;
+    border-color: rgba(179, 157, 219, 0.7) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(103, 58, 183, 0.15), inset 0 1px 0 rgba(255,255,255,0.5) !important;
+}
+
+/* Clear Filters Button - Glass */
+#clear-filters-btn {
+    background: linear-gradient(135deg, rgba(232, 234, 246, 0.9), rgba(197, 202, 233, 0.85)) !important;
+    color: #283593 !important;
+    border: 1px solid rgba(197, 202, 233, 0.6) !important;
+}
+
+#clear-filters-btn:hover {
+    background-color: #c5cae9 !important;  /* Slightly darker on hover */
+    border-color: #9fa8da !important;
+    transform: translateY(-2px);
+}
+
+/* Program Library Buttons - Baby Blue */
+#save-program-btn,
+#load-program-btn {
+    background-color: #e0f7fa !important;  /* Light baby blue background */
+    color: #00838f !important;  /* Darker cyan text */
+    border: 1px solid #b2ebf2 !important;  /* Light baby blue border */
+}
+
+#save-program-btn:hover,
+#load-program-btn:hover {
+    background-color: #b2ebf2 !important;  /* Slightly darker on hover */
+    border-color: #80deea !important;
+    transform: translateY(-2px);
+}
+
+/* Clear Plan Button - Light Lava */
+#clear-plan-btn {
+    background-color: #ffebee !important;  /* Light lava/red background */
+    color: #c62828 !important;  /* Darker red text */
+    border: 1px solid #ffcdd2 !important;  /* Light lava border */
+}
+
+#clear-plan-btn:hover {
+    background-color: #ffcdd2 !important;  /* Slightly darker on hover */
+    border-color: #ef9a9a !important;
+    transform: translateY(-2px);
+}
+
+/* Active state for all buttons */
+.btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+/* Focus state - only show for keyboard navigation, not mouse clicks */
+.btn:focus,
+.btn-primary:focus,
+.btn-secondary:focus,
+.btn-success:focus,
+.btn-danger:focus,
+.btn-warning:focus,
+.btn-info:focus,
+.btn-light:focus,
+.btn-dark:focus,
+.btn-outline-primary:focus,
+.btn-outline-secondary:focus,
+.btn-outline-success:focus,
+.btn-outline-danger:focus,
+.btn-outline-warning:focus,
+.btn-outline-info:focus,
+.btn-outline-light:focus,
+.btn-outline-dark:focus,
+.btn-check:focus + .btn {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.btn:focus-visible,
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.btn-success:focus-visible,
+.btn-danger:focus-visible,
+.btn-warning:focus-visible,
+.btn-info:focus-visible,
+.btn-light:focus-visible,
+.btn-dark:focus-visible,
+.btn-outline-primary:focus-visible,
+.btn-outline-secondary:focus-visible,
+.btn-outline-success:focus-visible,
+.btn-outline-danger:focus-visible,
+.btn-outline-warning:focus-visible,
+.btn-outline-info:focus-visible,
+.btn-outline-light:focus-visible,
+.btn-outline-dark:focus-visible,
+.btn-check:focus-visible + .btn {
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25) !important;
+}
+
+/* Loading State */
+.btn.loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.8;
+}
+
+.btn.loading::after {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border: 2px solid currentColor;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Apply Filters Button - with higher specificity */
+#filters-form #apply-filters-btn.btn {
+    background-color: #e3f2fd !important;  /* Light blue background */
+    color: #1976d2 !important;  /* Darker blue text */
+    border: 1px solid #bbdefb !important;  /* Light blue border */
+}
+
+#filters-form #apply-filters-btn.btn:hover {
+    background-color: #bbdefb !important;  /* Slightly darker on hover */
+    border-color: #90caf9 !important;
+    transform: translateY(-2px);
+}
+
+/* Primary Button Style */
+.btn.btn-primary,
+#apply-filters-btn.btn.btn-primary {
+    background-color: #e3f2fd !important;  /* Light blue background */
+    color: #1976d2 !important;  /* Darker blue text */
+    border: 1px solid #bbdefb !important;  /* Light blue border */
+}
+
+.btn.btn-primary:hover,
+#apply-filters-btn.btn.btn-primary:hover {
+    background-color: #bbdefb !important;  /* Slightly darker on hover */
+    border-color: #90caf9 !important;
+    transform: translateY(-2px);
+}
+
+/* Add Exercise Button - Seafoam color scheme */
+#add_exercise_btn.btn {
+    background-color: #98DFD6 !important;  /* Light seafoam */
+    color: #006D77 !important;  /* Dark seafoam text */
+    border: 1px solid #83D1C4 !important;  /* Medium seafoam border */
+}
+
+#add_exercise_btn.btn:hover {
+    background-color: #83D1C4 !important;  /* Slightly darker on hover */
+    border-color: #006D77 !important;
+    transform: translateY(-2px);
+}
+
+#add_exercise_btn.btn:active {
+    transform: translateY(1px);
+    background-color: #7AC9BC !important;  /* Even darker when clicked */
+}
+
+/* Export to Workout Log Button - Lighter Pastel color scheme */
+#export-to-log-btn.btn {
+    background-color: #FFE2E4 !important;  /* Lighter pastel pink */
+    color: #D94A5A !important;  /* Keeping same text color for contrast */
+    border: 1px solid #FFD0D4 !important;  /* Lighter border */
+}
+
+#export-to-log-btn.btn:hover {
+    background-color: #FFD0D4 !important;  /* Slightly darker on hover but still light */
+    border-color: #D94A5A !important;
+    transform: translateY(-2px);
+}
+
+#export-to-log-btn.btn:active {
+    transform: translateY(1px);
+    background-color: #FFC5CA !important;  /* Slightly darker when clicked */
+}
+
+/* Export to Excel Button - Volume Splitter */
+#export-to-excel-btn.btn {
+    background-color: #E8F5E9 !important;  /* Light green */
+    color: #2E7D32 !important;  /* Dark green text */
+    border: 1px solid #C8E6C9 !important;  /* Medium green border */
+}
+
+#export-to-excel-btn.btn:hover {
+    background-color: #C8E6C9 !important;  /* Slightly darker on hover */
+    border-color: #2E7D32 !important;
+    transform: translateY(-2px);
+}
+
+#export-to-excel-btn.btn:active {
+    transform: translateY(1px);
+    background-color: #A5D6A7 !important;  /* Even darker when clicked */
+}
+
+/* =================================================================
+   ACTION BUTTON GROUPS
+   Consolidated from styles_action_buttons.css
+   ================================================================= */
+
+/* Action Buttons Group */
+.action-buttons-group {
+    display: flex;
+    gap: 1rem;
+    flex: 2;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+/* Remove default margins and padding */
+.action-buttons-group > * {
+    margin: 0;
+}
+
+.action-buttons-group .col-auto {
+    padding: 0;
+    margin: 0;
+    width: auto;
+}
+
+/* Button Group Styling */
+.action-buttons-group .btn-group {
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+}
+
+.action-buttons-group .btn-group .btn {
+    flex: 1;
+    min-width: 130px;
+}
+
+/* Input Fields Group */
+.input-fields-group {
+    display: flex;
+    gap: 1rem;
+    flex: 3;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.input-fields-group .input-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.input-fields-group label {
+    white-space: nowrap;
+    margin: 0;
+}
+
+/* Icon styling within buttons */
+.action-buttons-group .btn i {
+    font-size: 0.9rem;
+    margin-right: 0.6rem;
+    opacity: 0.8;
+}
+
+/* Button States */
+.action-buttons-group .btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+/* Disabled State */
+.action-buttons-group .btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Unified Button Styles within Action Groups */
+.action-buttons-group .btn,
+.action-buttons-group .btn-group .btn {
+    /* Unified Dimensions */
+    height: 42px;
+    min-width: 130px;
+    padding: 0 1.2rem;
+
+    /* Rounded Design */
+    border-radius: 21px;  /* Half of height for perfect circle edges */
+
+    /* Consistent Typography */
+    font-family: 'Inter', Arial, sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    text-transform: none;
+
+    /* Light-Toned Background */
+    background-color: #f8f9fa;
+    color: #2c3e50;
+    border: 1px solid #e9ecef;
+
+    /* Enhanced Visual Style */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* Hover State */
+.action-buttons-group .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    background-color: #fff;
+    border-color: #dee2e6;
+}
+
+/* Button Types with Light Tones within Action Groups */
+.action-buttons-group .btn-primary {
+    background-color: #e3f2fd;
+    color: #1976d2;
+    border-color: #bbdefb;
+}
+
+.action-buttons-group .btn-success {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border-color: #c8e6c9;
+}
+
+.action-buttons-group .btn-danger {
+    background-color: #ffeef0;
+    color: #d32f2f;
+    border-color: #ffcdd2;
+}
+
+.action-buttons-group .btn-warning {
+    background-color: #fff3e0;
+    color: #f57c00;
+    border-color: #ffe0b2;
+}
+
+/* Hover states for button types within action groups */
+.action-buttons-group .btn-primary:hover {
+    background-color: #bbdefb;
+    border-color: #90caf9;
+}
+
+.action-buttons-group .btn-success:hover {
+    background-color: #c8e6c9;
+    border-color: #a5d6a7;
+}
+
+.action-buttons-group .btn-danger:hover {
+    background-color: #ffcdd2;
+    border-color: #ef9a9a;
+}
+
+.action-buttons-group .btn-warning:hover {
+    background-color: #ffe0b2;
+    border-color: #ffcc80;
+}
+
+/* ============================================================
+   RESPONSIVE BUTTON STYLES - Multi-Resolution
+   ============================================================ */
+
+/* 720p (max-width: 1280px) - Very Compact */
+@media screen and (max-width: 1280px) {
+    button.btn,
+    a.btn,
+    input.btn,
+    .btn.btn-primary,
+    .btn.btn-secondary,
+    .btn.btn-success,
+    .btn.btn-outline-secondary {
+        height: 24px !important;
+        min-width: 70px !important;
+        padding: 0 0.4rem !important;
+        font-size: 0.68rem !important;
+        border-radius: 14px !important;
+        margin: 2px 4px !important;
+    }
+}
+
+/* 1366x768 (1281px - 1366px) - Compact */
+@media screen and (min-width: 1281px) and (max-width: 1366px) {
+    button.btn,
+    a.btn,
+    input.btn,
+    .btn.btn-primary,
+    .btn.btn-secondary,
+    .btn.btn-success,
+    .btn.btn-outline-secondary {
+        height: 26px !important;
+        min-width: 75px !important;
+        padding: 0 0.45rem !important;
+        font-size: 0.7rem !important;
+        border-radius: 15px !important;
+        margin: 2px 5px !important;
+    }
+}
+
+/* 1536x864 (1367px - 1536px) - Compact+ */
+@media screen and (min-width: 1367px) and (max-width: 1536px) {
+    button.btn,
+    a.btn,
+    input.btn,
+    .btn.btn-primary,
+    .btn.btn-secondary,
+    .btn.btn-success,
+    .btn.btn-outline-secondary {
+        height: 28px !important;
+        min-width: 80px !important;
+        padding: 0 0.5rem !important;
+        font-size: 0.72rem !important;
+        border-radius: 15px !important;
+        margin: 3px 5px !important;
+    }
+}
+
+/* 1600x900 (1537px - 1600px) - Medium Compact */
+@media screen and (min-width: 1537px) and (max-width: 1600px) {
+    button.btn,
+    a.btn,
+    input.btn,
+    .btn.btn-primary,
+    .btn.btn-secondary,
+    .btn.btn-success,
+    .btn.btn-outline-secondary {
+        height: 29px !important;
+        min-width: 85px !important;
+        padding: 0 0.55rem !important;
+        font-size: 0.74rem !important;
+        border-radius: 16px !important;
+        margin: 3px 5px !important;
+    }
+}
+
+/* 1080p (1601px - 1920px) - Standard Compact */
+@media screen and (min-width: 1601px) and (max-width: 1920px) {
+    button.btn,
+    a.btn,
+    input.btn,
+    .btn.btn-primary,
+    .btn.btn-secondary,
+    .btn.btn-success,
+    .btn.btn-outline-secondary {
+        height: 30px !important;
+        min-width: 90px !important;
+        padding: 0 0.625rem !important;
+        font-size: 0.75rem !important;
+        border-radius: 16px !important;
+        margin: 3px 5px !important;
+    }
+}
+
+/* 1440p (1921px - 2560px) - Standard */
+@media screen and (min-width: 1921px) and (max-width: 2560px) {
+    button.btn,
+    a.btn,
+    input.btn,
+    .btn.btn-primary,
+    .btn.btn-secondary,
+    .btn.btn-success,
+    .btn.btn-outline-secondary {
+        height: 36px !important;
+        min-width: 110px !important;
+        padding: 0 0.875rem !important;
+        font-size: 0.85rem !important;
+        border-radius: 18px !important;
+        margin: 4px 6px !important;
+    }
+}
+
+/* 4K (2561px+) - Large */
+@media screen and (min-width: 2561px) {
+    button.btn,
+    a.btn,
+    input.btn,
+    .btn.btn-primary,
+    .btn.btn-secondary,
+    .btn.btn-success,
+    .btn.btn-outline-secondary {
+        height: 44px !important;
+        min-width: 140px !important;
+        padding: 0 1.25rem !important;
+        font-size: 1rem !important;
+        border-radius: 22px !important;
+        margin: 5px 8px !important;
+    }
+}
+
+/* ============================================
+   GLOBAL FOCUS SHADOW OVERRIDE
+   Removes focus shadows on mouse click for ALL elements
+   ============================================ */
+*:focus,
+*:active:focus,
+*.active:focus,
+.btn-check:focus + .btn,
+.btn-check:active + .btn,
+.form-check-input:focus,
+.form-control:focus,
+.form-select:focus,
+.form-range:focus,
+.nav-link:focus,
+.page-link:focus,
+.accordion-button:focus,
+.dropdown-item:focus,
+.list-group-item:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+*:focus-visible,
+*:active:focus-visible,
+*.active:focus-visible {
+    outline: 2px solid rgba(13, 110, 253, 0.5) !important;
+    outline-offset: 2px !important;
+    box-shadow: none !important;
+}
+
+/* Global focus fix - only show focus ring for keyboard navigation */
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus,
+.form-range:focus,
+.btn-close:focus,
+input:focus,
+select:focus,
+textarea:focus,
+[type="checkbox"]:focus,
+[type="radio"]:focus,
+[type="range"]:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.form-control:focus-visible,
+.form-select:focus-visible,
+.form-check-input:focus-visible,
+.form-range:focus-visible,
+.btn-close:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[type="checkbox"]:focus-visible,
+[type="radio"]:focus-visible,
+[type="range"]:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25) !important;
+}
+
+/* Range slider thumb focus fix */
+.form-range:focus::-webkit-slider-thumb,
+.form-range:focus::-moz-range-thumb {
+    box-shadow: none !important;
+}
+
+.form-range:focus-visible::-webkit-slider-thumb,
+.form-range:focus-visible::-moz-range-thumb {
+    box-shadow: 0 0 0 1px #fff, 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+}
+
+/* Form Container */
+.form-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-md, 0.875rem);
+    justify-content: space-between;
+}
+
+/* Form Labels */
+.form-label {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #555;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    text-align: left;
+    margin-bottom: 0.5rem;
+}
+
+/* Form Controls - Glass Effect */
+.form-select, .form-control {
+    margin-bottom: var(--space-md, 0.875rem);
+    padding: var(--input-padding-y, 0.375rem) var(--input-padding-x, 0.625rem);
+    font-size: var(--input-font-size, 0.9rem);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    height: var(--input-height-md, 38px);
+    box-shadow: 0 2px 8px rgba(31, 38, 135, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.form-select:hover, .form-control:hover {
+    background-color: rgba(255, 255, 255, 0.8);
+    border-color: rgba(79, 140, 255, 0.3);
+}
+
+.form-select:focus, .form-control:focus {
+    border-color: rgba(79, 140, 255, 0.5);
+    background-color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 0 3px rgba(79, 140, 255, 0.15), 0 4px 12px rgba(31, 38, 135, 0.12);
+    outline: none;
+}
+
+/* Dropdown Styles - Glass Effect */
+.filter-dropdown {
+    background: rgba(230, 247, 255, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: #333;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.filter-dropdown:not([value]):not(:focus) {
+    background: rgba(230, 247, 255, 0.7);
+    color: #555;
+}
+
+.filter-dropdown:focus, .filter-dropdown:active {
+    background: rgba(255, 255, 255, 0.9);
+    color: #000;
+}
+
+/* Uniform Dropdown - Glass */
+.uniform-dropdown {
+    width: 100%;
+    max-width: 100%;
+    min-width: 200px;
+    background: rgba(230, 247, 255, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    height: var(--input-height-md, 38px);
+    box-sizing: border-box;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Exercise dropdown specific - full width */
+.exercise-dropdown {
+    width: 100%;
+    max-width: 100%;
+}
+
+.uniform-dropdown:focus {
+    background-color: #ffffff;
+}
+
+/* Input Sizes */
+.wide-input {
+    width: clamp(300px, 30vw, 400px);
+    max-width: 100%;
+}
+
+.large-input {
+    flex: 1 1 auto;
+    max-width: clamp(100px, 12vw, 140px);
+    min-width: var(--input-min-width, 90px);
+    margin-right: 2px;
+    text-align: center;
+    height: var(--input-height-md, 38px);
+}
+
+.small-input {
+    flex: 1 1 auto;
+    max-width: clamp(100px, 12vw, 140px);
+    min-width: var(--input-min-width, 90px);
+    margin-right: 1px;
+    text-align: center;
+    height: var(--input-height-md, 38px);
+}
+
+/* Exercise Form Specific */
+#add-exercise-form {
+    text-align: center;
+}
+
+#add-exercise-form .row.justify-content-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#add-exercise-form .row {
+    --bs-gutter-x: 0.25rem;
+    --bs-gutter-y: 0.25rem;
+}
+
+#add-exercise-form .large-input,
+#add-exercise-form .small-input {
+    margin-right: 2px;
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+/* Custom Row */
+.custom-row {
+    display: flex;
+    gap: 1px;
+    justify-content: flex-start;
+}
+
+.custom-input {
+    flex: 1;
+    max-width: calc((100% - 2rem) / 5);
+    margin-right: 0.5rem;
+}
+
+/* Environment Groups */
+.uniform-dropdown optgroup {
+    font-weight: bold;
+    padding: 10px 0;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Environment Colors */
+.uniform-dropdown optgroup[data-environment="gym"] {
+    background-color: #e3f2fd;
+    color: #1565c0;
+}
+
+.uniform-dropdown optgroup[data-environment="home-workout"] {
+    background-color: #f3e5f5;
+    color: #6a1b9a;
+}
+
+/* Category Colors */
+.category-split-programs {
+    color: #5d4037 !important;
+    background-color: #efebe9 !important;
+}
+
+.category-basic-splits {
+    color: #455a64 !important;
+    background-color: #eceff1 !important;
+}
+
+/* Program Type Colors and their children */
+/* Full Body - Green Theme */
+.program-full-body,
+.program-full-body ~ .routine-option {
+    color: #2e7d32 !important;
+    background-color: #e8f5e9 !important;
+}
+
+/* 4 Week Split - Orange Theme */
+.program-4-week-split,
+.program-4-week-split ~ .routine-option {
+    color: #ef6c00 !important;
+    background-color: #fff3e0 !important;
+}
+
+/* Push Pull Legs - Indigo Theme */
+.program-push-pull-legs,
+.program-push-pull-legs ~ .routine-option {
+    color: #303f9f !important;
+    background-color: #e8eaf6 !important;
+}
+
+/* 2 Days Split - Blue Theme */
+.program-2-days-split,
+.program-2-days-split ~ .routine-option {
+    color: #0277bd !important;
+    background-color: #e1f5fe !important;
+}
+
+/* Upper Lower - Red Theme */
+.program-upper-lower,
+.program-upper-lower ~ .routine-option {
+    color: #c62828 !important;
+    background-color: #ffebee !important;
+}
+
+/* 3 Days Split - Teal Theme */
+.program-3-days-split,
+.program-3-days-split ~ .routine-option {
+    color: #00695c !important;
+    background-color: #e0f2f1 !important;
+}
+
+/* Routine Options - Base Styles */
+.routine-option {
+    padding: 4px 36px;
+    transition: background-color 0.2s;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+}
+
+.routine-option.nested {
+    padding-left: 48px;
+}
+
+/* Hover and Selection States */
+.uniform-dropdown option:not([disabled]):hover {
+    filter: brightness(0.95);
+    cursor: pointer;
+}
+
+.uniform-dropdown option:checked {
+    background-color: #1976d2 !important;
+    color: white !important;
+}
+
+/* Visual hierarchy improvements */
+.category-header {
+    font-size: 1.05rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 10px 12px !important;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+}
+
+.program-header {
+    font-weight: 600;
+    padding: 8px 24px !important;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Indentation and spacing */
+.uniform-dropdown option {
+    margin: 2px 0;
+}
+
+/* Visual Separators */
+.uniform-dropdown optgroup + optgroup {
+    border-top: 2px solid #dee2e6;
+}
+
+/* Form Validation */
+.form-feedback {
+    display: none;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+}
+
+.is-invalid ~ .invalid-feedback {
+    display: block;
+    color: #dc3545;
+}
+
+.is-valid ~ .valid-feedback {
+    display: block;
+    color: #28a745;
+}
+
+/* Required Field Indicator */
+.required::after {
+    content: "*";
+    color: #dc3545;
+    margin-left: 4px;
+}
+
+/* Dropdown Animation */
+.form-select {
+    transition: all 0.3s ease;
+    transform-origin: top;
+}
+
+.form-select:focus {
+    transform: scale(1.01);
+}
+
+/* Enhanced Dropdown Arrows */
+.form-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 16px 12px;
+}
+
+/* Dropdown Open State */
+.form-select:focus option {
+    animation: slideIn 0.2s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Center text in specific input fields */
+input[placeholder="Weight"],
+input[placeholder="Sets"],
+input[placeholder="RIR"],
+input[placeholder="RPE"],
+input[placeholder="Min Rep"],
+input[placeholder="Max Rep"] {
+    text-align: center;
+}
+
+/* Input Fields Group */
+.input-fields-group {
+    display: flex;
+    gap: 1rem;
+    flex: 3;
+    justify-content: flex-end;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.input-fields-group .input-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 140px;
+    max-width: 180px;
+}
+
+/* Label Styling */
+.input-fields-group .form-label {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 0.3rem;
+}
+
+/* Input Styling */
+.input-fields-group input,
+.input-fields-group .form-control {
+    width: 100%;
+    height: 42px;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    border: 1px solid #ced4da;
+    border-radius: 21px !important;
+    background-color: #fff;
+    transition: all 0.2s ease-in-out;
+}
+
+/* Override any Bootstrap input-group styles that might affect border-radius */
+.input-group .form-control:first-child,
+.input-group .form-control:last-child,
+.input-group input:first-child,
+.input-group input:last-child {
+    border-radius: 21px !important;
+}
+
+/* Ensure the input group doesn't affect the border radius */
+.input-group {
+    border-radius: 21px !important;
+}
+
+/* Override any Bootstrap specific corner styles */
+.input-group>.form-control:not(:first-child),
+.input-group>.form-control:not(:last-child) {
+    border-radius: 21px !important;
+}
+
+/* Number Input Specific */
+.input-fields-group input[type="number"] {
+    text-align: center;
+    padding-right: 0.5rem; /* Reduced right padding to accommodate spinners */
+}
+
+/* Custom styling for number input spinners */
+.input-fields-group input[type="number"]::-webkit-inner-spin-button,
+.input-fields-group input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+    opacity: 1;
+    background: transparent;
+    cursor: pointer;
+    display: block;
+    width: 24px;
+    height: 42px; /* Match input height */
+    position: relative;
+    right: 4px;
+    border-left: 1px solid #ced4da;
+    background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='42' viewBox='0 0 24 42'%3E%3Cpath d='M12 10l-4 4h8l-4-4zm0 22l4-4h-8l4 4z' fill='%23495057'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+/* Remove Firefox default spinner */
+.input-fields-group input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+/* Add Firefox custom spinner */
+@supports (-moz-appearance: none) {
+    .input-fields-group input[type="number"] {
+        position: relative;
+    }
+
+    .input-fields-group input[type="number"]::after {
+        content: '';
+        position: absolute;
+        right: 4px;
+        top: 0;
+        bottom: 0;
+        width: 24px;
+        border-left: 1px solid #ced4da;
+        background-image:
+            url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='42' viewBox='0 0 24 42'%3E%3Cpath d='M12 10l-4 4h8l-4-4zm0 22l4-4h-8l4 4z' fill='%23495057'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: center;
+    }
+}
+
+/* Hover state for spinners */
+.input-fields-group input[type="number"]::-webkit-inner-spin-button:hover,
+.input-fields-group input[type="number"]::-webkit-outer-spin-button:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Active state for spinners */
+.input-fields-group input[type="number"]::-webkit-inner-spin-button:active,
+.input-fields-group input[type="number"]::-webkit-outer-spin-button:active {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Focus State */
+.input-fields-group input:focus,
+.input-fields-group .form-control:focus {
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Hover State */
+.input-fields-group input:hover,
+.input-fields-group .form-control:hover {
+    border-color: #a8c7fa;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .input-fields-group {
+        justify-content: flex-start;
+        width: 100%;
+    }
+
+    .input-fields-group .input-group {
+        min-width: calc(50% - 0.5rem);
+    }
+}
+
+/* Add tooltip for RPE range */
+#rpe {
+    position: relative;
+}
+
+#rpe:hover::after {
+    content: "Rate of Perceived Exertion (1-10)";
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    z-index: 1000;
+}
+
+/* ================================================
+   WORKOUT CONTROLS - COLOR-CODED BACKGROUNDS
+   ================================================ */
+
+/* Light Pastel Fuchsia - Min Rep & Max Rep */
+.input-fields-group input#min_rep,
+.input-fields-group input#max_rep_range,
+input.form-control#min_rep,
+input.form-control#max_rep_range {
+    background-color: #fce4ec !important; /* Light pastel fuchsia/pink */
+    border-color: #f8bbd9 !important;
+}
+
+.input-fields-group input#min_rep:focus,
+.input-fields-group input#max_rep_range:focus,
+input.form-control#min_rep:focus,
+input.form-control#max_rep_range:focus {
+    background-color: #fce4ec !important;
+    border-color: #ec407a !important;
+    box-shadow: 0 0 0 0.2rem rgba(236, 64, 122, 0.25) !important;
+}
+
+/* Light Pastel Pistachio/Green - RIR & RPE */
+.input-fields-group input#rir,
+.input-fields-group input#rpe,
+input.form-control#rir,
+input.form-control#rpe {
+    background-color: #e8f5e9 !important; /* Light pastel pistachio */
+    border-color: #c8e6c9 !important;
+}
+
+.input-fields-group input#rir:focus,
+.input-fields-group input#rpe:focus,
+input.form-control#rir:focus,
+input.form-control#rpe:focus {
+    background-color: #e8f5e9 !important;
+    border-color: #66bb6a !important;
+    box-shadow: 0 0 0 0.2rem rgba(102, 187, 106, 0.25) !important;
+}
+
+/* Light Pastel Banana/Yellow - Weight & Sets */
+.input-fields-group input#weight,
+.input-fields-group input#sets,
+input.form-control#weight,
+input.form-control#sets {
+    background-color: #fff9c4 !important; /* Light pastel banana */
+    border-color: #fff176 !important;
+    text-align: center;
+}
+
+.input-fields-group input#weight:focus,
+.input-fields-group input#sets:focus,
+input.form-control#weight:focus,
+input.form-control#sets:focus {
+    background-color: #fff9c4 !important;
+    border-color: #fdd835 !important;
+    box-shadow: 0 0 0 0.2rem rgba(253, 216, 53, 0.25) !important;
+}
+
+/* ================================================
+   VALUE CHANGED ANIMATION & HIGHLIGHT
+   ================================================ */
+
+/* Keyframe for pulse animation - using opacity instead of transform scale
+   to prevent layout shifts that cause backdrop-filter glitches */
+@keyframes inputValuePulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.85;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+/* Value changed highlight class */
+.value-changed {
+    animation: inputValuePulse 300ms ease-in-out;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.5), 0 0 8px rgba(13, 110, 253, 0.3) !important;
+    border-color: #0d6efd !important;
+}
+
+/* Category-specific highlight colors */
+.input-fields-group input#min_rep.value-changed,
+.input-fields-group input#max_rep_range.value-changed,
+input.form-control#min_rep.value-changed,
+input.form-control#max_rep_range.value-changed {
+    box-shadow: 0 0 0 3px rgba(236, 64, 122, 0.5), 0 0 8px rgba(236, 64, 122, 0.3) !important;
+    border-color: #ec407a !important;
+}
+
+.input-fields-group input#rir.value-changed,
+.input-fields-group input#rpe.value-changed,
+input.form-control#rir.value-changed,
+input.form-control#rpe.value-changed {
+    box-shadow: 0 0 0 3px rgba(102, 187, 106, 0.5), 0 0 8px rgba(102, 187, 106, 0.3) !important;
+    border-color: #66bb6a !important;
+}
+
+.input-fields-group input#weight.value-changed,
+.input-fields-group input#sets.value-changed,
+input.form-control#weight.value-changed,
+input.form-control#sets.value-changed {
+    box-shadow: 0 0 0 3px rgba(253, 216, 53, 0.5), 0 0 8px rgba(253, 216, 53, 0.3) !important;
+    border-color: #fdd835 !important;
+}
+
+/* Reduced motion: disable animation, keep minimal border change */
+@media (prefers-reduced-motion: reduce) {
+    .value-changed {
+        animation: none;
+        box-shadow: none !important;
+        border-width: 2px !important;
+    }
+
+    .input-fields-group input#min_rep.value-changed,
+    .input-fields-group input#max_rep_range.value-changed {
+        border-color: #ec407a !important;
+    }
+
+    .input-fields-group input#rir.value-changed,
+    .input-fields-group input#rpe.value-changed {
+        border-color: #66bb6a !important;
+    }
+
+    .input-fields-group input#weight.value-changed,
+    .input-fields-group input#sets.value-changed {
+        border-color: #fdd835 !important;
+    }
+}
+
+/* ============================================================
+   RESPONSIVE FORM STYLES - Multi-Resolution
+   ============================================================ */
+
+/* 720p (max-width: 1280px) - Very Compact */
+@media screen and (max-width: 1280px) {
+    .form-select, .form-control {
+        height: 26px;
+        font-size: 0.7rem;
+        padding: 0.125rem 0.375rem;
+    }
+
+    .uniform-dropdown {
+        height: 26px;
+        min-width: 130px;
+    }
+
+    .large-input, .small-input {
+        max-width: 75px;
+        min-width: 50px;
+        height: 26px;
+    }
+
+    .form-label {
+        font-size: 0.65rem;
+        margin-bottom: 4px;
+    }
+
+    .form-container {
+        gap: 0.25rem;
+    }
+}
+
+/* 1366x768 (1281px - 1366px) - Compact */
+@media screen and (min-width: 1281px) and (max-width: 1366px) {
+    .form-select, .form-control {
+        height: 28px;
+        font-size: 0.72rem;
+        padding: 0.15rem 0.4rem;
+    }
+
+    .uniform-dropdown {
+        height: 28px;
+        min-width: 140px;
+    }
+
+    .large-input, .small-input {
+        max-width: 80px;
+        min-width: 55px;
+        height: 28px;
+    }
+
+    .form-label {
+        font-size: 0.68rem;
+        margin-bottom: 5px;
+    }
+
+    .form-container {
+        gap: 0.3rem;
+    }
+}
+
+/* 1536x864 (1367px - 1536px) - Compact+ */
+@media screen and (min-width: 1367px) and (max-width: 1536px) {
+    .form-select, .form-control {
+        height: 30px;
+        font-size: 0.75rem;
+        padding: 0.175rem 0.45rem;
+    }
+
+    .uniform-dropdown {
+        height: 30px;
+        min-width: 160px;
+    }
+
+    .large-input, .small-input {
+        max-width: 85px;
+        min-width: 60px;
+        height: 30px;
+    }
+
+    .form-label {
+        font-size: 0.7rem;
+        margin-bottom: 5px;
+    }
+
+    .form-container {
+        gap: 0.325rem;
+    }
+}
+
+/* 1600x900 (1537px - 1600px) - Medium Compact */
+@media screen and (min-width: 1537px) and (max-width: 1600px) {
+    .form-select, .form-control {
+        height: 30px;
+        font-size: 0.78rem;
+        padding: 0.2rem 0.475rem;
+    }
+
+    .uniform-dropdown {
+        height: 30px;
+        min-width: 175px;
+    }
+
+    .large-input, .small-input {
+        max-width: 90px;
+        min-width: 65px;
+        height: 30px;
+    }
+
+    .form-label {
+        font-size: 0.72rem;
+        margin-bottom: 6px;
+    }
+
+    .form-container {
+        gap: 0.35rem;
+    }
+}
+
+/* 1080p (1601px - 1920px) - Standard Compact */
+@media screen and (min-width: 1601px) and (max-width: 1920px) {
+    .form-select, .form-control {
+        height: 32px;
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .uniform-dropdown {
+        height: 32px;
+        min-width: 200px;
+    }
+
+    .large-input, .small-input {
+        max-width: 100px;
+        min-width: 70px;
+        height: 32px;
+    }
+
+    .form-label {
+        font-size: 0.75rem;
+        margin-bottom: 6px;
+    }
+
+    .form-container {
+        gap: 0.375rem;
+    }
+}
+
+/* 1440p (1921px - 2560px) - Standard */
+@media screen and (min-width: 1921px) and (max-width: 2560px) {
+    .form-select, .form-control {
+        height: 38px;
+        font-size: 0.85rem;
+        padding: 0.375rem 0.625rem;
+    }
+
+    .uniform-dropdown {
+        height: 38px;
+        min-width: 280px;
+    }
+
+    .large-input, .small-input {
+        max-width: 115px;
+        min-width: 85px;
+        height: 38px;
+    }
+
+    .form-label {
+        font-size: 0.8rem;
+        margin-bottom: 8px;
+    }
+
+    .form-container {
+        gap: 0.5rem;
+    }
+}
+
+/* 4K (2561px+) - Large */
+@media screen and (min-width: 2561px) {
+    .form-select, .form-control {
+        height: 48px;
+        font-size: 1rem;
+        padding: 0.5rem 1rem;
+    }
+
+    .uniform-dropdown {
+        height: 48px;
+        min-width: 350px;
+    }
+
+    .large-input, .small-input {
+        max-width: 150px;
+        min-width: 110px;
+        height: 48px;
+    }
+
+    .form-label {
+        font-size: 0.95rem;
+        margin-bottom: 10px;
+    }
+
+    .form-container {
+        gap: 0.75rem;
+    }
+}
+
+/* Table Base Styles */
+.table {
+    margin: 0 auto;
+    width: 100%;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    border-radius: 12px;
+    overflow: hidden;
+    /* Prevent subpixel rendering artifacts during scroll */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
+
+/* Override Bootstrap's border-color at this level */
+.table,
+.table > :not(caption) > * > * {
+    border-color: #d0d0d0 !important;
+    --bs-table-border-color: #d0d0d0 !important;
+}
+
+.table th,
+.table td {
+    text-align: center;
+    vertical-align: middle;
+    border: 1px solid #d0d0d0 !important;
+    padding: var(--table-cell-padding-y, 0.625rem) var(--table-cell-padding-x, 0.75rem);
+    font-size: var(--table-font-size, 0.9rem);
+    word-wrap: break-word;
+    /* Prevent box-shadow artifacts from Bootstrap striping */
+    box-shadow: none !important;
+}
+
+.table th {
+    background: linear-gradient(180deg,
+        rgba(255, 255, 255, 0.98) 0%,
+        rgba(248, 250, 252, 0.95) 50%,
+        rgba(241, 245, 249, 0.92) 100%) !important;
+    font-weight: 700;
+    color: #444;
+    text-transform: none;
+    letter-spacing: normal;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.9),
+        inset 0 -1px 0 rgba(79, 140, 255, 0.1);
+    border-bottom: 2px solid rgba(79, 140, 255, 0.15) !important;
+}
+
+.table td {
+    background: linear-gradient(180deg,
+        rgba(255, 255, 255, 0.98) 0%,
+        rgba(252, 253, 255, 0.95) 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.table tbody tr:hover {
+    background: linear-gradient(180deg,
+        rgba(79, 140, 255, 0.1) 0%,
+        rgba(79, 140, 255, 0.05) 100%);
+}
+
+/* Table Container */
+.table-container {
+    overflow-x: auto;
+    margin: 1rem 0;
+    position: relative;
+}
+
+/* Table Workout Specific - Glass Style */
+.table-workout {
+    margin: 0 auto;
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.table-workout thead {
+    background: linear-gradient(180deg,
+        rgba(255, 255, 255, 0.98) 0%,
+        rgba(248, 250, 252, 0.95) 100%);
+}
+
+.table-workout .table-header-row th {
+    background: linear-gradient(180deg,
+        rgba(255, 255, 255, 0.98) 0%,
+        rgba(248, 250, 252, 0.95) 50%,
+        rgba(241, 245, 249, 0.92) 100%);
+    color: #444;
+    font-weight: 600;
+    text-transform: none;
+    font-size: var(--font-size-sm, 0.85rem);
+    letter-spacing: normal;
+    padding: var(--table-cell-padding-y, 0.75rem) var(--table-cell-padding-x, 0.875rem);
+    border-bottom: 2px solid rgba(79, 140, 255, 0.15);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.table-workout tbody tr {
+    transition: background 0.2s ease;
+}
+
+.table-workout tbody tr:nth-child(odd) {
+    background: linear-gradient(180deg,
+        rgba(255, 255, 255, 0.98) 0%,
+        rgba(252, 253, 255, 0.95) 100%);
+}
+
+.table-workout tbody tr:nth-child(even) {
+    background: linear-gradient(180deg,
+        rgba(248, 250, 252, 0.99) 0%,
+        rgba(244, 247, 250, 0.96) 100%);
+}
+
+.table-workout tbody tr:hover {
+    background: linear-gradient(180deg,
+        rgba(79, 140, 255, 0.1) 0%,
+        rgba(79, 140, 255, 0.05) 100%);
+}
+
+.table-workout td {
+    padding: 0.75rem 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid rgba(229, 231, 235, 0.4);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+/* Table Container Enhancement - Glass Style */
+.workout-plan.table-container {
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.95) 0%,
+        rgba(248, 250, 252, 0.98) 100%);
+    padding: var(--frame-padding, 1.25rem);
+    border-radius: 14px;
+    border: 1px solid rgba(229, 231, 235, 0.4);
+    box-shadow:
+        0 8px 32px rgba(79, 140, 255, 0.08),
+        0 2px 8px rgba(0, 0, 0, 0.04),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    overflow: visible;
+}
+
+/* Dark mode for workout plan table container - Glass Style */
+[data-theme='dark'] .workout-plan.table-container {
+    background: linear-gradient(135deg,
+        rgba(26, 32, 44, 0.95) 0%,
+        rgba(20, 25, 35, 0.98) 100%);
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        0 2px 8px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    color: #fff;
+}
+
+[data-theme='dark'] .workout-plan.table-container table {
+    color: #e9ecef;
+}
+
+[data-theme='dark'] .workout-plan.table-container th {
+    background: linear-gradient(180deg,
+        rgba(40, 48, 64, 0.98) 0%,
+        rgba(32, 40, 54, 0.95) 50%,
+        rgba(26, 32, 44, 0.92) 100%) !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+    border-color: rgba(79, 140, 255, 0.2) !important;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.06),
+        inset 0 -1px 0 rgba(79, 140, 255, 0.15);
+}
+
+[data-theme='dark'] .workout-plan.table-container td {
+    background: linear-gradient(180deg,
+        rgba(26, 32, 44, 0.98) 0%,
+        rgba(22, 27, 38, 0.95) 100%) !important;
+    border-color: rgba(255, 255, 255, 0.05) !important;
+    color: #fff;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+[data-theme='dark'] .workout-plan.table-container tr:hover td {
+    background: linear-gradient(180deg,
+        rgba(79, 140, 255, 0.15) 0%,
+        rgba(79, 140, 255, 0.08) 100%) !important;
+    color: #fff;
+}
+
+[data-theme='dark'] .workout-plan.table-container tr:nth-child(even) td {
+    background: linear-gradient(180deg,
+        rgba(32, 40, 52, 0.98) 0%,
+        rgba(28, 35, 46, 0.95) 100%) !important;
+    color: #fff;
+}
+
+/* Table Header Styling */
+.table-header {
+    margin-bottom: 1.5rem;
+}
+
+.table-header-underline {
+    height: 3px;
+    width: 60px;
+    background: #007bff;
+    margin: 0.5rem auto;
+    border-radius: 2px;
+}
+
+/* Row Selection */
+.table tbody tr.selected {
+    background-color: rgba(0, 123, 255, 0.1) !important;
+    box-shadow: inset 0 0 0 1px #007bff;
+}
+
+/* Row Hover Animation */
+.table tbody tr {
+    transition: all 0.2s ease-in-out;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Cell Highlight on Edit */
+.table td.editing {
+    padding: 0;
+    background-color: #fff;
+    box-shadow: 0 0 0 2px #007bff;
+}
+
+/* Sortable Headers */
+.table th.sortable,
+.table th {
+    cursor: pointer;
+    position: relative;
+    padding-right: 24px;
+    user-select: none;
+}
+
+.table th.sortable::after,
+.table th.sort-asc::after,
+.table th.sort-desc::after {
+    content: "↕";
+    position: absolute;
+    right: 8px;
+    opacity: 0.5;
+    font-size: 0.9em;
+}
+
+.table th.sort-asc::after {
+    content: "↑";
+    opacity: 1;
+    color: #007bff;
+}
+
+.table th.sort-desc::after {
+    content: "↓";
+    opacity: 1;
+    color: #007bff;
+}
+
+/* Dark mode sorting indicators */
+[data-theme='dark'] .table th.sort-asc::after,
+[data-theme='dark'] .table th.sort-desc::after {
+    color: #3498db;
+}
+
+/* Table Styles */
+.table {
+    margin-bottom: 1rem;
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Dark Mode Styles */
+[data-theme='dark'] .table {
+    background-color: #212529 !important;
+    color: #fff !important;
+    border-color: #495057 !important;
+}
+
+/* Table Header */
+.table thead th {
+    background-color: #f5f5f5;
+    border-bottom: 2px solid #d0d0d0;
+    color: #505050;
+    font-weight: 600;
+    padding: 0.75rem;
+    vertical-align: middle;
+}
+
+[data-theme='dark'] .table thead th {
+    background: #343a40 !important;
+    border-bottom-color: #495057 !important;
+    color: #fff !important;
+    box-shadow: none !important;
+}
+
+/* Table Body */
+.table tbody td {
+    padding: 0.75rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #d0d0d0;
+}
+
+[data-theme='dark'] .table tbody td {
+    background: #212529 !important;
+    border-color: #495057 !important;
+    color: #e9ecef !important;
+    box-shadow: none !important;
+}
+
+/* Table Hover Effect */
+.table tbody tr:hover {
+    background-color: rgba(0,0,0,0.075);
+}
+
+[data-theme='dark'] .table tbody tr:hover {
+    background-color: rgba(255,255,255,0.075) !important;
+}
+
+[data-theme='dark'] .table tbody tr:hover td {
+    background-color: #3d3d3d !important;
+}
+
+/* Striped rows */
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0,0,0,0.05);
+}
+
+[data-theme='dark'] .table-striped tbody tr:nth-of-type(odd) {
+    background-color: #2a2a2a !important;
+}
+
+[data-theme='dark'] .table-striped tbody tr:nth-of-type(odd) td {
+    background-color: #2a2a2a !important;
+}
+
+[data-theme='dark'] .table-striped tbody tr:nth-of-type(even) td {
+    background-color: #212529 !important;
+}
+
+/* Responsive table container */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 1rem;
+}
+
+/* Dark mode scrollbar */
+[data-theme='dark'] .table-responsive::-webkit-scrollbar {
+    background-color: #343a40;
+}
+
+[data-theme='dark'] .table-responsive::-webkit-scrollbar-thumb {
+    background-color: #495057;
+}
+
+/* Action buttons in table */
+.table .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+[data-theme='dark'] .table .btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: #fff;
+}
+
+[data-theme='dark'] .table .btn-danger:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+
+/* Dark mode text colors for specific elements */
+[data-theme='dark'] .workout-plan.table-container .form-control,
+[data-theme='dark'] .workout-plan.table-container .form-select,
+[data-theme='dark'] .workout-plan.table-container .input-group-text,
+[data-theme='dark'] .workout-plan.table-container label,
+[data-theme='dark'] .workout-plan.table-container .text-muted {
+    color: #fff !important;
+}
+
+/* Ensure text remains white on hover */
+[data-theme='dark'] .workout-plan.table-container tr:hover td {
+    color: #fff;
+}
+
+/* Dark mode for workout log frame - 2026 Glass Style */
+[data-theme='dark'] .workout-log-frame {
+    background: linear-gradient(135deg,
+      rgba(26, 32, 44, 0.95) 0%,
+      rgba(20, 25, 35, 0.98) 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    color: #e2e8f0 !important;
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.35),
+      0 2px 8px rgba(0, 0, 0, 0.25),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+}
+
+[data-theme='dark'] .workout-log-frame::before {
+    background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(79, 140, 255, 0.2) 50%,
+      transparent 100%);
+}
+
+[data-theme='dark'] .workout-log-frame:hover {
+    box-shadow:
+      0 12px 40px rgba(0, 0, 0, 0.45),
+      0 4px 12px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Dark mode for workout log table - Glass Style */
+[data-theme='dark'] .workout-log-frame table {
+    background-color: transparent !important;
+    color: #e2e8f0 !important;
+}
+
+[data-theme='dark'] .workout-log-frame th {
+    background: linear-gradient(180deg,
+      rgba(30, 36, 48, 0.98) 0%,
+      rgba(26, 32, 44, 0.95) 100%) !important;
+    color: #e2e8f0 !important;
+    border-color: rgba(79, 140, 255, 0.2) !important;
+    box-shadow: none !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme='dark'] .workout-log-frame td {
+    background: rgba(26, 32, 44, 0.6) !important;
+    color: #e2e8f0 !important;
+    border-color: rgba(255, 255, 255, 0.05) !important;
+    box-shadow: none !important;
+}
+
+[data-theme='dark'] .workout-log-frame tr:hover td {
+    background: rgba(79, 140, 255, 0.1) !important;
+    color: #f0f4f8 !important;
+}
+
+/* Dark mode for editable cells */
+[data-theme='dark'] .workout-log-frame .editable-text {
+    color: #e0e0e0 !important;
+    background-color: transparent;
+}
+
+[data-theme='dark'] .workout-log-frame .editable-input {
+    background-color: #2c3034;
+    color: #e0e0e0 !important;
+    border-color: #495057;
+}
+
+/* Dark mode for badges in workout log */
+[data-theme='dark'] .workout-log-frame .badge {
+    border: 1px solid #495057;
+}
+
+[data-theme='dark'] .workout-log-frame .badge.bg-success {
+    background-color: #198754 !important;
+    color: #fff;
+}
+
+[data-theme='dark'] .workout-log-frame .badge.bg-warning {
+    background-color: #ffc107 !important;
+    color: #000;
+}
+
+/* Dark mode for table text elements */
+[data-theme='dark'] .workout-log-frame .form-control,
+[data-theme='dark'] .workout-log-frame .form-select,
+[data-theme='dark'] .workout-log-frame input,
+[data-theme='dark'] .workout-log-frame select,
+[data-theme='dark'] .workout-log-frame label,
+[data-theme='dark'] .workout-log-frame .text-muted {
+    color: #e0e0e0 !important;
+    font-weight: bold;
+    background-color: #343a40;
+    border-color: #495057;
+}
+
+/* Dark mode for table cells and their content */
+[data-theme='dark'] .workout-log-frame td,
+[data-theme='dark'] .workout-log-frame th,
+[data-theme='dark'] .workout-log-frame td *,
+[data-theme='dark'] .workout-log-frame th * {
+    color: #e0e0e0 !important;
+}
+
+/* Dark mode for date inputs */
+[data-theme='dark'] .workout-log-frame input[type="date"] {
+    background-color: #2c3034;
+    color: #e9ecef !important;
+    border-color: #495057;
+}
+
+/* Dark mode for form controls */
+[data-theme='dark'] .workout-log-frame .form-control,
+[data-theme='dark'] .workout-log-frame .form-select,
+[data-theme='dark'] .workout-log-frame input,
+[data-theme='dark'] .workout-log-frame select {
+    background-color: #2c3034;
+    color: #e0e0e0 !important;
+    border-color: #495057;
+}
+
+/* Dark mode for labels and text */
+[data-theme='dark'] .workout-log-frame label,
+[data-theme='dark'] .workout-log-frame .text-muted {
+    color: #adb5bd !important;
+}
+
+[data-theme='dark'] .workout-log-frame tr:hover td {
+    background-color: #2c3034;
+    color: #e0e0e0 !important;
+}
+
+/* Keep numbers under # column white */
+[data-theme='dark'] .workout-log-frame td:first-child {
+    color: #fff !important;
+}
+
+[data-theme='dark'] .workout-log-frame td:first-child * {
+    color: #fff !important;
+}
+
+/* Make all icons white in dark mode by default */
+[data-theme='dark'] .workout-log-frame i,
+[data-theme='dark'] .workout-log-frame .fas,
+[data-theme='dark'] .workout-log-frame .far,
+[data-theme='dark'] .workout-log-frame .fab {
+    color: #e0e0e0 !important;
+}
+
+/* Make trash icon white in dark mode */
+[data-theme='dark'] .workout-log-frame .fa-trash {
+    color: #fff !important;
+}
+
+[data-theme='dark'] .workout-log-frame .btn-danger i {
+    color: #fff !important;
+}
+
+/* Preserve colored progression indicators */
+[data-theme='dark'] .workout-log-frame .text-success,
+[data-theme='dark'] .workout-log-frame i.text-success {
+    color: #28a745 !important;
+}
+
+[data-theme='dark'] .workout-log-frame .text-danger,
+[data-theme='dark'] .workout-log-frame i.text-danger {
+    color: #dc3545 !important;
+}
+
+[data-theme='dark'] .workout-log-frame .text-warning,
+[data-theme='dark'] .workout-log-frame i.text-warning {
+    color: #ffc107 !important;
+}
+
+/* Preserve white color for first column and trash icon on hover */
+[data-theme='dark'] .workout-log-frame tr:hover td:first-child,
+[data-theme='dark'] .workout-log-frame tr:hover td:first-child *,
+[data-theme='dark'] .workout-log-frame tr:hover .fa-trash,
+[data-theme='dark'] .workout-log-frame tr:hover .btn-danger i {
+    color: #fff !important;
+}
+
+/* Consolidated Editable Styles */
+.editable {
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease-in-out;
+}
+
+/* Light Mode Styles */
+.editable:hover,
+.table tbody tr .editable:hover {  /* More specific selector to override table hover */
+    background-color: rgba(13, 110, 253, 0.08) !important;  /* Light blue */
+}
+
+.editable.editing,
+.table tbody tr .editable.editing {
+    background-color: rgba(13, 110, 253, 0.12) !important;  /* Slightly darker light blue */
+}
+
+.editable input {
+    width: 100%;
+    padding: 4px 8px;
+    border: 2px solid #0d6efd;
+    border-radius: 4px;
+    background-color: #fff !important;
+    color: #212529;
+}
+
+.editable input:focus {
+    outline: none;
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    background-color: #fff !important;
+}
+
+/* Selection Highlighting */
+.editable::selection,
+.editable input::selection,
+::selection {
+    background-color: rgba(13, 110, 253, 0.2) !important;
+    color: #212529;
+}
+
+::-moz-selection {
+    background-color: rgba(13, 110, 253, 0.2) !important;
+    color: #212529;
+}
+
+/* Dark Mode Styles */
+[data-theme='dark'] .editable:hover,
+[data-theme='dark'] .table tbody tr .editable:hover {
+    background-color: rgba(52, 152, 219, 0.2) !important;
+}
+
+[data-theme='dark'] .editable.editing,
+[data-theme='dark'] .table tbody tr .editable.editing {
+    background-color: rgba(52, 152, 219, 0.25) !important;
+}
+
+[data-theme='dark'] .editable input {
+    background-color: #2c3034 !important;
+    border-color: #3498db;
+    color: #fff;
+}
+
+[data-theme='dark'] .editable input:focus {
+    border-color: #2980b9;
+    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+    background-color: #2c3034 !important;
+}
+
+/* Pencil Icon */
+.editable:hover::after {
+    content: '✎';
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    opacity: 0.7;
+    color: #0d6efd;  /* Light mode pencil color */
+}
+
+[data-theme='dark'] .editable:hover::after {
+    color: #3498db;  /* Dark mode pencil color */
+}
+
+/* Add these styles for drag and drop functionality */
+.drag-handle {
+    cursor: move;
+    width: 30px;
+    color: #6c757d;
+    text-align: center;
+}
+
+.drag-handle i {
+    opacity: 0.5;
+    transition: opacity 0.2s ease;
+}
+
+.drag-handle:hover i {
+    opacity: 1;
+}
+
+tr.sortable-ghost {
+    background-color: #f8f9fa !important;
+    opacity: 0.5;
+}
+
+tr.sortable-drag {
+    background-color: #fff !important;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Dark mode styles */
+[data-theme='dark'] .drag-handle {
+    color: #adb5bd;
+}
+
+[data-theme='dark'] tr.sortable-ghost {
+    background-color: #343a40 !important;
+}
+
+[data-theme='dark'] tr.sortable-drag {
+    background-color: #2c3034 !important;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Light mode styles - Update these */
+.editable:hover {
+    background-color: rgba(13, 110, 253, 0.08) !important;  /* Very light blue */
+}
+
+.editable.editing {
+    background-color: rgba(13, 110, 253, 0.12) !important;  /* Slightly darker light blue */
+}
+
+/* Add these new styles for selection highlighting */
+.editable::selection {
+    background-color: rgba(13, 110, 253, 0.2) !important;  /* Light blue for text selection */
+    color: #212529;
+}
+
+.editable input::selection {
+    background-color: rgba(13, 110, 253, 0.2) !important;
+    color: #212529;
+}
+
+/* Override browser's default selection color */
+::selection {
+    background-color: rgba(13, 110, 253, 0.2) !important;
+    color: #212529;
+}
+
+::-moz-selection {
+    background-color: rgba(13, 110, 253, 0.2) !important;
+    color: #212529;
+}
+
+/* Input focus and active states */
+.editable input:focus,
+.editable input:active {
+    background-color: #fff !important;
+    color: #212529;
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* Add a subtle transition */
+.editable,
+.editable input {
+    transition: all 0.2s ease-in-out;
+}
+
+/* ==========================================================================
+   Exercise Swap Button Styles
+   ========================================================================== */
+
+/* Exercise cell with swap button */
+.exercise-cell {
+    min-width: 0;
+}
+
+.exercise-cell .exercise-cell-content {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.exercise-cell .exercise-name {
+    flex: 0 1 auto;
+    min-width: 0;
+}
+
+/* Swap/Replace button */
+.btn-swap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 1px solid rgba(79, 140, 255, 0.3);
+    border-radius: 4px;
+    background-color: rgba(79, 140, 255, 0.1);
+    color: #4f8cff;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    flex-shrink: 0;
+}
+
+.btn-swap:hover:not(:disabled) {
+    background-color: rgba(79, 140, 255, 0.2);
+    border-color: rgba(79, 140, 255, 0.5);
+}
+
+/* Rotate only the icon on hover, not the button itself */
+.btn-swap:hover:not(:disabled) .btn-swap-icon {
+    transform: rotate(180deg);
+}
+
+.btn-swap:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(79, 140, 255, 0.25);
+}
+
+.btn-swap:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-swap.loading {
+    background-color: rgba(79, 140, 255, 0.15);
+}
+
+.btn-swap .btn-swap-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    transition: transform 0.3s ease;
+}
+
+.btn-swap .btn-swap-icon svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.btn-swap.loading .btn-swap-icon {
+    transform: none;
+}
+
+.btn-swap .btn-swap-icon--spinner {
+    animation: swapButtonSpin 0.7s linear infinite;
+}
+
+@keyframes swapButtonSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Row highlight after swap */
+.row-swapped {
+    animation: swapHighlight 2s ease-out;
+}
+
+@keyframes swapHighlight {
+    0% {
+        background-color: rgba(44, 182, 125, 0.3);
+    }
+    100% {
+        background-color: transparent;
+    }
+}
+
+/* Dark mode swap button */
+[data-theme='dark'] .btn-swap {
+    background-color: rgba(79, 140, 255, 0.15);
+    border-color: rgba(79, 140, 255, 0.25);
+    color: #6ba3ff;
+}
+
+[data-theme='dark'] .btn-swap:hover:not(:disabled) {
+    background-color: rgba(79, 140, 255, 0.25);
+    border-color: rgba(79, 140, 255, 0.4);
+}
+
+[data-theme='dark'] .row-swapped {
+    animation: swapHighlightDark 2s ease-out;
+}
+
+@keyframes swapHighlightDark {
+    0% {
+        background-color: rgba(44, 182, 125, 0.25);
+    }
+    100% {
+        background-color: transparent;
+    }
+}
+
+/* ============================================================
+   RESPONSIVE TABLE STYLES - Multi-Resolution Support
+   ============================================================ */
+
+/* 720p (max-width: 1280px) - Very Compact */
+@media screen and (max-width: 1280px) {
+    .table th,
+    .table td {
+        padding: 0.25rem 0.3rem;
+        font-size: 0.7rem;
+    }
+
+    .table-workout .table-header-row th {
+        font-size: 0.65rem;
+        padding: 0.3rem 0.4rem;
+    }
+
+    .table-workout td {
+        padding: 0.4rem 0.5rem;
+    }
+
+    .workout-plan.table-container {
+        padding: 0.5rem;
+    }
+}
+
+/* 1366x768 (1281px - 1366px) - Compact */
+@media screen and (min-width: 1281px) and (max-width: 1366px) {
+    .table th,
+    .table td {
+        padding: 0.3rem 0.35rem;
+        font-size: 0.72rem;
+    }
+
+    .table-workout .table-header-row th {
+        font-size: 0.68rem;
+        padding: 0.35rem 0.45rem;
+    }
+
+    .table-workout td {
+        padding: 0.45rem 0.55rem;
+    }
+
+    .workout-plan.table-container {
+        padding: 0.55rem;
+    }
+}
+
+/* 1536x864 (1367px - 1536px) - Compact+ */
+@media screen and (min-width: 1367px) and (max-width: 1536px) {
+    .table th,
+    .table td {
+        padding: 0.325rem 0.4rem;
+        font-size: 0.75rem;
+    }
+
+    .table-workout .table-header-row th {
+        font-size: 0.7rem;
+        padding: 0.375rem 0.5rem;
+    }
+
+    .table-workout td {
+        padding: 0.475rem 0.6rem;
+    }
+
+    .workout-plan.table-container {
+        padding: 0.6rem;
+    }
+}
+
+/* 1600x900 (1537px - 1600px) - Medium Compact */
+@media screen and (min-width: 1537px) and (max-width: 1600px) {
+    .table th,
+    .table td {
+        padding: 0.35rem 0.425rem;
+        font-size: 0.78rem;
+    }
+
+    .table-workout .table-header-row th {
+        font-size: 0.72rem;
+        padding: 0.4rem 0.55rem;
+    }
+
+    .table-workout td {
+        padding: 0.5rem 0.65rem;
+    }
+
+    .workout-plan.table-container {
+        padding: 0.65rem;
+    }
+}
+
+/* 1080p (1601px - 1920px) - Standard Compact */
+@media screen and (min-width: 1601px) and (max-width: 1920px) {
+    .table th,
+    .table td {
+        padding: 0.375rem 0.5rem;
+        font-size: 0.8rem;
+    }
+
+    .table-workout .table-header-row th {
+        font-size: 0.75rem;
+        padding: 0.5rem 0.625rem;
+    }
+
+    .table-workout td {
+        padding: 0.55rem 0.75rem;
+    }
+
+    .workout-plan.table-container {
+        padding: 0.75rem;
+    }
+}
+
+/* 1440p (1921px - 2560px) - Standard */
+@media screen and (min-width: 1921px) and (max-width: 2560px) {
+    .table th,
+    .table td {
+        padding: 0.5rem 0.625rem;
+        font-size: 0.85rem;
+    }
+
+    .table-workout .table-header-row th {
+        font-size: 0.8rem;
+        padding: 0.65rem 0.75rem;
+    }
+
+    .table-workout td {
+        padding: 0.65rem 0.875rem;
+    }
+
+    .workout-plan.table-container {
+        padding: 1rem;
+    }
+}
+
+/* 4K (2561px+) - Large */
+@media screen and (min-width: 2561px) {
+    .table th,
+    .table td {
+        padding: 0.75rem 0.875rem;
+        font-size: 1rem;
+    }
+
+    .table-workout .table-header-row th {
+        font-size: 0.95rem;
+        padding: 0.85rem 1rem;
+    }
+
+    .table-workout td {
+        padding: 0.85rem 1.125rem;
+    }
+
+    .workout-plan.table-container {
+        padding: 1.25rem;
+    }
+}
+
+/* Card Styles - Glass Effect */
+.card {
+    background: var(--glass-bg, rgba(255, 255, 255, 0.7));
+    backdrop-filter: blur(var(--glass-blur, 16px)) saturate(180%);
+    -webkit-backdrop-filter: blur(var(--glass-blur, 16px)) saturate(180%);
+    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.3));
+    box-shadow: var(--glass-shadow, 0 8px 32px rgba(31, 38, 135, 0.15)), var(--glass-inset, inset 0 1px 0 rgba(255, 255, 255, 0.6));
+    border-radius: 16px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+}
+
+.card:hover {
+    background: var(--glass-bg-hover, rgba(255, 255, 255, 0.85));
+    box-shadow: var(--glass-shadow-hover, 0 12px 40px rgba(31, 38, 135, 0.2)), var(--glass-inset);
+}
+
+.card-title {
+    color: #1a1a2e;
+    font-weight: 600;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+}
+
+.card-text {
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #495057;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+}
+
+.feature-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.3));
+    box-shadow: var(--glass-shadow);
+    height: 100%;
+    background: var(--glass-bg, rgba(255, 255, 255, 0.7));
+    backdrop-filter: blur(var(--glass-blur, 16px)) saturate(180%);
+    -webkit-backdrop-filter: blur(var(--glass-blur, 16px)) saturate(180%);
+    border-radius: 16px;
+}
+
+.feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--glass-shadow-hover);
+}
+
+.feature-card ul {
+    padding-left: 1.2rem;
+    margin: 0.5rem 0;
+}
+
+.feature-card li {
+    font-size: 1rem;
+    line-height: 1.5;
+    margin-bottom: 0.5rem;
+    color: #495057;
+}
+
+.feature-card .card-body {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* Push buttons to bottom */
+.feature-card .card-text {
+    flex-grow: 1;
+    margin-bottom: 1rem;
+}
+
+/* Enhanced Tooltips - DISABLED */
+/* Using native browser title tooltips instead to avoid duplicates */
+
+/* CSS tooltip system disabled - native title attribute provides tooltips */
+/*
+[title]:not(.modal):not(.modal-dialog):not(.modal-content):not(.modal-header):not(.modal-body):not(.modal-footer):not(.modal *) {
+    position: relative;
+}
+
+[title]:not(.modal):not(.modal-dialog):not(.modal-content):not(.modal-header):not(.modal-body):not(.modal-footer):not(.modal *):hover::before {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    background: rgba(0, 0, 0, 0.85);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    z-index: 1000;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+*/
+
+/* Modal Base Styles */
+
+/*
+ * IMPORTANT: Do NOT set pointer-events: none on .modal
+ * Bootstrap 5.1.3 handles modal click handling correctly out of the box.
+ * The modal backdrop is a SEPARATE element (.modal-backdrop) that Bootstrap manages.
+ *
+ * The .modal is position: fixed and covers the viewport.
+ * Bootstrap sets pointer-events: none on .modal-dialog by default.
+ * Bootstrap sets pointer-events: auto on .modal-content by default.
+ *
+ * DO NOT OVERRIDE THESE unless absolutely necessary.
+ */
+
+/* ============================================
+   BACKDROP REMOVAL - Fix for UI Scale Issue
+   When CSS zoom != 1, position:fixed backdrops
+   with viewport units render incorrectly.
+   Removing backdrop eliminates visual artifacts.
+   ============================================ */
+.modal-backdrop {
+    display: none !important;
+}
+
+/* ============================================
+   MODAL COUNTER-ZOOM - Fix for Centering
+   When CSS zoom is applied to <html>, position:fixed
+   elements like .modal don't center correctly.
+   Counter-zoom modal to ensure proper centering.
+   Uses same CSS variables as navbar counter-zoom.
+   ============================================ */
+@supports (zoom: 1) {
+    .modal {
+        zoom: var(--ui-scale-inverse, 1);
+    }
+}
+
+/* The page-enter animation leaves the main wrapper with an identity transform,
+   which traps fixed-position modals inside the scrolled page. */
+body.modal-open > .container-fluid.mt-4 {
+    animation: none !important;
+    transform: none !important;
+}
+
+/* Add subtle shadow to modal content to maintain visual separation */
+.modal-content {
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.3), 0 0 100px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* ============================================
+   REMOVE ALL FOCUS SHADOWS ON MOUSE CLICK
+   Only show focus indicators for keyboard navigation
+   ============================================ */
+.modal *:focus,
+.modal button:focus,
+.modal input:focus,
+.modal select:focus,
+.modal textarea:focus,
+.modal a:focus,
+.modal .btn:focus,
+.modal .form-control:focus,
+.modal .form-select:focus,
+.modal .form-check-input:focus,
+.modal .form-range:focus,
+.modal .btn-close:focus,
+.modal .nav-link:focus,
+.modal [type="checkbox"]:focus,
+.modal [type="radio"]:focus,
+.modal [tabindex]:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Only show focus ring for keyboard navigation (accessibility) */
+.modal *:focus-visible {
+    outline: 2px solid rgba(13, 110, 253, 0.5) !important;
+    outline-offset: 2px !important;
+    box-shadow: none !important;
+}
+
+/* Modal content styling - Glass Effect */
+.modal-content {
+    border-radius: 20px;
+    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.3));
+    background: var(--glass-bg, rgba(255, 255, 255, 0.85));
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    box-shadow: 0 16px 48px rgba(31, 38, 135, 0.2), var(--glass-inset, inset 0 1px 0 rgba(255, 255, 255, 0.6));
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--glass-border, rgba(255, 255, 255, 0.3));
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+}
+
+.modal-body {
+    padding: 2rem;
+    background: transparent;
+}
+
+.modal-footer {
+    border-top: 1px solid var(--glass-border, rgba(255, 255, 255, 0.3));
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+}
+
+/* Insights Modal */
+#insightsModal .modal-body h4,
+#insightsModal .modal-body h5,
+#insightsModal .modal-body h6 {
+    color: #2c3e50;
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+#insightsModal .modal-body ul {
+    padding-left: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+#insightsModal .modal-body li {
+    margin-bottom: 0.5rem;
+}
+
+/* AI Assistant Modal */
+#aiAssistantModal .modal-dialog {
+    max-width: 700px;
+}
+
+#aiAssistantModal .chat-container {
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+}
+/* ============================================
+   GENERATE STARTER PLAN MODAL
+   Optimized layout for 1920x1080 screens
+   ============================================ */
+#generatePlanModal .modal-body {
+    padding: 0.75rem 1.25rem;
+}
+
+#generatePlanModal .modal-header {
+    padding: 0.5rem 1.25rem;
+}
+
+#generatePlanModal .modal-footer {
+    padding: 0.5rem 1.25rem;
+}
+
+/* Fix Generate Starter Plan open flicker by removing nested blur/radius mismatch. */
+#generatePlanModal .modal-content.frame-calm-glass {
+    overflow: hidden;
+}
+
+#generatePlanModal .modal-content.frame-calm-glass .modal-header,
+#generatePlanModal .modal-content.frame-calm-glass .modal-footer {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+}
+
+/* Compact form controls for the plan generator */
+#generatePlanModal .form-label {
+    margin-bottom: 0.125rem;
+}
+
+#generatePlanModal .row.g-2.mb-3 {
+    margin-bottom: 0.5rem !important;
+}
+
+#generatePlanModal .row.g-2.mb-2 {
+    margin-bottom: 0.375rem !important;
+}
+
+/* Preview Box - Badge Style */
+#generatePlanModal .plan-preview-box {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 8px;
+}
+
+#generatePlanModal .preview-label {
+    font-weight: 600;
+    font-size: 0.75rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+#generatePlanModal .preview-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+#generatePlanModal .preview-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.625rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+#generatePlanModal .preview-badge i {
+    font-size: 0.625rem;
+    opacity: 0.7;
+}
+
+#generatePlanModal .preview-badge .badge-value {
+    font-weight: 700;
+}
+
+#generatePlanModal .badge-routines {
+    background: rgba(13, 110, 253, 0.12);
+    color: #0d6efd;
+}
+
+#generatePlanModal .badge-exercises {
+    background: rgba(111, 66, 193, 0.12);
+    color: #6f42c1;
+}
+
+#generatePlanModal .badge-sets {
+    background: rgba(25, 135, 84, 0.12);
+    color: #198754;
+}
+
+#generatePlanModal .badge-reps {
+    background: rgba(253, 126, 20, 0.12);
+    color: #e67e22;
+}
+
+/* Compact muscle selector within this modal */
+#generatePlanModal .muscle-selector-container {
+    padding: 0.375rem;
+}
+
+#generatePlanModal .muscle-selector-wrapper {
+    gap: 0.5rem;
+}
+
+#generatePlanModal .muscle-selector-controls {
+    padding-bottom: 0.25rem;
+}
+
+#generatePlanModal .muscle-body-tabs .nav-link {
+    padding: 0.25rem 0.625rem;
+    font-size: 0.75rem;
+}
+
+#generatePlanModal .muscle-selector-content {
+    padding: 0.5rem;
+    min-height: 180px;
+}
+
+#generatePlanModal .legend-item {
+    padding: 0.2rem 0.375rem;
+    font-size: 0.75rem;
+}
+
+#generatePlanModal .legend-checkbox {
+    width: 14px;
+    height: 14px;
+}
+
+#generatePlanModal .selection-summary {
+    padding: 0.375rem 0.625rem;
+    margin-top: 0.375rem;
+    font-size: 0.75rem;
+}
+
+/* Disclaimer in footer */
+#generatePlanModal .plan-disclaimer {
+    font-size: 0.6875rem;
+    line-height: 1.3;
+    max-width: 320px;
+}
+
+/* On larger screens, give the Options column more room to spread horizontally */
+@media (min-width: 1200px) {
+    #generatePlanModal .row.g-2 > [class*="col-xl-2"]:last-child {
+        flex: 0 0 auto;
+        width: auto;
+        min-width: 280px;
+    }
+}
+
+/* ============================================
+   VOLUME SLIDER TEMPERATURE COLORS
+   Blue (low) -> Green (optimal) -> Yellow -> Red (high)
+   ============================================ */
+#generatePlanModal .form-range.volume-temp {
+    height: 8px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+}
+
+#generatePlanModal .form-range.volume-temp::-webkit-slider-runnable-track {
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(to right,
+        #3498db 0%,      /* Blue - 0.6x */
+        #2ecc71 25%,     /* Green - 0.95x */
+        #2ecc71 35%,     /* Green - 1.1x */
+        #f1c40f 50%,     /* Yellow - 1.3x */
+        #e67e22 70%,     /* Orange - 1.6x */
+        #e74c3c 100%     /* Red - 2.0x */
+    );
+}
+
+#generatePlanModal .form-range.volume-temp::-moz-range-track {
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(to right,
+        #3498db 0%, #2ecc71 25%, #2ecc71 35%,
+        #f1c40f 50%, #e67e22 70%, #e74c3c 100%
+    );
+}
+
+#generatePlanModal .form-range.volume-temp::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid currentColor;
+    margin-top: -5px;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+#generatePlanModal .form-range.volume-temp::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid currentColor;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+/* Volume value text colors */
+#generatePlanModal .volume-value-blue { color: #3498db; }
+#generatePlanModal .volume-value-green { color: #27ae60; }
+#generatePlanModal .volume-value-yellow { color: #d4a017; }
+#generatePlanModal .volume-value-orange { color: #e67e22; }
+#generatePlanModal .volume-value-red { color: #e74c3c; }
+
+/* Toast Notification Styles - 2026 Glossy Glass Theme */
+.toast {
+    font-size: 1.1rem;
+    border-radius: 16px;
+    min-width: 320px;
+    padding: 12px 16px;
+    margin: 15px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.15),
+        0 2px 8px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Glossy shine overlay */
+.toast::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(180deg,
+        rgba(255, 255, 255, 0.25) 0%,
+        rgba(255, 255, 255, 0.08) 60%,
+        transparent 100%);
+    pointer-events: none;
+}
+
+.toast::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.6) 50%,
+        transparent 100%);
+}
+
+.toast .toast-body {
+    font-weight: 600;
+    text-align: center;
+    padding: 8px 12px;
+    line-height: 1.4;
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Success toast - Semi-transparent Green Glass */
+.toast.bg-success {
+    background: linear-gradient(145deg,
+        rgba(46, 204, 113, 0.55) 0%,
+        rgba(39, 174, 96, 0.5) 50%,
+        rgba(34, 153, 84, 0.55) 100%) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(46, 204, 113, 0.4);
+    box-shadow:
+        0 8px 32px rgba(46, 204, 113, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.35),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Danger/Error toast - Semi-transparent Red Glass */
+.toast.bg-danger {
+    background: linear-gradient(145deg,
+        rgba(231, 76, 60, 0.55) 0%,
+        rgba(192, 57, 43, 0.5) 50%,
+        rgba(169, 50, 38, 0.55) 100%) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(231, 76, 60, 0.4);
+    box-shadow:
+        0 8px 32px rgba(231, 76, 60, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.35),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Warning toast - Semi-transparent Amber Glass */
+.toast.bg-warning {
+    background: linear-gradient(145deg,
+        rgba(241, 196, 15, 0.6) 0%,
+        rgba(243, 156, 18, 0.55) 50%,
+        rgba(230, 126, 34, 0.6) 100%) !important;
+    color: #1a1a1a !important;
+    border: 1px solid rgba(241, 196, 15, 0.5);
+    box-shadow:
+        0 8px 32px rgba(241, 196, 15, 0.25),
+        0 4px 12px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+}
+
+.toast.bg-warning .toast-body {
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
+}
+
+/* Info toast - Semi-transparent Cyan Glass */
+.toast.bg-info {
+    background: linear-gradient(145deg,
+        rgba(52, 211, 235, 0.55) 0%,
+        rgba(26, 188, 212, 0.5) 50%,
+        rgba(17, 168, 191, 0.55) 100%) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(52, 211, 235, 0.4);
+    box-shadow:
+        0 8px 32px rgba(52, 211, 235, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.35),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Primary toast - Semi-transparent Blue Glass */
+.toast.bg-primary {
+    background: linear-gradient(145deg,
+        rgba(52, 152, 219, 0.55) 0%,
+        rgba(41, 128, 185, 0.5) 50%,
+        rgba(31, 97, 141, 0.55) 100%) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(52, 152, 219, 0.4);
+    box-shadow:
+        0 8px 32px rgba(52, 152, 219, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.35),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Secondary toast - Semi-transparent Gray Glass */
+.toast.bg-secondary {
+    background: linear-gradient(145deg,
+        rgba(149, 165, 166, 0.55) 0%,
+        rgba(127, 140, 141, 0.5) 50%,
+        rgba(108, 117, 125, 0.55) 100%) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(149, 165, 166, 0.4);
+    box-shadow:
+        0 8px 32px rgba(149, 165, 166, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.35),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Dark theme toast adjustments */
+[data-theme='dark'] .toast {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        0 4px 12px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme='dark'] .toast::before {
+    background: linear-gradient(180deg,
+        rgba(255, 255, 255, 0.1) 0%,
+        rgba(255, 255, 255, 0.03) 60%,
+        transparent 100%);
+}
+
+[data-theme='dark'] .toast.bg-success {
+    background: linear-gradient(145deg,
+        rgba(46, 204, 113, 0.45) 0%,
+        rgba(39, 174, 96, 0.4) 50%,
+        rgba(34, 153, 84, 0.45) 100%) !important;
+    border: 1px solid rgba(46, 204, 113, 0.3);
+}
+
+[data-theme='dark'] .toast.bg-danger {
+    background: linear-gradient(145deg,
+        rgba(231, 76, 60, 0.45) 0%,
+        rgba(192, 57, 43, 0.4) 50%,
+        rgba(169, 50, 38, 0.45) 100%) !important;
+    border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+[data-theme='dark'] .toast.bg-warning {
+    background: linear-gradient(145deg,
+        rgba(241, 196, 15, 0.5) 0%,
+        rgba(243, 156, 18, 0.45) 50%,
+        rgba(230, 126, 34, 0.5) 100%) !important;
+    border: 1px solid rgba(241, 196, 15, 0.3);
+}
+
+[data-theme='dark'] .toast.bg-info {
+    background: linear-gradient(145deg,
+        rgba(52, 211, 235, 0.45) 0%,
+        rgba(26, 188, 212, 0.4) 50%,
+        rgba(17, 168, 191, 0.45) 100%) !important;
+    border: 1px solid rgba(52, 211, 235, 0.3);
+}
+
+[data-theme='dark'] .toast.bg-primary {
+    background: linear-gradient(145deg,
+        rgba(52, 152, 219, 0.45) 0%,
+        rgba(41, 128, 185, 0.4) 50%,
+        rgba(31, 97, 141, 0.45) 100%) !important;
+    border: 1px solid rgba(52, 152, 219, 0.3);
+}
+
+[data-theme='dark'] .toast.bg-secondary {
+    background: linear-gradient(145deg,
+        rgba(149, 165, 166, 0.45) 0%,
+        rgba(127, 140, 141, 0.4) 50%,
+        rgba(108, 117, 125, 0.45) 100%) !important;
+    border: 1px solid rgba(149, 165, 166, 0.3);
+}
+
+/* Alert Types with semi-transparent glass effect */
+.alert {
+    padding: 1.2rem;
+    margin-bottom: 1.2rem;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-size: 1.1rem;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Glossy shine overlay for alerts */
+.alert::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(180deg,
+        rgba(255, 255, 255, 0.2) 0%,
+        rgba(255, 255, 255, 0.05) 60%,
+        transparent 100%);
+    pointer-events: none;
+}
+
+.alert::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.5) 50%,
+        transparent 100%);
+}
+
+.alert-success {
+    background: linear-gradient(145deg,
+        rgba(46, 204, 113, 0.55) 0%,
+        rgba(39, 174, 96, 0.5) 50%,
+        rgba(34, 153, 84, 0.55) 100%);
+    border: 1px solid rgba(46, 204, 113, 0.4);
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    box-shadow:
+        0 8px 32px rgba(46, 204, 113, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+.alert-danger {
+    background: linear-gradient(145deg,
+        rgba(231, 76, 60, 0.55) 0%,
+        rgba(192, 57, 43, 0.5) 50%,
+        rgba(169, 50, 38, 0.55) 100%);
+    border: 1px solid rgba(231, 76, 60, 0.4);
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    box-shadow:
+        0 8px 32px rgba(231, 76, 60, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+.alert-warning {
+    background: linear-gradient(145deg,
+        rgba(241, 196, 15, 0.6) 0%,
+        rgba(243, 156, 18, 0.55) 50%,
+        rgba(230, 126, 34, 0.6) 100%);
+    border: 1px solid rgba(241, 196, 15, 0.5);
+    color: #1a1a1a;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
+    box-shadow:
+        0 8px 32px rgba(241, 196, 15, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 0.35),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+}
+
+.alert-info {
+    background: linear-gradient(145deg,
+        rgba(52, 211, 235, 0.55) 0%,
+        rgba(26, 188, 212, 0.5) 50%,
+        rgba(17, 168, 191, 0.55) 100%);
+    border: 1px solid rgba(52, 211, 235, 0.4);
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    box-shadow:
+        0 8px 32px rgba(52, 211, 235, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Enhanced Alert Animation */
+.alert {
+    animation: slideInRight 0.5s ease-out;
+    transform-origin: center right;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%) scale(0.5);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0) scale(1);
+        opacity: 1;
+    }
+}
+
+/* Toast positioning */
+.toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1050;
+}
+
+/* Close button styling - glossy glass look */
+.toast .btn-close {
+    padding: 12px;
+    opacity: 0.9;
+    transition: all 0.2s ease;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.2);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.toast .btn-close:hover {
+    opacity: 1;
+    background-color: rgba(255, 255, 255, 0.35);
+    transform: scale(1.1);
+}
+
+/* Warning toast close button needs dark filter */
+.toast.bg-warning .btn-close {
+    filter: invert(0) !important;
+}
+
+/* Add fade out animation */
+.toast.hide {
+    animation: fadeOut 0.5s ease-out forwards;
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+}
+
+/* Calm Glass 2026 component overlays.
+   Opt-in only: pair every Bootstrap/legacy class with a calm class. */
+
+:where(.btn).btn-calm-primary,
+.btn.btn-calm-primary,
+:where(.btn).btn-calm-ghost,
+.btn.btn-calm-ghost,
+:where(.btn).btn-calm-icon,
+.btn.btn-calm-icon,
+:where(.btn).btn-calm-danger,
+.btn.btn-calm-danger {
+  align-items: center !important;
+  border-radius: 8px !important;
+  display: inline-flex !important;
+  font-family: var(--font-sans, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif) !important;
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+  gap: var(--s-2, 8px) !important;
+  justify-content: center !important;
+  letter-spacing: 0 !important;
+  min-height: 40px !important;
+  text-decoration: none !important;
+  transition:
+    background var(--dur-fast, 150ms) var(--ease-out, ease),
+    border-color var(--dur-fast, 150ms) var(--ease-out, ease),
+    box-shadow var(--dur-fast, 150ms) var(--ease-out, ease),
+    color var(--dur-fast, 150ms) var(--ease-out, ease),
+    transform var(--dur-fast, 150ms) var(--ease-out, ease) !important;
+}
+
+:where(.btn).btn-calm-primary,
+.btn.btn-calm-primary {
+  background: var(--accent, #4c6ef5) !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 78%, white 22%) !important;
+  box-shadow: var(--shadow-elev-1, 0 1px 2px rgba(15, 18, 32, 0.06), 0 2px 8px rgba(15, 18, 32, 0.06)) !important;
+  color: var(--accent-ink, #ffffff) !important;
+  min-width: 0 !important;
+  padding: var(--s-2, 8px) var(--s-5, 24px) !important;
+}
+
+:where(.btn).btn-calm-primary:hover,
+.btn.btn-calm-primary:hover,
+:where(.btn).btn-calm-primary:focus-visible,
+.btn.btn-calm-primary:focus-visible {
+  background: color-mix(in srgb, var(--accent, #4c6ef5) 88%, #243b8f 12%) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 84%, white 16%) !important;
+  box-shadow: var(--shadow-elev-2, 0 8px 24px rgba(15, 18, 32, 0.10)) !important;
+  color: var(--accent-ink, #ffffff) !important;
+  transform: translateY(-1px) !important;
+}
+
+:where(.btn).btn-calm-ghost,
+.btn.btn-calm-ghost {
+  background: var(--surface-1, #f4f6fa) !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 18%, transparent) !important;
+  box-shadow: var(--shadow-neu-out, 8px 8px 20px rgba(167, 175, 200, 0.35), -8px -8px 20px rgba(255, 255, 255, 0.90)) !important;
+  color: var(--ink-1, #0f1220) !important;
+  min-width: 0 !important;
+  padding: var(--s-2, 8px) var(--s-5, 24px) !important;
+}
+
+:where(.btn).btn-calm-ghost:hover,
+.btn.btn-calm-ghost:hover,
+:where(.btn).btn-calm-ghost:focus-visible,
+.btn.btn-calm-ghost:focus-visible {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 88%, var(--accent, #4c6ef5) 12%) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 28%, transparent) !important;
+  color: var(--ink-1, #0f1220) !important;
+  transform: translateY(-1px) !important;
+}
+
+:where(.btn).btn-calm-icon,
+.btn.btn-calm-icon {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 72%, transparent) !important;
+  border: 1px solid var(--calm-glass-border, rgba(255, 255, 255, 0.65)) !important;
+  box-shadow: var(--shadow-elev-1, 0 1px 2px rgba(15, 18, 32, 0.06), 0 2px 8px rgba(15, 18, 32, 0.06)) !important;
+  color: var(--ink-2, #4a5170) !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  padding: 0 !important;
+  width: 40px !important;
+}
+
+:where(.btn).btn-calm-icon:hover,
+.btn.btn-calm-icon:hover,
+:where(.btn).btn-calm-icon:focus-visible,
+.btn.btn-calm-icon:focus-visible {
+  background: var(--surface-1, #f4f6fa) !important;
+  color: var(--ink-1, #0f1220) !important;
+  transform: translateY(-1px) !important;
+}
+
+:where(.btn).btn-calm-primary:focus-visible,
+.btn.btn-calm-primary:focus-visible,
+:where(.btn).btn-calm-ghost:focus-visible,
+.btn.btn-calm-ghost:focus-visible,
+:where(.btn).btn-calm-icon:focus-visible,
+.btn.btn-calm-icon:focus-visible {
+  outline: 0 !important;
+  box-shadow:
+    var(--shadow-elev-2, 0 8px 24px rgba(15, 18, 32, 0.10)),
+    0 0 0 3px color-mix(in srgb, var(--accent, #4c6ef5) 28%, transparent) !important;
+}
+
+:where(.btn).btn-calm-primary:disabled,
+.btn.btn-calm-primary:disabled,
+:where(.btn).btn-calm-ghost:disabled,
+.btn.btn-calm-ghost:disabled,
+:where(.btn).btn-calm-icon:disabled,
+.btn.btn-calm-icon:disabled,
+:where(.btn).btn-calm-danger:disabled,
+.btn.btn-calm-danger:disabled,
+:where(.btn).btn-calm-primary.disabled,
+.btn.btn-calm-primary.disabled,
+:where(.btn).btn-calm-ghost.disabled,
+.btn.btn-calm-ghost.disabled,
+:where(.btn).btn-calm-icon.disabled,
+.btn.btn-calm-icon.disabled,
+:where(.btn).btn-calm-danger.disabled,
+.btn.btn-calm-danger.disabled {
+  box-shadow: none !important;
+  opacity: 0.62 !important;
+  transform: none !important;
+}
+
+.glass-neumorph-card {
+  background: var(--calm-glass-bg, rgba(255, 255, 255, 0.55)) !important;
+  backdrop-filter: blur(var(--calm-glass-blur, 18px)) saturate(var(--calm-glass-sat, 180%)) !important;
+  -webkit-backdrop-filter: blur(var(--calm-glass-blur, 18px)) saturate(var(--calm-glass-sat, 180%)) !important;
+  border-style: solid !important;
+  border-width: 1px !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow-neu-out, 8px 8px 20px rgba(167, 175, 200, 0.35), -8px -8px 20px rgba(255, 255, 255, 0.90)) !important;
+  color: var(--ink-1, #0f1220) !important;
+  overflow: hidden !important;
+  transition:
+    box-shadow var(--dur-base, 240ms) var(--ease-out, ease),
+    transform var(--dur-base, 240ms) var(--ease-out, ease) !important;
+}
+
+.glass-neumorph-card:hover {
+  box-shadow:
+    var(--shadow-neu-out, 8px 8px 20px rgba(167, 175, 200, 0.35), -8px -8px 20px rgba(255, 255, 255, 0.90)),
+    var(--shadow-elev-2, 0 8px 24px rgba(15, 18, 32, 0.10)) !important;
+  transform: translateY(-2px) !important;
+}
+
+.glass-neumorph-card .card-body {
+  color: var(--ink-1, #0f1220) !important;
+}
+
+.glass-neumorph-card .card-title {
+  color: var(--ink-1, #0f1220) !important;
+  letter-spacing: 0 !important;
+}
+
+.glass-neumorph-card .text-muted {
+  color: var(--ink-2, #4a5170) !important;
+}
+
+:where(.form-control).input-calm-inset,
+.form-control.input-calm-inset,
+:where(.form-select).input-calm-inset,
+.form-select.input-calm-inset {
+  background: color-mix(in srgb, var(--surface-1, #f4f6fa) 86%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 18%, var(--calm-glass-border, rgba(255, 255, 255, 0.65)) 82%) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow-neu-in, inset 4px 4px 10px rgba(167, 175, 200, 0.35), inset -4px -4px 10px rgba(255, 255, 255, 0.90)) !important;
+  color: var(--ink-1, #0f1220) !important;
+  font-family: var(--font-sans, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif) !important;
+  letter-spacing: 0 !important;
+  transition:
+    background var(--dur-fast, 150ms) var(--ease-out, ease),
+    border-color var(--dur-fast, 150ms) var(--ease-out, ease),
+    box-shadow var(--dur-fast, 150ms) var(--ease-out, ease) !important;
+}
+
+:where(.form-control).input-calm-inset:not(:disabled):hover,
+.form-control.input-calm-inset:not(:disabled):hover,
+:where(.form-select).input-calm-inset:not(:disabled):hover,
+.form-select.input-calm-inset:not(:disabled):hover {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 88%, var(--accent, #4c6ef5) 12%) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 30%, var(--calm-glass-border, rgba(255, 255, 255, 0.65)) 70%) !important;
+}
+
+:where(.form-control).input-calm-inset:focus,
+.form-control.input-calm-inset:focus,
+:where(.form-control).input-calm-inset:focus-visible,
+.form-control.input-calm-inset:focus-visible,
+:where(.form-select).input-calm-inset:focus,
+.form-select.input-calm-inset:focus,
+:where(.form-select).input-calm-inset:focus-visible,
+.form-select.input-calm-inset:focus-visible {
+  background: var(--surface-2, #ffffff) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 56%, white 44%) !important;
+  box-shadow:
+    var(--shadow-neu-in, inset 4px 4px 10px rgba(167, 175, 200, 0.35), inset -4px -4px 10px rgba(255, 255, 255, 0.90)),
+    0 0 0 3px color-mix(in srgb, var(--accent, #4c6ef5) 24%, transparent) !important;
+  outline: 0 !important;
+}
+
+:where(.form-control).input-calm-inset:disabled,
+.form-control.input-calm-inset:disabled,
+:where(.form-select).input-calm-inset:disabled,
+.form-select.input-calm-inset:disabled {
+  background: color-mix(in srgb, var(--surface-1, #f4f6fa) 72%, var(--ink-3, #8a90a8) 28%) !important;
+  box-shadow: none !important;
+  color: var(--ink-3, #8a90a8) !important;
+  cursor: not-allowed !important;
+  opacity: 0.72 !important;
+}
+
+:is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass, .progression-plan-container) :where(.table).table-calm,
+:is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass, .progression-plan-container) .table.table-calm {
+  background: var(--calm-glass-bg, rgba(255, 255, 255, 0.55)) !important;
+  backdrop-filter: blur(var(--calm-glass-blur, 18px)) saturate(var(--calm-glass-sat, 180%)) !important;
+  -webkit-backdrop-filter: blur(var(--calm-glass-blur, 18px)) saturate(var(--calm-glass-sat, 180%)) !important;
+  border: 1px solid var(--calm-glass-border, rgba(255, 255, 255, 0.65)) !important;
+  border-collapse: separate !important;
+  border-radius: 8px !important;
+  border-spacing: 0 !important;
+  box-shadow: var(--shadow-neu-out, 8px 8px 20px rgba(167, 175, 200, 0.35), -8px -8px 20px rgba(255, 255, 255, 0.90)) !important;
+  color: var(--ink-1, #0f1220) !important;
+  font-family: var(--font-sans, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif) !important;
+  letter-spacing: 0 !important;
+  overflow: hidden !important;
+}
+
+:is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass, .progression-plan-container) .table.table-calm > :not(caption) > * > * {
+  border-color: transparent !important;
+  box-shadow: none !important;
+  color: var(--ink-1, #0f1220) !important;
+  font-size: var(--wp-table-fs, 0.88rem) !important;
+  letter-spacing: 0 !important;
+  padding: var(--wp-table-cell-padding, 0.75rem 1rem) !important;
+}
+
+:is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass, .progression-plan-container) .table.table-calm thead th {
+  background: var(--surface-1, #f4f6fa) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 20%, transparent) !important;
+  color: var(--ink-2, #4a5170) !important;
+  font-weight: 600 !important;
+  text-shadow: none !important;
+}
+
+:is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass, .progression-plan-container) .table.table-calm tbody td {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 72%, transparent) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--ink-3, #8a90a8) 16%, transparent) !important;
+  transition:
+    background var(--dur-fast, 150ms) var(--ease-out, ease),
+    box-shadow var(--dur-fast, 150ms) var(--ease-out, ease),
+    color var(--dur-fast, 150ms) var(--ease-out, ease) !important;
+}
+
+:is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass, .progression-plan-container) .table.table-calm tbody tr:nth-child(even) td {
+  background: color-mix(in srgb, var(--surface-1, #f4f6fa) 62%, transparent) !important;
+}
+
+:is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass, .progression-plan-container) .table.table-calm tbody tr:hover td {
+  background: color-mix(in srgb, var(--accent, #4c6ef5) 10%, transparent) !important;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent, #4c6ef5) 18%, transparent) !important;
+}
+
+:is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass, .progression-plan-container) .table.table-calm tbody tr:last-child td {
+  border-bottom-color: transparent !important;
+}
+
+[data-theme='dark'] :is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass, .progression-plan-container) .table.table-calm {
+  background: var(--calm-glass-bg, rgba(29, 34, 56, 0.55)) !important;
+  box-shadow: var(--shadow-neu-out, 8px 8px 20px rgba(0, 0, 0, 0.55), -8px -8px 20px rgba(255, 255, 255, 0.04)) !important;
+}
+
+[data-theme='dark'] :is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass, .progression-plan-container) .table.table-calm thead th {
+  background: var(--surface-1, #161a2d) !important;
+  color: var(--ink-2, #b4bad0) !important;
+}
+
+[data-theme='dark'] :is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass, .progression-plan-container) .table.table-calm tbody td {
+  background: color-mix(in srgb, var(--surface-2, #1d2238) 74%, transparent) !important;
+  color: var(--ink-1, #eef1f6) !important;
+}
+
+[data-theme='dark'] :is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass, .progression-plan-container) .table.table-calm tbody tr:nth-child(even) td {
+  background: color-mix(in srgb, var(--surface-1, #161a2d) 68%, transparent) !important;
+}
+
+[data-theme='dark'] :is(#workout[data-page="workout-plan"], .workout-log-page, .summary-frame.frame-calm-glass, .progression-plan-container) .table.table-calm tbody tr:hover td {
+  background: color-mix(in srgb, var(--accent, #4c6ef5) 14%, var(--surface-2, #1d2238) 86%) !important;
+}
+
+:where(.btn).btn-calm-danger,
+.btn.btn-calm-danger {
+  align-items: center !important;
+  background: color-mix(in srgb, var(--danger, #ef4444) 90%, #7f1d1d 10%) !important;
+  border: 1px solid color-mix(in srgb, var(--danger, #ef4444) 78%, white 22%) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow-elev-1, 0 1px 2px rgba(15, 18, 32, 0.06), 0 2px 8px rgba(15, 18, 32, 0.06)) !important;
+  color: #ffffff !important;
+  display: inline-flex !important;
+  font-weight: 600 !important;
+  gap: var(--s-2, 8px) !important;
+  justify-content: center !important;
+  letter-spacing: 0 !important;
+  min-height: 40px !important;
+  padding: var(--s-2, 8px) var(--s-5, 24px) !important;
+  text-decoration: none !important;
+}
+
+:where(.btn).btn-calm-danger:hover,
+.btn.btn-calm-danger:hover,
+:where(.btn).btn-calm-danger:focus-visible,
+.btn.btn-calm-danger:focus-visible {
+  background: color-mix(in srgb, var(--danger, #ef4444) 82%, #7f1d1d 18%) !important;
+  box-shadow: var(--shadow-elev-2, 0 8px 24px rgba(15, 18, 32, 0.10)) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px) !important;
+}
+
+#workout[data-page="workout-plan"] :where(.btn).btn-calm-link,
+#workout[data-page="workout-plan"] .btn.btn-calm-link {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: var(--accent, #4c6ef5) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0 !important;
+  min-height: 0 !important;
+}
+
+#workout[data-page="workout-plan"] .frame-calm-glass,
+.modal-content.frame-calm-glass,
+.execution-style-picker.frame-calm-glass {
+  background: var(--calm-glass-bg, rgba(255, 255, 255, 0.55)) !important;
+  backdrop-filter: blur(var(--calm-glass-blur, 18px)) saturate(var(--calm-glass-sat, 180%)) !important;
+  -webkit-backdrop-filter: blur(var(--calm-glass-blur, 18px)) saturate(var(--calm-glass-sat, 180%)) !important;
+  border: 1px solid var(--calm-glass-border, rgba(255, 255, 255, 0.65)) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow-neu-out, 8px 8px 20px rgba(167, 175, 200, 0.35), -8px -8px 20px rgba(255, 255, 255, 0.90)) !important;
+  color: var(--ink-1, #0f1220) !important;
+}
+
+#workout[data-page="workout-plan"] .frame-calm-glass .frame-calm-glass,
+.modal-content.frame-calm-glass .frame-calm-glass {
+  box-shadow: none !important;
+}
+
+#workout[data-page="workout-plan"] .frame-calm-glass .frame-header,
+.execution-style-picker.frame-calm-glass .execution-picker-header,
+.execution-style-picker.frame-calm-glass .execution-picker-footer,
+.modal-content.frame-calm-glass .modal-header:not(.bg-danger),
+.modal-content.frame-calm-glass .modal-footer {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 78%, transparent) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 16%, transparent) !important;
+  color: var(--ink-1, #0f1220) !important;
+}
+
+#workout[data-page="workout-plan"] .frame-calm-glass .collapse-toggle {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 70%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 18%, transparent) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow-elev-1, 0 1px 2px rgba(15, 18, 32, 0.06), 0 2px 8px rgba(15, 18, 32, 0.06)) !important;
+  color: var(--ink-2, #4a5170) !important;
+}
+
+#workout[data-page="workout-plan"] .routine-tabs-container.frame-calm-glass,
+#workout[data-page="workout-plan"] .superset-actions.frame-calm-glass,
+#workout[data-page="workout-plan"] .plan-preview-box.frame-calm-glass {
+  padding: var(--s-3, 12px) !important;
+}
+
+#workout[data-page="workout-plan"] .tbl-wrap.frame-calm-glass {
+  padding: var(--s-2, 8px) !important;
+}
+
+#workout[data-page="workout-plan"] .frame-calm-glass .routine-tab-btn {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 68%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 16%, transparent) !important;
+  border-radius: 8px !important;
+  color: var(--ink-2, #4a5170) !important;
+  letter-spacing: 0 !important;
+}
+
+#workout[data-page="workout-plan"] .frame-calm-glass .routine-tab-btn.active,
+#workout[data-page="workout-plan"] .frame-calm-glass .routine-tab-btn[aria-selected="true"] {
+  background: var(--accent, #4c6ef5) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 80%, white 20%) !important;
+  box-shadow: var(--shadow-elev-1, 0 1px 2px rgba(15, 18, 32, 0.06), 0 2px 8px rgba(15, 18, 32, 0.06)) !important;
+  color: var(--accent-ink, #ffffff) !important;
+}
+
+.execution-style-picker.frame-calm-glass {
+  overflow: hidden !important;
+}
+
+.execution-style-picker.frame-calm-glass .execution-picker-content {
+  background: transparent !important;
+  color: var(--ink-1, #0f1220) !important;
+}
+
+.execution-style-picker.frame-calm-glass .execution-option {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 64%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 16%, transparent) !important;
+  border-radius: 8px !important;
+  color: var(--ink-1, #0f1220) !important;
+}
+
+.execution-style-picker.frame-calm-glass .execution-option.active {
+  background: color-mix(in srgb, var(--accent, #4c6ef5) 14%, var(--surface-2, #ffffff) 86%) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 52%, transparent) !important;
+}
+
+#workout[data-page="workout-plan"] .form-range.range-calm {
+  accent-color: var(--accent, #4c6ef5) !important;
+  filter: drop-shadow(0 1px 2px rgba(15, 18, 32, 0.10)) !important;
+}
+
+@layer workout {
+#workout[data-page="workout-plan"] .btn.btn-calm-primary,
+#workout[data-page="workout-plan"] :where(.btn).btn-calm-primary,
+#workout[data-page="workout-plan"] .modal-content.frame-calm-glass .btn.btn-calm-primary {
+  background: var(--accent, #4c6ef5) !important;
+  background-image: none !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 78%, white 22%) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow-elev-1, 0 1px 2px rgba(15, 18, 32, 0.06), 0 2px 8px rgba(15, 18, 32, 0.06)) !important;
+  color: var(--accent-ink, #ffffff) !important;
+  text-shadow: none !important;
+}
+
+#workout[data-page="workout-plan"] .btn.btn-calm-primary:hover:not(:disabled),
+#workout[data-page="workout-plan"] :where(.btn).btn-calm-primary:hover:not(:disabled),
+#workout[data-page="workout-plan"] .btn.btn-calm-primary:focus-visible,
+#workout[data-page="workout-plan"] :where(.btn).btn-calm-primary:focus-visible {
+  background: color-mix(in srgb, var(--accent, #4c6ef5) 88%, #243b8f 12%) !important;
+  background-image: none !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 84%, white 16%) !important;
+  color: var(--accent-ink, #ffffff) !important;
+}
+
+#workout[data-page="workout-plan"] .btn.btn-calm-ghost,
+#workout[data-page="workout-plan"] :where(.btn).btn-calm-ghost,
+#workout[data-page="workout-plan"] .modal-content.frame-calm-glass .btn.btn-calm-ghost,
+#workout[data-page="workout-plan"] .frame-calm-glass .collapse-toggle {
+  background: color-mix(in srgb, var(--surface-1, #f4f6fa) 88%, transparent) !important;
+  background-image: none !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 18%, var(--calm-glass-border, rgba(255, 255, 255, 0.65)) 82%) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow-neu-out, 8px 8px 20px rgba(167, 175, 200, 0.35), -8px -8px 20px rgba(255, 255, 255, 0.90)) !important;
+  color: var(--ink-1, #0f1220) !important;
+  text-shadow: none !important;
+}
+
+#workout[data-page="workout-plan"] .btn.btn-calm-ghost:hover:not(:disabled),
+#workout[data-page="workout-plan"] :where(.btn).btn-calm-ghost:hover:not(:disabled),
+#workout[data-page="workout-plan"] .frame-calm-glass .collapse-toggle:hover:not(:disabled),
+#workout[data-page="workout-plan"] .btn.btn-calm-ghost:focus-visible,
+#workout[data-page="workout-plan"] :where(.btn).btn-calm-ghost:focus-visible,
+#workout[data-page="workout-plan"] .frame-calm-glass .collapse-toggle:focus-visible {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 88%, var(--accent, #4c6ef5) 12%) !important;
+  background-image: none !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 30%, transparent) !important;
+  color: var(--ink-1, #0f1220) !important;
+}
+
+#workout[data-page="workout-plan"] .btn.btn-calm-danger,
+#workout[data-page="workout-plan"] :where(.btn).btn-calm-danger,
+#workout[data-page="workout-plan"] .modal-content.frame-calm-glass .btn.btn-calm-danger {
+  background: color-mix(in srgb, var(--danger, #ef4444) 88%, #7f1d1d 12%) !important;
+  background-image: none !important;
+  border: 1px solid color-mix(in srgb, var(--danger, #ef4444) 78%, white 22%) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow-elev-1, 0 1px 2px rgba(15, 18, 32, 0.06), 0 2px 8px rgba(15, 18, 32, 0.06)) !important;
+  color: #ffffff !important;
+  text-shadow: none !important;
+}
+
+#workout[data-page="workout-plan"] .btn.btn-calm-danger:hover:not(:disabled),
+#workout[data-page="workout-plan"] :where(.btn).btn-calm-danger:hover:not(:disabled),
+#workout[data-page="workout-plan"] .btn.btn-calm-danger:focus-visible,
+#workout[data-page="workout-plan"] :where(.btn).btn-calm-danger:focus-visible {
+  background: color-mix(in srgb, var(--danger, #ef4444) 80%, #7f1d1d 20%) !important;
+  background-image: none !important;
+  border-color: color-mix(in srgb, var(--danger, #ef4444) 84%, white 16%) !important;
+  color: #ffffff !important;
+}
+
+#workout[data-page="workout-plan"] .btn.btn-calm-icon,
+#workout[data-page="workout-plan"] :where(.btn).btn-calm-icon {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 72%, transparent) !important;
+  background-image: none !important;
+  border: 1px solid var(--calm-glass-border, rgba(255, 255, 255, 0.65)) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow-elev-1, 0 1px 2px rgba(15, 18, 32, 0.06), 0 2px 8px rgba(15, 18, 32, 0.06)) !important;
+  color: var(--ink-2, #4a5170) !important;
+}
+
+#workout[data-page="workout-plan"] .form-control.input-calm-inset,
+#workout[data-page="workout-plan"] .form-select.input-calm-inset,
+#workout[data-page="workout-plan"] .input-fields-group .input-group .form-control.input-calm-inset,
+#workout[data-page="workout-plan"] .input-fields-group .input-group input.input-calm-inset[type="number"],
+#workout[data-page="workout-plan"] .filter-dropdown.input-calm-inset,
+#workout[data-page="workout-plan"] .exercise-dropdown.input-calm-inset {
+  background: color-mix(in srgb, var(--surface-1, #f4f6fa) 88%, transparent) !important;
+  background-color: color-mix(in srgb, var(--surface-1, #f4f6fa) 88%, transparent) !important;
+  background-image: none !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 18%, var(--calm-glass-border, rgba(255, 255, 255, 0.65)) 82%) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow-neu-in, inset 4px 4px 10px rgba(167, 175, 200, 0.35), inset -4px -4px 10px rgba(255, 255, 255, 0.90)) !important;
+  color: var(--ink-1, #0f1220) !important;
+  text-shadow: none !important;
+}
+
+#workout[data-page="workout-plan"] .input-fields-group .input-group input.input-calm-inset:is(#weight, #sets, #rir, #rpe, #min_rep, #max_rep_range) {
+  background: color-mix(in srgb, var(--surface-1, #f4f6fa) 88%, transparent) !important;
+  background-color: color-mix(in srgb, var(--surface-1, #f4f6fa) 88%, transparent) !important;
+  background-image: none !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 18%, var(--calm-glass-border, rgba(255, 255, 255, 0.65)) 82%) !important;
+  box-shadow: var(--shadow-neu-in, inset 4px 4px 10px rgba(167, 175, 200, 0.35), inset -4px -4px 10px rgba(255, 255, 255, 0.90)) !important;
+  color: var(--ink-1, #0f1220) !important;
+}
+
+#workout[data-page="workout-plan"] .form-control.input-calm-inset:hover:not(:disabled),
+#workout[data-page="workout-plan"] .form-select.input-calm-inset:hover:not(:disabled),
+#workout[data-page="workout-plan"] .input-fields-group .input-group .form-control.input-calm-inset:hover:not(:disabled),
+#workout[data-page="workout-plan"] .input-fields-group .input-group input.input-calm-inset[type="number"]:hover:not(:disabled),
+#workout[data-page="workout-plan"] .filter-dropdown.input-calm-inset:hover:not(:disabled),
+#workout[data-page="workout-plan"] .exercise-dropdown.input-calm-inset:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 88%, var(--accent, #4c6ef5) 12%) !important;
+  background-color: color-mix(in srgb, var(--surface-2, #ffffff) 88%, var(--accent, #4c6ef5) 12%) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 30%, var(--calm-glass-border, rgba(255, 255, 255, 0.65)) 70%) !important;
+}
+
+#workout[data-page="workout-plan"] .input-fields-group .input-group input.input-calm-inset:is(#weight, #sets, #rir, #rpe, #min_rep, #max_rep_range):hover:not(:disabled) {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 88%, var(--accent, #4c6ef5) 12%) !important;
+  background-color: color-mix(in srgb, var(--surface-2, #ffffff) 88%, var(--accent, #4c6ef5) 12%) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 30%, var(--calm-glass-border, rgba(255, 255, 255, 0.65)) 70%) !important;
+  box-shadow: var(--shadow-neu-in, inset 4px 4px 10px rgba(167, 175, 200, 0.35), inset -4px -4px 10px rgba(255, 255, 255, 0.90)) !important;
+  color: var(--ink-1, #0f1220) !important;
+}
+
+#workout[data-page="workout-plan"] .form-control.input-calm-inset:focus,
+#workout[data-page="workout-plan"] .form-select.input-calm-inset:focus,
+#workout[data-page="workout-plan"] .input-fields-group .input-group .form-control.input-calm-inset:focus,
+#workout[data-page="workout-plan"] .input-fields-group .input-group input.input-calm-inset[type="number"]:focus,
+#workout[data-page="workout-plan"] .filter-dropdown.input-calm-inset:focus,
+#workout[data-page="workout-plan"] .exercise-dropdown.input-calm-inset:focus {
+  background: var(--surface-2, #ffffff) !important;
+  background-color: var(--surface-2, #ffffff) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 56%, white 44%) !important;
+  box-shadow:
+    var(--shadow-neu-in, inset 4px 4px 10px rgba(167, 175, 200, 0.35), inset -4px -4px 10px rgba(255, 255, 255, 0.90)),
+    0 0 0 3px color-mix(in srgb, var(--accent, #4c6ef5) 24%, transparent) !important;
+  color: var(--ink-1, #0f1220) !important;
+}
+
+#workout[data-page="workout-plan"] .input-fields-group .input-group input.input-calm-inset:is(#weight, #sets, #rir, #rpe, #min_rep, #max_rep_range):focus {
+  background: var(--surface-2, #ffffff) !important;
+  background-color: var(--surface-2, #ffffff) !important;
+  background-image: none !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 56%, white 44%) !important;
+  box-shadow:
+    var(--shadow-neu-in, inset 4px 4px 10px rgba(167, 175, 200, 0.35), inset -4px -4px 10px rgba(255, 255, 255, 0.90)),
+    0 0 0 3px color-mix(in srgb, var(--accent, #4c6ef5) 24%, transparent) !important;
+  color: var(--ink-1, #0f1220) !important;
+}
+
+#workout[data-page="workout-plan"] .form-select.input-calm-inset.filter-active,
+#workout[data-page="workout-plan"] .filter-dropdown.input-calm-inset.filter-active,
+#workout[data-page="workout-plan"] .form-select.filter-dropdown.filter-active,
+#workout[data-page="workout-plan"] select.filter-dropdown.filter-active {
+  background: linear-gradient(135deg, rgba(255, 253, 231, 0.94) 0%, rgba(255, 243, 205, 0.97) 100%) !important;
+  background-color: rgba(255, 248, 225, 0.96) !important;
+  background-image: linear-gradient(135deg, rgba(255, 253, 231, 0.94) 0%, rgba(255, 243, 205, 0.97) 100%) !important;
+  border: 1px solid rgba(255, 193, 7, 0.62) !important;
+  border-color: rgba(255, 193, 7, 0.62) !important;
+  box-shadow:
+    inset 3px 3px 8px rgba(212, 165, 43, 0.20),
+    inset -3px -3px 8px rgba(255, 255, 255, 0.88),
+    0 2px 8px rgba(255, 193, 7, 0.14) !important;
+  color: #7a5a00 !important;
+}
+
+#workout[data-page="workout-plan"] .form-select.input-calm-inset.filter-active:hover:not(:disabled),
+#workout[data-page="workout-plan"] .filter-dropdown.input-calm-inset.filter-active:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(255, 248, 210, 0.96) 0%, rgba(255, 236, 179, 0.98) 100%) !important;
+  background-color: rgba(255, 243, 195, 0.98) !important;
+  border-color: rgba(255, 179, 0, 0.72) !important;
+  color: #6a4e00 !important;
+}
+
+#workout[data-page="workout-plan"] .form-select.input-calm-inset.filter-active:focus,
+#workout[data-page="workout-plan"] .filter-dropdown.input-calm-inset.filter-active:focus {
+  background: linear-gradient(135deg, rgba(255, 250, 220, 0.97) 0%, rgba(255, 240, 190, 0.99) 100%) !important;
+  background-color: rgba(255, 245, 205, 0.99) !important;
+  border-color: rgba(255, 160, 0, 0.80) !important;
+  box-shadow:
+    inset 3px 3px 8px rgba(212, 165, 43, 0.22),
+    inset -3px -3px 8px rgba(255, 255, 255, 0.90),
+    0 0 0 3px rgba(255, 193, 7, 0.25) !important;
+  color: #6a4e00 !important;
+}
+
+[data-theme='dark'] #workout[data-page="workout-plan"] .btn.btn-calm-ghost,
+[data-theme='dark'] #workout[data-page="workout-plan"] :where(.btn).btn-calm-ghost,
+[data-theme='dark'] #workout[data-page="workout-plan"] .frame-calm-glass .collapse-toggle {
+  background: color-mix(in srgb, var(--surface-1, #161a2d) 88%, transparent) !important;
+  background-image: none !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 24%, var(--calm-glass-border, rgba(255, 255, 255, 0.08)) 76%) !important;
+  box-shadow: var(--shadow-neu-out, 8px 8px 20px rgba(0, 0, 0, 0.55), -8px -8px 20px rgba(255, 255, 255, 0.04)) !important;
+  color: var(--ink-1, #eef1f6) !important;
+}
+
+[data-theme='dark'] #workout[data-page="workout-plan"] .form-control.input-calm-inset,
+[data-theme='dark'] #workout[data-page="workout-plan"] .form-select.input-calm-inset,
+[data-theme='dark'] #workout[data-page="workout-plan"] .input-fields-group .input-group .form-control.input-calm-inset,
+[data-theme='dark'] #workout[data-page="workout-plan"] .input-fields-group .input-group input.input-calm-inset[type="number"],
+[data-theme='dark'] #workout[data-page="workout-plan"] .filter-dropdown.input-calm-inset,
+[data-theme='dark'] #workout[data-page="workout-plan"] .exercise-dropdown.input-calm-inset {
+  background: color-mix(in srgb, var(--surface-2, #1d2238) 84%, transparent) !important;
+  background-color: color-mix(in srgb, var(--surface-2, #1d2238) 84%, transparent) !important;
+  background-image: none !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 26%, var(--calm-glass-border, rgba(255, 255, 255, 0.08)) 74%) !important;
+  box-shadow: var(--shadow-neu-in, inset 4px 4px 10px rgba(0, 0, 0, 0.55), inset -4px -4px 10px rgba(255, 255, 255, 0.04)) !important;
+  color: var(--ink-1, #eef1f6) !important;
+}
+
+[data-theme='dark'] #workout[data-page="workout-plan"] .input-fields-group .input-group input.input-calm-inset:is(#weight, #sets, #rir, #rpe, #min_rep, #max_rep_range),
+[data-theme='dark'] #workout[data-page="workout-plan"] .input-fields-group input.input-calm-inset:is(#weight, #sets, #rir, #rpe, #min_rep, #max_rep_range) {
+  background: color-mix(in srgb, var(--surface-2, #1d2238) 84%, transparent) !important;
+  background-color: color-mix(in srgb, var(--surface-2, #1d2238) 84%, transparent) !important;
+  background-image: none !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 26%, var(--calm-glass-border, rgba(255, 255, 255, 0.08)) 74%) !important;
+  box-shadow: var(--shadow-neu-in, inset 4px 4px 10px rgba(0, 0, 0, 0.55), inset -4px -4px 10px rgba(255, 255, 255, 0.04)) !important;
+  color: var(--ink-1, #eef1f6) !important;
+}
+
+[data-theme='dark'] #workout[data-page="workout-plan"] .form-select.input-calm-inset.filter-active,
+[data-theme='dark'] #workout[data-page="workout-plan"] .filter-dropdown.input-calm-inset.filter-active,
+[data-theme='dark'] #workout[data-page="workout-plan"] .form-select.filter-dropdown.filter-active,
+[data-theme='dark'] #workout[data-page="workout-plan"] select.filter-dropdown.filter-active {
+  background: linear-gradient(135deg, rgba(90, 70, 20, 0.55) 0%, rgba(110, 85, 25, 0.62) 100%) !important;
+  background-color: rgba(95, 72, 20, 0.60) !important;
+  background-image: linear-gradient(135deg, rgba(90, 70, 20, 0.55) 0%, rgba(110, 85, 25, 0.62) 100%) !important;
+  border: 1px solid rgba(255, 193, 7, 0.50) !important;
+  border-color: rgba(255, 193, 7, 0.50) !important;
+  box-shadow:
+    inset 3px 3px 8px rgba(0, 0, 0, 0.45),
+    inset -3px -3px 8px rgba(255, 220, 130, 0.08),
+    0 2px 8px rgba(255, 193, 7, 0.12) !important;
+  color: #ffd77a !important;
+}
+
+[data-theme='dark'] #workout[data-page="workout-plan"] .form-select.input-calm-inset.filter-active:hover:not(:disabled),
+[data-theme='dark'] #workout[data-page="workout-plan"] .filter-dropdown.input-calm-inset.filter-active:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(110, 85, 25, 0.62) 0%, rgba(130, 100, 30, 0.70) 100%) !important;
+  background-color: rgba(115, 88, 25, 0.66) !important;
+  border-color: rgba(255, 193, 7, 0.62) !important;
+  color: #ffe095 !important;
+}
+
+[data-theme='dark'] #workout[data-page="workout-plan"] .form-select.input-calm-inset.filter-active:focus,
+[data-theme='dark'] #workout[data-page="workout-plan"] .filter-dropdown.input-calm-inset.filter-active:focus {
+  background: linear-gradient(135deg, rgba(115, 90, 28, 0.68) 0%, rgba(135, 105, 32, 0.74) 100%) !important;
+  background-color: rgba(120, 92, 28, 0.70) !important;
+  border-color: rgba(255, 193, 7, 0.72) !important;
+  box-shadow:
+    inset 3px 3px 8px rgba(0, 0, 0, 0.50),
+    inset -3px -3px 8px rgba(255, 220, 130, 0.10),
+    0 0 0 3px rgba(255, 193, 7, 0.22) !important;
+  color: #ffe095 !important;
+}
+
+#workout[data-page="workout-plan"] .frame-calm-glass .frame-header.frame-header-2025 {
+  align-items: center !important;
+  display: grid !important;
+  gap: var(--s-3, 12px) !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  padding: var(--s-4, 16px) var(--s-5, 24px) !important;
+}
+
+#workout[data-page="workout-plan"] .frame-calm-glass .frame-header-left,
+#workout[data-page="workout-plan"] .frame-calm-glass .frame-header-right {
+  align-items: center !important;
+  display: flex !important;
+  min-width: 0 !important;
+}
+
+#workout[data-page="workout-plan"] .frame-calm-glass .frame-header-right {
+  justify-content: flex-end !important;
+  padding: 0 !important;
+}
+
+#workout[data-page="workout-plan"] .frame-calm-glass .frame-title,
+#workout[data-page="workout-plan"] .frame-calm-glass .filters-title {
+  align-items: center !important;
+  display: inline-flex !important;
+  line-height: 1.15 !important;
+  max-width: 100% !important;
+  overflow-wrap: anywhere !important;
+  padding-bottom: 7px !important;
+  white-space: normal !important;
+}
+
+#workout[data-page="workout-plan"] .frame-calm-glass .collapse-toggle {
+  flex: 0 0 auto !important;
+  min-height: 40px !important;
+  min-width: 96px !important;
+  padding: var(--s-2, 8px) var(--s-4, 16px) !important;
+}
+
+#workout[data-page="workout-plan"] .wpdd {
+  display: block !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  width: 100% !important;
+}
+
+#workout[data-page="workout-plan"] .wpdd-button,
+#workout[data-page="workout-plan"] .wpdd-button.wpdd-filter,
+#workout[data-page="workout-plan"] .wpdd-button.wpdd-filter.filter-active,
+#workout[data-page="workout-plan"] .wpdd-button.wpdd-routine,
+#workout[data-page="workout-plan"] .wpdd-button.wpdd-exercise,
+#workout[data-page="workout-plan"] .cascade-dropdown.input-calm-inset {
+  align-items: center !important;
+  background: color-mix(in srgb, var(--surface-1, #f4f6fa) 88%, transparent) !important;
+  background-color: color-mix(in srgb, var(--surface-1, #f4f6fa) 88%, transparent) !important;
+  background-image: none !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 18%, var(--calm-glass-border, rgba(255, 255, 255, 0.65)) 82%) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow-neu-in, inset 4px 4px 10px rgba(167, 175, 200, 0.35), inset -4px -4px 10px rgba(255, 255, 255, 0.90)) !important;
+  color: var(--ink-1, #0f1220) !important;
+  display: inline-flex !important;
+  font-size: 0.9rem !important;
+  justify-content: space-between !important;
+  letter-spacing: 0 !important;
+  min-height: 42px !important;
+  padding: 0 var(--s-4, 16px) !important;
+  text-shadow: none !important;
+  width: 100% !important;
+}
+
+#workout[data-page="workout-plan"] .wpdd-button:hover:not(:disabled),
+#workout[data-page="workout-plan"] .wpdd-button.wpdd-filter:hover:not(:disabled),
+#workout[data-page="workout-plan"] .wpdd-button.wpdd-filter.filter-active:hover:not(:disabled),
+#workout[data-page="workout-plan"] .wpdd-button.wpdd-routine:hover:not(:disabled),
+#workout[data-page="workout-plan"] .wpdd-button.wpdd-exercise:hover:not(:disabled),
+#workout[data-page="workout-plan"] .cascade-dropdown.input-calm-inset:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 88%, var(--accent, #4c6ef5) 12%) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 30%, var(--calm-glass-border, rgba(255, 255, 255, 0.65)) 70%) !important;
+  color: var(--ink-1, #0f1220) !important;
+}
+
+#workout[data-page="workout-plan"] .wpdd-button:disabled,
+#workout[data-page="workout-plan"] .cascade-dropdown.input-calm-inset:disabled {
+  cursor: not-allowed !important;
+  opacity: 0.68 !important;
+}
+
+/* Active filter indicator — accent-blue calm-glass tint when a value is selected */
+#workout[data-page="workout-plan"] .wpdd-button.wpdd-filter.filter-active {
+  background: color-mix(in srgb, var(--surface-1, #f4f6fa) 82%, var(--accent, #4c6ef5) 14%) !important;
+  background-color: color-mix(in srgb, var(--surface-1, #f4f6fa) 82%, var(--accent, #4c6ef5) 14%) !important;
+  background-image: none !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 48%, var(--calm-glass-border, rgba(255, 255, 255, 0.65)) 52%) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 48%, var(--calm-glass-border, rgba(255, 255, 255, 0.65)) 52%) !important;
+  box-shadow:
+    inset 3px 3px 8px rgba(76, 110, 245, 0.14),
+    inset -3px -3px 8px rgba(255, 255, 255, 0.80),
+    0 0 0 2px color-mix(in srgb, var(--accent, #4c6ef5) 18%, transparent) !important;
+  color: color-mix(in srgb, var(--ink-1, #0f1220) 78%, var(--accent, #4c6ef5) 22%) !important;
+}
+
+#workout[data-page="workout-plan"] .wpdd-button.wpdd-filter.filter-active:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 80%, var(--accent, #4c6ef5) 18%) !important;
+  background-color: color-mix(in srgb, var(--surface-2, #ffffff) 80%, var(--accent, #4c6ef5) 18%) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 58%, var(--calm-glass-border, rgba(255, 255, 255, 0.65)) 42%) !important;
+  color: color-mix(in srgb, var(--ink-1, #0f1220) 70%, var(--accent, #4c6ef5) 30%) !important;
+}
+
+#workout[data-page="workout-plan"] .wpdd-button.wpdd-filter.filter-active:focus {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 78%, var(--accent, #4c6ef5) 20%) !important;
+  background-color: color-mix(in srgb, var(--surface-2, #ffffff) 78%, var(--accent, #4c6ef5) 20%) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 62%, white 38%) !important;
+  box-shadow:
+    inset 3px 3px 8px rgba(76, 110, 245, 0.16),
+    inset -3px -3px 8px rgba(255, 255, 255, 0.85),
+    0 0 0 3px color-mix(in srgb, var(--accent, #4c6ef5) 26%, transparent) !important;
+  color: color-mix(in srgb, var(--ink-1, #0f1220) 70%, var(--accent, #4c6ef5) 30%) !important;
+}
+
+#workout[data-page="workout-plan"] .wpdd-button-text {
+  min-width: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+#workout[data-page="workout-plan"] .input-fields-group {
+  align-items: end !important;
+  display: grid !important;
+  gap: var(--s-5, 24px) !important;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  justify-content: stretch !important;
+}
+
+#workout[data-page="workout-plan"] .input-fields-group .input-group {
+  flex: none !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  width: 100% !important;
+}
+
+#workout[data-page="workout-plan"] .input-fields-group .input-group input.input-calm-inset[type="number"] {
+  -moz-appearance: textfield !important;
+  -webkit-appearance: none !important;
+  appearance: textfield !important;
+  padding-left: var(--s-4, 16px) !important;
+  padding-right: var(--s-4, 16px) !important;
+  text-align: center !important;
+}
+
+#workout[data-page="workout-plan"] .input-fields-group .input-group input.input-calm-inset[type="number"]::-webkit-inner-spin-button,
+#workout[data-page="workout-plan"] .input-fields-group .input-group input.input-calm-inset[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none !important;
+  display: none !important;
+  height: 0 !important;
+  margin: 0 !important;
+  opacity: 0 !important;
+  width: 0 !important;
+}
+
+#workout[data-page="workout-plan"] #exercise-selection-frame #action-buttons-row.selection-actions {
+  align-items: center !important;
+  background: color-mix(in srgb, var(--surface-1, #f4f6fa) 78%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 16%, var(--calm-glass-border, rgba(255, 255, 255, 0.65)) 84%) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow-neu-in, inset 4px 4px 10px rgba(167, 175, 200, 0.25), inset -4px -4px 10px rgba(255, 255, 255, 0.72)) !important;
+  display: grid !important;
+  gap: var(--s-3, 12px) !important;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) !important;
+  justify-content: stretch !important;
+  padding: var(--s-3, 12px) !important;
+  transform: none !important;
+}
+
+#workout[data-page="workout-plan"] #exercise-selection-frame #action-buttons-row .action-toolbar-group {
+  align-items: center !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: var(--s-2, 8px) !important;
+  min-width: 0 !important;
+}
+
+#workout[data-page="workout-plan"] #exercise-selection-frame #action-buttons-row .action-toolbar-group-left {
+  justify-content: flex-start !important;
+}
+
+#workout[data-page="workout-plan"] #exercise-selection-frame #action-buttons-row .action-toolbar-group-center {
+  justify-content: center !important;
+}
+
+#workout[data-page="workout-plan"] #exercise-selection-frame #action-buttons-row .action-toolbar-group-right {
+  justify-content: flex-end !important;
+}
+
+#workout[data-page="workout-plan"] #exercise-selection-frame #action-buttons-row .inline-control-item {
+  align-items: stretch !important;
+  display: flex !important;
+  flex: 0 1 auto !important;
+  margin: 0 !important;
+  min-width: 0 !important;
+}
+
+#workout[data-page="workout-plan"] #exercise-selection-frame #action-buttons-row .btn {
+  min-height: 42px !important;
+}
+
+[data-theme='dark'] #workout[data-page="workout-plan"] .wpdd-button,
+[data-theme='dark'] #workout[data-page="workout-plan"] .wpdd-button.wpdd-filter,
+[data-theme='dark'] #workout[data-page="workout-plan"] .wpdd-button.wpdd-filter.filter-active,
+[data-theme='dark'] #workout[data-page="workout-plan"] .wpdd-button.wpdd-routine,
+[data-theme='dark'] #workout[data-page="workout-plan"] .wpdd-button.wpdd-exercise,
+[data-theme='dark'] #workout[data-page="workout-plan"] .cascade-dropdown.input-calm-inset {
+  background: color-mix(in srgb, var(--surface-2, #1d2238) 84%, transparent) !important;
+  background-color: color-mix(in srgb, var(--surface-2, #1d2238) 84%, transparent) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 26%, var(--calm-glass-border, rgba(255, 255, 255, 0.08)) 74%) !important;
+  box-shadow: var(--shadow-neu-in, inset 4px 4px 10px rgba(0, 0, 0, 0.55), inset -4px -4px 10px rgba(255, 255, 255, 0.04)) !important;
+  color: var(--ink-1, #eef1f6) !important;
+}
+
+/* Active filter indicator (dark mode) — accent-blue calm-glass tint */
+[data-theme='dark'] #workout[data-page="workout-plan"] .wpdd-button.wpdd-filter.filter-active {
+  background: color-mix(in srgb, var(--surface-2, #1d2238) 78%, var(--accent, #4c6ef5) 18%) !important;
+  background-color: color-mix(in srgb, var(--surface-2, #1d2238) 78%, var(--accent, #4c6ef5) 18%) !important;
+  background-image: none !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 52%, var(--calm-glass-border, rgba(255, 255, 255, 0.08)) 48%) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 52%, var(--calm-glass-border, rgba(255, 255, 255, 0.08)) 48%) !important;
+  box-shadow:
+    inset 3px 3px 8px rgba(0, 0, 0, 0.50),
+    inset -3px -3px 8px rgba(76, 110, 245, 0.08),
+    0 0 0 2px color-mix(in srgb, var(--accent, #4c6ef5) 22%, transparent) !important;
+  color: color-mix(in srgb, var(--ink-1, #eef1f6) 72%, var(--accent, #4c6ef5) 28%) !important;
+}
+
+[data-theme='dark'] #workout[data-page="workout-plan"] .wpdd-button.wpdd-filter.filter-active:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--surface-2, #1d2238) 72%, var(--accent, #4c6ef5) 24%) !important;
+  background-color: color-mix(in srgb, var(--surface-2, #1d2238) 72%, var(--accent, #4c6ef5) 24%) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 62%, var(--calm-glass-border, rgba(255, 255, 255, 0.08)) 38%) !important;
+  color: color-mix(in srgb, var(--ink-1, #eef1f6) 62%, var(--accent, #4c6ef5) 38%) !important;
+}
+
+[data-theme='dark'] #workout[data-page="workout-plan"] .wpdd-button.wpdd-filter.filter-active:focus {
+  background: color-mix(in srgb, var(--surface-2, #1d2238) 70%, var(--accent, #4c6ef5) 26%) !important;
+  background-color: color-mix(in srgb, var(--surface-2, #1d2238) 70%, var(--accent, #4c6ef5) 26%) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 68%, white 32%) !important;
+  box-shadow:
+    inset 3px 3px 8px rgba(0, 0, 0, 0.55),
+    inset -3px -3px 8px rgba(76, 110, 245, 0.10),
+    0 0 0 3px color-mix(in srgb, var(--accent, #4c6ef5) 30%, transparent) !important;
+  color: color-mix(in srgb, var(--ink-1, #eef1f6) 62%, var(--accent, #4c6ef5) 38%) !important;
+}
+
+@media (max-width: 991.98px) {
+  #workout[data-page="workout-plan"] .input-fields-group {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  #workout[data-page="workout-plan"] #exercise-selection-frame #action-buttons-row.selection-actions {
+    display: grid !important;
+    gap: var(--s-2, 8px) !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    justify-content: stretch !important;
+    overflow: visible !important;
+  }
+
+  #workout[data-page="workout-plan"] #exercise-selection-frame #action-buttons-row .action-toolbar-group {
+    display: grid !important;
+    gap: var(--s-2, 8px) !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    justify-content: stretch !important;
+    width: 100% !important;
+  }
+
+  #workout[data-page="workout-plan"] #exercise-selection-frame #action-buttons-row .inline-control-item {
+    align-items: stretch !important;
+    flex: 1 1 auto !important;
+    margin: 0 !important;
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
+  #workout[data-page="workout-plan"] #exercise-selection-frame #action-buttons-row .btn.btn-calm-primary,
+  #workout[data-page="workout-plan"] #exercise-selection-frame #action-buttons-row .btn.btn-calm-ghost,
+  #workout[data-page="workout-plan"] #exercise-selection-frame #action-buttons-row .btn.btn-calm-danger {
+    height: auto !important;
+    max-width: 100% !important;
+    min-height: 40px !important;
+    min-width: 0 !important;
+    padding: var(--s-2, 8px) var(--s-3, 12px) !important;
+    white-space: normal !important;
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 575.98px) {
+  #workout[data-page="workout-plan"] .frame-calm-glass .frame-header.frame-header-2025 {
+    padding: var(--s-3, 12px) var(--s-4, 16px) !important;
+  }
+
+  #workout[data-page="workout-plan"] .input-fields-group {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  #workout[data-page="workout-plan"] #exercise-selection-frame #action-buttons-row.selection-actions {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  #workout[data-page="workout-plan"] #exercise-selection-frame #action-buttons-row .action-toolbar-group {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+}
+
+[data-theme='dark'] .summary-tables .glass-neumorph-card {
+  background: var(--calm-glass-bg, rgba(29, 34, 56, 0.55)) !important;
+  box-shadow: var(--shadow-neu-out, 8px 8px 20px rgba(0, 0, 0, 0.55), -8px -8px 20px rgba(255, 255, 255, 0.04)) !important;
+  color: var(--ink-1, #eef1f6) !important;
+}
+
+[data-theme='dark'] .summary-tables .glass-neumorph-card:hover {
+  box-shadow:
+    var(--shadow-neu-out, 8px 8px 20px rgba(0, 0, 0, 0.55), -8px -8px 20px rgba(255, 255, 255, 0.04)),
+    var(--shadow-elev-2, 0 8px 24px rgba(15, 18, 32, 0.10)) !important;
+}
+
+/* ===== Summary pages (weekly + session) ===== */
+
+.summary-frame.frame-calm-glass {
+  background: var(--calm-glass-bg, rgba(255, 255, 255, 0.55)) !important;
+  backdrop-filter: blur(var(--calm-glass-blur, 18px)) saturate(var(--calm-glass-sat, 180%)) !important;
+  -webkit-backdrop-filter: blur(var(--calm-glass-blur, 18px)) saturate(var(--calm-glass-sat, 180%)) !important;
+  border: 1px solid var(--calm-glass-border, rgba(255, 255, 255, 0.65)) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow-neu-out, 8px 8px 20px rgba(167, 175, 200, 0.35), -8px -8px 20px rgba(255, 255, 255, 0.90)) !important;
+  color: var(--ink-1, #0f1220) !important;
+  padding: var(--s-5, 24px) !important;
+}
+
+.summary-frame.frame-calm-glass .summary-header {
+  border-bottom: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 16%, transparent) !important;
+  margin-bottom: var(--s-5, 24px) !important;
+  padding-bottom: var(--s-5, 24px) !important;
+}
+
+.summary-frame.frame-calm-glass .summary-section {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 72%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 12%, transparent) !important;
+  border-radius: 8px !important;
+  margin-bottom: var(--s-4, 16px) !important;
+  padding: var(--s-4, 16px) !important;
+}
+
+.summary-frame.frame-calm-glass .summary-section h3 {
+  color: var(--ink-1, #0f1220) !important;
+  font-family: var(--font-sans, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif) !important;
+}
+
+.summary-frame.frame-calm-glass .table {
+  color: var(--ink-1, #0f1220) !important;
+  font-family: var(--font-sans, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif) !important;
+}
+
+.summary-frame.frame-calm-glass .table thead th {
+  background: var(--surface-1, #f4f6fa) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 20%, transparent) !important;
+  color: var(--ink-2, #4a5170) !important;
+  font-weight: 600 !important;
+}
+
+.summary-frame.frame-calm-glass .table tbody td {
+  border-bottom: 1px solid color-mix(in srgb, var(--ink-3, #8a90a8) 16%, transparent) !important;
+}
+
+.summary-frame.frame-calm-glass .table tbody tr:hover td {
+  background: color-mix(in srgb, var(--accent, #4c6ef5) 8%, transparent) !important;
+}
+
+.summary-frame.frame-calm-glass .volume-legend {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 64%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 12%, transparent) !important;
+  border-radius: 8px !important;
+  padding: var(--s-4, 16px) !important;
+}
+
+.summary-frame.frame-calm-glass .method-selector .form-label {
+  color: var(--ink-1, #0f1220) !important;
+  font-weight: 600 !important;
+}
+
+.summary-frame.frame-calm-glass .alert-info {
+  background: color-mix(in srgb, var(--accent, #4c6ef5) 8%, var(--surface-2, #ffffff) 92%) !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 22%, transparent) !important;
+  border-radius: 8px !important;
+  color: var(--ink-1, #0f1220) !important;
+}
+
+[data-theme='dark'] .summary-frame.frame-calm-glass {
+  background: var(--calm-glass-bg, rgba(29, 34, 56, 0.55)) !important;
+  box-shadow: var(--shadow-neu-out, 8px 8px 20px rgba(0, 0, 0, 0.55), -8px -8px 20px rgba(255, 255, 255, 0.04)) !important;
+  color: var(--ink-1, #eef1f6) !important;
+}
+
+[data-theme='dark'] .summary-frame.frame-calm-glass .summary-section {
+  background: color-mix(in srgb, var(--surface-2, #1d2238) 74%, transparent) !important;
+}
+
+[data-theme='dark'] .summary-frame.frame-calm-glass .table thead th {
+  background: var(--surface-1, #161a2d) !important;
+  color: var(--ink-2, #b4bad0) !important;
+}
+
+[data-theme='dark'] .summary-frame.frame-calm-glass .table tbody td {
+  color: var(--ink-1, #eef1f6) !important;
+}
+
+[data-theme='dark'] .summary-frame.frame-calm-glass .table tbody tr:hover td {
+  background: color-mix(in srgb, var(--accent, #4c6ef5) 12%, var(--surface-2, #1d2238) 88%) !important;
+}
+
+[data-theme='dark'] .summary-frame.frame-calm-glass .volume-legend {
+  background: color-mix(in srgb, var(--surface-2, #1d2238) 68%, transparent) !important;
+}
+
+[data-theme='dark'] .summary-frame.frame-calm-glass .summary-section h3,
+[data-theme='dark'] .summary-frame.frame-calm-glass .method-selector .form-label {
+  color: var(--ink-1, #eef1f6) !important;
+}
+
+[data-theme='dark'] .summary-frame.frame-calm-glass .alert-info {
+  background: color-mix(in srgb, var(--accent, #4c6ef5) 12%, var(--surface-2, #1d2238) 88%) !important;
+  color: var(--ink-1, #eef1f6) !important;
+}
+
+/* ===== Progression page ===== */
+
+.progression-plan-container .exercise-selector .form-select.input-calm-inset {
+  font-family: var(--font-sans, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif) !important;
+}
+
+.progression-plan-container .frame-calm-glass {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 72%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 12%, transparent) !important;
+  border-radius: 8px !important;
+  padding: var(--s-4, 16px) !important;
+}
+
+.progression-plan-container .suggestions-container .glass-neumorph-card {
+  margin-bottom: var(--s-3, 12px) !important;
+}
+
+.progression-plan-container .modal-content.frame-calm-glass .form-control.input-calm-inset,
+.progression-plan-container .modal-content.frame-calm-glass .form-select.input-calm-inset {
+  font-family: var(--font-sans, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif) !important;
+}
+
+[data-theme='dark'] .progression-plan-container .frame-calm-glass {
+  background: color-mix(in srgb, var(--surface-2, #1d2238) 74%, transparent) !important;
+}
+
+[data-theme='dark'] .progression-plan-container .glass-neumorph-card {
+  background: var(--calm-glass-bg, rgba(29, 34, 56, 0.55)) !important;
+  box-shadow: var(--shadow-neu-out, 8px 8px 20px rgba(0, 0, 0, 0.55), -8px -8px 20px rgba(255, 255, 255, 0.04)) !important;
+  color: var(--ink-1, #eef1f6) !important;
+}
+
+[data-theme='dark'] .progression-plan-container .glass-neumorph-card .card-body,
+[data-theme='dark'] .progression-plan-container .glass-neumorph-card .card-title {
+  color: var(--ink-1, #eef1f6) !important;
+}
+
+[data-theme='dark'] .progression-plan-container .glass-neumorph-card .card-text,
+[data-theme='dark'] .progression-plan-container .glass-neumorph-card .text-muted {
+  color: var(--ink-2, #b4bad0) !important;
+}
+
+[data-theme='dark'] .progression-plan-container .form-control.input-calm-inset,
+[data-theme='dark'] .progression-plan-container .form-select.input-calm-inset {
+  background: color-mix(in srgb, var(--surface-2, #1d2238) 84%, transparent) !important;
+  background-color: color-mix(in srgb, var(--surface-2, #1d2238) 84%, transparent) !important;
+  background-image: none !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 26%, var(--calm-glass-border, rgba(255, 255, 255, 0.08)) 74%) !important;
+  box-shadow: var(--shadow-neu-in, inset 4px 4px 10px rgba(0, 0, 0, 0.55), inset -4px -4px 10px rgba(255, 255, 255, 0.04)) !important;
+  color: var(--ink-1, #eef1f6) !important;
+}
+
+[data-theme='dark'] .progression-plan-container .form-control.input-calm-inset:not(:disabled)::placeholder {
+  color: var(--ink-3, #8a90a8) !important;
+}
+
+[data-theme='dark'] .progression-plan-container .form-control.input-calm-inset:hover:not(:disabled),
+[data-theme='dark'] .progression-plan-container .form-select.input-calm-inset:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--surface-1, #161a2d) 82%, var(--accent, #4c6ef5) 18%) !important;
+  background-color: color-mix(in srgb, var(--surface-1, #161a2d) 82%, var(--accent, #4c6ef5) 18%) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 34%, var(--calm-glass-border, rgba(255, 255, 255, 0.08)) 66%) !important;
+}
+
+[data-theme='dark'] .progression-plan-container .form-control.input-calm-inset:focus,
+[data-theme='dark'] .progression-plan-container .form-control.input-calm-inset:focus-visible,
+[data-theme='dark'] .progression-plan-container .form-select.input-calm-inset:focus,
+[data-theme='dark'] .progression-plan-container .form-select.input-calm-inset:focus-visible {
+  background: var(--surface-2, #1d2238) !important;
+  background-color: var(--surface-2, #1d2238) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 48%, white 12%) !important;
+  box-shadow:
+    var(--shadow-neu-in, inset 4px 4px 10px rgba(0, 0, 0, 0.55), inset -4px -4px 10px rgba(255, 255, 255, 0.04)),
+    0 0 0 3px color-mix(in srgb, var(--accent, #4c6ef5) 24%, transparent) !important;
+  color: var(--ink-1, #eef1f6) !important;
+}
+
+/* ===== Volume Splitter page ===== */
+
+.volume-splitter-container .frequency-section,
+.volume-splitter-container .volume-input-section,
+.volume-splitter-container .results-section,
+.volume-splitter-container .ai-suggestions-section,
+.volume-splitter-container .volume-history-section {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 72%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 12%, transparent) !important;
+  border-radius: 8px !important;
+  padding: var(--s-4, 16px) !important;
+}
+
+.volume-splitter-container .table {
+  color: var(--ink-1, #0f1220) !important;
+  font-family: var(--font-sans, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif) !important;
+}
+
+.volume-splitter-container .table thead th {
+  background: var(--surface-1, #f4f6fa) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 20%, transparent) !important;
+  color: var(--ink-2, #4a5170) !important;
+  font-weight: 600 !important;
+}
+
+.volume-splitter-container .table tbody tr:hover td {
+  background: color-mix(in srgb, var(--accent, #4c6ef5) 8%, transparent) !important;
+}
+
+.volume-splitter-container .volume-controls {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: var(--s-3, 12px) !important;
+}
+
+.volume-splitter-container .mode-toggle .btn-group .btn-outline-primary.btn-calm-ghost {
+  background: color-mix(in srgb, var(--surface-1, #f4f6fa) 88%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 18%, transparent) !important;
+  color: var(--ink-1, #0f1220) !important;
+}
+
+.volume-splitter-container .mode-toggle .btn-group .btn-check:checked + .btn-outline-primary.btn-calm-ghost {
+  background: var(--accent, #4c6ef5) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 78%, white 22%) !important;
+  color: var(--accent-ink, #ffffff) !important;
+}
+
+[data-theme='dark'] .volume-splitter-container .frequency-section,
+[data-theme='dark'] .volume-splitter-container .volume-input-section,
+[data-theme='dark'] .volume-splitter-container .results-section,
+[data-theme='dark'] .volume-splitter-container .ai-suggestions-section,
+[data-theme='dark'] .volume-splitter-container .volume-history-section {
+  background: color-mix(in srgb, var(--surface-2, #1d2238) 74%, transparent) !important;
+}
+
+[data-theme='dark'] .volume-splitter-container .table thead th {
+  background: var(--surface-1, #161a2d) !important;
+  color: var(--ink-2, #b4bad0) !important;
+}
+
+[data-theme='dark'] .volume-splitter-container .table tbody td {
+  color: var(--ink-1, #eef1f6) !important;
+}
+
+/* ===== Welcome page ===== */
+
+#welcome[data-page="welcome"] .welcome-container .modal-content.frame-calm-glass .modal-header:not(.bg-danger),
+#welcome[data-page="welcome"] .welcome-container .modal-content.frame-calm-glass .modal-footer {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 78%, transparent) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 16%, transparent) !important;
+}
+
+/* ===== P6f: Global surface background ===== */
+
+body {
+  background: var(--surface-0, #eef1f6) !important;
+  background-attachment: initial !important;
+  color: var(--ink-1, #0f1220) !important;
+}
+
+h1, h2, h3 {
+  color: var(--ink-1, #0f1220) !important;
+}
+
+[data-theme='dark'] h1,
+[data-theme='dark'] h2,
+[data-theme='dark'] h3 {
+  color: var(--ink-1, #eef1f6) !important;
+}
+
+/* ===== Workout Log modal ===== */
+
+.workout-log-page ~ .modal .modal-content.frame-calm-glass .modal-header:not(.bg-danger),
+.workout-log-page ~ .modal .modal-content.frame-calm-glass .modal-footer {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 78%, transparent) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 16%, transparent) !important;
+}
+
+[data-theme='dark'] .modal-content.frame-calm-glass {
+  background: var(--calm-glass-bg, rgba(29, 34, 56, 0.55)) !important;
+  box-shadow: var(--shadow-neu-out, 8px 8px 20px rgba(0, 0, 0, 0.55), -8px -8px 20px rgba(255, 255, 255, 0.04)) !important;
+  color: var(--ink-1, #eef1f6) !important;
+}
+
+[data-theme='dark'] .modal-content.frame-calm-glass .modal-header:not(.bg-danger):not(.bg-primary),
+[data-theme='dark'] .modal-content.frame-calm-glass .modal-footer {
+  background: color-mix(in srgb, var(--surface-1, #161a2d) 88%, transparent) !important;
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 18%, transparent) !important;
+  color: var(--ink-1, #eef1f6) !important;
+}
+
+[data-theme='dark'] .modal-content.frame-calm-glass .modal-body {
+  color: var(--ink-1, #eef1f6) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(.btn).btn-calm-primary,
+  .btn.btn-calm-primary,
+  :where(.btn).btn-calm-ghost,
+  .btn.btn-calm-ghost,
+  :where(.btn).btn-calm-icon,
+  .btn.btn-calm-icon,
+  :where(.btn).btn-calm-danger,
+  .btn.btn-calm-danger,
+  .glass-neumorph-card,
+  #workout[data-page="workout-plan"] .frame-calm-glass,
+  .execution-style-picker.frame-calm-glass,
+  :where(.form-control).input-calm-inset,
+  .form-control.input-calm-inset,
+  :where(.form-select).input-calm-inset,
+  .form-select.input-calm-inset,
+  :is(#workout[data-page="workout-plan"], .workout-log-page, .progression-plan-container) .table.table-calm tbody td {
+    transition: none !important;
+  }
+
+  .glass-neumorph-card:hover {
+    transform: none !important;
+  }
+
+  :where(.btn).btn-calm-danger:hover,
+  .btn.btn-calm-danger:hover {
+    transform: none !important;
+  }
+}

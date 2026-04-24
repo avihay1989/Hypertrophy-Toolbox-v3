@@ -29,7 +29,8 @@ import { initializeVolumeSplitter } from './modules/volume-splitter.js';
 import { initializeWorkoutDropdowns } from './modules/workout-dropdowns.js';
 import { initializeWorkoutControlsAnimation } from './modules/workout-controls-animation.js';
 import { initializeRoutineCascade } from './modules/routine-cascade.js';
-import { initializeProgramBackup, showAutoBackupBanner } from './modules/program-backup.js';
+import { showAutoBackupBanner } from './modules/program-backup.js';
+import { initializeBackupCenter } from './modules/backup-center.js';
 
 const APP_DEBUG = false;
 const appDebugLog = (...args) => {
@@ -213,7 +214,6 @@ function initializeWorkoutPlan() {
     handleRoutineSelection();
     initializeWorkoutPlanHandlers();
     initializeWorkoutControlsAnimation();
-    initializeProgramBackup(); // Initialize program backup/library functionality
     // fetchWorkoutPlan is already called inside initializeWorkoutPlanHandlers
     return {
         cleanup: () => {
@@ -227,6 +227,16 @@ function initializeProgressionPage() {
     initializeProgressionPlan();
 }
 
+function initializeBackupPage() {
+    appDebugLog('Initializing Backup Center page');
+    initializeBackupCenter();
+    return {
+        cleanup: () => {
+            appDebugLog('Cleaning up Backup Center page');
+        }
+    };
+}
+
 const pageInitializers = {
     '/': initializeHomePage,
     '/workout_plan': initializeWorkoutPlan,
@@ -234,7 +244,8 @@ const pageInitializers = {
     '/weekly_summary': initializeWeeklySummary,
     '/session_summary': initializeSessionSummary,
     '/progression': initializeProgressionPage,
-    '/volume_splitter': initializeVolumeSplitter
+    '/volume_splitter': initializeVolumeSplitter,
+    '/backup': initializeBackupPage
 };
 
 document.addEventListener("DOMContentLoaded", () => {

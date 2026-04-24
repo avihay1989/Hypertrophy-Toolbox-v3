@@ -3,8 +3,7 @@
 {% block title %}Workout Log - Hypertrophy Toolbox{% endblock %}
 
 {% block page_css %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/workout_log.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_frames.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages-workout-log.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -37,10 +36,10 @@
                         </p>
                     </div>
                     <div class="import-actions">
-                        <button id="import-from-plan-btn" class="btn btn-primary btn-lg" type="button" onclick="importFromWorkoutPlan()">
+                        <button id="import-from-plan-btn" class="btn btn-primary btn-calm-primary" type="button" onclick="importFromWorkoutPlan()">
                             <i class="fas fa-file-import me-2"></i> Import Current Workout Plan
                         </button>
-                        <button id="clear-log-btn" class="btn btn-outline-danger ms-2" type="button" data-bs-toggle="modal" data-bs-target="#clearLogModal">
+                        <button id="clear-log-btn" class="btn btn-danger btn-calm-danger" type="button" data-bs-toggle="modal" data-bs-target="#clearLogModal">
                             <i class="fas fa-eraser me-2"></i> Clear Log
                         </button>
                     </div>
@@ -62,7 +61,8 @@
     <div class="workout-log-frame">
         <!-- AGENT:START B-2 PRIORITY-CLASSES -->
         <div class="tbl-wrap tbl-wrap--full" role="region" aria-label="Workout log table">
-            <table class="table table-striped workout-log-table tbl tbl--responsive" 
+            <table id="workout-log-table"
+                   class="table table-striped workout-log-table table-calm tbl tbl--responsive"
                    role="table" 
                    aria-label="Workout log entries">
                 <thead>
@@ -71,16 +71,16 @@
                         <th scope="col" class="col--high" data-label="Routine">Routine</th>
                         <th scope="col" class="col--high" data-label="Exercise">Exercise</th>
                         <th scope="col" class="col--high is-num" data-label="Planned Sets">Planned<br>Sets</th>
-                        <th scope="col" class="col--med is-num" data-label="Planned Min Reps">Planned<br>Min Reps</th>
-                        <th scope="col" class="col--med is-num" data-label="Planned Max Reps">Planned<br>Max Reps</th>
-                        <th scope="col" class="col--med is-num" data-label="Planned RIR">Planned<br>RIR</th>
-                        <th scope="col" class="col--med is-num" data-label="Planned RPE">Planned<br>RPE</th>
-                        <th scope="col" class="col--high is-num" data-label="Planned Weight">Planned<br>Weight</th>
-                        <th scope="col" class="col--high is-num editable" data-label="Scored Min Reps">Scored<br>Min Reps</th>
-                        <th scope="col" class="col--high is-num editable" data-label="Scored Max Reps">Scored<br>Max Reps</th>
-                        <th scope="col" class="col--med is-num editable" data-label="Scored RIR">Scored<br>RIR</th>
-                        <th scope="col" class="col--med is-num editable" data-label="Scored RPE">Scored<br>RPE</th>
-                        <th scope="col" class="col--high is-num editable" data-label="Scored Weight">Scored<br>Weight</th>
+                        <th scope="col" class="col--med is-num metric-lane metric-lane--min-reps metric-lane--planned" data-label="Planned Min Reps">Planned<br>Min Reps</th>
+                        <th scope="col" class="col--med is-num metric-lane metric-lane--max-reps metric-lane--planned" data-label="Planned Max Reps">Planned<br>Max Reps</th>
+                        <th scope="col" class="col--med is-num metric-lane metric-lane--rir metric-lane--planned" data-label="Planned RIR">Planned<br>RIR</th>
+                        <th scope="col" class="col--med is-num metric-lane metric-lane--rpe metric-lane--planned" data-label="Planned RPE">Planned<br>RPE</th>
+                        <th scope="col" class="col--high is-num metric-lane metric-lane--weight metric-lane--planned" data-label="Planned Weight">Planned<br>Weight</th>
+                        <th scope="col" class="col--high is-num editable metric-lane metric-lane--min-reps metric-lane--scored" data-label="Scored Min Reps">Scored<br>Min Reps</th>
+                        <th scope="col" class="col--high is-num editable metric-lane metric-lane--max-reps metric-lane--scored" data-label="Scored Max Reps">Scored<br>Max Reps</th>
+                        <th scope="col" class="col--med is-num editable metric-lane metric-lane--rir metric-lane--scored" data-label="Scored RIR">Scored<br>RIR</th>
+                        <th scope="col" class="col--med is-num editable metric-lane metric-lane--rpe metric-lane--scored" data-label="Scored RPE">Scored<br>RPE</th>
+                        <th scope="col" class="col--high is-num editable metric-lane metric-lane--weight metric-lane--scored" data-label="Scored Weight">Scored<br>Weight</th>
                         <th scope="col" class="col--med" data-label="Last Progression">Last<br>Progression</th>
                         <th scope="col" class="col--high" data-label="Progressive Overload">Progressive<br>Overload</th>
                         <th scope="col" class="col--high" data-label="Actions">Actions</th>
@@ -94,15 +94,15 @@
                         <td data-label="Routine" class="routine-cell"><span class="routine-env">{{ routine_parts[0] if routine_parts|length > 0 else '' }}</span><span class="routine-program">{{ routine_parts[1] if routine_parts|length > 1 else '' }}</span><span class="routine-workout">{{ routine_parts[2] if routine_parts|length > 2 else '' }}</span></td>
                         <td data-label="Exercise">{{ log.exercise }}</td>
                         <td data-label="Planned Sets">{{ log.planned_sets }}</td>
-                        <td data-label="Planned Min Reps" data-field="planned_min_reps">{{ log.planned_min_reps }}</td>
-                        <td data-label="Planned Max Reps" data-field="planned_max_reps">{{ log.planned_max_reps }}</td>
-                        <td data-label="Planned RIR" data-field="planned_rir">{{ log.planned_rir }}</td>
-                        <td data-label="Planned RPE" data-field="planned_rpe">{{ log.planned_rpe }}</td>
-                        <td data-label="Planned Weight" data-field="planned_weight">{{ log.planned_weight }}</td>
-                        <td data-label="Scored Min Reps" class="editable scored-cell" data-field="scored_min_reps">
+                        <td data-label="Planned Min Reps" class="metric-lane metric-lane--min-reps metric-lane--planned" data-field="planned_min_reps">{{ log.planned_min_reps }}</td>
+                        <td data-label="Planned Max Reps" class="metric-lane metric-lane--max-reps metric-lane--planned" data-field="planned_max_reps">{{ log.planned_max_reps }}</td>
+                        <td data-label="Planned RIR" class="metric-lane metric-lane--rir metric-lane--planned" data-field="planned_rir">{{ log.planned_rir }}</td>
+                        <td data-label="Planned RPE" class="metric-lane metric-lane--rpe metric-lane--planned" data-field="planned_rpe">{{ log.planned_rpe }}</td>
+                        <td data-label="Planned Weight" class="metric-lane metric-lane--weight metric-lane--planned" data-field="planned_weight">{{ log.planned_weight }}</td>
+                        <td data-label="Scored Min Reps" class="editable scored-cell metric-lane metric-lane--min-reps metric-lane--scored" data-field="scored_min_reps">
                             <div class="scored-value-container">
                                 <input type="number" 
-                                       class="editable-input number-input" 
+                                       class="editable-input number-input form-control input-calm-inset"
                                        value="{{ log.scored_min_reps if log.scored_min_reps and log.scored_min_reps != 'None' else '' }}"
                                        onchange="updateScoredValue('{{ log.id }}', 'scored_min_reps', this.value)"
                                        min="0"
@@ -119,10 +119,10 @@
                                 {% endif %}
                             </div>
                         </td>
-                        <td data-label="Scored Max Reps" class="editable scored-cell" data-field="scored_max_reps">
+                        <td data-label="Scored Max Reps" class="editable scored-cell metric-lane metric-lane--max-reps metric-lane--scored" data-field="scored_max_reps">
                             <div class="scored-value-container">
                                 <input type="number" 
-                                       class="editable-input number-input" 
+                                       class="editable-input number-input form-control input-calm-inset"
                                        value="{{ log.scored_max_reps if log.scored_max_reps and log.scored_max_reps != 'None' else '' }}"
                                        onchange="updateScoredValue('{{ log.id }}', 'scored_max_reps', this.value)"
                                        min="0"
@@ -139,10 +139,10 @@
                                 {% endif %}
                             </div>
                         </td>
-                        <td data-label="Scored RIR" class="editable scored-cell" data-field="scored_rir">
+                        <td data-label="Scored RIR" class="editable scored-cell metric-lane metric-lane--rir metric-lane--scored" data-field="scored_rir">
                             <div class="scored-value-container">
                                 <input type="number" 
-                                       class="editable-input number-input" 
+                                       class="editable-input number-input form-control input-calm-inset"
                                        value="{{ log.scored_rir if log.scored_rir and log.scored_rir != 'None' else '' }}"
                                        min="0"
                                        onchange="updateScoredValue('{{ log.id }}', 'scored_rir', this.value)"
@@ -160,10 +160,10 @@
                                 {% endif %}
                             </div>
                         </td>
-                        <td data-label="Scored RPE" class="editable scored-cell" data-field="scored_rpe">
+                        <td data-label="Scored RPE" class="editable scored-cell metric-lane metric-lane--rpe metric-lane--scored" data-field="scored_rpe">
                             <div class="scored-value-container">
                                 <input type="number" 
-                                       class="editable-input number-input" 
+                                       class="editable-input number-input form-control input-calm-inset"
                                        value="{{ log.scored_rpe if log.scored_rpe and log.scored_rpe != 'None' else '' }}"
                                        min="0"
                                        onchange="updateScoredValue('{{ log.id }}', 'scored_rpe', this.value)"
@@ -181,10 +181,10 @@
                                 {% endif %}
                             </div>
                         </td>
-                        <td data-label="Scored Weight" class="editable scored-cell" data-field="scored_weight">
+                        <td data-label="Scored Weight" class="editable scored-cell metric-lane metric-lane--weight metric-lane--scored" data-field="scored_weight">
                             <div class="scored-value-container">
                                 <input type="number" 
-                                       class="editable-input number-input" 
+                                       class="editable-input number-input form-control input-calm-inset"
                                        value="{{ log.scored_weight if log.scored_weight and log.scored_weight != 'None' else '' }}"
                                        step="0.5"
                                        min="0"
@@ -204,7 +204,7 @@
                         </td>
                         <td data-label="Last Progression" class="editable date-editable" data-field="last_progression_date" title="Click to set date">
                             <input type="date" 
-                                   class="editable-input date-input" 
+                                   class="editable-input date-input form-control input-calm-inset"
                                    value="{{ log.last_progression_date if log.last_progression_date and log.last_progression_date != 'None' else '' }}"
                                    data-log-id="{{ log.id }}"
                                    style="display: none;">
@@ -249,7 +249,7 @@
 <!-- Clear Log Confirmation Modal -->
 <div class="modal fade" id="clearLogModal" tabindex="-1" aria-labelledby="clearLogModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
+        <div class="modal-content frame-calm-glass">
             <div class="modal-header bg-danger text-white">
                 <h5 class="modal-title" id="clearLogModalLabel">
                     <i class="fas fa-exclamation-triangle me-2"></i>Confirm Clear Log
@@ -264,10 +264,10 @@
                 </p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                <button type="button" class="btn btn-secondary btn-calm-ghost" data-bs-dismiss="modal">
                     <i class="fas fa-times me-1"></i>Cancel
                 </button>
-                <button type="button" class="btn btn-danger" id="confirm-clear-log-btn" onclick="window.confirmClearWorkoutLog()">
+                <button type="button" class="btn btn-danger btn-calm-danger" id="confirm-clear-log-btn" onclick="window.confirmClearWorkoutLog()">
                     <i class="fas fa-trash me-1"></i>Yes, Clear All
                 </button>
             </div>

@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block title %}Backup Center - Hypertrophy Toolbox{% endblock %}
+
+{% block page_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages-backup.css') }}">
+{% endblock %}
+
+{% block content %}
+<main class="backup-center-page" data-page="backup-center" data-testid="backup-center-page" role="main">
+    <header class="backup-center-header text-center">
+        <p class="backup-center-eyebrow">Primary Workspace</p>
+        <h1>Backup Center</h1>
+        <div class="header-underline" aria-hidden="true"></div>
+        <p class="backup-center-intro">
+            Save, review, and recover training programs from one dedicated workspace. This page is now the primary home for manual snapshots and auto-recovery backups.
+        </p>
+    </header>
+
+    <section class="backup-center-overview" aria-label="Backup overview">
+        <article class="backup-summary-card frame-calm-glass">
+            <span class="backup-summary-label">Current Program</span>
+            <strong class="backup-summary-value" id="backup-active-count">{{ active_program_count }}</strong>
+            <p class="backup-summary-copy">Exercises currently in the active plan.</p>
+        </article>
+        <article class="backup-summary-card frame-calm-glass">
+            <span class="backup-summary-label">Saved Snapshots</span>
+            <strong class="backup-summary-value" id="backup-total-count">{{ initial_backup_count }}</strong>
+            <p class="backup-summary-copy">Manual and auto backups stored in the library.</p>
+        </article>
+        <article class="backup-summary-card frame-calm-glass">
+            <span class="backup-summary-label">Manual Backups</span>
+            <strong class="backup-summary-value" id="backup-manual-count">{{ initial_manual_count }}</strong>
+            <p class="backup-summary-copy" id="backup-latest-manual">
+                {% if latest_manual_backup %}
+                    Latest: {{ latest_manual_backup.name }}
+                {% else %}
+                    Latest: none yet
+                {% endif %}
+            </p>
+        </article>
+        <article class="backup-summary-card frame-calm-glass">
+            <span class="backup-summary-label">Auto Recovery</span>
+            <strong class="backup-summary-value" id="backup-auto-count">{{ initial_auto_count }}</strong>
+            <p class="backup-summary-copy" id="backup-latest-auto">
+                {% if latest_auto_backup %}
+                    Latest: {{ latest_auto_backup.name }}
+                {% else %}
+                    Latest: none yet
+                {% endif %}
+            </p>
+        </article>
+    </section>
+
+    <section class="backup-center-workspace" aria-label="Backup center workspace">
+        <div class="backup-center-sidebar">
+            <section id="backup-save-panel" class="frame-calm-glass backup-panel">
+                <div class="backup-panel-head">
+                    <div>
+                        <p class="backup-panel-kicker">Create Snapshot</p>
+                        <h2>Save Current Program</h2>
+                    </div>
+                    <span class="backup-active-pill">{{ active_program_count }} active exercises</span>
+                </div>
+                <p class="backup-panel-copy">
+                    Use a clear name so you can safely experiment, then return to a known-good plan whenever you need it.
+                </p>
+
+                <form id="backup-center-save-form" class="backup-save-form" novalidate>
+                    <label for="backup-center-name" class="form-label">Program name</label>
+                    <input
+                        id="backup-center-name"
+                        class="form-control input-calm-inset"
+                        type="text"
+                        placeholder="e.g., Upper / Lower April Build"
+                        maxlength="100"
+                        required
+                    >
+
+                    <label for="backup-center-note" class="form-label">Notes</label>
+                    <textarea
+                        id="backup-center-note"
+                        class="form-control input-calm-inset"
+                        rows="3"
+                        placeholder="Optional context, goals, or why this version matters..."
+                        maxlength="500"
+                    ></textarea>
+
+                    <div class="backup-save-actions">
+                        <button type="submit" id="backup-center-save-submit" data-testid="backup-center-save-submit" class="btn btn-primary btn-calm-primary">
+                            <i class="fas fa-save" aria-hidden="true"></i> Save Current Program
+                        </button>
+                        <p class="backup-save-help">Use the Workout Plan page's save button to land here with the form ready.</p>
+                    </div>
+
+                    <div id="backup-save-empty-warning" class="backup-save-warning" role="alert" hidden>
+                        Your active plan is empty. Saving now will create an empty snapshot. Click Save again to confirm.
+                    </div>
+                </form>
+            </section>
+
+            <section id="backup-library-panel" class="frame-calm-glass backup-panel">
+                <div class="backup-panel-head">
+                    <div>
+                        <p class="backup-panel-kicker">Browse</p>
+                        <h2>Backup Library</h2>
+                    </div>
+                </div>
+
+                <div class="backup-library-controls">
+                    <label class="visually-hidden" for="backup-search">Search backups</label>
+                    <input id="backup-search" class="form-control input-calm-inset" type="search" placeholder="Search by backup name or note">
+
+                    <label class="visually-hidden" for="backup-sort">Sort backups</label>
+                    <select id="backup-sort" class="form-select input-calm-inset backup-sort-select">
+                        <option value="newest">Newest first</option>
+                        <option value="oldest">Oldest first</option>
+                        <option value="name-asc">Name A-Z</option>
+                        <option value="name-desc">Name Z-A</option>
+                    </select>
+
+                    <div class="backup-filter-group" role="group" aria-label="Filter backups by type">
+                        <button type="button" class="btn btn-sm btn-calm-primary backup-filter-btn active" data-filter="all" aria-pressed="true">All</button>
+                        <button type="button" class="btn btn-sm btn-calm-ghost backup-filter-btn" data-filter="manual" aria-pressed="false">Manual</button>
+                        <button type="button" class="btn btn-sm btn-calm-ghost backup-filter-btn" data-filter="auto" aria-pressed="false">Auto</button>
+                    </div>
+                </div>
+
+                <div id="backup-center-list" data-testid="backup-center-list" class="backup-center-list" aria-live="polite">
+                    <div class="backup-library-state">
+                        <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+                        <span>Loading backups...</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <section class="frame-calm-glass backup-panel backup-detail-shell" data-testid="backup-center-detail" aria-label="Selected backup details">
+            <div id="backup-detail-empty" class="backup-detail-empty">
+                <i class="fas fa-database" aria-hidden="true"></i>
+                <h2>Select a backup</h2>
+                <p>Choose a snapshot from the library to preview its notes, exercises, and recovery actions.</p>
+            </div>
+
+            <div id="backup-detail-panel" class="backup-detail-panel" hidden>
+                <div class="backup-detail-head">
+                    <div>
+                        <p id="backup-detail-type" class="backup-detail-kicker">Manual backup</p>
+                        <div class="backup-detail-title-row">
+                            <h2 id="backup-detail-name">Backup name</h2>
+                            <div id="backup-detail-name-editor" class="backup-detail-inline-editor" hidden></div>
+                            <button type="button" id="backup-detail-edit-name" class="btn btn-sm btn-calm-ghost backup-detail-edit-btn" aria-label="Rename backup">
+                                <i class="fas fa-pen" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <p id="backup-detail-created" class="backup-detail-created"></p>
+                    </div>
+                    <div class="backup-detail-stats">
+                        <div class="backup-detail-stat">
+                            <span class="backup-detail-stat-label">Exercises</span>
+                            <strong id="backup-detail-count">0</strong>
+                        </div>
+                        <div class="backup-detail-stat">
+                            <span class="backup-detail-stat-label">Schema</span>
+                            <strong id="backup-detail-schema">1</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="backup-detail-note-shell">
+                    <div id="backup-detail-note" class="backup-detail-note" hidden></div>
+                    <div id="backup-detail-note-editor" class="backup-detail-inline-editor" hidden></div>
+                    <button type="button" id="backup-detail-edit-note" class="btn btn-sm btn-calm-ghost backup-detail-edit-btn" aria-label="Edit backup note">
+                        <i class="fas fa-pen" aria-hidden="true"></i>
+                    </button>
+                </div>
+
+                <div class="backup-detail-actions">
+                    <button type="button" id="backup-detail-restore" class="btn btn-primary btn-calm-primary">
+                        <i class="fas fa-undo" aria-hidden="true"></i> Restore To Current Plan
+                    </button>
+                    <button type="button" id="backup-detail-delete" class="btn btn-outline-danger btn-calm-danger">
+                        <i class="fas fa-trash" aria-hidden="true"></i> Delete Backup
+                    </button>
+                </div>
+
+                <div id="backup-action-confirm" class="backup-action-confirm" hidden>
+                    <div class="backup-action-copy">
+                        <strong id="backup-action-title">Confirm action</strong>
+                        <p id="backup-action-text" class="mb-0"></p>
+                    </div>
+                    <div class="backup-action-buttons">
+                        <button type="button" id="backup-restore-save-first" class="btn btn-outline-primary btn-calm-ghost" hidden>
+                            <i class="fas fa-shield-alt" aria-hidden="true"></i> Save current plan first
+                        </button>
+                        <button type="button" id="backup-action-cancel" class="btn btn-secondary btn-calm-ghost">Cancel</button>
+                        <button type="button" id="backup-action-confirm-btn" class="btn btn-primary btn-calm-primary">Confirm</button>
+                    </div>
+                </div>
+
+                <div id="backup-restore-result" class="backup-restore-result" role="status" hidden>
+                    <p id="backup-restore-result-title" class="backup-restore-result-title"></p>
+                    <ul id="backup-restore-result-list" class="backup-restore-result-list"></ul>
+                </div>
+
+                <div class="backup-detail-table-wrap tbl-wrap tbl-wrap--full" role="region" aria-label="Backup exercise preview">
+                    <table class="table table-striped table-calm tbl tbl--responsive backup-detail-table">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="col--high" data-label="Routine">Routine</th>
+                                <th scope="col" class="col--high" data-label="Exercise">Exercise</th>
+                                <th scope="col" class="col--med is-num" data-label="Sets">Sets</th>
+                                <th scope="col" class="col--med" data-label="Rep Range">Rep Range</th>
+                                <th scope="col" class="col--med is-num" data-label="Weight">Weight</th>
+                                <th scope="col" class="col--med is-num" data-label="RIR">RIR</th>
+                                <th scope="col" class="col--med is-num" data-label="RPE">RPE</th>
+                                <th scope="col" class="col--med" data-label="Superset">Superset</th>
+                            </tr>
+                        </thead>
+                        <tbody id="backup-detail-items-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </section>
+</main>
+{% endblock %}

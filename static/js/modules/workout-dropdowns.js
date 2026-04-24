@@ -372,6 +372,9 @@ function enhanceSelect(select, prefersReducedMotion) {
   const optionsObserver = new MutationObserver((mutations) => {
     let shouldRebuild = false;
     mutations.forEach((mutation) => {
+      if (mutation.type === 'attributes') {
+        shouldRebuild = true;
+      }
       if (mutation.type === 'childList' && (mutation.addedNodes.length > 0 || mutation.removedNodes.length > 0)) {
         shouldRebuild = true;
       }
@@ -383,7 +386,7 @@ function enhanceSelect(select, prefersReducedMotion) {
   });
   
   // Observe the select element for option changes
-  optionsObserver.observe(select, { childList: true, subtree: true });
+  optionsObserver.observe(select, { childList: true, subtree: true, attributes: true, attributeFilter: ['disabled'] });
   
   // Store observer for cleanup
   container._optionsObserver = optionsObserver;
@@ -515,6 +518,8 @@ function enhanceSelect(select, prefersReducedMotion) {
   function updateButtonText(button, select) {
     const buttonText = button.querySelector('.wpdd-button-text');
     const selectedOption = select.options[select.selectedIndex];
+    button.disabled = select.disabled;
+    button.setAttribute('aria-disabled', select.disabled ? 'true' : 'false');
     
     if (selectedOption && selectedOption.value && !selectedOption.disabled) {
       buttonText.textContent = selectedOption.textContent.trim();
@@ -639,4 +644,3 @@ const workoutContainer = document.getElementById('workout');
 if (workoutContainer) {
   observer.observe(workoutContainer, { childList: true, subtree: true });
 }
-

@@ -11,6 +11,12 @@ const configuredWorkers = Number(process.env.PW_WORKERS ?? '1');
 const workers = Number.isFinite(configuredWorkers) && configuredWorkers > 0 ? configuredWorkers : 1;
 const artifactsRoot = process.env.TEST_ARTIFACTS_DIR ?? 'artifacts';
 const playwrightArtifactsDir = path.join(artifactsRoot, 'playwright');
+const defaultViewport = { width: 1440, height: 900 };
+const deterministicChromiumArgs = [
+  '--disable-font-subpixel-positioning',
+  '--disable-gpu',
+  '--force-color-profile=srgb',
+];
 
 /**
  * Playwright configuration for Hypertrophy Toolbox E2E tests
@@ -32,10 +38,16 @@ export default defineConfig({
     ['html', { outputFolder: path.join(playwrightArtifactsDir, 'report') }],
   ],
   outputDir: path.join(playwrightArtifactsDir, 'test-results'),
+  snapshotPathTemplate: '{testDir}/__screenshots__/{testFilePath}-snapshots/{arg}{ext}',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: 'http://127.0.0.1:5000',
+    locale: 'en-US',
+    timezoneId: 'UTC',
+    colorScheme: 'light',
+    viewport: defaultViewport,
+    deviceScaleFactor: 1,
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
     /* Screenshot on failure */
@@ -48,7 +60,17 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: {
+        ...devices['Desktop Chrome'],
+        locale: 'en-US',
+        timezoneId: 'UTC',
+        colorScheme: 'light',
+        viewport: defaultViewport,
+        deviceScaleFactor: 1,
+        launchOptions: {
+          args: deterministicChromiumArgs,
+        },
+      },
     },
     // Uncomment to add more browsers
     // {

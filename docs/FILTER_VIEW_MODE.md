@@ -81,7 +81,7 @@ Anatomically precise muscle names for experienced users:
 | `templates/workout_plan.html` | Modified | Toggle UI + dropdown population |
 | `templates/weekly_summary.html` | Modified | Toggle UI + display transformation |
 | `templates/session_summary.html` | Modified | Toggle UI + display transformation |
-| `static/css/styles_filters.css` | Modified | Toggle button styling |
+| `static/css/pages-workout-plan.css` | Modified | Toggle button styling within the workout-plan page bundle |
 
 ### Architecture
 

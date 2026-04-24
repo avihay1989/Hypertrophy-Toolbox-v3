@@ -233,6 +233,57 @@ test.describe('Workout Plan Page', () => {
     expect(tableHtml.toLowerCase()).toContain('weight');
   });
 
+  test('muscle naming toggle syncs workout table column visibility', async ({ page }) => {
+    const tableModeToggle = page.locator('.tbl-view-mode-toggle[data-table-key="workout_plan"]');
+    const advancedOnlyHeader = page.locator('th[data-label="Tertiary Muscle"]');
+
+    await expect(tableModeToggle).toBeVisible();
+    await expect(tableModeToggle).toContainText('Simple');
+    await expect(advancedOnlyHeader).toBeHidden();
+
+    await page.locator('#muscleModeToggle').click();
+
+    await expect(tableModeToggle).toContainText('Advanced');
+    await expect(advancedOnlyHeader).toBeVisible();
+
+    await page.locator('#muscleModeToggle').click();
+
+    await expect(tableModeToggle).toContainText('Simple');
+    await expect(advancedOnlyHeader).toBeHidden();
+  });
+
+  test('muscle filter selections survive simple-to-scientific toggle', async ({ page }) => {
+    const muscleFilters = [
+      '#primary_muscle_group',
+      '#secondary_muscle_group',
+      '#tertiary_muscle_group',
+      '#advanced_isolated_muscles',
+    ];
+
+    await page.waitForFunction(() => {
+      const primary = document.getElementById('primary_muscle_group') as HTMLSelectElement | null;
+      return Boolean(primary && Array.from(primary.options).some(option => option.value === 'chest'));
+    });
+
+    await page.evaluate((selectors) => {
+      selectors.forEach((selector) => {
+        const select = document.querySelector(selector) as HTMLSelectElement | null;
+        if (!select) return;
+        select.value = 'chest';
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    }, muscleFilters);
+
+    await page.locator('#muscleModeToggle').click();
+
+    await page.waitForFunction((selectors) => {
+      return selectors.every((selector) => {
+        const select = document.querySelector(selector) as HTMLSelectElement | null;
+        return Boolean(select && select.value === 'chest' && select.selectedOptions[0]?.textContent?.includes('Chest'));
+      });
+    }, muscleFilters);
+  });
+
   test('routine tabs navigation exists', async ({ page }) => {
     // Routine tabs container should exist
     const routineTabs = page.locator('#routine-tabs');
