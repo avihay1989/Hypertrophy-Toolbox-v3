@@ -9,7 +9,6 @@ The Backup Center lets the local user save, inspect, edit, restore, and delete w
 ## Primary UI
 
 - `Backup` in the main navbar opens `/backup`.
-- Workout Plan `Save Program` opens `/backup?intent=save`.
 - Workout Plan `Backup Center` opens `/backup?intent=browse`.
 - The page shows current-program count, saved snapshot count, manual count, and auto-recovery count.
 - The library supports search, type filtering, and sorting.
