@@ -164,10 +164,11 @@ npx playwright test --project=chromium --reporter=line
 
 ## 5. Current State & Risks
 
-### Verified test counts (2026-04-18)
-- **pytest**: 913 passed, 1 skipped (~116s)
-- **E2E Playwright**: 314 passed (~7.2m, Chromium)
-- **Summary-page Playwright**: 20 passed (~25s)
+### Verified test counts (2026-04-25)
+- **pytest**: 968 passed (~114s)
+- **Relevant E2E Playwright**: 62 passed (~1.4m, Chromium; `volume-splitter.spec.ts` + `workout-plan.spec.ts` + `volume-progress.spec.ts`)
+- **Last full E2E Playwright baseline**: 314 passed (~7.2m, Chromium; 2026-04-18)
+- **Summary-page Playwright**: 20 passed (~25s; 2026-04-18)
 
 Re-verify after significant changes and update counts above.
 

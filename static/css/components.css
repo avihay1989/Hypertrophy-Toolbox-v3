@@ -111,15 +111,13 @@ button[type="submit"].btn {
     transform: translateY(-2px);
 }
 
-/* Program Library Buttons - Baby Blue */
-#save-program-btn,
+/* Backup Center Button - Baby Blue */
 #load-program-btn {
     background-color: #e0f7fa !important;  /* Light baby blue background */
     color: #00838f !important;  /* Darker cyan text */
     border: 1px solid #b2ebf2 !important;  /* Light baby blue border */
 }
 
-#save-program-btn:hover,
 #load-program-btn:hover {
     background-color: #b2ebf2 !important;  /* Slightly darker on hover */
     border-color: #80deea !important;

@@ -12,6 +12,12 @@
     <h1>Volume Splitter</h1>
     <div class="header-underline"></div>
     <p class="lead">Plan and distribute your training volume effectively across your workout week</p>
+    <button id="volume-active-summary"
+            class="volume-active-summary"
+            type="button"
+            aria-live="polite">
+        No active plan - activate one to drive the Plan tab.
+    </button>
 </div>
 
 <div id="volume-splitter-app"
@@ -99,6 +105,9 @@
                     <button id="export-volume" class="btn btn-success btn-calm-primary mt-3">
                         Export Volume Plan
                     </button>
+                    <button id="save-activate-volume" class="btn btn-primary btn-calm-primary mt-3 ms-2">
+                        <i class="fas fa-star" aria-hidden="true"></i> Save &amp; Activate
+                    </button>
                 </div>
 
                 <!-- AI Suggestions Section -->
@@ -119,6 +128,7 @@
                                 <thead>
                                     <tr>
                                         <th scope="col" class="col--high" data-label="Date">Date</th>
+                                        <th scope="col" class="col--high" data-label="Active">Active</th>
                                         <th scope="col" class="col--high is-num" data-label="Training Days">Training Days</th>
                                         <th scope="col" class="col--high is-num" data-label="Total Volume">Total Volume</th>
                                         <th scope="col" class="col--high" data-label="Actions">Actions</th>

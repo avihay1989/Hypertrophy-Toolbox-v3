@@ -15,6 +15,22 @@
             <div class="table-header-underline" aria-hidden="true"></div>
         </header>
 
+        <div class="vp-header-summary">
+            <button id="vpActiveSummary"
+                    type="button"
+                    class="vp-active-summary"
+                    aria-live="polite">
+                No active plan - activate one to drive the Plan tab.
+            </button>
+            <button id="vpToggle"
+                    type="button"
+                    aria-controls="vpDrawer"
+                    aria-expanded="false"
+                    class="btn btn-outline-primary btn-sm">
+                <i class="fas fa-chart-bar" aria-hidden="true"></i> Volume targets
+            </button>
+        </div>
+
         <!-- Filters for Exercises -->
         <div class="unified-frames-container">
             <!-- Filters Section -->
@@ -232,13 +248,7 @@
                             </div>
 
                             <div class="action-toolbar-group action-toolbar-group-right" role="group" aria-label="Program actions">
-                                <!-- Backup Center Buttons -->
-                                <div class="inline-control-item">
-                                    <a id="save-program-btn" class="btn btn-outline-primary btn-calm-ghost" href="/backup?intent=save" aria-label="Save current program in Backup Center">
-                                        <i class="fas fa-save" aria-hidden="true"></i> Save Program
-                                    </a>
-                                </div>
-
+                                <!-- Backup Center Button -->
                                 <div class="inline-control-item">
                                     <a id="load-program-btn" class="btn btn-outline-secondary btn-calm-ghost" href="/backup?intent=browse" aria-label="Open Backup Center">
                                         <i class="fas fa-folder-open" aria-hidden="true"></i> Backup Center
@@ -513,6 +523,19 @@
             </div>
         </div>
     </div>
+
+    <aside id="vpDrawer"
+           class="vp-drawer"
+           aria-hidden="true"
+           aria-labelledby="vpDrawerTitle"
+           role="complementary">
+        <header class="vp-drawer__header">
+            <h2 id="vpDrawerTitle">Volume targets</h2>
+            <button type="button" class="vp-close" aria-label="Close volume targets">&times;</button>
+        </header>
+        <section id="vpDrawerBody" class="vp-drawer__body"></section>
+    </aside>
+    <div id="vpBackdrop" class="vp-backdrop" hidden></div>
 </main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>

@@ -31,6 +31,8 @@ import { initializeWorkoutControlsAnimation } from './modules/workout-controls-a
 import { initializeRoutineCascade } from './modules/routine-cascade.js';
 import { showAutoBackupBanner } from './modules/program-backup.js';
 import { initializeBackupCenter } from './modules/backup-center.js';
+import { initializePlanVolumePanel } from './modules/plan_volume_panel.js';
+import { notifyVolumeAffectingPlanChange } from './modules/workout-plan-events.js';
 
 const APP_DEBUG = false;
 const appDebugLog = (...args) => {
@@ -59,6 +61,7 @@ window.handleDateChange = handleDateChange;
 window.importFromWorkoutPlan = importFromWorkoutPlan;
 window.confirmClearWorkoutLog = confirmClearWorkoutLog;
 window.showAutoBackupBanner = showAutoBackupBanner;
+window.fetchWorkoutPlan = fetchWorkoutPlan;
 
 // Generate Starter Plan function
 window.generateStarterPlan = async function() {
@@ -147,6 +150,7 @@ window.generateStarterPlan = async function() {
             // Refresh the workout plan table
             if (typeof fetchWorkoutPlan === 'function') {
                 fetchWorkoutPlan();
+                notifyVolumeAffectingPlanChange('starter-plan-generated');
             } else {
                 // Fallback: reload the page
                 window.location.reload();
@@ -213,6 +217,7 @@ function initializeWorkoutPlan() {
     initializeRoutineCascade(); // Initialize cascading routine selector
     handleRoutineSelection();
     initializeWorkoutPlanHandlers();
+    initializePlanVolumePanel();
     initializeWorkoutControlsAnimation();
     // fetchWorkoutPlan is already called inside initializeWorkoutPlanHandlers
     return {

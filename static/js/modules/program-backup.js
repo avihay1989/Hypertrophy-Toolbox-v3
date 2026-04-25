@@ -3,6 +3,7 @@
  */
 import { showToast } from './toast.js';
 import { api } from './fetch-wrapper.js';
+import { notifyVolumeAffectingPlanChange } from './workout-plan-events.js';
 
 /**
  * Fetch all backups from the API
@@ -147,6 +148,7 @@ export function showAutoBackupBanner(autoBackup) {
                 // Refresh workout plan
                 if (typeof window.fetchWorkoutPlan === 'function') {
                     window.fetchWorkoutPlan();
+                    notifyVolumeAffectingPlanChange('program-backup-restore');
                 } else {
                     window.location.reload();
                 }

@@ -29,7 +29,10 @@ jobs:
     - name: Run pip-audit
       run: |
         pip install pip-audit
-        pip-audit --desc
+        # CVE-2026-3219 in pip itself has no Fix Version yet (upstream has
+        # not released a patched pip). Remove --ignore-vuln once `pip`
+        # publishes a fix.
+        pip-audit --desc --ignore-vuln CVE-2026-3219
       continue-on-error: false
 
   lint:

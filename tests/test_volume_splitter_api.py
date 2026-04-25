@@ -238,8 +238,16 @@ def test_get_volume_plan_returns_wrapped_contract(client, saved_volume_plan):
 
     assert response.status_code == 200
     payload = assert_success_payload(response.get_json())
-    assert set(payload.keys()) == {"training_days", "created_at", "volumes"}
+    assert set(payload.keys()) == {
+        "training_days",
+        "created_at",
+        "mode",
+        "is_active",
+        "volumes",
+    }
     assert payload["training_days"] == 4
+    assert payload["mode"] == "basic"
+    assert payload["is_active"] is False
     assert isinstance(payload["created_at"], str)
     assert payload["volumes"] == {
         "Chest": {

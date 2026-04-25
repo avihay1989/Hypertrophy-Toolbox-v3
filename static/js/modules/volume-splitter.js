@@ -115,7 +115,12 @@ export function initializeVolumeSplitter() {
 
     const exportBtn = document.getElementById('export-volume');
     if (exportBtn) {
-        exportBtn.addEventListener('click', exportVolumePlan);
+        exportBtn.addEventListener('click', () => exportVolumePlan(false));
+    }
+
+    const saveActivateBtn = document.getElementById('save-activate-volume');
+    if (saveActivateBtn) {
+        saveActivateBtn.addEventListener('click', () => exportVolumePlan(true));
     }
 
     const exportExcelBtn = document.getElementById('export-to-excel-btn');
@@ -241,7 +246,7 @@ function loadPlan(planId) {
 
             const advancedLabels = new Set(volumeConfig.advancedMuscles);
             const hasAdvancedLabels = Object.keys(numericVolumes).some(label => advancedLabels.has(label));
-            const targetMode = hasAdvancedLabels ? 'advanced' : 'basic';
+            const targetMode = plan.mode || (hasAdvancedLabels ? 'advanced' : 'basic');
 
             setMode(targetMode, numericVolumes, { skipCalculate: true });
             calculateVolume();
@@ -299,7 +304,7 @@ function executeDeletePlan(planId) {
     });
 }
 
-function exportVolumePlan() {
+function exportVolumePlan(activate = false) {
     const trainingSelect = document.getElementById('training-days');
     const trainingDays = Math.max(parseInt(trainingSelect?.value, 10) || 3, 1);
     const volumes = collectVolumes();
@@ -307,7 +312,8 @@ function exportVolumePlan() {
     const data = {
         mode: currentMode,
         training_days: trainingDays,
-        volumes
+        volumes,
+        activate
     };
     
     fetch('/api/save_volume_plan', {
@@ -320,8 +326,28 @@ function exportVolumePlan() {
     })
     .then(response => parseJsonResponse(response, 'Failed to save volume plan.'))
     .then(result => {
-        showToast('success', result?.message || 'Volume plan saved successfully!');
-        loadVolumeHistory();
+        const planId = result?.plan_id;
+        if (!planId) {
+            showToast('success', 'Volume plan saved successfully!');
+        } else if (activate) {
+            showToast('success', `Plan #${planId} saved and activated.`);
+        } else {
+            showToast('success', `Plan #${planId} saved.`, {
+                duration: 6000,
+                action: {
+                    label: 'Activate for Plan tab',
+                    ariaLabel: `Activate volume plan ${planId}`,
+                    onClick: () => toggleActivePlan(planId, false)
+                }
+            });
+        }
+        const refreshed = loadVolumeHistory();
+        if (activate && planId) {
+            Promise.resolve(refreshed).then(() => {
+                const summary = document.getElementById('volume-active-summary');
+                summary?.focus();
+            });
+        }
     })
     .catch(error => {
         console.error('Error saving plan:', error);
@@ -358,7 +384,7 @@ function displaySuggestions(suggestions) {
 }
 
 function loadVolumeHistory() {
-    fetch('/api/volume_history', {
+    return fetch('/api/volume_history', {
         headers: JSON_REQUEST_HEADERS
     })
         .then(response => parseJsonResponse(response, 'Failed to load volume history.'))
@@ -374,11 +400,25 @@ function loadVolumeHistory() {
 
             entries.forEach(([id, data]) => {
                 const row = document.createElement('tr');
+                row.className = data.is_active ? 'is-active' : '';
                 const totalVolume = Object.values(data.muscles)
                     .reduce((sum, muscle) => sum + muscle.weekly_sets, 0);
+                const activeLabel = data.is_active
+                    ? `Deactivate active volume plan ${id}`
+                    : `Activate volume plan ${id}`;
                 
                 row.innerHTML = `
                     <td>${new Date(data.created_at).toLocaleDateString()}</td>
+                    <td>
+                        <button class="btn btn-sm btn-link activate-plan"
+                                type="button"
+                                data-plan-id="${id}"
+                                data-active="${data.is_active ? 'true' : 'false'}"
+                                aria-label="${activeLabel}"
+                                title="${activeLabel}">
+                            <i class="${data.is_active ? 'fas' : 'far'} fa-star" aria-hidden="true"></i>
+                        </button>
+                    </td>
                     <td>${data.training_days} days</td>
                     <td>${totalVolume} sets</td>
                     <td>
@@ -390,12 +430,14 @@ function loadVolumeHistory() {
                 `;
                 tbody.appendChild(row);
             });
+            updateActivePlanSummary(entries);
             if (!entries.length) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="4" class="text-center text-muted">No saved volume plans yet.</td>
+                        <td colspan="5" class="text-center text-muted">No saved volume plans yet.</td>
                     </tr>
                 `;
+                updateActivePlanSummary([]);
             }
         })
         .catch(error => {
@@ -404,7 +446,7 @@ function loadVolumeHistory() {
             if (tbody) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="4" class="text-center text-danger">Failed to load volume history.</td>
+                        <td colspan="5" class="text-center text-danger">Failed to load volume history.</td>
                     </tr>
                 `;
             }
@@ -756,6 +798,15 @@ function applyStatusToRow(muscle, result, range) {
 }
 
 function handleHistoryClick(event) {
+    const activateBtn = event.target.closest('.activate-plan');
+    if (activateBtn) {
+        const planId = activateBtn.dataset.planId;
+        if (planId) {
+            toggleActivePlan(planId, activateBtn.dataset.active === 'true');
+        }
+        return;
+    }
+
     const loadBtn = event.target.closest('.load-plan');
     if (loadBtn) {
         const planId = loadBtn.dataset.planId;
@@ -772,6 +823,47 @@ function handleHistoryClick(event) {
             deletePlan(planId);
         }
     }
+}
+
+function toggleActivePlan(planId, isActive) {
+    const endpoint = `/api/volume_plan/${planId}/${isActive ? 'deactivate' : 'activate'}`;
+    fetch(endpoint, {
+        method: 'POST',
+        headers: JSON_REQUEST_HEADERS
+    })
+        .then(response => parseJsonResponse(
+            response,
+            isActive ? 'Failed to deactivate volume plan.' : 'Failed to activate volume plan.'
+        ))
+        .then(() => {
+            showToast('success', isActive ? `Plan #${planId} deactivated.` : `Plan #${planId} activated for Plan tab.`);
+            loadVolumeHistory();
+        })
+        .catch(error => {
+            console.error('Error toggling active plan:', error);
+            showToast('error', isActive ? 'Failed to deactivate plan.' : 'Failed to activate plan.');
+        });
+}
+
+function updateActivePlanSummary(entries) {
+    const summary = document.getElementById('volume-active-summary');
+    if (!summary) {
+        return;
+    }
+
+    const activeEntry = entries.find(([, data]) => data?.is_active);
+    if (!activeEntry) {
+        summary.textContent = 'No active plan - activate one to drive the Plan tab.';
+        summary.classList.remove('is-active');
+        return;
+    }
+
+    const [id, data] = activeEntry;
+    const targetedCount = Object.values(data.muscles || {})
+        .filter(muscle => Number(muscle.weekly_sets) > 0)
+        .length;
+    summary.textContent = `Active plan: #${id}, ${data.training_days}-day ${data.mode || 'basic'} split (${targetedCount} muscles targeted)`;
+    summary.classList.add('is-active');
 }
 
 function scheduleCalculate() {
