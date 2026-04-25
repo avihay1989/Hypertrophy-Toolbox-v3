@@ -1,5 +1,6 @@
 import { showToast } from './toast.js';
 import { fetchWorkoutPlan } from './workout-plan.js';
+import { notifyVolumeAffectingPlanChange } from './workout-plan-events.js';
 
 // Debounce flag to prevent duplicate submissions
 let isSubmitting = false;
@@ -166,6 +167,7 @@ async function sendExerciseData(exerciseData) {
         
         showToast('Exercise added successfully');
         fetchWorkoutPlan();
+        notifyVolumeAffectingPlanChange('legacy-add-exercise');
         resetFormFields();
     } catch (error) {
         console.error('Error:', error);
@@ -212,6 +214,7 @@ export async function removeExercise(exerciseId) {
         if (response.ok) {
             showToast(result.message || "Exercise removed successfully!");
             fetchWorkoutPlan();
+            notifyVolumeAffectingPlanChange('remove-exercise');
         } else {
             throw new Error(result.message || "Failed to remove exercise");
         }
@@ -255,6 +258,7 @@ export async function clearWorkoutPlan() {
         if (response.ok) {
             showToast(result.message || 'Workout plan cleared successfully!');
             fetchWorkoutPlan(); // Refresh the table to show empty state
+            notifyVolumeAffectingPlanChange('clear-workout-plan');
         } else {
             throw new Error(result.error?.message || result.message || 'Failed to clear workout plan');
         }
@@ -262,4 +266,4 @@ export async function clearWorkoutPlan() {
         console.error('Error clearing workout plan:', error);
         showToast(`Unable to clear workout plan: ${error.message}`, true);
     }
-} 
+}

@@ -16,26 +16,18 @@ test.describe('Backup Center Entry Points', () => {
     consoleErrors.assertNoErrors();
   });
 
-  test('save program link is visible and targets the save intent', async ({ page }) => {
-    const saveBtn = page.locator('#save-program-btn');
-    await expect(saveBtn).toBeVisible();
-    await expect(saveBtn).toContainText('Save Program');
-    await expect(saveBtn).toHaveAttribute('href', '/backup?intent=save');
-  });
-
-  test('backup center link is visible and targets the browse intent', async ({ page }) => {
+  test('backup center link is visible next to clear plan and targets the browse intent', async ({ page }) => {
+    const programActions = page.getByRole('group', { name: 'Program actions' });
     const libraryBtn = page.locator('#load-program-btn');
+    const actionIds = await programActions.locator('.inline-control-item > :is(a, button)').evaluateAll((elements) =>
+      elements.map((element) => element.id),
+    );
+
+    await expect(programActions.locator('#save-program-btn')).toHaveCount(0);
+    expect(actionIds).toEqual(['load-program-btn', 'clear-plan-btn']);
     await expect(libraryBtn).toBeVisible();
     await expect(libraryBtn).toContainText('Backup Center');
     await expect(libraryBtn).toHaveAttribute('href', '/backup?intent=browse');
-  });
-
-  test('save program link lands on the save pane in Backup Center', async ({ page }) => {
-    await page.locator('#save-program-btn').click();
-    await waitForPageReady(page);
-    await expect(page).toHaveURL(/\/backup\?intent=save/);
-    await expect(page.locator('#backup-center-name')).toBeFocused();
-    await expect(page.locator('#backup-save-panel')).toHaveClass(/is-targeted/);
   });
 
   test('backup center link lands on the browse pane', async ({ page }) => {

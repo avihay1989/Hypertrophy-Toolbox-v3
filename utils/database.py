@@ -487,3 +487,25 @@ def add_volume_tracking_tables() -> None:
     with DatabaseHandler() as db:
         db.execute_query(ddl_volume_plans)
         db.execute_query(ddl_muscle_volumes)
+    add_volume_plan_activation_columns()
+
+
+def add_volume_plan_activation_columns() -> None:
+    """Ensure volume plan activation and mode columns/index exist."""
+    with DatabaseHandler() as db:
+        columns = {row["name"] for row in db.fetch_all("PRAGMA table_info(volume_plans)")}
+        if "is_active" not in columns:
+            db.execute_query(
+                "ALTER TABLE volume_plans ADD COLUMN is_active INTEGER NOT NULL DEFAULT 0"
+            )
+        if "mode" not in columns:
+            db.execute_query(
+                "ALTER TABLE volume_plans ADD COLUMN mode TEXT NOT NULL DEFAULT 'basic'"
+            )
+        db.execute_query(
+            """
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_volume_plans_single_active
+            ON volume_plans(is_active)
+            WHERE is_active = 1
+            """
+        )

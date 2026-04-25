@@ -6,6 +6,7 @@
  * @param {Object} options - Optional configuration
  * @param {number} options.duration - Duration in ms (default: 3000)
  * @param {string} options.requestId - Optional request ID for debugging
+ * @param {{label: string, onClick: () => void, ariaLabel?: string}} options.action - Optional inline action button
  */
 export function showToast(type, message, options = {}) {
     const validTypes = new Set(['success', 'error', 'warning', 'info']);
@@ -29,8 +30,8 @@ export function showToast(type, message, options = {}) {
         options = { duration: options };
     }
 
-    const { duration = 3000, requestId = null } = options;
-    
+    const { duration = 3000, requestId = null, action = null } = options;
+
     const toastBody = document.getElementById("toast-body");
     if (!toastBody) {
         console.error("Error: toast-body not found in the DOM!");
@@ -55,7 +56,33 @@ export function showToast(type, message, options = {}) {
     if (requestId && type === 'error') {
         displayMessage += ` (Request ID: ${requestId})`;
     }
-    toastBody.innerText = displayMessage;
+
+    toastBody.innerHTML = '';
+    const messageSpan = document.createElement('span');
+    messageSpan.textContent = displayMessage;
+    toastBody.appendChild(messageSpan);
+
+    if (action && typeof action.onClick === 'function' && action.label) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'btn btn-sm btn-link text-white text-decoration-underline ms-2 p-0 align-baseline';
+        button.textContent = String(action.label);
+        if (action.ariaLabel) {
+            button.setAttribute('aria-label', action.ariaLabel);
+        }
+        button.addEventListener('click', () => {
+            const instance = bootstrap.Toast.getInstance(toastElement);
+            if (instance) {
+                instance.hide();
+            }
+            try {
+                action.onClick();
+            } catch (err) {
+                console.error('Toast action handler failed:', err);
+            }
+        });
+        toastBody.appendChild(button);
+    }
 
     // Remove all possible background classes
     toastElement.classList.remove("bg-success", "bg-danger", "bg-warning", "bg-info");

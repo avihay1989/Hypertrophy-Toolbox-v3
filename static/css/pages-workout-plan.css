@@ -3127,35 +3127,7 @@ select.filter-dropdown:focus {
   transform: translateY(-2px);
 }
 
-/* Save Program Button - Sky Blue Glass */
-#workout[data-page="workout-plan"] #save-program-btn.btn {
-  background: linear-gradient(135deg,
-    rgba(224, 242, 254, 0.95) 0%,
-    rgba(186, 230, 253, 0.98) 100%) !important;
-  color: #0369a1 !important;
-  border: 1px solid rgba(14, 165, 233, 0.25) !important;
-  box-shadow:
-    0 4px 16px rgba(14, 165, 233, 0.15),
-    0 2px 6px rgba(14, 165, 233, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8),
-    inset 0 -1px 0 rgba(14, 165, 233, 0.08) !important;
-}
-
-#workout[data-page="workout-plan"] #save-program-btn.btn:hover:not(:disabled) {
-  background: linear-gradient(135deg,
-    rgba(186, 230, 253, 0.98) 0%,
-    rgba(125, 211, 252, 1) 100%) !important;
-  color: #075985 !important;
-  border-color: rgba(14, 165, 233, 0.35) !important;
-  box-shadow:
-    0 8px 24px rgba(14, 165, 233, 0.2),
-    0 4px 10px rgba(14, 165, 233, 0.14),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    inset 0 -1px 0 rgba(14, 165, 233, 0.12) !important;
-  transform: translateY(-2px);
-}
-
-/* Program Library Button - Slate Glass */
+/* Backup Center Button - Slate Glass */
 #workout[data-page="workout-plan"] #load-program-btn.btn {
   background: linear-gradient(135deg,
     rgba(241, 245, 249, 0.95) 0%,
@@ -3356,24 +3328,7 @@ select.filter-dropdown:focus {
   border-color: rgba(74, 222, 128, 0.35) !important;
 }
 
-/* Dark Mode - Save Program Button */
-[data-theme='dark'] #workout[data-page="workout-plan"] #save-program-btn.btn {
-  background: linear-gradient(135deg, rgba(125, 211, 252, 0.2) 0%, rgba(56, 189, 248, 0.2) 100%) !important;
-  color: #7dd3fc !important;
-  border: 1px solid rgba(56, 189, 248, 0.25) !important;
-  box-shadow:
-    0 4px 16px rgba(56, 189, 248, 0.15),
-    0 2px 6px rgba(56, 189, 248, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
-}
-
-[data-theme='dark'] #workout[data-page="workout-plan"] #save-program-btn.btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, rgba(125, 211, 252, 0.3) 0%, rgba(56, 189, 248, 0.3) 100%) !important;
-  color: #bae6fd !important;
-  border-color: rgba(56, 189, 248, 0.35) !important;
-}
-
-/* Dark Mode - Program Library Button */
+/* Dark Mode - Backup Center Button */
 [data-theme='dark'] #workout[data-page="workout-plan"] #load-program-btn.btn {
   background: linear-gradient(135deg, rgba(203, 213, 225, 0.15) 0%, rgba(148, 163, 184, 0.15) 100%) !important;
   color: #cbd5e1 !important;

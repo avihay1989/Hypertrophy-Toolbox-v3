@@ -4,46 +4,14 @@ from utils.errors import error_response, success_response
 from utils.logger import get_logger
 from utils.volume_export import export_volume_plan
 from utils.volume_ai import generate_volume_suggestions
+from utils.volume_progress import activate_volume_plan, deactivate_volume_plan
+from utils.volume_taxonomy import BASIC_MUSCLE_GROUPS, ADVANCED_MUSCLE_GROUPS
 from openpyxl import Workbook
 from io import BytesIO
 import datetime
 
 volume_splitter_bp = Blueprint('volume_splitter', __name__)
 logger = get_logger()
-
-# --- NEW: mode-specific muscle sets ---
-BASIC_MUSCLE_GROUPS = [
-    "Neck", "Front-Shoulder", "Rear-Shoulder", "Biceps", "Triceps",
-    "Chest", "Forearms", "Abdominals", "Quadriceps", "Hamstrings",
-    "Calves", "Latissimus-Dorsi", "Glutes", "Lower Back", "Traps", "Middle-Traps"
-]
-
-ADVANCED_MUSCLE_GROUPS = [
-    # Deltoids & Trapezius
-    "anterior-deltoid", "lateral-deltoid", "posterior-deltoid",
-    "upper-trapezius", "traps-middle", "lower-trapezius",
-    # Pectorals & Biceps/Triceps
-    "upper-pectoralis", "mid-lower-pectoralis",
-    "short-head-biceps", "long-head-biceps",
-    "lateral-head-triceps", "long-head-triceps", "medial-head-triceps",
-    # Forearms
-    "wrist-extensors", "wrist-flexors",
-    # Core
-    "upper-abdominals", "lower-abdominals", "obliques",
-    # Hips/Thigh
-    "groin", "inner-thigh", "rectus-femoris",
-    "inner-quadriceps", "outer-quadriceps",
-    # Lower leg
-    "soleus", "tibialis", "gastrocnemius",
-    # Hamstrings & Glutes
-    "medial-hamstrings", "lateral-hamstrings",
-    "gluteus-maximus", "gluteus-medius",
-    # Back (lats)
-    "lats",
-    # Spine extensors
-    "lowerback"
-]
-
 
 def get_muscle_list_for_mode(mode: str):
     return BASIC_MUSCLE_GROUPS if (mode or "").lower() != "advanced" else ADVANCED_MUSCLE_GROUPS
@@ -169,7 +137,7 @@ def get_volume_history():
     try:
         with DatabaseHandler() as db:
             history = db.fetch_all('''
-                SELECT vp.id, vp.training_days, vp.created_at,
+                SELECT vp.id, vp.training_days, vp.created_at, vp.mode, vp.is_active,
                        mv.muscle_group, mv.weekly_sets, mv.sets_per_session, mv.status
                 FROM volume_plans vp
                 JOIN muscle_volumes mv ON vp.id = mv.plan_id
@@ -184,6 +152,8 @@ def get_volume_history():
                 formatted_history[plan_id] = {
                     'training_days': row['training_days'],
                     'created_at': row['created_at'],
+                    'mode': row.get('mode') or 'basic',
+                    'is_active': bool(row.get('is_active')),
                     'muscles': {}
                 }
             formatted_history[plan_id]['muscles'][row['muscle_group']] = {
@@ -201,12 +171,23 @@ def get_volume_history():
 def save_volume_plan():
     try:
         data = request.get_json() or {}
-        plan_id = export_volume_plan(data)
+        mode = data.get('mode') or 'basic'
+        plan_id = export_volume_plan(data, mode=mode)
 
         if plan_id:
+            activated = False
+            if data.get('activate'):
+                activated = activate_volume_plan(plan_id)
+                if not activated:
+                    return error_response('INTERNAL_ERROR', 'Failed to activate saved plan', 500)
+
             return jsonify(success_response(
-                data={'plan_id': plan_id},
-                message='Volume plan saved successfully'
+                data={'plan_id': plan_id, 'activated': activated},
+                message=(
+                    'Volume plan saved and activated successfully'
+                    if activated
+                    else 'Volume plan saved successfully'
+                )
             ))
         return error_response('INTERNAL_ERROR', 'Failed to save plan', 500)
     except Exception as e:
@@ -230,6 +211,8 @@ def get_volume_plan(plan_id):
         plan = {
             'training_days': rows[0]['training_days'],
             'created_at': rows[0]['created_at'],
+            'mode': rows[0].get('mode') or 'basic',
+            'is_active': bool(rows[0].get('is_active')),
             'volumes': {}
         }
 
@@ -244,6 +227,28 @@ def get_volume_plan(plan_id):
     except Exception as e:
         logger.exception('Error loading volume plan %s: %s', plan_id, e)
         return error_response('INTERNAL_ERROR', 'Failed to load volume plan', 500)
+
+
+@volume_splitter_bp.route('/api/volume_plan/<int:plan_id>/activate', methods=['POST'])
+def activate_saved_volume_plan(plan_id):
+    try:
+        if not activate_volume_plan(plan_id):
+            return error_response('PLAN_NOT_FOUND', 'Plan not found', 404)
+        return jsonify(success_response(message='Volume plan activated successfully'))
+    except Exception as e:
+        logger.exception('Error activating volume plan %s: %s', plan_id, e)
+        return error_response('INTERNAL_ERROR', 'Failed to activate plan', 500)
+
+
+@volume_splitter_bp.route('/api/volume_plan/<int:plan_id>/deactivate', methods=['POST'])
+def deactivate_saved_volume_plan(plan_id):
+    try:
+        if not deactivate_volume_plan(plan_id):
+            return error_response('PLAN_NOT_FOUND', 'Plan not found', 404)
+        return jsonify(success_response(message='Volume plan deactivated successfully'))
+    except Exception as e:
+        logger.exception('Error deactivating volume plan %s: %s', plan_id, e)
+        return error_response('INTERNAL_ERROR', 'Failed to deactivate plan', 500)
 
 @volume_splitter_bp.route('/api/volume_plan/<int:plan_id>', methods=['DELETE'])
 def delete_volume_plan(plan_id):

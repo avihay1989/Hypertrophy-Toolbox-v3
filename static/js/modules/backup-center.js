@@ -7,6 +7,7 @@ import {
     deleteBackup,
     updateBackupMetadata
 } from './program-backup.js';
+import { notifyVolumeAffectingPlanChange } from './workout-plan-events.js';
 
 let backupCenterInitialized = false;
 let backupsCache = [];
@@ -791,6 +792,7 @@ async function handleConfirmAction() {
             }
 
             showToast(toastLevel, message);
+            notifyVolumeAffectingPlanChange('program-backup-restore');
             clearPendingAction();
             await refreshBackupCenter({ preserveSelection: true, preferredSelectionId: restoredBackupId });
             renderRestoreResult(result);

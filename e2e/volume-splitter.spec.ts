@@ -229,7 +229,7 @@ test.describe('Volume Splitter Page', () => {
     const historyRows = page.locator('#history-body tr');
     const historyCountBefore = await historyRows.count();
     const historyWasEmpty = historyCountBefore === 1 &&
-      await historyRows.first().locator('td[colspan="4"]').getByText(/No saved volume plans yet\./i).count().catch(() => 0) > 0;
+      await historyRows.first().locator('td[colspan="5"]').getByText(/No saved volume plans yet\./i).count().catch(() => 0) > 0;
     const expectedCountAfterSave = historyWasEmpty ? 1 : Math.min(historyCountBefore + 1, 100);
     const expectedCountAfterDelete = historyWasEmpty ? 1 : historyCountBefore;
 
@@ -251,7 +251,7 @@ test.describe('Volume Splitter Page', () => {
       page.locator('#export-volume').click(),
     ]);
 
-    await expectToast(page, /Volume plan saved successfully!/i);
+    await expectToast(page, /Plan #\d+ saved\.\s*Activate for Plan tab/i);
     await expect(historyRows).toHaveCount(expectedCountAfterSave);
 
     const newestHistoryRow = historyRows.first();

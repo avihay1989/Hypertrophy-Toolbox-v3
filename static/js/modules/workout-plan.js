@@ -1,5 +1,6 @@
 import { showToast } from './toast.js';
 import { api, isHandledApiError, logApiError } from './fetch-wrapper.js';
+import { notifyVolumeAffectingPlanChange } from './workout-plan-events.js';
 
 /**
  * Transform muscle display value based on current view mode (Simple/Advanced)
@@ -1125,6 +1126,7 @@ async function sendExerciseData(exerciseData) {
             setTimeout(() => addBtn.classList.remove('is-success'), 1000);
         }
         fetchWorkoutPlan(); // Refresh the table
+        notifyVolumeAffectingPlanChange('add-exercise');
         resetFormFields();
     } catch (error) {
         logApiError('Error adding exercise:', error);
@@ -1658,6 +1660,7 @@ async function handleSwapExercise(exerciseId, currentExerciseName) {
             const remaining = responseData.remaining_options ?? 0;
             const optionsText = remaining === 1 ? '1 option left' : `${remaining} options left`;
             showToast('success', `Replaced "${oldExercise}" → "${newExercise}" (${optionsText})`);
+            notifyVolumeAffectingPlanChange('replace-exercise');
             
             // Brief highlight effect on the row
             row.classList.add('row-swapped');
@@ -1810,6 +1813,9 @@ function makeTableCellEditable(cell, exerciseId, fieldName) {
                 if (response.ok) {
                     cell.textContent = newValue;
                     showToast('Exercise updated successfully');
+                    if (fieldName === 'sets') {
+                        notifyVolumeAffectingPlanChange('sets-edit');
+                    }
                 } else {
                     throw new Error('Update failed');
                 }

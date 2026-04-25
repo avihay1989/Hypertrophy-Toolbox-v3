@@ -11,6 +11,7 @@ from utils.logger import get_logger
 from routes.filters import ALLOWED_COLUMNS, validate_column_name
 from utils.constants import DIFFICULTY, MECHANIC, UTILITY, ANTAGONIST_PAIRS
 from utils.plan_generator import generate_starter_plan
+from utils.volume_progress import get_volume_progress
 
 workout_plan_bp = Blueprint('workout_plan', __name__)
 logger = get_logger()
@@ -120,6 +121,16 @@ def workout_plan():
     exercises = get_exercises()
     
     return render_template("workout_plan.html", filters=filters, exercises=exercises)
+
+
+@workout_plan_bp.route("/api/volume_progress")
+def volume_progress():
+    """Return active volume-plan progress for the current workout plan."""
+    try:
+        return jsonify(success_response(data=get_volume_progress()))
+    except Exception:
+        logger.exception("Error fetching volume progress")
+        return error_response("INTERNAL_ERROR", "Failed to fetch volume progress", 500)
 
 @workout_plan_bp.route("/add_exercise", methods=["POST"])
 def add_exercise():
