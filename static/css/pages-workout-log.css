@@ -1277,6 +1277,51 @@ tr[data-log-id]:has(.badge.bg-success) {
     background-color: rgba(76, 175, 80, 0.1) !important;
 }
 
+/* ======================================
+   Per-cell scored state hint (#9)
+   Reads the existing progression-indicator icon class via :has()
+   so no template change is needed. Renders as a thin colored stripe
+   along the bottom of the scored cell, sitting outside the
+   metric-lane gradient so the column hue stays intact.
+   ====================================== */
+.workout-log-table td.scored-cell::after {
+    content: '';
+    position: absolute;
+    left: 4px;
+    right: 4px;
+    bottom: 0;
+    height: 2px;
+    border-radius: 2px 2px 0 0;
+    pointer-events: none;
+    background: transparent;
+    z-index: 2;
+    transition: background-color 0.18s ease;
+}
+
+.workout-log-table td.scored-cell:has(i.progression-indicator.text-success)::after {
+    background: rgba(52, 211, 153, 0.65);
+}
+
+.workout-log-table td.scored-cell:has(i.progression-indicator.text-warning)::after {
+    background: rgba(245, 158, 11, 0.55);
+}
+
+.workout-log-table td.scored-cell:has(i.progression-indicator.text-danger)::after {
+    background: rgba(239, 68, 68, 0.55);
+}
+
+[data-theme='dark'] .workout-log-table td.scored-cell:has(i.progression-indicator.text-success)::after {
+    background: rgba(109, 211, 177, 0.7);
+}
+
+[data-theme='dark'] .workout-log-table td.scored-cell:has(i.progression-indicator.text-warning)::after {
+    background: rgba(244, 201, 107, 0.65);
+}
+
+[data-theme='dark'] .workout-log-table td.scored-cell:has(i.progression-indicator.text-danger)::after {
+    background: rgba(240, 138, 127, 0.65);
+}
+
 /* Collapse toggle styling */
 .collapse-toggle {
     background: transparent;
