@@ -490,6 +490,119 @@ def add_volume_tracking_tables() -> None:
     add_volume_plan_activation_columns()
 
 
+def add_user_profile_tables() -> None:
+    """Ensure user profile demographics, lift, and preference tables exist."""
+    ddl_user_profile = """
+        CREATE TABLE IF NOT EXISTS user_profile (
+            id INTEGER PRIMARY KEY CHECK (id = 1),
+            gender TEXT,
+            age INTEGER,
+            height_cm REAL,
+            weight_kg REAL,
+            experience_years REAL,
+            updated_at DATETIME
+        )
+    """
+    ddl_user_profile_lifts = """
+        CREATE TABLE IF NOT EXISTS user_profile_lifts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            lift_key TEXT UNIQUE NOT NULL,
+            weight_kg REAL,
+            reps INTEGER,
+            updated_at DATETIME
+        )
+    """
+    ddl_user_profile_preferences = """
+        CREATE TABLE IF NOT EXISTS user_profile_preferences (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tier TEXT UNIQUE CHECK(tier IN ('complex', 'accessory', 'isolated')),
+            rep_range TEXT CHECK(rep_range IN ('heavy', 'moderate', 'light')),
+            updated_at DATETIME
+        )
+    """
+    with DatabaseHandler() as db:
+        db.execute_query(ddl_user_profile)
+        db.execute_query(ddl_user_profile_lifts)
+        db.execute_query(ddl_user_profile_preferences)
+
+
+def upsert_user_profile_demographics(
+    *,
+    gender: Optional[str],
+    age: Optional[int],
+    height_cm: Optional[float],
+    weight_kg: Optional[float],
+    experience_years: Optional[float],
+    db: Optional[DatabaseHandler] = None,
+) -> None:
+    """Upsert the single demographics row without SQLite REPLACE semantics."""
+    query = """
+        INSERT INTO user_profile (
+            id, gender, age, height_cm, weight_kg, experience_years, updated_at
+        )
+        VALUES (1, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+        ON CONFLICT(id) DO UPDATE SET
+            gender = excluded.gender,
+            age = excluded.age,
+            height_cm = excluded.height_cm,
+            weight_kg = excluded.weight_kg,
+            experience_years = excluded.experience_years,
+            updated_at = excluded.updated_at
+    """
+    params = (gender, age, height_cm, weight_kg, experience_years)
+    if db is not None:
+        db.execute_query(query, params)
+        return
+    with DatabaseHandler() as handler:
+        handler.execute_query(query, params)
+
+
+def upsert_user_profile_lift(
+    lift_key: str,
+    weight_kg: Optional[float],
+    reps: Optional[int],
+    *,
+    db: Optional[DatabaseHandler] = None,
+) -> None:
+    """Upsert one reference lift without deleting and reinserting the row."""
+    query = """
+        INSERT INTO user_profile_lifts (lift_key, weight_kg, reps, updated_at)
+        VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+        ON CONFLICT(lift_key) DO UPDATE SET
+            weight_kg = excluded.weight_kg,
+            reps = excluded.reps,
+            updated_at = excluded.updated_at
+    """
+    params = (lift_key, weight_kg, reps)
+    if db is not None:
+        db.execute_query(query, params)
+        return
+    with DatabaseHandler() as handler:
+        handler.execute_query(query, params)
+
+
+def upsert_user_profile_preference(
+    tier: str,
+    rep_range: Optional[str],
+    *,
+    db: Optional[DatabaseHandler] = None,
+) -> None:
+    """Upsert one tier preference without deleting and reinserting the row."""
+    query = """
+        INSERT INTO user_profile_preferences (tier, rep_range, updated_at)
+        VALUES (?, ?, CURRENT_TIMESTAMP)
+        ON CONFLICT(tier) DO UPDATE SET
+            rep_range = excluded.rep_range,
+            updated_at = excluded.updated_at
+    """
+    params = (tier, rep_range)
+    if db is not None:
+        db.execute_query(query, params)
+        return
+    with DatabaseHandler() as handler:
+        handler.execute_query(query, params)
+
+
 def add_volume_plan_activation_columns() -> None:
     """Ensure volume plan activation and mode columns/index exist."""
     with DatabaseHandler() as db:

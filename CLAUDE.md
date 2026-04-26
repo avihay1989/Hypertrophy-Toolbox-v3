@@ -15,7 +15,8 @@ A local-first Flask web app for designing, logging, and analyzing hypertrophy (m
 3. **Analyze** (`/weekly_summary`, `/session_summary`) — volume per muscle with Effective Sets and Raw Sets shown side-by-side; direct/total contribution mode.
 4. **Progress** (`/progression`) — double-progression suggestions (increase weight vs reps).
 5. **Distribute** (`/volume_splitter`) — optimize weekly set allocation across muscles.
-6. **Backup** (via `/api/backups`) — snapshot/restore entire programs.
+6. **Profile** (`/user_profile`) — save reference lifts and rep preferences for Workout Controls estimates.
+7. **Backup** (via `/api/backups`) — snapshot/restore entire programs.
 
 ### Key terminology
 | Term | Meaning |
@@ -46,11 +47,12 @@ Any change to core workflow behavior (plan/log/analyze/progress/distribute/backu
 initialize_database()           ← utils/db_initializer.py — tables + normalization (no seed)
 add_progression_goals_table()   ← utils/database.py
 add_volume_tracking_tables()    ← utils/database.py
+add_user_profile_tables()       ← utils/database.py
 initialize_exercise_order()     ← routes/workout_plan.py — ALTERs user_selection
 init_backup_tables()            ← routes/program_backup.py → utils/program_backup.py
 create_startup_backup()         ← utils/auto_backup.py — snapshots live DB to data/auto_backup/
 ```
-Then registers 10 blueprints (`app.py:60-71`), plus one direct route: `POST /erase-data` (`app.py:125`).
+Then registers 11 blueprints (`app.py:60-76`), plus one direct route: `POST /erase-data` (`app.py:130`).
 
 ### Module boundaries
 ```
@@ -77,6 +79,7 @@ app.py                 ← startup + middleware only; no business logic
 | `filters_bp` | `routes/filters.py` | `POST /api/exercises`, `GET /api/available_filters` |
 | `workout_plan_bp` | `routes/workout_plan.py` | `GET /workout_plan`, `POST /add_exercise`, `POST /generate_starter_plan` |
 | `progression_plan_bp` | `routes/progression_plan.py` | `GET /progression` |
+| `user_profile_bp` | `routes/user_profile.py` | `GET /user_profile`, `GET /api/user_profile/estimate` |
 | `volume_splitter_bp` | `routes/volume_splitter.py` | `GET /volume_splitter` |
 | `program_backup_bp` | `routes/program_backup.py` | `GET/POST /api/backups`, `POST /api/backups/<id>/restore` |
 
@@ -145,7 +148,7 @@ npx playwright test --project=chromium --reporter=line
 - [ ] Register the blueprint in `app.py` AND `tests/conftest.py` (both — missing either is a 404 in tests).
 - [ ] If a new table is needed, follow the database rule.
 - [ ] Create `templates/myfeature.html` extending `{% extends "base.html" %}`.
-- [ ] Create `static/js/modules/myfeature.js`; use `apiCall` from `fetch-wrapper.js`.
+- [ ] Create `static/js/modules/myfeature.js`; use `apiFetch` or `api` from `fetch-wrapper.js`.
 - [ ] Add nav link in `templates/base.html` navbar.
 - [ ] Write tests in `tests/test_myfeature.py`.
 
@@ -164,11 +167,12 @@ npx playwright test --project=chromium --reporter=line
 
 ## 5. Current State & Risks
 
-### Verified test counts (2026-04-25)
-- **pytest**: 968 passed (~114s)
-- **Relevant E2E Playwright**: 62 passed (~1.4m, Chromium; `volume-splitter.spec.ts` + `workout-plan.spec.ts` + `volume-progress.spec.ts`)
+### Verified test counts (2026-04-26)
+- **pytest**: 996 passed (~2.5m)
+- **Relevant E2E Playwright**: 64 passed (~1.5m, Chromium; `user-profile.spec.ts` + `workout-plan.spec.ts` + `volume-progress.spec.ts` + `volume-splitter.spec.ts`)
 - **Last full E2E Playwright baseline**: 314 passed (~7.2m, Chromium; 2026-04-18)
 - **Summary-page Playwright**: 20 passed (~25s; 2026-04-18)
+- **User Profile targeted verification (2026-04-26)**: included in the refreshed full pytest and relevant Chromium E2E counts above.
 
 Re-verify after significant changes and update counts above.
 
