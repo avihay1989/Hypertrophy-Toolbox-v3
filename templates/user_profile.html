@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}User Profile - Hypertrophy Toolbox{% endblock %}
+
+{% block page_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages-user-profile.css') }}">
+{% endblock %}
+
+{% block content %}
+<main id="user-profile" class="user-profile-page" data-page="user-profile" role="main">
+    <div class="container-fluid">
+        <header class="table-header text-center">
+            <h1>User Profile</h1>
+            <div class="table-header-underline" aria-hidden="true"></div>
+        </header>
+
+        <div class="user-profile-layout">
+            <section class="collapsible-frame action-frame frame-calm-glass" data-section="demographics">
+                <div class="frame-header frame-header-2025">
+                    <div class="frame-header-left">
+                        <span class="frame-title">Demographics</span>
+                    </div>
+                    <div class="frame-header-right">
+                        <button class="collapse-toggle" type="button" title="Collapse demographics" aria-expanded="true" aria-controls="profile-demographics-content">
+                            <i class="fas fa-chevron-up toggle-icon" aria-hidden="true"></i>
+                            <span class="toggle-text">Hide</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="frame-content" id="profile-demographics-content">
+                    <form id="profile-demographics-form" class="profile-form profile-grid">
+                        <div class="profile-field">
+                            <label for="profile-gender" class="form-label">Gender</label>
+                            <select id="profile-gender" name="gender" class="form-select input-calm-inset">
+                                <option value="">Unset</option>
+                                <option value="M" {% if profile.gender == 'M' %}selected{% endif %}>M</option>
+                                <option value="F" {% if profile.gender == 'F' %}selected{% endif %}>F</option>
+                                <option value="Other" {% if profile.gender == 'Other' %}selected{% endif %}>Other</option>
+                            </select>
+                        </div>
+                        <div class="profile-field">
+                            <label for="profile-age" class="form-label">Age</label>
+                            <input id="profile-age" name="age" type="number" min="10" max="100" class="form-control input-calm-inset" value="{{ profile.age or '' }}">
+                        </div>
+                        <div class="profile-field">
+                            <label for="profile-height" class="form-label">Height (cm)</label>
+                            <input id="profile-height" name="height_cm" type="number" min="100" max="250" step="0.1" class="form-control input-calm-inset" value="{{ profile.height_cm or '' }}">
+                        </div>
+                        <div class="profile-field">
+                            <label for="profile-weight" class="form-label">Weight (kg)</label>
+                            <input id="profile-weight" name="weight_kg" type="number" min="30" max="300" step="0.1" class="form-control input-calm-inset" value="{{ profile.weight_kg or '' }}">
+                        </div>
+                        <div class="profile-field">
+                            <label for="profile-experience" class="form-label">Experience (years)</label>
+                            <input id="profile-experience" name="experience_years" type="number" min="0" max="80" step="0.1" class="form-control input-calm-inset" value="{{ profile.experience_years or '' }}">
+                        </div>
+                        <div class="profile-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save" aria-hidden="true"></i>
+                                <span>Save</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <section class="collapsible-frame action-frame frame-calm-glass" data-section="reference lifts">
+                <div class="frame-header frame-header-2025">
+                    <div class="frame-header-left">
+                        <span class="frame-title">Reference Lifts</span>
+                    </div>
+                    <div class="frame-header-right">
+                        <button class="collapse-toggle" type="button" title="Collapse reference lifts" aria-expanded="true" aria-controls="profile-lifts-content">
+                            <i class="fas fa-chevron-up toggle-icon" aria-hidden="true"></i>
+                            <span class="toggle-text">Hide</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="frame-content" id="profile-lifts-content">
+                    <form id="profile-lifts-form" class="profile-form">
+                        <div class="reference-lifts-grid">
+                            {% for lift in reference_lifts %}
+                            <div class="reference-lift-row" data-lift-key="{{ lift.lift_key }}">
+                                <div class="reference-lift-label">
+                                    <span>{{ lift.label }}</span>
+                                    <small>your recent hard set</small>
+                                </div>
+                                <div class="profile-field">
+                                    <label for="lift-{{ lift.lift_key }}-weight" class="form-label">Weight</label>
+                                    <input id="lift-{{ lift.lift_key }}-weight" name="weight_kg" type="number" min="0" max="1000" step="0.1" class="form-control input-calm-inset" value="{{ lift.weight_kg if lift.weight_kg is not none else '' }}">
+                                </div>
+                                <div class="profile-field">
+                                    <label for="lift-{{ lift.lift_key }}-reps" class="form-label">Reps</label>
+                                    <input id="lift-{{ lift.lift_key }}-reps" name="reps" type="number" min="0" max="100" class="form-control input-calm-inset" value="{{ lift.reps if lift.reps is not none else '' }}">
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="profile-actions profile-actions-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save" aria-hidden="true"></i>
+                                <span>Save</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <section class="collapsible-frame action-frame frame-calm-glass" data-section="rep preferences">
+                <div class="frame-header frame-header-2025">
+                    <div class="frame-header-left">
+                        <span class="frame-title">Rep-Range Preferences</span>
+                    </div>
+                    <div class="frame-header-right">
+                        <button class="collapse-toggle" type="button" title="Collapse rep-range preferences" aria-expanded="true" aria-controls="profile-preferences-content">
+                            <i class="fas fa-chevron-up toggle-icon" aria-hidden="true"></i>
+                            <span class="toggle-text">Hide</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="frame-content" id="profile-preferences-content">
+                    <form id="profile-preferences-form" class="profile-form preference-grid">
+                        {% set tier_labels = {'complex': 'Complex', 'accessory': 'Accessory', 'isolated': 'Isolated'} %}
+                        {% set preset_labels = {'heavy': '4-6', 'moderate': '6-8', 'light': '10-15'} %}
+                        {% for tier, label in tier_labels.items() %}
+                        <fieldset class="preference-group" data-tier="{{ tier }}">
+                            <legend>{{ label }}</legend>
+                            <div class="segmented-options">
+                                {% for preset_key, preset_label in preset_labels.items() %}
+                                <label class="segmented-option">
+                                    <input type="radio" name="{{ tier }}" value="{{ preset_key }}" {% if preferences[tier] == preset_key %}checked{% endif %}>
+                                    <span>{{ preset_label }}</span>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </fieldset>
+                        {% endfor %}
+                        <div class="profile-actions profile-actions-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save" aria-hidden="true"></i>
+                                <span>Save</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+{% block page_js %}
+    <script type="module" src="{{ url_for('static', filename='js/modules/user-profile.js') }}"></script>
+{% endblock %}

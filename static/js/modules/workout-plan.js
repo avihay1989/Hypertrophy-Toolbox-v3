@@ -134,6 +134,22 @@ let supersetColorMap = new Map(); // Maps superset_group to color index (1-4)
 // Execution style state
 let executionStyleOptions = null;
 
+const DEFAULT_PROFILE_ESTIMATE = {
+    weight: 25,
+    sets: 3,
+    min_rep: 6,
+    max_rep: 8,
+    rir: 3,
+    rpe: 7,
+    source: 'default',
+};
+
+const ESTIMATE_SOURCE_LABELS = {
+    log: 'from your last set',
+    profile: 'from your profile',
+    default: 'default values',
+};
+
 /**
  * Fetches execution style options from the API (cached)
  */
@@ -740,6 +756,44 @@ export async function updateExerciseForm(exercise) {
     }
 }
 
+function setWorkoutControlValue(id, value) {
+    const field = document.getElementById(id);
+    if (!field || value === undefined || value === null) {
+        return;
+    }
+    field.value = String(value);
+}
+
+function applyEstimateToWorkoutControls(estimate) {
+    const resolved = { ...DEFAULT_PROFILE_ESTIMATE, ...(estimate || {}) };
+    setWorkoutControlValue('weight', resolved.weight);
+    setWorkoutControlValue('sets', resolved.sets);
+    setWorkoutControlValue('min_rep', resolved.min_rep);
+    setWorkoutControlValue('max_rep_range', resolved.max_rep);
+    setWorkoutControlValue('rir', resolved.rir);
+    setWorkoutControlValue('rpe', resolved.rpe);
+
+    const provenance = document.getElementById('workout-estimate-provenance');
+    if (provenance) {
+        provenance.textContent = ESTIMATE_SOURCE_LABELS[resolved.source] || ESTIMATE_SOURCE_LABELS.default;
+    }
+}
+
+export async function applyUserProfileEstimateForSelectedExercise() {
+    const exerciseName = document.getElementById('exercise')?.value || '';
+
+    try {
+        const response = await api.get(
+            `/api/user_profile/estimate?exercise=${encodeURIComponent(exerciseName)}`,
+            { showLoading: false, showErrorToast: false, retries: 0 }
+        );
+        applyEstimateToWorkoutControls(response.data || response);
+    } catch (error) {
+        console.warn('Unable to apply user profile estimate:', error);
+        applyEstimateToWorkoutControls(DEFAULT_PROFILE_ESTIMATE);
+    }
+}
+
 export function handleExerciseSelection() {
     const exerciseSelect = document.getElementById('exercise');
     if (!exerciseSelect) return;
@@ -751,10 +805,8 @@ export function handleExerciseSelection() {
         if (selectedExercise) {
             setFieldValidationState('exercise', false);
             updateExerciseDetails(selectedExercise);
-            // Note: updateExerciseForm is NOT called here to preserve user-entered
-            // workout control values (weight, sets, RIR, etc.). The controls are
-            // only reset after clicking "Add Exercise" in sendExerciseData().
         }
+        void applyUserProfileEstimateForSelectedExercise();
     });
 }
 
@@ -1138,27 +1190,7 @@ async function sendExerciseData(exerciseData) {
 }
 
 function resetFormFields() {
-    // Preserve the current routine and exercise
-    const currentRoutine = document.getElementById('routine').value;
-    const currentExercise = document.getElementById('exercise').value;
-    
-    // Reset form fields to default values
-    document.getElementById('sets').value = '3';
-    document.getElementById('rir').value = '3';
-    document.getElementById('weight').value = '25';
-    document.getElementById('min_rep').value = '6';
-    document.getElementById('max_rep_range').value = '8';
-    document.getElementById('rpe').value = '7';
-
-    // Restore the routine and exercise
-    if (currentRoutine) {
-        document.getElementById('routine').value = currentRoutine;
-    }
-    if (currentExercise) {
-        document.getElementById('exercise').value = currentExercise;
-        // Trigger change event for enhanced dropdown to update display
-        document.getElementById('exercise').dispatchEvent(new Event('change', { bubbles: true }));
-    }
+    void applyUserProfileEstimateForSelectedExercise();
 }
 
 function initializeDefaultValues() {

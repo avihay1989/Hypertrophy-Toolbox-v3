@@ -8025,3 +8025,14 @@ tr.superset-partner-dragging {
     background-color: var(--bs-body-bg, #212529);
     border-color: var(--bs-border-color, #495057) var(--bs-border-color, #495057) var(--bs-body-bg, #212529);
 }
+.workout-estimate-provenance {
+    color: var(--ink-3, #6d7488);
+    font-size: 0.82rem;
+    font-weight: 600;
+    margin: 0.65rem 0 0;
+    min-height: 1.25rem;
+}
+
+[data-theme='dark'] .workout-estimate-provenance {
+    color: var(--ink-3, #939bb2);
+}
