@@ -21,7 +21,8 @@ export function initializeNavHighlighting() {
         '/workout_log': 'nav-workout-log',
         '/progression': 'nav-progression-plan',
         '/volume_splitter': 'nav-volume-splitter',
-        '/backup': 'nav-backup'
+        '/backup': 'nav-backup',
+        '/user_profile': 'nav-user-profile'
     };
     
     // Add active class to current page's nav item

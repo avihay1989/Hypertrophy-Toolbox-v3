@@ -174,6 +174,21 @@ Round the `pct_1rm × 1RM × tier_ratio` product before returning it.
 
 **Resolved (Opus 4.7, 2026-04-26 — codex 5.5 follow-up):** Free-weight floor is now **tier-aware**. The 20 kg empty-bar floor only applies to complex-tier lifts (squat, deadlift, bench, OHP, row, etc.). Accessory/isolated lifts with `equipment = 'Barbell'` (e.g., `EZ Bar Preacher Curl`, `Barbell Bicep Curl`) floor at 1.25 kg, preserving the worked-example `~11 kg` preacher-curl estimate. Implementation note for Slice-C: `round_weight()` therefore takes both `equipment` **and** `tier` as inputs (signature `round_weight(weight: float, equipment: str, tier: str) -> float`); `_estimate_from_profile` already has `tier` available from the `classify_tier()` call earlier in the flow, so plumbing it through is one extra parameter.
 
+### 6.1 Dumbbell weight convention — per hand
+
+**Resolved (Opus 4.7, 2026-04-27 — Issue #10):** All dumbbell weights — both **inputs** (Reference Lifts on `/user_profile`) and **outputs** (Workout Controls suggestions on `/workout_plan`) — are expressed as **weight per hand**, i.e. the mass of one dumbbell. A user holding 20 kg in each hand records `weight_kg = 20` (not 40) for `dumbbell_bench_press`, and the estimator returns `weight = 20` (not 40) for the working weight on a dumbbell exercise.
+
+**Rationale:** Per-hand is the gym industry standard, matches how dumbbells are physically labelled (each dumbbell carries its own per-piece weight), and is what users naturally type when reading the rack.
+
+**No estimator-math change is required.** The chain `epley_1rm` → `TIER_RATIOS` → `REP_RANGE_PRESETS` → `round_weight` is unit-agnostic — it operates on `weight` as an opaque scalar end-to-end. As long as input and output share the same convention (and the user is consistent across questionnaire and Workout Controls), the math is correct without conversion. Aggregations downstream (`utils/weekly_summary.py`, `utils/session_summary.py`) compute `total_volume = sets × reps × weight` and inherit the same convention; per-hand volume is internally consistent across barbell and dumbbell exercises but is **not** directly comparable to total-load tonnage from other tracking apps.
+
+**UI surfacing:**
+- `utils/profile_estimator.py:DUMBBELL_LIFT_KEYS` is the canonical set of dumbbell-loaded reference-lift slugs (per-hand convention applies).
+- `estimate_for_exercise()` returns `is_dumbbell: bool` on every estimate (true when `normalize_equipment(exercise.equipment) == "Dumbbells"`). The Workout Controls weight field on `/workout_plan` shows a "Per hand (one dumbbell)" hint when this flag is true.
+- `routes/user_profile.py:_load_profile_context` flags each questionnaire row's `is_dumbbell` from `DUMBBELL_LIFT_KEYS`. `templates/user_profile.html` renders the same hint below dumbbell weight inputs.
+
+**Migration:** None required (verified 2026-04-27 against `data/database.db`). At cutover, only one dumbbell-slug row had a value (`dumbbell_lateral_raise = 12 kg × 8`) and 12 kg is unmistakably per-hand. All other dumbbell slugs were NULL. New entries flow through the convention via the helper text.
+
 ---
 
 ## 7. Reference-lift mapping (`MUSCLE_TO_KEY_LIFT`)

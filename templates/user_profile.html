@@ -14,6 +14,254 @@
             <div class="table-header-underline" aria-hidden="true"></div>
         </header>
 
+        <section class="collapsible-frame action-frame frame-calm-glass profile-onboarding" data-section="onboarding" aria-labelledby="profile-onboarding-title">
+            <div class="frame-header frame-header-2025">
+                <div class="frame-header-left">
+                    <span class="frame-title" id="profile-onboarding-title">
+                        <i class="fas fa-circle-info" aria-hidden="true"></i>
+                        About this page
+                    </span>
+                </div>
+                <div class="frame-header-right">
+                    <button class="collapse-toggle" type="button" title="Collapse onboarding" aria-expanded="true" aria-controls="profile-onboarding-content">
+                        <i class="fas fa-chevron-up toggle-icon" aria-hidden="true"></i>
+                        <span class="toggle-text">Hide</span>
+                    </button>
+                </div>
+            </div>
+            <div class="frame-content" id="profile-onboarding-content">
+                <p class="profile-onboarding-lead">
+                    Filling out this profile <strong>personalises the suggestions</strong> on the
+                    <a href="{{ url_for('workout_plan.workout_plan') }}">Plan page</a> &mdash;
+                    Min Sets, Max Sets, Reps, RIR, RPE, and starting Weight for every exercise you add.
+                </p>
+                <ul class="profile-onboarding-list">
+                    <li>
+                        <strong>Demographics</strong> &rarr; seeds a <strong>cold-start Weight</strong> estimate
+                        (via bodyweight &times; gender / experience ratios) when no Reference Lift covers the muscle.
+                    </li>
+                    <li>
+                        <strong>Reference Lifts</strong> &rarr; seeds the <strong>Weight</strong> suggestion on the Plan page,
+                        via the Epley 1RM formula and tier ratios.
+                    </li>
+                    <li>
+                        <strong>Rep-Range Preferences</strong> &rarr; seeds <strong>Min Reps</strong>, <strong>Max Reps</strong>,
+                        <strong>RIR</strong>, and <strong>RPE</strong> on the Plan page,
+                        via Heavy / Moderate / Light presets per tier.
+                    </li>
+                </ul>
+                <p class="profile-onboarding-footer">
+                    Every value is a <em>starting suggestion</em> &mdash; you can override it directly on the Plan page at any time.
+                </p>
+            </div>
+        </section>
+
+        {% set band = profile_insights.accuracy_band %}
+        {% set donut = profile_insights.coverage_donut %}
+        {% set cohort = profile_insights.cohort_ranges %}
+        {% set tiles = cohort.tiles %}
+        <div class="profile-overview-grid">
+        <section class="collapsible-frame action-frame frame-calm-glass profile-insights" data-section="profile insights" aria-labelledby="profile-insights-title" data-band="{{ band.band }}">
+            <div class="frame-header frame-header-2025">
+                <div class="frame-header-left">
+                    <span class="frame-title" id="profile-insights-title">
+                        <i class="fas fa-eye" aria-hidden="true"></i>
+                        How the system sees you
+                    </span>
+                </div>
+                <div class="frame-header-right">
+                    <button class="collapse-toggle" type="button" title="Collapse insights" aria-expanded="true" aria-controls="profile-insights-content">
+                        <i class="fas fa-chevron-up toggle-icon" aria-hidden="true"></i>
+                        <span class="toggle-text">Hide</span>
+                    </button>
+                </div>
+            </div>
+            <div class="frame-content" id="profile-insights-content" data-profile-insights="true">
+                <div class="profile-insights-band" data-insights-band data-band-key="{{ band.band }}" role="status" aria-live="polite">
+                    <div class="profile-insights-donut" data-insights-donut aria-hidden="true">
+                        <svg class="profile-insights-donut-svg" viewBox="0 0 36 36" role="img" aria-label="{{ donut.filled_count }} of {{ donut.total_count }} reference lifts saved">
+                            <circle class="profile-insights-donut-track" cx="18" cy="18" r="15.915" fill="none" stroke-width="3.4"></circle>
+                            <circle class="profile-insights-donut-fill" cx="18" cy="18" r="15.915" fill="none" stroke-width="3.4" data-donut-fill style="stroke-dasharray: {{ donut.percent }} {{ 100 - donut.percent }}; stroke-dashoffset: 25;"></circle>
+                        </svg>
+                        <div class="profile-insights-donut-label">
+                            <span class="profile-insights-donut-count" data-donut-count>{{ donut.filled_count }}<span class="profile-insights-donut-of">/{{ donut.total_count }}</span></span>
+                            <span class="profile-insights-donut-caption">lifts saved</span>
+                        </div>
+                    </div>
+                    <div class="profile-insights-band-meter" aria-hidden="true">
+                        <span class="profile-insights-band-fill" data-band-fill style="--band-progress: {{ band.filled_count }}; --band-total: {{ band.total_count }};"></span>
+                    </div>
+                    <div class="profile-insights-band-text">
+                        <span class="profile-insights-band-pill" data-band-pill>
+                            {% if band.band == 'fully' %}Fully personalised
+                            {% elif band.band == 'mostly' %}Mostly personalised
+                            {% elif band.band == 'partial' %}Partially personalised
+                            {% else %}Population estimate only{% endif %}
+                        </span>
+                        <span class="profile-insights-band-count" data-band-count>{{ band.filled_count }} / {{ band.total_count }} reference lifts</span>
+                        <p class="profile-insights-band-copy" data-band-copy>{{ band['copy'] }}</p>
+                    </div>
+                </div>
+
+                <div class="profile-insights-tiles" data-insights-tiles role="group" aria-label="Estimator cohort context">
+                    {% for tile_key, tile_label in [('bodyweight','Bodyweight'),('height','Height'),('age','Age'),('experience','Experience')] %}
+                    {% set tile = tiles[tile_key] %}
+                    <div class="profile-insights-tile" data-insights-tile="{{ tile_key }}"{% if tile.empty %} data-empty="true"{% endif %}{% if not tile.used %} data-unused="true"{% endif %}>
+                        <span class="profile-insights-tile-label">{{ tile_label }}{% if not tile.used %} <span class="profile-insights-tile-unused-flag" title="{{ tile.unused_reason }}">unused</span>{% endif %}</span>
+                        {% if tile.empty %}
+                        <span class="profile-insights-tile-value" data-tile-value>—</span>
+                        <span class="profile-insights-tile-cohort" data-tile-cohort>{{ tile.empty_text }}</span>
+                        {% else %}
+                        {% if tile_key == 'experience' %}
+                        <span class="profile-insights-tile-value" data-tile-value>{{ tile.value_text }}{% if tile.years_text %} <small>· {{ tile.years_text }}</small>{% endif %}</span>
+                        {% else %}
+                        <span class="profile-insights-tile-value" data-tile-value>{{ tile.value_text }}</span>
+                        {% endif %}
+                        <span class="profile-insights-tile-cohort" data-tile-cohort>{{ tile.cohort_text }}</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <p class="profile-insights-cohort-summary" data-cohort-summary>{{ cohort.summary }}</p>
+
+                <div class="profile-insights-section" data-insights-bars{% if not profile_insights.cohort_bars %} hidden{% endif %}>
+                    <span class="profile-insights-label">Strength vs. cohort (per filled lift)</span>
+                    <ul class="profile-insights-bar-list" data-bar-list>
+                        {% for bar in profile_insights.cohort_bars %}
+                        {% set range = (bar.max_kg - bar.min_kg) if (bar.max_kg - bar.min_kg) > 0 else 1 %}
+                        {% set cs_pct = ((bar.cold_start_1rm_kg - bar.min_kg) / range * 100) %}
+                        {% set user_pct = ((bar.user_1rm_kg - bar.min_kg) / range * 100) %}
+                        {% set cu_pct = ((bar.cohort_upper_kg - bar.min_kg) / range * 100) %}
+                        <li class="profile-insights-bar-row" data-bar-slug="{{ bar.lift_key }}">
+                            <div class="profile-insights-bar-head">
+                                <strong>{{ bar.label }}</strong>
+                                <span class="profile-insights-bar-user">≈ {{ bar.user_1rm_kg | round(1) }} kg 1RM</span>
+                            </div>
+                            <div class="profile-insights-bar-track" role="img" aria-label="{{ bar.label }}: cold-start {{ bar.cold_start_1rm_kg | round(1) }} kg, you {{ bar.user_1rm_kg | round(1) }} kg, cohort upper {{ bar.cohort_upper_kg | round(1) }} kg">
+                                <span class="profile-insights-bar-fill" style="--cs-pct: {{ cs_pct | round(2) }}%; --cu-pct: {{ cu_pct | round(2) }}%;"></span>
+                                <span class="profile-insights-bar-marker is-cold-start" style="--mark-pct: {{ cs_pct | round(2) }}%;" title="Cold-start anchor"></span>
+                                <span class="profile-insights-bar-marker is-user" style="--mark-pct: {{ user_pct | round(2) }}%;" title="Your estimated 1RM"></span>
+                                <span class="profile-insights-bar-marker is-cohort-upper" style="--mark-pct: {{ cu_pct | round(2) }}%;" title="Cohort upper bound"></span>
+                            </div>
+                            <div class="profile-insights-bar-foot">
+                                <span>cold-start ≈ {{ bar.cold_start_1rm_kg | round(1) }} kg</span>
+                                <span>cohort upper ≈ {{ bar.cohort_upper_kg | round(1) }} kg</span>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="profile-insights-section" data-insights-anchors{% if not profile_insights.demographics_complete %} hidden{% endif %}>
+                    <span class="profile-insights-label">Cold-start estimates from your demographics</span>
+                    <ul class="profile-insights-anchor-list" data-anchor-list>
+                        {% for anchor in profile_insights.cold_start_anchor_lifts %}
+                        <li data-anchor-slug="{{ anchor.lift_key }}">
+                            <strong>{{ anchor.label }}</strong>
+                            <span data-anchor-value>
+                                {% if anchor.weight_1rm %}≈ {{ anchor.weight_1rm | round(1) }} kg 1RM{% else %}—{% endif %}
+                            </span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="profile-insights-section" data-insights-replaced{% if not profile_insights.replaced_anchor_lifts %} hidden{% endif %}>
+                    <span class="profile-insights-label">Replaced by your data</span>
+                    <ul class="profile-insights-replaced-list" data-replaced-list>
+                        {% for entry in profile_insights.replaced_anchor_lifts %}
+                        <li data-replaced-slug="{{ entry.lift_key }}">
+                            <strong>{{ entry.label }}</strong>
+                            <span>(saved {{ entry.weight_kg | round(1) }} kg × {{ entry.reps }} → 1RM ≈ {{ entry.estimated_1rm | round(1) }} kg)</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="profile-insights-section" data-insights-missing{% if not profile_insights.next_high_impact_lifts %} hidden{% endif %}>
+                    <span class="profile-insights-label">You'd improve estimates the most by entering</span>
+                    <ul class="profile-insights-missing-list" data-missing-list>
+                        {% for entry in profile_insights.next_high_impact_lifts %}
+                        <li data-missing-slug="{{ entry.lift_key }}">{{ entry.label }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <p class="profile-insights-footer">
+                    All numbers are starting points. Override anything from the Plan page &mdash; your edits stick.
+                </p>
+            </div>
+        </section>
+
+        {% set coverage = profile_insights.muscle_coverage %}
+        <section class="collapsible-frame action-frame frame-calm-glass profile-bodymap" data-section="muscle coverage" aria-labelledby="profile-bodymap-title">
+            <div class="frame-header frame-header-2025">
+                <div class="frame-header-left">
+                    <span class="frame-title" id="profile-bodymap-title">
+                        <i class="fas fa-person" aria-hidden="true"></i>
+                        Coverage map
+                    </span>
+                </div>
+                <div class="frame-header-right">
+                    <button class="collapse-toggle" type="button" title="Collapse coverage map" aria-expanded="true" aria-controls="profile-bodymap-content">
+                        <i class="fas fa-chevron-up toggle-icon" aria-hidden="true"></i>
+                        <span class="toggle-text">Hide</span>
+                    </button>
+                </div>
+            </div>
+            <div class="frame-content" id="profile-bodymap-content">
+                <p class="profile-bodymap-lead">
+                    Each shaded muscle below shows how confident your suggestions are. Solid means a measured reference lift drives them; striped means we're borrowing from a related lift; outlined means we fall back to the population estimate.
+                </p>
+                <div class="profile-bodymap-controls" role="group" aria-label="Body diagram side">
+                    <button type="button" class="profile-bodymap-tab is-active" data-bodymap-side="front" aria-pressed="true">
+                        <i class="fas fa-user" aria-hidden="true"></i>
+                        Front
+                    </button>
+                    <button type="button" class="profile-bodymap-tab" data-bodymap-side="back" aria-pressed="false">
+                        <i class="fas fa-user" aria-hidden="true"></i>
+                        Back
+                    </button>
+                </div>
+                <div class="profile-bodymap-stage">
+                    <div class="profile-bodymap-svg" data-bodymap-svg>
+                        <div class="profile-bodymap-loading" data-bodymap-loading>Loading body diagram&hellip;</div>
+                    </div>
+                    <div class="profile-bodymap-popover" data-bodymap-popover hidden role="dialog" aria-live="polite">
+                        <div class="profile-bodymap-popover-head">
+                            <strong data-popover-title>Muscle</strong>
+                            <span class="profile-bodymap-popover-state" data-popover-state>Not assessed</span>
+                        </div>
+                        <div class="profile-bodymap-popover-body" data-popover-body></div>
+                    </div>
+                </div>
+                <ul class="profile-bodymap-legend" aria-label="Coverage states">
+                    <li><span class="profile-bodymap-swatch state-measured" aria-hidden="true"></span>Measured</li>
+                    <li><span class="profile-bodymap-swatch state-cross_muscle" aria-hidden="true"></span>Cross-muscle fallback</li>
+                    <li><span class="profile-bodymap-swatch state-cold_start_only" aria-hidden="true"></span>Population estimate</li>
+                    <li><span class="profile-bodymap-swatch state-not_assessed" aria-hidden="true"></span>Not assessed</li>
+                </ul>
+                {# Screen-reader linear summary mirroring the bodymap. AT users
+                   read this list instead of interacting with the SVG. #}
+                <dl class="profile-bodymap-sr-summary" data-bodymap-sr-list aria-label="Coverage by muscle">
+                    {% for muscle_key, entry in coverage.items() %}
+                    <div data-sr-muscle="{{ muscle_key }}" data-sr-state="{{ entry.state }}">
+                        <dt>{{ muscle_key }}</dt>
+                        <dd>
+                            {% if entry.state == 'measured' %}Measured ({{ entry.filled | length }} reference lift{{ '' if entry.filled | length == 1 else 's' }} saved)
+                            {% elif entry.state == 'cross_muscle' %}Inferred from {{ entry.filled[0].label if entry.filled else 'a related lift' }} (cross-muscle fallback)
+                            {% elif entry.state == 'cold_start_only' %}Population estimate (no reference lift saved)
+                            {% else %}Not assessed{% endif %}
+                        </dd>
+                    </div>
+                    {% endfor %}
+                </dl>
+                <script type="application/json" data-bodymap-state>{{ coverage | tojson }}</script>
+            </div>
+        </section>
+        </div>{# /.profile-overview-grid #}
+
         <div class="user-profile-layout">
             <section class="collapsible-frame action-frame frame-calm-glass" data-section="demographics">
                 <div class="frame-header frame-header-2025">
@@ -33,9 +281,8 @@
                             <label for="profile-gender" class="form-label">Gender</label>
                             <select id="profile-gender" name="gender" class="form-select input-calm-inset">
                                 <option value="">Unset</option>
-                                <option value="M" {% if profile.gender == 'M' %}selected{% endif %}>M</option>
-                                <option value="F" {% if profile.gender == 'F' %}selected{% endif %}>F</option>
-                                <option value="Other" {% if profile.gender == 'Other' %}selected{% endif %}>Other</option>
+                                <option value="M" {% if profile.gender == 'M' %}selected{% endif %}>Male</option>
+                                <option value="F" {% if profile.gender == 'F' %}selected{% endif %}>Female</option>
                             </select>
                         </div>
                         <div class="profile-field">
@@ -55,56 +302,119 @@
                             <input id="profile-experience" name="experience_years" type="number" min="0" max="80" step="0.1" class="form-control input-calm-inset" value="{{ profile.experience_years or '' }}">
                         </div>
                         <div class="profile-actions">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save" aria-hidden="true"></i>
-                                <span>Save</span>
-                            </button>
+                            <div class="profile-autosave-status" data-autosave-status="idle" role="status" aria-live="polite">
+                                <i class="fas fa-cloud-check profile-autosave-icon" aria-hidden="true"></i>
+                                <span class="profile-autosave-text" data-autosave-text>Changes save automatically</span>
+                                <button type="button" class="btn btn-link profile-autosave-retry" data-autosave-retry hidden>Retry</button>
+                            </div>
                         </div>
                     </form>
                 </div>
             </section>
 
-            <section class="collapsible-frame action-frame frame-calm-glass" data-section="reference lifts">
-                <div class="frame-header frame-header-2025">
-                    <div class="frame-header-left">
-                        <span class="frame-title">Reference Lifts</span>
+            {# Issue #24: split Reference Lifts into anterior + posterior cards
+               mirroring the Coverage map (Issue #19). One <form> spans both
+               cards so the existing single autosave pill + bodymap / insights
+               JS listeners on `#profile-lifts-form` keep working unchanged. #}
+            <form id="profile-lifts-form" class="profile-form reference-lifts-form-wrap" data-section="reference lifts">
+                {# Numbers below mirror TIER_RATIOS and REP_RANGE_PRESETS in utils/profile_estimator.py.
+                   Update both places if those constants change. #}
+                <details class="profile-explainer reference-lifts-explainer">
+                    <summary class="profile-explainer-summary">
+                        <i class="fas fa-circle-question" aria-hidden="true"></i>
+                        <span>How does this work?</span>
+                        <i class="fas fa-chevron-down profile-explainer-chevron" aria-hidden="true"></i>
+                    </summary>
+                    <div class="profile-explainer-body">
+                        <p>
+                            Your reference lifts get converted into a working-weight suggestion in three steps:
+                        </p>
+                        <ol class="profile-explainer-steps">
+                            <li>
+                                <strong>Estimate your 1RM</strong> from a recent hard set using the Epley formula:
+                                <code>1RM &asymp; weight &times; (1 + reps / 30)</code>.
+                            </li>
+                            <li>
+                                <strong>Apply a tier ratio</strong> based on the target exercise:
+                                <ul class="profile-explainer-sub">
+                                    <li><strong>Complex</strong> (compound barbell lifts) &mdash; &times;1.00</li>
+                                    <li><strong>Accessory</strong> (machines, dumbbell variants) &mdash; &times;0.70</li>
+                                    <li><strong>Isolated</strong> (single-joint isolation) &mdash; &times;0.40</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <strong>Apply your rep-range preset</strong> for that tier:
+                                <ul class="profile-explainer-sub">
+                                    <li><strong>Heavy</strong> &mdash; 4&ndash;6 reps, RIR 1, RPE 9 &mdash; &times;0.85 of 1RM</li>
+                                    <li><strong>Moderate</strong> &mdash; 6&ndash;8 reps, RIR 2, RPE 8 &mdash; &times;0.77 of 1RM</li>
+                                    <li><strong>Light</strong> &mdash; 10&ndash;15 reps, RIR 2, RPE 7.5 &mdash; &times;0.65 of 1RM</li>
+                                </ul>
+                            </li>
+                        </ol>
+                        <p class="profile-explainer-example">
+                            <strong>Example.</strong> Barbell Back Squat @ 100&nbsp;kg &times; 5 reps
+                            &rarr; Epley 1RM &asymp; 117&nbsp;kg
+                            &rarr; Leg Press suggestion (accessory tier &times; moderate preset):
+                            117 &times; 0.70 &times; 0.77 &asymp; <strong>63&nbsp;kg &times; 6&ndash;8 reps</strong>.
+                        </p>
+                        <p class="profile-explainer-note">
+                            Reps and effort targets come from your Rep-Range Preferences below. Override anything you want directly on the Plan page.
+                        </p>
                     </div>
-                    <div class="frame-header-right">
-                        <button class="collapse-toggle" type="button" title="Collapse reference lifts" aria-expanded="true" aria-controls="profile-lifts-content">
-                            <i class="fas fa-chevron-up toggle-icon" aria-hidden="true"></i>
-                            <span class="toggle-text">Hide</span>
-                        </button>
-                    </div>
-                </div>
-                <div class="frame-content" id="profile-lifts-content">
-                    <form id="profile-lifts-form" class="profile-form">
-                        <div class="reference-lifts-grid">
-                            {% for lift in reference_lifts %}
-                            <div class="reference-lift-row" data-lift-key="{{ lift.lift_key }}">
-                                <div class="reference-lift-label">
-                                    <span>{{ lift.label }}</span>
-                                    <small>your recent hard set</small>
-                                </div>
-                                <div class="profile-field">
-                                    <label for="lift-{{ lift.lift_key }}-weight" class="form-label">Weight</label>
-                                    <input id="lift-{{ lift.lift_key }}-weight" name="weight_kg" type="number" min="0" max="1000" step="0.1" class="form-control input-calm-inset" value="{{ lift.weight_kg if lift.weight_kg is not none else '' }}">
-                                </div>
-                                <div class="profile-field">
-                                    <label for="lift-{{ lift.lift_key }}-reps" class="form-label">Reps</label>
-                                    <input id="lift-{{ lift.lift_key }}-reps" name="reps" type="number" min="0" max="100" class="form-control input-calm-inset" value="{{ lift.reps if lift.reps is not none else '' }}">
-                                </div>
+                </details>
+
+                <div class="reference-lifts-cards">
+                    {% for side, card_label, groups in [
+                        ('anterior',  'Reference Lifts &mdash; Anterior',  reference_lift_groups_anterior),
+                        ('posterior', 'Reference Lifts &mdash; Posterior', reference_lift_groups_posterior)
+                    ] %}
+                    <section class="collapsible-frame action-frame frame-calm-glass reference-lifts-card" data-section="reference lifts {{ side }}" data-side="{{ side }}">
+                        <div class="frame-header frame-header-2025">
+                            <div class="frame-header-left">
+                                <span class="frame-title">{{ card_label | safe }}</span>
                             </div>
-                            {% endfor %}
+                            <div class="frame-header-right">
+                                <button class="collapse-toggle" type="button" title="Collapse reference lifts {{ side }}" aria-expanded="true" aria-controls="profile-lifts-content-{{ side }}">
+                                    <i class="fas fa-chevron-up toggle-icon" aria-hidden="true"></i>
+                                    <span class="toggle-text">Hide</span>
+                                </button>
+                            </div>
                         </div>
-                        <div class="profile-actions profile-actions-end">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save" aria-hidden="true"></i>
-                                <span>Save</span>
-                            </button>
+                        <div class="frame-content" id="profile-lifts-content-{{ side }}">
+                            <div class="reference-lifts-grid">
+                                {% for group in groups %}
+                                <h4 class="reference-lift-group-title">{{ group.group }}</h4>
+                                {% for lift in group.lifts %}
+                                <div class="reference-lift-row{% if lift.is_dumbbell %} reference-lift-row-dumbbell{% endif %}" data-lift-key="{{ lift.lift_key }}" data-side="{{ side }}"{% if lift.is_dumbbell %} data-dumbbell="true"{% endif %}>
+                                    <div class="reference-lift-label">
+                                        <span>{{ lift.label }}</span>
+                                        <small>your recent hard set</small>
+                                    </div>
+                                    <div class="profile-field">
+                                        <label for="lift-{{ lift.lift_key }}-weight" class="form-label">Weight{% if lift.is_dumbbell %}<small id="lift-{{ lift.lift_key }}-hand-hint" class="reference-lift-hand-hint" title="Per hand — one dumbbell"> (per hand)</small>{% endif %}</label>
+                                        <input id="lift-{{ lift.lift_key }}-weight" name="weight_kg" type="number" min="0" max="1000" step="0.1" class="form-control input-calm-inset" value="{{ lift.weight_kg if lift.weight_kg is not none else '' }}"{% if lift.is_dumbbell %} aria-describedby="lift-{{ lift.lift_key }}-hand-hint"{% endif %}>
+                                    </div>
+                                    <div class="profile-field">
+                                        <label for="lift-{{ lift.lift_key }}-reps" class="form-label">Reps</label>
+                                        <input id="lift-{{ lift.lift_key }}-reps" name="reps" type="number" min="0" max="100" class="form-control input-calm-inset" value="{{ lift.reps if lift.reps is not none else '' }}">
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                {% endfor %}
+                            </div>
                         </div>
-                    </form>
+                    </section>
+                    {% endfor %}
                 </div>
-            </section>
+
+                <div class="profile-actions profile-actions-end reference-lifts-actions">
+                    <div class="profile-autosave-status" data-autosave-status="idle" role="status" aria-live="polite">
+                        <i class="fas fa-cloud-check profile-autosave-icon" aria-hidden="true"></i>
+                        <span class="profile-autosave-text" data-autosave-text>Changes save automatically</span>
+                        <button type="button" class="btn btn-link profile-autosave-retry" data-autosave-retry hidden>Retry</button>
+                    </div>
+                </div>
+            </form>
 
             <section class="collapsible-frame action-frame frame-calm-glass" data-section="rep preferences">
                 <div class="frame-header frame-header-2025">
@@ -136,10 +446,11 @@
                         </fieldset>
                         {% endfor %}
                         <div class="profile-actions profile-actions-end">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save" aria-hidden="true"></i>
-                                <span>Save</span>
-                            </button>
+                            <div class="profile-autosave-status" data-autosave-status="idle" role="status" aria-live="polite">
+                                <i class="fas fa-cloud-check profile-autosave-icon" aria-hidden="true"></i>
+                                <span class="profile-autosave-text" data-autosave-text>Changes save automatically</span>
+                                <button type="button" class="btn btn-link profile-autosave-retry" data-autosave-retry hidden>Retry</button>
+                            </div>
                         </div>
                     </form>
                 </div>

@@ -32,7 +32,11 @@
  *   Advanced: Detailed muscle subdivisions for precise targeting
  */
 
-// Upstream slug → Canonical key mapping (for SVG data-muscle attributes)
+// Upstream slug → Canonical key mapping (for SVG data-muscle attributes).
+// MIRROR of `static/js/modules/bodymap-svg.js`. This file is loaded as a
+// classic <script> on /workout_plan, so it can't import the ES-module
+// version directly. Any change here must also be made in `bodymap-svg.js`.
+// `tests/test_profile_estimator.py::test_bodymap_canonical_in_sync` enforces this.
 const VENDOR_SLUG_TO_CANONICAL = {
     // ===== FRONT (Anterior) =====
     'head': null,  // Not selectable for workout targeting

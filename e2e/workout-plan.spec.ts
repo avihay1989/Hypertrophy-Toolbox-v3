@@ -340,6 +340,134 @@ test.describe('Workout Plan Page', () => {
     // If no download, check for toast (could be empty plan warning)
   });
 
+  test('weight field accepts decimals and preserves manual edits (Issue #5)', async ({ page }) => {
+    // Wait for the exercise dropdown to be populated.
+    await page.waitForFunction(() => {
+      const select = document.getElementById('exercise') as HTMLSelectElement;
+      return select && select.options.length > 1;
+    });
+
+    const exerciseSelect = page.locator(SELECTORS.EXERCISE_SEARCH);
+    const options = await exerciseSelect.locator('option').all();
+    const firstValue = await options[1].getAttribute('value');
+    const secondValue =
+      options.length > 2 ? await options[2].getAttribute('value') : null;
+    expect(firstValue).toBeTruthy();
+    expect(secondValue).toBeTruthy();
+
+    // Select an exercise — this is the one-shot trigger that should apply
+    // the profile estimate to the Weight field.
+    await exerciseSelect.selectOption(firstValue!);
+
+    // Wait for the estimate request to settle so the suggested value lands
+    // in the input before we type over it.
+    await page.waitForResponse(
+      (resp) =>
+        resp.url().includes('/api/user_profile/estimate') && resp.status() === 200,
+      { timeout: 5000 },
+    );
+
+    const weightInput = page.locator('#weight');
+    await expect(weightInput).toHaveAttribute('type', 'number');
+    const stepAttr = await weightInput.getAttribute('step');
+    expect(['any', '0.25']).toContain(stepAttr);
+
+    // Decimal input must persist in the field.
+    await weightInput.fill('17.5');
+    await expect(weightInput).toHaveValue('17.5');
+
+    // Blur to commit, then re-read — the manual decimal value must survive
+    // the change-event clamp/normalization handler.
+    await weightInput.blur();
+    await expect(weightInput).toHaveValue('17.5');
+
+    // Re-selecting the same exercise should NOT overwrite the user's edit
+    // (selectOption with the same value does not fire `change` in the DOM,
+    // but assert the value is still intact regardless).
+    await expect(weightInput).toHaveValue('17.5');
+
+    // Switching to a different exercise IS the trigger to re-apply the
+    // estimate — the manual value may now be replaced by the new estimate.
+    if (secondValue && secondValue !== firstValue) {
+      await exerciseSelect.selectOption(secondValue);
+      await page.waitForResponse(
+        (resp) =>
+          resp.url().includes('/api/user_profile/estimate') && resp.status() === 200,
+        { timeout: 5000 },
+      );
+      // Weight should now be whatever the new estimate decided — just
+      // assert it is a valid non-empty numeric value (not "17.5" frozen).
+      const newValue = await weightInput.inputValue();
+      expect(newValue).not.toBe('');
+      expect(Number.isNaN(parseFloat(newValue))).toBe(false);
+    }
+  });
+
+  test('Workout Controls "show the math" expander opens with steps and improvement hint (Issue #17)', async ({ page }) => {
+    // Seed a cold-start scenario so the trace + improvement hint appear.
+    await page.request.post('/api/user_profile', {
+      data: {
+        gender: 'M',
+        age: 30,
+        height_cm: 180,
+        weight_kg: 75,
+        experience_years: 3,
+      },
+    });
+    // Wipe any saved reference lifts that might have leaked from prior tests.
+    await page.request.post('/api/user_profile/lifts', {
+      data: [
+        { lift_key: 'barbell_bench_press', weight_kg: null, reps: null },
+        { lift_key: 'barbell_bicep_curl', weight_kg: null, reps: null },
+      ],
+    });
+
+    await page.reload();
+    await waitForPageReady(page);
+
+    await page.locator(SELECTORS.ROUTINE_ENV).selectOption('GYM');
+    await page.waitForFunction(() => {
+      const select = document.getElementById('routine-program') as HTMLSelectElement | null;
+      return Boolean(select && select.options.length > 1);
+    });
+    await page.locator(SELECTORS.ROUTINE_PROGRAM).selectOption('Full Body');
+    await page.waitForFunction(() => {
+      const select = document.getElementById('routine-day') as HTMLSelectElement | null;
+      return Boolean(select && select.options.length > 1);
+    });
+    await page.locator(SELECTORS.ROUTINE_DAY).selectOption('Workout A');
+
+    const estimateResponse = page.waitForResponse(resp =>
+      resp.url().includes('/api/user_profile/estimate') && resp.status() === 200
+    );
+    await page.locator(SELECTORS.EXERCISE_SEARCH).selectOption('Barbell Bench Press');
+    await estimateResponse;
+
+    const toggle = page.locator('#workout-estimate-trace-toggle');
+    const container = page.locator('#workout-estimate-trace');
+    // Toggle is visible (trace is non-empty) and starts collapsed.
+    await expect(toggle).toBeVisible();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(container).toBeHidden();
+
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(container).toBeVisible();
+
+    // Cold-start trace must call out its key inputs (Issue #17 §"What might
+    // affect the score" — bodyweight, experience, preset, rounding).
+    await expect(container).toContainText('Cold-start 1RM');
+    await expect(container).toContainText('Light');
+    await expect(container).toContainText(/Bodyweight ratio/);
+
+    // Improvement hint surfaces a Profile-page link anchored to the
+    // suggested lift row.
+    const hintLink = container.locator('[data-trace-improvement-link]');
+    await expect(hintLink).toBeVisible();
+    const href = await hintLink.getAttribute('href');
+    expect(href).toMatch(/\/user_profile.*barbell_bench_press/);
+  });
+
   test('generate starter plan modal opens', async ({ page }) => {
     // Click generate starter plan button
     const generateBtn = page.locator('#generate-plan-btn');

@@ -84,8 +84,8 @@
                     <!-- Input Fields Group -->
                     <div class="input-fields-group" role="group" aria-label="Exercise parameters">
                         <div class="input-group">
-                            <label for="weight" class="form-label">Weight</label>
-                            <input type="number" id="weight" name="weight" class="form-control input-calm-inset" min="0" step="any" value="25" aria-label="Weight in kilograms">
+                            <label for="weight" class="form-label">Weight<small id="weight-hand-hint" class="weight-hand-hint" hidden title="Per hand — one dumbbell"> (per hand)</small></label>
+                            <input type="number" id="weight" name="weight" class="form-control input-calm-inset" min="0" step="any" value="25" aria-label="Weight in kilograms" aria-describedby="weight-hand-hint">
                         </div>
                         <div class="input-group">
                             <label for="sets" class="form-label">Sets</label>
@@ -109,7 +109,15 @@
                         </div>
                     </div>
                 </div>
-                <p id="workout-estimate-provenance" class="workout-estimate-provenance" aria-live="polite">default values</p>
+                <div class="workout-estimate-provenance-row">
+                    <p id="workout-estimate-provenance" class="workout-estimate-provenance" aria-live="polite">default values</p>
+                    <button id="workout-estimate-trace-toggle" class="workout-estimate-trace-toggle" type="button" aria-expanded="false" aria-controls="workout-estimate-trace" hidden>
+                        <i class="fas fa-circle-info" aria-hidden="true"></i>
+                        <span class="workout-estimate-trace-toggle-label">Show the math</span>
+                        <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div id="workout-estimate-trace" class="workout-estimate-trace" hidden></div>
             </div>
         </div>
 

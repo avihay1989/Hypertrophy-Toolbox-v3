@@ -2,11 +2,292 @@
     padding-bottom: 2rem;
 }
 
+.user-profile-page .collapsible-frame.collapsed .frame-content {
+    display: none;
+}
+
+/* Match the `.frame-header-2025` layout pattern other route bundles ship
+   (`pages-weekly-summary.css:1359`, `pages-session-summary.css:1359`,
+   `components.css` workout-plan scope) so the collapse toggle pins to
+   the right edge of every Profile-page card header instead of stacking
+   below the title. The rules are scoped to `.user-profile-page` to keep
+   them out of unrelated route bundles. */
+.user-profile-page .frame-header-2025 {
+    align-items: center;
+    column-gap: 1rem;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    min-height: 60px;
+    position: relative;
+}
+
+.user-profile-page .frame-header-2025 .frame-header-left {
+    align-items: center;
+    display: flex;
+    min-width: 0;
+}
+
+.user-profile-page .frame-header-2025 .frame-header-right {
+    align-items: center;
+    display: inline-flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+.user-profile-page .frame-header-2025 .frame-title {
+    position: relative;
+    z-index: 11;
+}
+
+.user-profile-page .frame-header-2025 .collapse-toggle {
+    align-items: center;
+    background: color-mix(in srgb, var(--surface-2, #f5f7fb) 78%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 22%, transparent);
+    border-radius: 10px;
+    box-shadow: 0 1px 2px rgba(15, 18, 32, 0.04), 0 2px 6px rgba(15, 18, 32, 0.05);
+    color: var(--ink-2, #4a5170);
+    cursor: pointer;
+    display: inline-flex;
+    font-size: 0.86rem;
+    font-weight: 600;
+    gap: 0.4rem;
+    letter-spacing: 0.01em;
+    line-height: 1;
+    min-height: 36px;
+    padding: 0.4rem 0.85rem;
+    transition: background 160ms ease, border-color 160ms ease, color 160ms ease, transform 120ms ease;
+}
+
+.user-profile-page .frame-header-2025 .collapse-toggle:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--surface-2, #ffffff) 88%, var(--accent, #4c6ef5) 12%);
+    border-color: color-mix(in srgb, var(--accent, #4c6ef5) 36%, transparent);
+    color: var(--ink-1, #22283a);
+}
+
+.user-profile-page .frame-header-2025 .collapse-toggle:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+.user-profile-page .frame-header-2025 .collapse-toggle:focus-visible {
+    outline: 2px solid var(--accent, #4c6ef5);
+    outline-offset: 2px;
+}
+
+.user-profile-page .frame-header-2025 .collapse-toggle .toggle-icon {
+    color: color-mix(in srgb, var(--accent, #4c6ef5) 70%, var(--ink-2, #4a5170));
+    font-size: 0.78rem;
+}
+
+[data-theme='dark'] .user-profile-page .frame-header-2025 .collapse-toggle {
+    background: color-mix(in srgb, var(--surface-1, #161a2d) 80%, black);
+    border-color: color-mix(in srgb, var(--accent, #6d8dff) 30%, transparent);
+    color: var(--ink-2, #b4bad0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25), 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+[data-theme='dark'] .user-profile-page .frame-header-2025 .collapse-toggle:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--surface-1, #161a2d) 70%, var(--accent, #6d8dff) 18%);
+    border-color: color-mix(in srgb, var(--accent, #6d8dff) 46%, transparent);
+    color: var(--ink-1, #eef1f6);
+}
+
+[data-theme='dark'] .user-profile-page .frame-header-2025 .collapse-toggle .toggle-icon {
+    color: color-mix(in srgb, var(--accent, #6d8dff) 75%, var(--ink-1, #eef1f6));
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .user-profile-page .frame-header-2025 .collapse-toggle {
+        transition: none;
+    }
+    .user-profile-page .frame-header-2025 .collapse-toggle:active:not(:disabled) {
+        transform: none;
+    }
+}
+
+.user-profile-page .container-fluid {
+    margin: 0 auto;
+    max-width: 1480px;
+}
+
+.profile-onboarding {
+    margin: 0 auto 1rem;
+    max-width: 1480px;
+}
+
+.profile-onboarding .frame-title i {
+    color: color-mix(in srgb, var(--accent, #4c6ef5) 75%, var(--ink-1, #22283a));
+    margin-right: 0.4rem;
+}
+
+.profile-onboarding-lead {
+    color: var(--ink-1, #22283a);
+    font-size: 0.98rem;
+    line-height: 1.5;
+    margin: 0 0 0.65rem;
+}
+
+.profile-onboarding-lead a {
+    color: color-mix(in srgb, var(--accent, #4c6ef5) 75%, #1f2937);
+    font-weight: 650;
+    text-decoration: underline;
+}
+
+.profile-onboarding-list {
+    color: var(--ink-2, #4a5170);
+    line-height: 1.55;
+    margin: 0 0 0.65rem;
+    padding-left: 1.25rem;
+}
+
+.profile-onboarding-list li {
+    margin-bottom: 0.3rem;
+}
+
+.profile-onboarding-list strong {
+    color: var(--ink-1, #22283a);
+}
+
+.profile-onboarding-footer {
+    color: var(--ink-2, #4a5170);
+    font-size: 0.92rem;
+    margin: 0;
+}
+
+[data-theme='dark'] .profile-onboarding-lead,
+[data-theme='dark'] .profile-onboarding-list strong {
+    color: var(--ink-1, #eef1f6);
+}
+
+[data-theme='dark'] .profile-onboarding-list,
+[data-theme='dark'] .profile-onboarding-footer {
+    color: var(--ink-2, #b4bad0);
+}
+
+[data-theme='dark'] .profile-onboarding-lead a {
+    color: color-mix(in srgb, var(--accent, #6d8dff) 70%, var(--ink-1, #eef1f6));
+}
+
+.profile-explainer {
+    background: color-mix(in srgb, var(--surface-2, #f5f7fb) 70%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 18%, transparent);
+    border-radius: 10px;
+    margin: 0 0 1rem;
+    padding: 0.55rem 0.85rem;
+}
+
+.profile-explainer[open] {
+    background: color-mix(in srgb, var(--surface-2, #f5f7fb) 92%, transparent);
+}
+
+.profile-explainer-summary {
+    align-items: center;
+    color: var(--ink-1, #22283a);
+    cursor: pointer;
+    display: flex;
+    font-size: 0.92rem;
+    font-weight: 650;
+    gap: 0.5rem;
+    list-style: none;
+    padding: 0.25rem 0;
+    user-select: none;
+}
+
+.profile-explainer-summary::-webkit-details-marker {
+    display: none;
+}
+
+.profile-explainer-summary > i:first-child {
+    color: color-mix(in srgb, var(--accent, #4c6ef5) 75%, var(--ink-1, #22283a));
+}
+
+.profile-explainer-chevron {
+    color: var(--ink-3, #7c849c);
+    font-size: 0.78rem;
+    margin-left: auto;
+    transition: transform 160ms ease;
+}
+
+.profile-explainer[open] .profile-explainer-chevron {
+    transform: rotate(180deg);
+}
+
+.profile-explainer-summary:focus-visible {
+    outline: 2px solid var(--accent, #4c6ef5);
+    outline-offset: 2px;
+}
+
+.profile-explainer-body {
+    color: var(--ink-2, #4a5170);
+    font-size: 0.9rem;
+    line-height: 1.55;
+    padding: 0.5rem 0 0.25rem;
+}
+
+.profile-explainer-body p {
+    margin: 0 0 0.55rem;
+}
+
+.profile-explainer-body code {
+    background: color-mix(in srgb, var(--accent, #4c6ef5) 8%, transparent);
+    border-radius: 4px;
+    font-size: 0.88rem;
+    padding: 0.05rem 0.35rem;
+}
+
+.profile-explainer-steps {
+    margin: 0 0 0.55rem;
+    padding-left: 1.25rem;
+}
+
+.profile-explainer-steps > li {
+    margin-bottom: 0.45rem;
+}
+
+.profile-explainer-sub {
+    list-style: disc;
+    margin: 0.25rem 0 0;
+    padding-left: 1.15rem;
+}
+
+.profile-explainer-sub li {
+    margin-bottom: 0.15rem;
+}
+
+.profile-explainer-example {
+    background: color-mix(in srgb, var(--accent, #4c6ef5) 7%, transparent);
+    border-left: 3px solid color-mix(in srgb, var(--accent, #4c6ef5) 55%, transparent);
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+
+.profile-explainer-note {
+    color: var(--ink-3, #6d7488);
+    font-size: 0.85rem;
+    font-style: italic;
+}
+
+[data-theme='dark'] .profile-explainer {
+    background: color-mix(in srgb, var(--surface-1, #161a2d) 70%, black);
+    border-color: color-mix(in srgb, var(--accent, #6d8dff) 26%, transparent);
+}
+
+[data-theme='dark'] .profile-explainer-summary {
+    color: var(--ink-1, #eef1f6);
+}
+
+[data-theme='dark'] .profile-explainer-body {
+    color: var(--ink-2, #b4bad0);
+}
+
+[data-theme='dark'] .profile-explainer-note {
+    color: var(--ink-3, #939bb2);
+}
+
 .user-profile-layout {
     display: grid;
     gap: 1rem;
     margin: 0 auto;
-    max-width: 1180px;
+    max-width: 1480px;
 }
 
 .profile-form {
@@ -51,9 +332,123 @@
     white-space: nowrap;
 }
 
+.profile-autosave-status {
+    align-items: center;
+    background: color-mix(in srgb, var(--surface-2, #f5f7fb) 80%, transparent);
+    border: 1px solid color-mix(in srgb, var(--ink-3, #939bb2) 25%, transparent);
+    border-radius: 999px;
+    color: var(--ink-2, #4a5170);
+    display: inline-flex;
+    font-size: 0.85rem;
+    gap: 0.45rem;
+    min-height: 32px;
+    padding: 0.25rem 0.85rem;
+    transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.profile-autosave-status[data-autosave-status="saved"] {
+    background: color-mix(in srgb, #2eb872 14%, var(--surface-2, #ffffff));
+    border-color: color-mix(in srgb, #2eb872 45%, transparent);
+    color: color-mix(in srgb, #1f7a4d 75%, var(--ink-1, #22283a));
+}
+
+.profile-autosave-status[data-autosave-status="pending"],
+.profile-autosave-status[data-autosave-status="saving"] {
+    background: color-mix(in srgb, var(--accent, #4c6ef5) 12%, var(--surface-2, #ffffff));
+    border-color: color-mix(in srgb, var(--accent, #4c6ef5) 35%, transparent);
+    color: color-mix(in srgb, var(--accent, #4c6ef5) 75%, var(--ink-1, #22283a));
+}
+
+.profile-autosave-status[data-autosave-status="error"] {
+    background: color-mix(in srgb, #d93b3b 12%, var(--surface-2, #ffffff));
+    border-color: color-mix(in srgb, #d93b3b 50%, transparent);
+    color: color-mix(in srgb, #b02a2a 80%, var(--ink-1, #22283a));
+}
+
+.profile-autosave-icon {
+    font-size: 0.95rem;
+}
+
+.profile-autosave-status[data-autosave-status="saving"] .profile-autosave-icon {
+    animation: profile-autosave-spin 800ms linear infinite;
+}
+
+.profile-autosave-retry {
+    background: none;
+    border: 0;
+    color: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
+    margin-left: 0.2rem;
+    padding: 0 0.25rem;
+    text-decoration: underline;
+}
+
+@keyframes profile-autosave-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .profile-autosave-status[data-autosave-status="saving"] .profile-autosave-icon {
+        animation: none;
+    }
+}
+
+[data-theme='dark'] .profile-autosave-status {
+    background: color-mix(in srgb, var(--surface-2, #1f2330) 80%, transparent);
+    border-color: color-mix(in srgb, var(--ink-3, #939bb2) 35%, transparent);
+}
+
+/* Issue #24 — Reference Lifts split into anterior + posterior side-by-side
+   cards mirroring the Coverage map. The <form id="profile-lifts-form"> wraps
+   both cards so the existing autosave / bodymap / insights JS listeners on
+   `#profile-lifts-form` keep working unchanged; the form participates in
+   `.user-profile-layout` as the grid item that previously was the single
+   reference-lifts <section>. */
+.reference-lifts-form-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.reference-lifts-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.reference-lifts-card {
+    min-width: 0;
+}
+
+.reference-lifts-actions {
+    margin-top: 0;
+}
+
 .reference-lifts-grid {
     display: grid;
     gap: 0.65rem;
+}
+
+.reference-lift-group-title {
+    color: color-mix(in srgb, var(--accent, #4c6ef5) 70%, var(--ink-1, #22283a));
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    margin: 1rem 0 0.25rem;
+    padding-bottom: 0.3rem;
+    text-transform: uppercase;
+    border-bottom: 2px solid color-mix(in srgb, var(--accent, #4c6ef5) 40%, transparent);
+}
+
+.reference-lift-group-title:first-child {
+    margin-top: 0;
+}
+
+[data-theme='dark'] .reference-lift-group-title {
+    color: color-mix(in srgb, var(--accent, #6d8dff) 80%, var(--ink-1, #eef1f6));
+    border-bottom-color: color-mix(in srgb, var(--accent, #6d8dff) 50%, transparent);
 }
 
 .reference-lift-row {
@@ -84,6 +479,18 @@
 .reference-lift-label small {
     color: var(--ink-3, #6d7488);
     font-size: 0.78rem;
+}
+
+.reference-lift-hand-hint {
+    color: var(--ink-3, #6d7488);
+    font-size: 0.72rem;
+    font-style: italic;
+    font-weight: 400;
+    margin-left: 0.15rem;
+}
+
+[data-theme='dark'] .reference-lift-hand-hint {
+    color: var(--ink-3, #939bb2);
 }
 
 .preference-grid {
@@ -182,6 +589,148 @@
     color: var(--ink-1, #eef1f6);
 }
 
+@media (min-width: 1200px) {
+    /* Issue #24 follow-up: rearrange the lower section so Demographics +
+       Rep-Range Preferences share row 1 (mirroring the overview grid's
+       1.4fr / 1fr column widths above) and the Reference Lifts form
+       spans the full page width on row 2. Each Reference-Lifts card is
+       now ~700 px wide instead of ~290 px so labels like "Incline
+       Barbell/Dumbbell Bench Press" stop wrapping to multiple lines. */
+    .user-profile-layout {
+        align-items: start;
+        column-gap: 1rem;
+        grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+        grid-template-areas:
+            "demographics preferences"
+            "lifts        lifts";
+        row-gap: 1rem;
+    }
+
+    .user-profile-layout > [data-section="demographics"] {
+        grid-area: demographics;
+    }
+
+    .user-profile-layout > [data-section="rep preferences"] {
+        grid-area: preferences;
+    }
+
+    .user-profile-layout > [data-section="reference lifts"] {
+        grid-area: lifts;
+    }
+
+    /* Issue #24 follow-up: drop the trailing `auto` column on Demographics
+       and Rep-Range Preferences at desktop so the autosave pill sits on
+       its own row below the inputs. The Demographics card is ~810 px and
+       Rep-Range Preferences is ~580 px wide here — the inline pill column
+       used to compress the "Changes save automatically" text into 2–3
+       wrapped lines that visibly broke past the card frame. */
+    .user-profile-layout > [data-section="demographics"] .profile-grid {
+        grid-template-columns: repeat(5, minmax(120px, 1fr));
+    }
+
+    .user-profile-layout > [data-section="demographics"] .profile-grid .profile-actions {
+        grid-column: 1 / -1;
+        justify-content: center;
+    }
+
+    .user-profile-layout > [data-section="rep preferences"] .preference-grid {
+        grid-template-columns: repeat(3, minmax(170px, 1fr));
+    }
+
+    .user-profile-layout > [data-section="rep preferences"] .preference-grid .profile-actions {
+        grid-column: 1 / -1;
+        justify-content: center;
+    }
+
+    /* Issue #24: Reference Lifts panel splits into two side-by-side cards
+       (anterior + posterior). Rows stack vertically inside each card. */
+    .reference-lifts-cards {
+        align-items: start;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 1rem;
+    }
+}
+
+/* Issue #24: keep Coverage-map polygons clear of the sticky `#navbar`
+   when the browser scrolls them into view (e.g. during E2E hover tests
+   that scroll the page back up after editing a lift in the form below).
+   Applied to the bodymap container so the offset is relative to the
+   diagram block, not the inline polygon. */
+.profile-bodymap-svg {
+    scroll-margin-top: 96px;
+}
+
+/* Issue #24 follow-up: shrink the autosave pill on the Demographics +
+   Rep-Range Preferences cards (the inputs above them barely fill half
+   the card vertically, so the full-size pill looks visually heavy).
+   The Reference Lifts pill below the questionnaire keeps its default
+   size — that pill anchors a much taller form. */
+.user-profile-layout > [data-section="demographics"] .profile-autosave-status,
+.user-profile-layout > [data-section="rep preferences"] .profile-autosave-status {
+    font-size: 0.75rem;
+    gap: 0.35rem;
+    min-height: 26px;
+    padding: 0.15rem 0.7rem;
+}
+
+.user-profile-layout > [data-section="demographics"] .profile-autosave-icon,
+.user-profile-layout > [data-section="rep preferences"] .profile-autosave-icon {
+    font-size: 0.82rem;
+}
+
+.user-profile-layout > [data-section="demographics"] .profile-autosave-retry,
+.user-profile-layout > [data-section="rep preferences"] .profile-autosave-retry {
+    font-size: 0.72rem;
+}
+
+@media (min-width: 768px) and (max-width: 1199.98px) {
+    .user-profile-layout {
+        align-items: start;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+    }
+
+    .user-profile-layout > [data-section="demographics"] {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .user-profile-layout > [data-section="rep preferences"] {
+        grid-column: 1;
+        grid-row: 2;
+    }
+
+    .user-profile-layout > [data-section="reference lifts"] {
+        grid-column: 2;
+        grid-row: 1 / span 2;
+    }
+
+    .user-profile-layout > [data-section="demographics"] .profile-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .user-profile-layout > [data-section="demographics"] .profile-grid .profile-actions {
+        grid-column: 1 / -1;
+        justify-content: center;
+    }
+
+    .user-profile-layout > [data-section="rep preferences"] .preference-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* High-resolution displays (1440p / 4K and above): widen the page cap so
+   the two anterior + posterior cards can sit side-by-side with comfortable
+   row width. */
+@media (min-width: 1600px) {
+    .user-profile-page .container-fluid,
+    .profile-onboarding,
+    .profile-insights,
+    .user-profile-layout {
+        max-width: 1800px;
+    }
+}
+
 @media (max-width: 991.98px) {
     .profile-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -216,3 +765,912 @@
         width: 100%;
     }
 }
+
+/* Pair the "How the system sees you" card with the Coverage map side-by-side
+   on desktop, stacking on tablet/phone. Owns the page-level horizontal
+   bounds when the grid is active, so the children's own `max-width` /
+   `margin: 0 auto` rules become no-ops inside grid cells. */
+.profile-overview-grid {
+    margin: 0 auto 1rem;
+    max-width: 1480px;
+}
+
+@media (min-width: 1200px) {
+    .profile-overview-grid {
+        /* `align-items: stretch` (the grid default) makes both cards take
+           the height of the taller one — keeps the side-by-side row tidy
+           instead of leaving the shorter card hanging at top with a
+           visible gutter below. */
+        column-gap: 1rem;
+        display: grid;
+        grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+        row-gap: 1rem;
+    }
+
+    .profile-overview-grid > .profile-insights,
+    .profile-overview-grid > .profile-bodymap {
+        margin: 0;
+        max-width: none;
+    }
+
+    /* Let the inner `.frame-content` fill the stretched card so the
+       background + border are continuous edge-to-edge instead of
+       wrapping just the content with whitespace below. */
+    .profile-overview-grid > .profile-insights,
+    .profile-overview-grid > .profile-bodymap {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .profile-overview-grid > .profile-insights > .frame-content,
+    .profile-overview-grid > .profile-bodymap > .frame-content {
+        flex: 1 1 auto;
+    }
+}
+
+@media (min-width: 1600px) {
+    .profile-overview-grid {
+        max-width: 1800px;
+    }
+}
+
+/* Issue #17 — "How the system sees you" card. */
+.profile-insights {
+    margin: 0 auto 1rem;
+    max-width: 1480px;
+}
+
+.profile-insights .frame-title i {
+    color: color-mix(in srgb, var(--accent, #4c6ef5) 75%, var(--ink-1, #22283a));
+    margin-right: 0.4rem;
+}
+
+.profile-insights-band {
+    align-items: center;
+    background: color-mix(in srgb, var(--surface-2, #f5f7fb) 70%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 22%, transparent);
+    border-radius: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 0.85rem;
+    padding: 0.75rem 1rem;
+}
+
+.profile-insights-band-meter {
+    background: color-mix(in srgb, var(--accent, #4c6ef5) 14%, transparent);
+    border-radius: 999px;
+    flex: 0 0 140px;
+    height: 8px;
+    overflow: hidden;
+    position: relative;
+    width: 140px;
+}
+
+.profile-insights-band-fill {
+    background: color-mix(in srgb, var(--accent, #4c6ef5) 65%, var(--ink-1, #22283a));
+    border-radius: 999px;
+    display: block;
+    height: 100%;
+    transition: width 220ms ease;
+    width: calc(100% * var(--band-progress, 0) / max(var(--band-total, 1), 1));
+}
+
+.profile-insights[data-band="population_only"] .profile-insights-band-fill {
+    background: color-mix(in srgb, var(--ink-3, #7c849c) 60%, transparent);
+}
+
+.profile-insights[data-band="partial"] .profile-insights-band-fill {
+    background: color-mix(in srgb, #f59f00 75%, var(--ink-1, #22283a));
+}
+
+.profile-insights[data-band="mostly"] .profile-insights-band-fill {
+    background: color-mix(in srgb, #4c6ef5 70%, var(--ink-1, #22283a));
+}
+
+.profile-insights[data-band="fully"] .profile-insights-band-fill {
+    background: color-mix(in srgb, #2f9e44 75%, var(--ink-1, #22283a));
+}
+
+.profile-insights-band-text {
+    align-items: center;
+    display: flex;
+    flex: 1 1 240px;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.85rem;
+}
+
+.profile-insights-band-pill {
+    background: color-mix(in srgb, var(--accent, #4c6ef5) 14%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 30%, transparent);
+    border-radius: 999px;
+    color: var(--ink-1, #22283a);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    padding: 0.2rem 0.7rem;
+    white-space: nowrap;
+}
+
+.profile-insights[data-band="partial"] .profile-insights-band-pill {
+    background: color-mix(in srgb, #f59f00 18%, transparent);
+    border-color: color-mix(in srgb, #f59f00 40%, transparent);
+}
+
+.profile-insights[data-band="mostly"] .profile-insights-band-pill {
+    background: color-mix(in srgb, #4c6ef5 18%, transparent);
+    border-color: color-mix(in srgb, #4c6ef5 40%, transparent);
+}
+
+.profile-insights[data-band="fully"] .profile-insights-band-pill {
+    background: color-mix(in srgb, #2f9e44 18%, transparent);
+    border-color: color-mix(in srgb, #2f9e44 40%, transparent);
+}
+
+.profile-insights-band-count {
+    color: var(--ink-2, #4a5170);
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.profile-insights-band-copy {
+    color: var(--ink-2, #4a5170);
+    flex-basis: 100%;
+    font-size: 0.92rem;
+    line-height: 1.45;
+    margin: 0;
+}
+
+.profile-insights-section {
+    border-top: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 12%, transparent);
+    margin-top: 0.6rem;
+    padding-top: 0.6rem;
+}
+
+.profile-insights-label {
+    color: var(--ink-3, #6d7488);
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.3rem;
+    text-transform: uppercase;
+}
+
+.profile-insights-anchor-list,
+.profile-insights-replaced-list,
+.profile-insights-missing-list {
+    color: var(--ink-2, #4a5170);
+    list-style: disc;
+    margin: 0;
+    padding-left: 1.25rem;
+}
+
+.profile-insights-anchor-list li,
+.profile-insights-replaced-list li,
+.profile-insights-missing-list li {
+    line-height: 1.55;
+    margin-bottom: 0.2rem;
+}
+
+.profile-insights-anchor-list strong,
+.profile-insights-replaced-list strong {
+    color: var(--ink-1, #22283a);
+}
+
+.profile-insights-footer {
+    border-top: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 12%, transparent);
+    color: var(--ink-3, #6d7488);
+    font-size: 0.85rem;
+    font-style: italic;
+    margin: 0.75rem 0 0;
+    padding-top: 0.6rem;
+}
+
+[data-theme='dark'] .profile-insights-band {
+    background: color-mix(in srgb, var(--surface-1, #161a2d) 70%, black);
+    border-color: color-mix(in srgb, var(--accent, #6d8dff) 26%, transparent);
+}
+
+[data-theme='dark'] .profile-insights-band-pill {
+    color: var(--ink-1, #eef1f6);
+}
+
+[data-theme='dark'] .profile-insights-band-count,
+[data-theme='dark'] .profile-insights-band-copy,
+[data-theme='dark'] .profile-insights-anchor-list,
+[data-theme='dark'] .profile-insights-replaced-list,
+[data-theme='dark'] .profile-insights-missing-list {
+    color: var(--ink-2, #b4bad0);
+}
+
+[data-theme='dark'] .profile-insights-anchor-list strong,
+[data-theme='dark'] .profile-insights-replaced-list strong {
+    color: var(--ink-1, #eef1f6);
+}
+
+[data-theme='dark'] .profile-insights-footer,
+[data-theme='dark'] .profile-insights-label {
+    color: var(--ink-3, #939bb2);
+}
+
+@media (max-width: 575.98px) {
+    .profile-insights-band {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .profile-insights-band-meter {
+        flex: 1 1 100%;
+        width: 100%;
+    }
+}
+
+/* Issue #18 — coverage donut, stats tiles, cohort summary, cohort bars. */
+.profile-insights-donut {
+    align-items: center;
+    display: inline-flex;
+    flex: 0 0 auto;
+    justify-content: center;
+    position: relative;
+    width: 78px;
+    height: 78px;
+}
+
+.profile-insights-donut-svg {
+    transform: rotate(-90deg);
+    width: 100%;
+    height: 100%;
+}
+
+.profile-insights-donut-track {
+    stroke: color-mix(in srgb, var(--accent, #4c6ef5) 14%, transparent);
+}
+
+.profile-insights-donut-fill {
+    stroke: color-mix(in srgb, var(--accent, #4c6ef5) 65%, var(--ink-1, #22283a));
+    stroke-linecap: round;
+    transition: stroke-dasharray 220ms ease;
+}
+
+.profile-insights[data-band="population_only"] .profile-insights-donut-fill {
+    stroke: color-mix(in srgb, var(--ink-3, #7c849c) 60%, transparent);
+}
+.profile-insights[data-band="partial"] .profile-insights-donut-fill {
+    stroke: color-mix(in srgb, #f59f00 75%, var(--ink-1, #22283a));
+}
+.profile-insights[data-band="mostly"] .profile-insights-donut-fill {
+    stroke: color-mix(in srgb, #4c6ef5 70%, var(--ink-1, #22283a));
+}
+.profile-insights[data-band="fully"] .profile-insights-donut-fill {
+    stroke: color-mix(in srgb, #2f9e44 75%, var(--ink-1, #22283a));
+}
+
+.profile-insights-donut-label {
+    align-items: center;
+    color: var(--ink-1, #22283a);
+    display: flex;
+    flex-direction: column;
+    inset: 0;
+    justify-content: center;
+    line-height: 1;
+    pointer-events: none;
+    position: absolute;
+    text-align: center;
+}
+
+.profile-insights-donut-count {
+    font-feature-settings: "tnum" 1;
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.profile-insights-donut-of {
+    color: var(--ink-3, #6d7488);
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.profile-insights-donut-caption {
+    color: var(--ink-3, #6d7488);
+    font-size: 0.66rem;
+    letter-spacing: 0.04em;
+    margin-top: 2px;
+    text-transform: uppercase;
+}
+
+.profile-insights-tiles {
+    border-top: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 12%, transparent);
+    display: grid;
+    gap: 0.6rem;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-top: 0.6rem;
+    padding-top: 0.75rem;
+}
+
+.profile-insights-tile {
+    background: color-mix(in srgb, var(--surface-2, #f5f7fb) 78%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 18%, transparent);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-height: 78px;
+    padding: 0.55rem 0.7rem;
+    transition: background 160ms ease, border-color 160ms ease;
+}
+
+.profile-insights-tile[data-empty="true"] {
+    border-style: dashed;
+    background: color-mix(in srgb, var(--surface-2, #f5f7fb) 50%, transparent);
+}
+
+.profile-insights-tile[data-unused="true"] {
+    background: color-mix(in srgb, var(--surface-2, #f5f7fb) 55%, transparent);
+    border-color: color-mix(in srgb, var(--ink-3, #7c849c) 22%, transparent);
+}
+
+.profile-insights-tile[data-unused="true"] .profile-insights-tile-value,
+.profile-insights-tile[data-unused="true"] .profile-insights-tile-cohort {
+    color: var(--ink-3, #7c849c);
+    font-style: italic;
+}
+
+.profile-insights-tile-label {
+    align-items: center;
+    color: var(--ink-3, #6d7488);
+    display: flex;
+    font-size: 0.72rem;
+    font-weight: 700;
+    gap: 0.35rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.profile-insights-tile-unused-flag {
+    background: color-mix(in srgb, var(--ink-3, #7c849c) 18%, transparent);
+    border-radius: 999px;
+    color: var(--ink-2, #4a5170);
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    padding: 0.05rem 0.45rem;
+    text-transform: uppercase;
+}
+
+.profile-insights-tile-value {
+    color: var(--ink-1, #22283a);
+    font-feature-settings: "tnum" 1;
+    font-size: 1.18rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.profile-insights-tile-value small {
+    color: var(--ink-2, #4a5170);
+    font-size: 0.78rem;
+    font-weight: 600;
+    margin-left: 0.15rem;
+}
+
+.profile-insights-tile-cohort {
+    color: var(--ink-2, #4a5170);
+    font-size: 0.78rem;
+    line-height: 1.4;
+}
+
+.profile-insights-cohort-summary {
+    border-top: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 12%, transparent);
+    color: var(--ink-2, #4a5170);
+    font-size: 0.88rem;
+    line-height: 1.5;
+    margin: 0.6rem 0 0;
+    padding-top: 0.6rem;
+}
+
+.profile-insights-bar-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.profile-insights-bar-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.profile-insights-bar-head {
+    align-items: baseline;
+    color: var(--ink-1, #22283a);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: space-between;
+}
+
+.profile-insights-bar-head strong {
+    font-size: 0.92rem;
+    font-weight: 600;
+}
+
+.profile-insights-bar-user {
+    color: var(--ink-2, #4a5170);
+    font-feature-settings: "tnum" 1;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.profile-insights-bar-track {
+    background: color-mix(in srgb, var(--ink-3, #7c849c) 14%, transparent);
+    border-radius: 999px;
+    height: 10px;
+    position: relative;
+    width: 100%;
+}
+
+.profile-insights-bar-fill {
+    background: linear-gradient(
+        to right,
+        color-mix(in srgb, var(--accent, #4c6ef5) 18%, transparent) 0%,
+        color-mix(in srgb, var(--accent, #4c6ef5) 18%, transparent) var(--cs-pct, 0%),
+        color-mix(in srgb, var(--accent, #4c6ef5) 36%, transparent) var(--cs-pct, 0%),
+        color-mix(in srgb, var(--accent, #4c6ef5) 36%, transparent) var(--cu-pct, 100%),
+        color-mix(in srgb, var(--ink-3, #7c849c) 14%, transparent) var(--cu-pct, 100%)
+    );
+    border-radius: inherit;
+    display: block;
+    height: 100%;
+    width: 100%;
+}
+
+.profile-insights-bar-marker {
+    background: var(--accent, #4c6ef5);
+    border-radius: 50%;
+    height: 14px;
+    left: var(--mark-pct, 0%);
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 14px;
+    box-shadow: 0 1px 3px color-mix(in srgb, var(--ink-1, #22283a) 26%, transparent);
+}
+
+.profile-insights-bar-marker.is-cold-start {
+    background: color-mix(in srgb, var(--ink-3, #7c849c) 70%, var(--ink-1, #22283a));
+    height: 10px;
+    width: 10px;
+}
+
+.profile-insights-bar-marker.is-cohort-upper {
+    background: color-mix(in srgb, var(--accent, #4c6ef5) 50%, var(--ink-3, #7c849c));
+    height: 10px;
+    width: 10px;
+}
+
+.profile-insights-bar-marker.is-user {
+    background: color-mix(in srgb, var(--accent, #4c6ef5) 75%, var(--ink-1, #22283a));
+    border: 2px solid var(--surface-2, #f5f7fb);
+}
+
+.profile-insights-bar-foot {
+    color: var(--ink-3, #7c849c);
+    display: flex;
+    font-size: 0.74rem;
+    font-feature-settings: "tnum" 1;
+    gap: 0.4rem;
+    justify-content: space-between;
+    line-height: 1.3;
+}
+
+[data-theme='dark'] .profile-insights-tile {
+    background: color-mix(in srgb, var(--surface-1, #161a2d) 70%, black);
+    border-color: color-mix(in srgb, var(--accent, #6d8dff) 26%, transparent);
+}
+
+[data-theme='dark'] .profile-insights-tile[data-empty="true"] {
+    background: color-mix(in srgb, var(--surface-1, #161a2d) 50%, black);
+}
+
+[data-theme='dark'] .profile-insights-tile-value {
+    color: var(--ink-1, #eef1f6);
+}
+
+[data-theme='dark'] .profile-insights-tile-cohort,
+[data-theme='dark'] .profile-insights-bar-user,
+[data-theme='dark'] .profile-insights-cohort-summary {
+    color: var(--ink-2, #b4bad0);
+}
+
+[data-theme='dark'] .profile-insights-bar-track {
+    background: color-mix(in srgb, var(--ink-3, #7c849c) 22%, transparent);
+}
+
+[data-theme='dark'] .profile-insights-bar-marker.is-user {
+    border-color: color-mix(in srgb, var(--surface-1, #161a2d) 80%, black);
+}
+
+[data-theme='dark'] .profile-insights-donut-label {
+    color: var(--ink-1, #eef1f6);
+}
+
+[data-theme='dark'] .profile-insights-donut-of,
+[data-theme='dark'] .profile-insights-donut-caption {
+    color: var(--ink-3, #939bb2);
+}
+
+@media (max-width: 991.98px) {
+    .profile-insights-tiles {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 575.98px) {
+    .profile-insights-tiles {
+        grid-template-columns: 1fr;
+    }
+    .profile-insights-bar-head {
+        flex-direction: column;
+        gap: 0.15rem;
+    }
+}
+
+/* =============================================================================
+   Issue #19 — Coverage map (bodymap)
+============================================================================= */
+.profile-bodymap {
+    margin: 0 auto 1rem;
+    max-width: 1480px;
+}
+
+.profile-bodymap .frame-title i {
+    color: color-mix(in srgb, var(--accent, #4c6ef5) 75%, var(--ink-1, #22283a));
+    margin-right: 0.4rem;
+}
+
+.profile-bodymap-lead {
+    color: var(--ink-2, #4a5170);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin: 0 0 0.75rem;
+}
+
+.profile-bodymap-controls {
+    display: flex;
+    gap: 0.4rem;
+    justify-content: center;
+    margin: 0 0 0.6rem;
+}
+
+.profile-bodymap-tab {
+    align-items: center;
+    background: color-mix(in srgb, var(--surface-2, #f5f7fb) 78%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 22%, transparent);
+    border-radius: 999px;
+    color: var(--ink-2, #4a5170);
+    cursor: pointer;
+    display: inline-flex;
+    font-size: 0.86rem;
+    font-weight: 600;
+    gap: 0.4rem;
+    padding: 0.35rem 0.95rem;
+    transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.profile-bodymap-tab:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--surface-2, #ffffff) 88%, var(--accent, #4c6ef5) 12%);
+    color: var(--ink-1, #22283a);
+}
+
+.profile-bodymap-tab.is-active {
+    background: color-mix(in srgb, var(--accent, #4c6ef5) 18%, var(--surface-2, #ffffff));
+    border-color: color-mix(in srgb, var(--accent, #4c6ef5) 45%, transparent);
+    color: var(--ink-1, #22283a);
+}
+
+.profile-bodymap-tab:focus-visible {
+    outline: 2px solid var(--accent, #4c6ef5);
+    outline-offset: 2px;
+}
+
+.profile-bodymap-stage {
+    align-items: flex-start;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin: 0 0 0.75rem;
+}
+
+.profile-bodymap-svg {
+    flex: 0 0 auto;
+    max-width: 280px;
+    min-height: 360px;
+    position: relative;
+    width: 240px;
+}
+
+.profile-bodymap-svg svg {
+    display: block;
+    height: auto;
+    max-height: 480px;
+    width: 100%;
+}
+
+.profile-bodymap-loading {
+    color: var(--ink-3, #939bb2);
+    font-size: 0.88rem;
+    padding: 1rem;
+    text-align: center;
+}
+
+.profile-bodymap-svg-pane {
+    width: 100%;
+}
+
+.profile-bodymap-svg .muscle-region {
+    cursor: pointer;
+    transition: fill 160ms ease, stroke 160ms ease, stroke-width 160ms ease;
+    fill: rgba(150, 160, 180, 0.18);
+    stroke: rgba(120, 130, 150, 0.45);
+    stroke-width: 0.3;
+}
+
+.profile-bodymap-svg .muscle-region.non-selectable {
+    cursor: default;
+    fill: rgba(150, 150, 150, 0.10);
+    stroke: rgba(150, 150, 150, 0.20);
+}
+
+.profile-bodymap-svg .muscle-region.state-measured {
+    fill: color-mix(in srgb, var(--accent, #4c6ef5) 65%, transparent);
+    stroke: color-mix(in srgb, var(--accent, #4c6ef5) 80%, transparent);
+    stroke-width: 0.5;
+}
+
+.profile-bodymap-svg .muscle-region.state-cross_muscle {
+    fill: color-mix(in srgb, var(--accent, #4c6ef5) 30%, transparent);
+    stroke: color-mix(in srgb, var(--accent, #4c6ef5) 60%, transparent);
+    stroke-width: 0.5;
+    stroke-dasharray: 1.6 0.9;
+}
+
+.profile-bodymap-svg .muscle-region.state-cold_start_only {
+    fill: rgba(150, 160, 180, 0.10);
+    stroke: color-mix(in srgb, var(--accent, #4c6ef5) 32%, rgba(150, 160, 180, 0.55));
+    stroke-width: 0.45;
+}
+
+.profile-bodymap-svg .muscle-region.state-not_assessed {
+    fill: rgba(150, 150, 150, 0.10);
+    stroke: rgba(150, 150, 150, 0.30);
+    cursor: default;
+}
+
+.profile-bodymap-svg .muscle-region:focus-visible,
+.profile-bodymap-svg .muscle-region:hover {
+    filter: drop-shadow(0 0 2px color-mix(in srgb, var(--accent, #4c6ef5) 60%, transparent));
+    outline: none;
+}
+
+.profile-bodymap-popover {
+    background: var(--surface-2, #ffffff);
+    border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 22%, transparent);
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(15, 18, 32, 0.10);
+    flex: 1 1 auto;
+    max-width: 360px;
+    min-width: 220px;
+    padding: 0.85rem 1rem;
+}
+
+.profile-bodymap-popover[hidden] {
+    display: none;
+}
+
+.profile-bodymap-popover-head {
+    align-items: baseline;
+    display: flex;
+    gap: 0.55rem;
+    justify-content: space-between;
+    margin: 0 0 0.4rem;
+}
+
+.profile-bodymap-popover-head strong {
+    color: var(--ink-1, #22283a);
+    font-size: 1rem;
+    font-weight: 650;
+}
+
+.profile-bodymap-popover-state {
+    background: color-mix(in srgb, var(--surface-1, #f0f3fa) 50%, transparent);
+    border-radius: 999px;
+    color: var(--ink-2, #4a5170);
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.15rem 0.65rem;
+}
+
+.profile-bodymap-popover-state[data-state='measured'] {
+    background: color-mix(in srgb, var(--accent, #4c6ef5) 18%, transparent);
+    color: color-mix(in srgb, var(--accent, #4c6ef5) 70%, var(--ink-1, #22283a));
+}
+
+.profile-bodymap-popover-state[data-state='cross_muscle'] {
+    background: color-mix(in srgb, var(--accent, #4c6ef5) 12%, transparent);
+    color: color-mix(in srgb, var(--accent, #4c6ef5) 60%, var(--ink-1, #22283a));
+}
+
+.profile-bodymap-popover-body {
+    color: var(--ink-2, #4a5170);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.profile-bodymap-popover-body p {
+    margin: 0 0 0.4rem;
+}
+
+.profile-bodymap-popover-body p:last-child {
+    margin-bottom: 0;
+}
+
+.profile-bodymap-popover-list {
+    margin: 0;
+    padding-left: 1.1rem;
+}
+
+.profile-bodymap-popover-list li {
+    margin-bottom: 0.2rem;
+}
+
+.profile-bodymap-popover-action a {
+    color: color-mix(in srgb, var(--accent, #4c6ef5) 75%, var(--ink-1, #22283a));
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+.profile-bodymap-legend {
+    color: var(--ink-2, #4a5170);
+    display: flex;
+    flex-wrap: wrap;
+    font-size: 0.85rem;
+    gap: 0.85rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.profile-bodymap-legend li {
+    align-items: center;
+    display: inline-flex;
+    gap: 0.4rem;
+}
+
+.profile-bodymap-swatch {
+    border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 55%, transparent);
+    border-radius: 4px;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+    display: inline-block;
+    height: 16px;
+    width: 16px;
+}
+
+.profile-bodymap-swatch.state-measured {
+    background: color-mix(in srgb, var(--accent, #4c6ef5) 75%, transparent);
+    border-color: color-mix(in srgb, var(--accent, #4c6ef5) 90%, transparent);
+}
+
+.profile-bodymap-swatch.state-cross_muscle {
+    background:
+        repeating-linear-gradient(
+            45deg,
+            color-mix(in srgb, var(--accent, #4c6ef5) 75%, transparent) 0 2px,
+            color-mix(in srgb, var(--accent, #4c6ef5) 18%, transparent) 2px 4px
+        );
+    border-color: color-mix(in srgb, var(--accent, #4c6ef5) 70%, transparent);
+}
+
+.profile-bodymap-swatch.state-cold_start_only {
+    background: color-mix(in srgb, var(--accent, #4c6ef5) 22%, transparent);
+    border-color: color-mix(in srgb, var(--accent, #4c6ef5) 60%, transparent);
+    border-style: dashed;
+}
+
+.profile-bodymap-swatch.state-not_assessed {
+    background: rgba(150, 150, 150, 0.32);
+    border-color: rgba(110, 115, 130, 0.55);
+}
+
+[data-theme='dark'] .profile-bodymap-swatch {
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+}
+
+[data-theme='dark'] .profile-bodymap-swatch.state-not_assessed {
+    background: rgba(190, 195, 210, 0.18);
+    border-color: rgba(190, 195, 210, 0.45);
+}
+
+.profile-bodymap-sr-summary {
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .profile-bodymap-tab,
+    .profile-bodymap-svg .muscle-region {
+        transition: none;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .profile-bodymap-stage {
+        flex-direction: column;
+    }
+    .profile-bodymap-popover {
+        max-width: none;
+    }
+}
+
+[data-theme='dark'] .profile-bodymap-tab {
+    background: color-mix(in srgb, var(--surface-1, #161a2d) 80%, black);
+    border-color: color-mix(in srgb, var(--accent, #6d8dff) 30%, transparent);
+    color: var(--ink-2, #b4bad0);
+}
+
+[data-theme='dark'] .profile-bodymap-tab:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--surface-1, #161a2d) 70%, var(--accent, #6d8dff) 20%);
+    color: var(--ink-1, #eef1f6);
+}
+
+[data-theme='dark'] .profile-bodymap-tab.is-active {
+    background: color-mix(in srgb, var(--accent, #6d8dff) 26%, var(--surface-1, #161a2d));
+    border-color: color-mix(in srgb, var(--accent, #6d8dff) 48%, transparent);
+    color: var(--ink-1, #eef1f6);
+}
+
+[data-theme='dark'] .profile-bodymap-popover {
+    background: var(--surface-1, #1b2038);
+    border-color: color-mix(in srgb, var(--accent, #6d8dff) 30%, transparent);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.40);
+    color: var(--ink-1, #eef1f6);
+}
+
+[data-theme='dark'] .profile-bodymap-popover-body {
+    color: var(--ink-2, #b4bad0);
+}
+
+[data-theme='dark'] .profile-bodymap-svg .muscle-region {
+    fill: rgba(180, 186, 208, 0.10);
+    stroke: rgba(180, 186, 208, 0.30);
+}
+
+[data-theme='dark'] .profile-bodymap-svg .muscle-region.state-measured {
+    fill: color-mix(in srgb, var(--accent, #6d8dff) 60%, transparent);
+    stroke: color-mix(in srgb, var(--accent, #6d8dff) 80%, transparent);
+}
+
+[data-theme='dark'] .profile-bodymap-svg .muscle-region.state-cross_muscle {
+    fill: color-mix(in srgb, var(--accent, #6d8dff) 26%, transparent);
+    stroke: color-mix(in srgb, var(--accent, #6d8dff) 55%, transparent);
+}
+
+[data-theme='dark'] .profile-bodymap-svg .muscle-region.state-cold_start_only {
+    fill: rgba(180, 186, 208, 0.06);
+    stroke: color-mix(in srgb, var(--accent, #6d8dff) 36%, rgba(180, 186, 208, 0.45));
+}
+
+[data-theme='dark'] .profile-bodymap-svg .muscle-region.state-not_assessed {
+    fill: rgba(180, 186, 208, 0.06);
+    stroke: rgba(180, 186, 208, 0.20);
+}
+

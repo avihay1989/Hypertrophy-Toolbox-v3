@@ -142,11 +142,13 @@ const DEFAULT_PROFILE_ESTIMATE = {
     rir: 3,
     rpe: 7,
     source: 'default',
+    is_dumbbell: false,
 };
 
 const ESTIMATE_SOURCE_LABELS = {
     log: 'from your last set',
     profile: 'from your profile',
+    cold_start: 'from population estimate',
     default: 'default values',
 };
 
@@ -764,9 +766,31 @@ function setWorkoutControlValue(id, value) {
     field.value = String(value);
 }
 
+// Tracks whether the user has manually edited the Weight input since the last
+// exercise selection. While true, the profile estimate must not overwrite the
+// user's value (Issue #5).
+let weightUserDirty = false;
+
+export function resetWeightDirtyForTests() {
+    weightUserDirty = false;
+}
+
+function markWeightUserDirty() {
+    weightUserDirty = true;
+}
+
+export function initializeWeightDirtyTracking() {
+    const weightInput = document.getElementById('weight');
+    if (!weightInput || weightInput.dataset.dirtyTracked === 'true') return;
+    weightInput.addEventListener('input', markWeightUserDirty);
+    weightInput.dataset.dirtyTracked = 'true';
+}
+
 function applyEstimateToWorkoutControls(estimate) {
     const resolved = { ...DEFAULT_PROFILE_ESTIMATE, ...(estimate || {}) };
-    setWorkoutControlValue('weight', resolved.weight);
+    if (!weightUserDirty) {
+        setWorkoutControlValue('weight', resolved.weight);
+    }
     setWorkoutControlValue('sets', resolved.sets);
     setWorkoutControlValue('min_rep', resolved.min_rep);
     setWorkoutControlValue('max_rep_range', resolved.max_rep);
@@ -777,6 +801,128 @@ function applyEstimateToWorkoutControls(estimate) {
     if (provenance) {
         provenance.textContent = ESTIMATE_SOURCE_LABELS[resolved.source] || ESTIMATE_SOURCE_LABELS.default;
     }
+
+    const handHint = document.getElementById('weight-hand-hint');
+    if (handHint) {
+        handHint.hidden = !resolved.is_dumbbell;
+    }
+
+    updateEstimateTraceUI(resolved);
+}
+
+// Issue #17 — Plan-page "show the math" trace expander.
+// The estimator (utils/profile_estimator.py) is the single source of truth
+// for the trace shape. This module just renders it on click — it never
+// reconstructs the math.
+let latestTracePayload = null;
+
+function updateEstimateTraceUI(estimate) {
+    latestTracePayload = estimate || null;
+    const toggle = document.getElementById('workout-estimate-trace-toggle');
+    const container = document.getElementById('workout-estimate-trace');
+    if (!toggle || !container) return;
+
+    const trace = estimate?.trace;
+    const hasTrace = Boolean(trace && Array.isArray(trace.steps) && trace.steps.length > 0);
+    if (!hasTrace) {
+        toggle.hidden = true;
+        container.hidden = true;
+        container.innerHTML = '';
+        toggle.setAttribute('aria-expanded', 'false');
+        return;
+    }
+    toggle.hidden = false;
+    // Collapse on each new estimate so the user opts back in for the new exercise.
+    toggle.setAttribute('aria-expanded', 'false');
+    container.hidden = true;
+    container.innerHTML = '';
+}
+
+function renderEstimateTrace(estimate) {
+    const container = document.getElementById('workout-estimate-trace');
+    if (!container) return;
+    container.innerHTML = '';
+    const trace = estimate?.trace;
+    if (!trace) return;
+
+    const headlineMap = {
+        log: 'From your last logged set',
+        profile: 'From your saved reference lift',
+        cold_start: 'From a population estimate',
+        default: 'Default values',
+    };
+    const headline = document.createElement('p');
+    headline.className = 'workout-estimate-trace-headline';
+    headline.textContent = headlineMap[trace.source] || headlineMap.default;
+    container.appendChild(headline);
+
+    const list = document.createElement('ul');
+    list.className = 'workout-estimate-trace-steps';
+    for (const step of trace.steps) {
+        const li = document.createElement('li');
+        const labelEl = document.createElement('span');
+        labelEl.className = 'workout-estimate-trace-step-label';
+        labelEl.textContent = step.label;
+        li.appendChild(labelEl);
+
+        const parts = [];
+        if (step.value !== undefined && step.value !== null && step.value !== '') {
+            parts.push(`${step.value}${step.unit ? ' ' + step.unit : ''}`);
+        }
+        if (step.factor !== undefined && step.factor !== null) {
+            parts.push(`× ${step.factor}`);
+        }
+        if (parts.length > 0) {
+            const valueEl = document.createElement('span');
+            valueEl.className = 'workout-estimate-trace-step-value';
+            valueEl.textContent = parts.join(' ');
+            li.appendChild(valueEl);
+        }
+
+        if (step.detail) {
+            const detailEl = document.createElement('small');
+            detailEl.className = 'workout-estimate-trace-step-detail';
+            detailEl.textContent = step.detail;
+            li.appendChild(detailEl);
+        }
+
+        list.appendChild(li);
+    }
+    container.appendChild(list);
+
+    if (trace.improvement_hint?.copy) {
+        const hint = document.createElement('p');
+        hint.className = 'workout-estimate-trace-hint';
+        const slug = trace.improvement_hint.lift_key;
+        const link = document.createElement('a');
+        link.href = slug
+            ? `/user_profile#lift-${slug}-weight`
+            : '/user_profile';
+        link.textContent = 'Open Profile →';
+        link.setAttribute('data-trace-improvement-link', '');
+        hint.appendChild(document.createTextNode(trace.improvement_hint.copy + ' '));
+        hint.appendChild(link);
+        container.appendChild(hint);
+    }
+}
+
+function bindEstimateTraceToggle() {
+    const toggle = document.getElementById('workout-estimate-trace-toggle');
+    const container = document.getElementById('workout-estimate-trace');
+    if (!toggle || !container) return;
+    toggle.addEventListener('click', () => {
+        const expanded = toggle.getAttribute('aria-expanded') === 'true';
+        const next = !expanded;
+        toggle.setAttribute('aria-expanded', String(next));
+        container.hidden = !next;
+        if (next && latestTracePayload && container.children.length === 0) {
+            renderEstimateTrace(latestTracePayload);
+        }
+        const labelEl = toggle.querySelector('.workout-estimate-trace-toggle-label');
+        if (labelEl) {
+            labelEl.textContent = next ? 'Hide the math' : 'Show the math';
+        }
+    });
 }
 
 export async function applyUserProfileEstimateForSelectedExercise() {
@@ -800,12 +946,17 @@ export function handleExerciseSelection() {
 
     exerciseSelect.addEventListener('change', (e) => {
         const selectedExercise = e.target.value;
-        
+
         // Clear validation error when user selects a valid value
         if (selectedExercise) {
             setFieldValidationState('exercise', false);
             updateExerciseDetails(selectedExercise);
         }
+        // Exercise selection is the one-shot trigger that re-applies the
+        // profile estimate (Issue #5). Reset the dirty flag so the new
+        // estimate overwrites whatever the user typed for the previous
+        // exercise.
+        weightUserDirty = false;
         void applyUserProfileEstimateForSelectedExercise();
     });
 }
@@ -1190,6 +1341,7 @@ async function sendExerciseData(exerciseData) {
 }
 
 function resetFormFields() {
+    weightUserDirty = false;
     void applyUserProfileEstimateForSelectedExercise();
 }
 
@@ -1208,16 +1360,23 @@ function initializeDefaultValues() {
         const input = document.getElementById(id);
         if (input) {
             input.value = value;
-            
-            // Add event listener to validate input
-            input.addEventListener('input', function() {
-                const min = parseInt(this.min) || 0;
-                const max = parseInt(this.max) || Infinity;
-                let value = parseInt(this.value) || defaultValues[id];
-                
-                // Ensure value is within bounds
-                value = Math.max(min, Math.min(max, value));
-                this.value = value;
+
+            // Clamp to min/max on commit (blur / Enter). Using `change`
+            // instead of `input` so we don't overwrite mid-typing — that
+            // previously stripped decimals (parseInt) and snapped a
+            // momentarily-empty field to a hardcoded default.
+            input.addEventListener('change', function() {
+                if (this.value === '') return;
+                const minAttr = this.getAttribute('min');
+                const maxAttr = this.getAttribute('max');
+                const min = minAttr !== null && minAttr !== '' ? parseFloat(minAttr) : -Infinity;
+                const max = maxAttr !== null && maxAttr !== '' ? parseFloat(maxAttr) : Infinity;
+                const parsed = parseFloat(this.value);
+                if (Number.isNaN(parsed)) return;
+                const clamped = Math.max(min, Math.min(max, parsed));
+                if (clamped !== parsed) {
+                    this.value = clamped;
+                }
             });
         }
     });
@@ -1226,6 +1385,13 @@ function initializeDefaultValues() {
 export function initializeWorkoutPlanHandlers() {
     // Initialize default values
     initializeDefaultValues();
+
+    // Track manual edits to the Weight input so the profile estimate does
+    // not overwrite them on subsequent re-applies (Issue #5).
+    initializeWeightDirtyTracking();
+
+    // Issue #17 — bind the per-suggestion "show the math" trace expander.
+    bindEstimateTraceToggle();
 
     // Add exercise button handler
     const addExerciseBtn = document.getElementById('add_exercise_btn');

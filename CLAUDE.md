@@ -167,12 +167,13 @@ npx playwright test --project=chromium --reporter=line
 
 ## 5. Current State & Risks
 
-### Verified test counts (2026-04-26)
-- **pytest**: 996 passed (~2.5m)
-- **Relevant E2E Playwright**: 64 passed (~1.5m, Chromium; `user-profile.spec.ts` + `workout-plan.spec.ts` + `volume-progress.spec.ts` + `volume-splitter.spec.ts`)
-- **Last full E2E Playwright baseline**: 314 passed (~7.2m, Chromium; 2026-04-18)
-- **Summary-page Playwright**: 20 passed (~25s; 2026-04-18)
-- **User Profile targeted verification (2026-04-26)**: included in the refreshed full pytest and relevant Chromium E2E counts above.
+### Verified test counts (2026-04-28)
+- **pytest**: 1080 passed (~2m 22s) — 1054 pre-Issue-#20 + 26 new (Issue #20 reference-lift expansion).
+- **Relevant E2E Playwright**: 41 passed (~58s, Chromium; `user-profile.spec.ts` + `workout-plan.spec.ts`) — adds the Issue #20 questionnaire-grouping case.
+- **Adjacent E2E Playwright (Issue #20 sweep)**: 55 passed (~1m 18s, Chromium; `exercise-interactions.spec.ts` + `accessibility.spec.ts` + `smoke-navigation.spec.ts`).
+- **Last full E2E Playwright baseline**: 314 passed (~7.2m, Chromium; 2026-04-18).
+- **Summary-page Playwright**: 20 passed (~25s; 2026-04-18).
+- **User Profile bodymap (Issue #19) verification (2026-04-28)**: included in the refreshed pytest and Chromium E2E counts above.
 
 Re-verify after significant changes and update counts above.
 
