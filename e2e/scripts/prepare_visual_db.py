@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import sqlite3
+import sys
 from pathlib import Path
 
 
@@ -43,14 +44,43 @@ def snapshot_database(source: Path, output: Path) -> None:
         src.backup(dst)
 
 
+def apply_migrations(database_path: Path) -> None:
+    # Without this, a seed file taken before a schema change silently
+    # downgrades the live DB during visual-regression runs and breaks any
+    # API that selects newly-added columns.
+    if str(REPO_ROOT) not in sys.path:
+        sys.path.insert(0, str(REPO_ROOT))
+
+    import utils.config
+    utils.config.DB_FILE = str(database_path)
+
+    from utils.db_initializer import initialize_database
+    from utils.database import (
+        add_progression_goals_table,
+        add_user_profile_tables,
+        add_volume_tracking_tables,
+    )
+    from routes.program_backup import init_backup_tables
+    from routes.workout_plan import initialize_exercise_order
+
+    initialize_database()
+    add_progression_goals_table()
+    add_volume_tracking_tables()
+    add_user_profile_tables()
+    initialize_exercise_order()
+    init_backup_tables()
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source", type=Path, default=DEFAULT_SOURCE)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     args = parser.parse_args()
 
-    snapshot_database(args.source.resolve(), args.output.resolve())
-    print(args.output.resolve())
+    output_path = args.output.resolve()
+    snapshot_database(args.source.resolve(), output_path)
+    apply_migrations(output_path)
+    print(output_path)
 
 
 if __name__ == "__main__":
