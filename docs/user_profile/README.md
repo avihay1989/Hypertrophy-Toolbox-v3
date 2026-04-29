@@ -9,6 +9,6 @@ Personalizes Workout Controls on `/workout_plan` from a saved profile:
 
 Reference docs:
 
-- [Planning](PLANNING.md)
-- [Design constants](DESIGN.md)
-- [Execution log](EXECUTION_LOG.md)
+- [Design constants](DESIGN.md) — v1 spec; see banner at top for current-state guidance.
+- [Development issues](development_issues.md) — live tracker for post-v1 bugs / UX gaps / enhancements (Issues #1–#24).
+- Archive: [Planning](archive/PLANNING.md) and [Execution log](archive/EXECUTION_LOG.md) — frozen historical artefacts from the v1 build (2026-04-26).

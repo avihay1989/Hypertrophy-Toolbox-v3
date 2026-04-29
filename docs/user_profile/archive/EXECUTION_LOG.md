@@ -1,6 +1,12 @@
 
 # Execution log — User Profile feature
 
+> ⚠️ **Frozen — v1 shipped 2026-04-26. Archived 2026-04-29.** This file
+> is the historical execution journal for the v1 build. Post-v1 work
+> (Issues #1–#24) is tracked in
+> [`../development_issues.md`](../development_issues.md), not here.
+> Append-only contract no longer applies — file is closed.
+
 > Living journal kept by each implementing agent. **Do not retroactively rewrite entries.** Append-only.
 
 > Companion to [PLANNING.md](PLANNING.md). Each phase ticks its checkboxes in PLANNING.md only after the matching entry is appended here.

@@ -1,6 +1,15 @@
 
 # Plan — User Profile tab with weight/rep auto-estimation
 
+> ⚠️ **Frozen — v1 shipped 2026-04-26. Archived 2026-04-29.** This file
+> is the historical implementation plan. All Phase A–H items are
+> complete (see Verification section at the bottom). For the **current**
+> state of the User Profile feature, read `utils/profile_estimator.py`
+> and the Resolution notes in
+> [`../development_issues.md`](../development_issues.md) — the estimator
+> has evolved materially via Issues #6, #9, #13, #14, #16, #17, #20.
+> Do not treat this file as normative.
+
 > **Two-part document.** Part 1 = planning (this file). Part 2 = `EXECUTION_LOG.md` in this same folder, written by the implementing agents as they tick items off.
 
 > **Sized for small-agent execution.** Each task block lists its own context (files, line refs, exact symbols) so a Sonnet/Codex-mini agent can pick up a single block without reading the whole plan.

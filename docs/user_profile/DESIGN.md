@@ -1,9 +1,42 @@
 
 # DESIGN — User Profile feature constants
 
+> ⚠️ **Frozen as v1 spec (2026-04-26). NOT current truth.**
+> This document captured the design constants used during the v1
+> implementation slices (A–H). Behaviour has evolved materially
+> through post-v1 issues — current truth lives in
+> [`utils/profile_estimator.py`](../../utils/profile_estimator.py)
+> and the Resolution notes in
+> [`development_issues.md`](development_issues.md). Notable drifts:
+>
+> - **§1, §3.1 — `KEY_LIFTS`:** described as 14 slugs; actual set
+>   is ~60 after Issue #6 (broad questionnaire expansion), Issue #9
+>   (split combined slugs), and Issue #20 (calves / glutes / lower
+>   back additions).
+> - **§2.3 — `COMPLEX_ALLOWLIST`:** missing Issue #13 (pull-up /
+>   chin-up entries) and Issue #20 additions (`glute bridge`,
+>   `b-stance hip thrust`, `seated good morning`, etc.).
+> - **§4 — Tier ratios:** the flat `target × TIER_RATIOS[tier]`
+>   formula is no longer accurate. Issue #14 introduced
+>   `KEY_LIFT_TIER` normalisation
+>   (`min(TIER_RATIOS[target] / TIER_RATIOS[reference], 1.0)`) to
+>   stop same-tier paths from double-discounting.
+> - **§7 — `MUSCLE_TO_KEY_LIFT`:** the table here is the v1
+>   14-slug version; chains were rewritten by Issue #20.
+> - **§8 — Estimation precedence:** Issue #16 added a cold-start
+>   demographic anchor-lift seeding step between profile and
+>   default. The §10 "demographics MUST NOT be read by the
+>   estimator" hard constraint was deliberately reversed.
+> - **§10 — v2 deferrals:** the "confidence indicator" item
+>   shipped in Issue #17 as the four-band accuracy classifier.
+>
+> Treat the sections below as a v1 reference for what was decided
+> at the time, not as the current contract. PR reviewers: do not
+> use this file to gate behavioural changes.
+
 > Pinned design constants for the User Profile feature. **All values here are normative**: implementing slices must use these exact strings, numbers, and lookup keys.
 
-> Read [PLANNING.md](PLANNING.md) for the surrounding plan. Append progress to [EXECUTION_LOG.md](EXECUTION_LOG.md).
+> Read [PLANNING.md](archive/PLANNING.md) for the surrounding plan. Append progress to [EXECUTION_LOG.md](archive/EXECUTION_LOG.md).
 
 ---
 
