@@ -2,6 +2,65 @@
 
 Tracks concrete work against `PLANNING.md`. Newest entry on top.
 
+## 2026-04-30 — §5 shipped (YouTube reference video modal)
+
+**Scope**: §5.1–§5.8 (Pattern A modal + schema + apply script + plan-page
+wiring + log-page wiring). Curated CSV ships header-only — no IDs invented;
+the search-fallback path covers every uncurated row.
+
+### Three-commit split on `main`
+
+| Commit | What landed |
+|---|---|
+| `e7b0c1e` | Schema + apply script + route contracts. `youtube_video_id TEXT` (nullable, idempotent) on `exercises`; guarded `ALTER` for legacy DBs; `routes/workout_plan.get_workout_plan` and `routes/workout_log.get_workout_logs` expose the field via `LEFT JOIN`; `utils/workout_log.get_workout_logs` page-render path joins it as well. `scripts/apply_youtube_curated.py` validates header shape + 11-char id regex + duplicates + blanks + unknown names with all-or-nothing semantics; `data/youtube_curated_top_n.csv` ships header-only. 37 pytest cases. |
+| `ed97c08` | Modal component + `/workout_plan` wiring. `templates/partials/exercise_video_modal.html` included once in `base.html`. `static/js/modules/exercise-video-modal.js` exports `openExerciseVideoModal()` + `buildPlayButton()`; iframe `src` blanks on close, focus returns to triggering button, malformed/NULL ids fall through to YouTube search. Plan-row wiring uses DOM-node creation (no `aria-label` interpolation). 5 Playwright cases. |
+| `63fd323` | `/workout_log` wiring. Server-rendered Jinja row gets `.exercise-cell-content` cluster + `.btn-video.log-play-video-btn`; `static/js/modules/workout-log.js` binds click handlers via `initializeVideoPlayButtons()`. 3 pytest page-render cases + 3 Playwright cases. |
+
+### Compliance posture (§5.6)
+
+- Embed via `https://www.youtube.com/embed/<id>` only. No download, cache,
+  or rehosting of video data or thumbnails.
+- "Watch on YouTube" link present in every embed surface, with
+  `target="_blank"` + `rel="noopener noreferrer"`.
+- Search variant uses `https://www.youtube.com/results?search_query=…` —
+  no curated IDs invented; the user's eventual curation lives in
+  `data/youtube_curated_top_n.csv` and is applied via the apply script.
+
+### Verification
+
+Run on 2026-04-30 against the live working tree:
+
+- **pytest (full suite)**: 1216 passed (~2m 59s) — was 1175 + 40 new §5
+  tests in `tests/test_youtube_video_id.py` (regex, schema migration,
+  curated-CSV shape, apply-script validation/idempotency, route contracts
+  for `/get_workout_plan` and `/get_workout_logs`, page-render contract for
+  `/workout_log`, CLI smoke). The +1 unaccounted delta is the existing
+  Barbell Curl metadata-repair test that landed alongside this work in a
+  parallel commit; not a §5 artifact.
+- **Playwright targeted**: `e2e/workout-plan.spec.ts` 33/33 passed; new
+  "Exercise reference video modal (workout-plan)" block 5/5 passed;
+  pre-existing "Muscle selector body-map variants" still 3/3.
+- **Playwright targeted**: `e2e/workout-log.spec.ts` 22/22 passed; new
+  "Exercise reference video modal (workout-log)" block 3/3 passed.
+
+### Untouched per scope
+
+- `data/database.db` — schema source of truth lives in
+  `utils/db_initializer.py` only; the committed DB snapshot was never
+  mutated by this work. The migration runs at startup; existing local DBs
+  pick up the new column via the guarded `ALTER`.
+- `data/youtube_curated_top_n.csv` — ships header-only. Curation is a
+  separate human deliverable; the app and tests are fully functional with
+  every `youtube_video_id` NULL.
+
+### Outstanding / next sessions
+
+- §4 (free-exercise-db media + `escapeHtml()` rollout) — next per the §6
+  risk-ordered sequence. The §5 work proved the additive-nullable migration
+  pattern and the route-contract change pattern at small scale; §4 reuses
+  both for a much larger media set.
+- §3.6 (Profile coverage body map) — still deferred.
+
 ## 2026-04-29 — §3 kickoff (workout-plan body map only)
 
 **Scope**: §3.1–§3.5 + §3.7. Profile coverage body map (§3.6) deferred per

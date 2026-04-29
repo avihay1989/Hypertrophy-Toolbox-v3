@@ -2,6 +2,32 @@
 
 All notable changes to Hypertrophy Toolbox v3.
 
+## Unreleased - April 30, 2026
+
+### workout.cool Integration §5 — Exercise Reference Video Modal
+
+- Added a per-row reference-video play button on `/workout_plan` and `/workout_log` that opens a shared Bootstrap modal (one instance, included once via `templates/partials/exercise_video_modal.html` in `base.html`).
+- New nullable `youtube_video_id TEXT` column on `exercises`, applied via the standard guarded-`ALTER` migration in `utils/db_initializer.py`. Fully additive — every existing row defaults to NULL and renders the search-fallback variant.
+- `/get_workout_plan` and `/get_workout_logs` JSON, plus the server-rendered `/workout_log` template, now include `youtube_video_id` via `LEFT JOIN exercises ... COLLATE NOCASE`.
+- New `static/js/modules/exercise-video-modal.js` exports `openExerciseVideoModal()` and `buildPlayButton()`. Iframe `src` is set only on open and blanked on close so playback stops; focus returns to the triggering button; malformed/NULL ids fall through to a YouTube search CTA.
+- New `scripts/apply_youtube_curated.py` reads `data/youtube_curated_top_n.csv` (header-only by default) and populates `youtube_video_id` with strict, all-or-nothing validation: 11-char id regex (`^[A-Za-z0-9_-]{11}$`), no duplicates (case-insensitive), no blanks, no unknown exercise names. Idempotent — re-running with the same content produces no DB delta.
+- ToS-compliance posture: embed only via `https://www.youtube.com/embed/<id>`; "Watch on YouTube" link present on every embed surface with `target="_blank"` + `rel="noopener noreferrer"`; no thumbnail or video-data caching/rehosting.
+
+### workout.cool Integration §3 — Simple-Mode Body Map Hybrid Swap
+
+- Replaced the simple-mode muscle-selector SVG art on `/workout_plan` with workout.cool's anatomy art (vendored under `static/vendor/workout-cool/` at pinned upstream SHA `77f25a922b51be7d96bd051c5d2096959f0d61a8`, MIT). Advanced mode still uses `react-body-highlighter` — both views share the same canonical muscle keys.
+- Added `SVG_PATHS[mode][side]` + `getSvgPathForMode()` in `static/js/modules/muscle-selector.js`; `switchViewMode()` now reloads the SVG variant and preserves selection across the swap.
+- Multi-key region support: workout.cool's `BACK` region maps to three of our simple keys (`lats`, `upper-back`, `lowerback`), expanded through `SIMPLE_TO_ADVANCED_MAP` to five advanced children. Region renders `selected` / `partial` / unselected based on how many of those advanced children are in `selectedMuscles`.
+- Profile coverage body map (§3.6) intentionally untouched — `static/js/modules/bodymap-svg.js` is unchanged and continues to back the user-profile coverage view.
+
+### Validation
+- pytest: 1216 passed (~2m 59s) — 40 new in `tests/test_youtube_video_id.py`, plus the §3 mapping tests already in `tests/test_muscle_selector_mapping.py`.
+- Playwright (Chromium): `e2e/workout-plan.spec.ts` 33/33 (5 §5 + 3 §3 + 25 prior); `e2e/workout-log.spec.ts` 22/22 (3 §5 + 19 prior).
+
+### Migration Notes
+- New databases get `youtube_video_id` automatically. Existing local databases pick it up on next app start via the guarded `ALTER TABLE` in `utils/db_initializer.py`. No manual migration required.
+- `data/youtube_curated_top_n.csv` ships header-only — the app is fully functional with every row's `youtube_video_id` NULL. Drop curated rows into the CSV and run `.venv/Scripts/python.exe scripts/apply_youtube_curated.py` to populate.
+
 ## Unreleased - April 24, 2026
 
 ### UI / Redesign

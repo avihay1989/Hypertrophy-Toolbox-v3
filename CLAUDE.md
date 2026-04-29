@@ -168,12 +168,13 @@ npx playwright test --project=chromium --reporter=line
 
 ## 5. Current State & Risks
 
-### Verified test counts (2026-04-29)
-- **pytest**: 1175 passed (~3m 20s) — 1159 pre-workout-cool §3 + 16 new (`tests/test_muscle_selector_mapping.py`: 7 in `TestWorkoutCoolSvgCoverage` for the simple-mode SVG canonical-key coverage and `BACK` multi-key region, 9 in `TestRegionVisualState` for the multi-key region state-derivation rules incl. `rhomboids`-only and `erector-spinae`-only `partial` regressions). Prior baseline 1159: 1083 pre-Issue-#21 + 76 (Issue #21 body composition).
-- **New E2E Playwright (workout-cool §3)**: 3 passed (~10s, Chromium; `e2e/workout-plan.spec.ts` "Muscle selector body-map variants") — Simple↔Advanced SVG variant reload + selection survival, multi-key BACK click cascade, single-advanced-child→partial-back-in-Simple regression.
-- **New E2E Playwright (Issue #21)**: 5 passed (~6s, Chromium; `body-composition.spec.ts`) — empty state + live result + save→history+chart + hip gender visibility + navbar highlight.
-- **Regression-relevant E2E Playwright (Issue #21 estimator-byte-identical gate)**: 112 passed (~2m 30s, Chromium; `workout-plan.spec.ts` + `workout-log.spec.ts` + `summary-pages.spec.ts` + `progression.spec.ts` + `volume-splitter.spec.ts`).
-- **Last full E2E Playwright baseline**: 314 passed (~7.2m, Chromium; 2026-04-18).
+### Verified test counts (2026-04-30)
+- **pytest**: 1216 passed (~2m 59s) — 1175 pre-§5 + 40 new in `tests/test_youtube_video_id.py` (regex shape, schema migration on fresh + legacy + re-init DBs, curated-CSV shape, apply-script validation/idempotency/case-insensitivity, route contracts for `/get_workout_plan` and `/get_workout_logs`, server-rendered page contract for `/workout_log`, CLI smoke) + 1 unrelated metadata-repair test that landed in a parallel commit. Prior baseline 1175: 1159 pre-workout-cool-§3 + 16 (§3 muscle selector mapping). 1159 = 1083 pre-Issue-#21 + 76 (Issue #21 body composition).
+- **New E2E Playwright (workout-cool §5)**: 8 passed (~22s, Chromium) — 5 in `e2e/workout-plan.spec.ts` "Exercise reference video modal (workout-plan)" (button presence, NULL→search fallback, valid id→embed mode + close clears src, in-place URL swap on re-open, malformed id→search fallback) + 3 in `e2e/workout-log.spec.ts` "Exercise reference video modal (workout-log)" (button presence, search-fallback open, embed-mode open via JS API).
+- **E2E Playwright (workout-cool §3)**: 3 passed (~10s, Chromium; `e2e/workout-plan.spec.ts` "Muscle selector body-map variants") — Simple↔Advanced SVG variant reload + selection survival, multi-key BACK click cascade, single-advanced-child→partial-back-in-Simple regression.
+- **Regression sweep around §5**: `e2e/workout-plan.spec.ts` 33/33 passed, `e2e/workout-log.spec.ts` 22/22 passed (Chromium, 2026-04-30).
+- **E2E Playwright (Issue #21)**: 5 passed (~6s, Chromium; `body-composition.spec.ts`).
+- **Last full E2E Playwright baseline**: 314 passed (~7.2m, Chromium; 2026-04-18). Not re-run for §5 — the targeted regression sweep above covers both pages that §5 touches.
 - **Summary-page Playwright**: 20 passed (~25s; 2026-04-18).
 - **User Profile bodymap (Issue #19) verification (2026-04-28)**: included in the refreshed pytest and Chromium E2E counts above.
 
