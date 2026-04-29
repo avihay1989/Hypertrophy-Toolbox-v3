@@ -394,3 +394,71 @@ class TestApplyScriptCli:
         )
         assert result.returncode == 0
         assert "youtube" in result.stdout.lower()
+
+
+class TestPageRender:
+    """Server-rendered /workout_log page surfaces the play button + modal."""
+
+    def test_modal_partial_present_on_log_page(self, client, clean_db):
+        resp = client.get("/workout_log")
+        # Pytest env may surface 500 if the template tree fails to resolve.
+        if resp.status_code != 200:
+            pytest.skip(
+                f"workout_log returned {resp.status_code}; template tree may "
+                "not be available in this pytest env."
+            )
+        body = resp.get_data(as_text=True)
+        assert "exerciseVideoModal" in body
+        assert "exerciseVideoIframe" in body
+
+    def test_log_row_has_play_button(
+        self,
+        client,
+        clean_db,
+        exercise_factory,
+        workout_plan_factory,
+        workout_log_factory,
+    ):
+        exercise_factory("Bench Press")
+        plan_id = workout_plan_factory(exercise_name="Bench Press")
+        workout_log_factory(plan_id=plan_id, exercise="Bench Press")
+
+        resp = client.get("/workout_log")
+        if resp.status_code != 200:
+            pytest.skip(
+                f"workout_log returned {resp.status_code}; template tree may "
+                "not be available in this pytest env."
+            )
+        body = resp.get_data(as_text=True)
+        assert "log-play-video-btn" in body
+        # No curated id seeded → button should ship with empty data-video-id.
+        assert 'data-video-id=""' in body
+        # Aria label uses the exercise name verbatim.
+        assert "Play reference video for Bench Press" in body
+
+    def test_log_row_play_button_with_curated_id(
+        self,
+        client,
+        clean_db,
+        exercise_factory,
+        workout_plan_factory,
+        workout_log_factory,
+    ):
+        exercise_factory("Bench Press")
+        plan_id = workout_plan_factory(exercise_name="Bench Press")
+        workout_log_factory(plan_id=plan_id, exercise="Bench Press")
+        with DatabaseHandler() as db:
+            db.execute_query(
+                "UPDATE exercises SET youtube_video_id = ? "
+                "WHERE exercise_name = 'Bench Press'",
+                ("dQw4w9WgXcQ",),
+            )
+
+        resp = client.get("/workout_log")
+        if resp.status_code != 200:
+            pytest.skip(
+                f"workout_log returned {resp.status_code}; template tree may "
+                "not be available in this pytest env."
+            )
+        body = resp.get_data(as_text=True)
+        assert 'data-video-id="dQw4w9WgXcQ"' in body

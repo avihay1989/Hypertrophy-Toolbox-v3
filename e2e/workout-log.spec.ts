@@ -455,3 +455,102 @@ test.describe('Workout Log Mobile Responsive', () => {
     }
   });
 });
+
+// ============================================================================
+// §5 — Exercise reference video modal on /workout_log (PLANNING.md §5.5)
+//
+// The modal partial is included once in base.html, so the same flow as on
+// /workout_plan applies here: every server-rendered log row carries a play
+// button whose click opens the modal. NULL youtube_video_id falls through
+// to the search variant.
+// ============================================================================
+
+test.describe('Exercise reference video modal (workout-log)', () => {
+  test.beforeEach(async ({ page, consoleErrors }) => {
+    consoleErrors.startCollecting();
+
+    // Seed the plan with one exercise, then import into the log so the
+    // server-rendered log table actually has a row to inspect.
+    await page.goto(ROUTES.WORKOUT_PLAN);
+    await waitForPageReady(page);
+
+    await page.locator(SELECTORS.ROUTINE_ENV).selectOption('GYM');
+    await page.waitForFunction(() => {
+      const s = document.getElementById('routine-program') as HTMLSelectElement | null;
+      return Boolean(s && s.options.length > 1);
+    });
+    await page.locator(SELECTORS.ROUTINE_PROGRAM).selectOption('Full Body');
+    await page.waitForFunction(() => {
+      const s = document.getElementById('routine-day') as HTMLSelectElement | null;
+      return Boolean(s && s.options.length > 1);
+    });
+    await page.locator(SELECTORS.ROUTINE_DAY).selectOption('Workout A');
+    await page.waitForFunction(() => {
+      const s = document.getElementById('exercise') as HTMLSelectElement | null;
+      return Boolean(s && s.options.length > 1);
+    });
+    const exSelect = page.locator(SELECTORS.EXERCISE_SEARCH);
+    const firstValue = await exSelect.locator('option').nth(1).getAttribute('value');
+    if (firstValue) {
+      await exSelect.selectOption(firstValue);
+    }
+    await page.locator(SELECTORS.ADD_EXERCISE_BTN).click();
+    await page.waitForSelector('#workout_plan_table_body tr');
+
+    await page.goto(ROUTES.WORKOUT_LOG);
+    await waitForPageReady(page);
+    await importCurrentWorkoutPlan(page);
+  });
+
+  test.afterEach(async ({ consoleErrors }) => {
+    consoleErrors.assertNoErrors();
+  });
+
+  test('every log row has an accessible play button', async ({ page }) => {
+    const rows = page.locator('.workout-log-table tbody tr');
+    const rowCount = await rows.count();
+    expect(rowCount).toBeGreaterThan(0);
+
+    const firstRow = rows.first();
+    const playBtn = firstRow.locator('.btn-video.log-play-video-btn');
+    await expect(playBtn).toBeVisible();
+
+    const ariaLabel = await playBtn.getAttribute('aria-label');
+    expect(ariaLabel).toMatch(/^Play reference video for /);
+  });
+
+  test('clicking play on an uncurated row opens the search-fallback modal', async ({ page }) => {
+    const playBtn = page.locator('.workout-log-table .log-play-video-btn').first();
+    await playBtn.click();
+
+    const modal = page.locator('#exerciseVideoModal');
+    await expect(modal).toBeVisible();
+
+    // Default seed has no curated video id → search variant.
+    await expect(page.locator('#exerciseVideoEmbedWrap')).toBeHidden();
+    await expect(page.locator('#exerciseVideoSearchWrap')).toBeVisible();
+
+    const externalLink = page.locator('#exerciseVideoExternalLink');
+    const href = await externalLink.getAttribute('href');
+    expect(href).toMatch(/^https:\/\/www\.youtube\.com\/results\?search_query=/);
+    expect(await externalLink.getAttribute('target')).toBe('_blank');
+    expect(await externalLink.getAttribute('rel')).toBe('noopener noreferrer');
+  });
+
+  test('valid id (driven via JS) opens embed mode', async ({ page }) => {
+    // Server-rendered log rows can carry a real youtube_video_id, but no
+    // curated CSV ships with this branch — drive the modal via the public
+    // window API to exercise the embed path on the log page.
+    await page.evaluate(() => {
+      // @ts-expect-error - exposed by exercise-video-modal.js
+      window.openExerciseVideoModal('dQw4w9WgXcQ', 'Test Log Exercise');
+    });
+
+    await expect(page.locator('#exerciseVideoModal')).toBeVisible();
+    await expect(page.locator('#exerciseVideoEmbedWrap')).toBeVisible();
+    await expect(page.locator('#exerciseVideoSearchWrap')).toBeHidden();
+
+    const src = await page.locator('#exerciseVideoIframe').getAttribute('src');
+    expect(src).toMatch(/^https:\/\/www\.youtube\.com\/embed\/dQw4w9WgXcQ/);
+  });
+});
