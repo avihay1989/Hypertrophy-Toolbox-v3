@@ -1,9 +1,10 @@
 import { showToast } from './toast.js';
 import { api, isHandledApiError, logApiError } from './fetch-wrapper.js';
+import { openExerciseVideoModal } from './exercise-video-modal.js';
 
 export function initializeWorkoutLog() {
     console.log('Initializing workout log');
-    
+
     // Fix date input format
     const dateInputs = document.querySelectorAll('input[type="date"]');
     dateInputs.forEach(input => {
@@ -24,6 +25,9 @@ export function initializeWorkoutLog() {
     // Initialize filters
     initializeWorkoutLogFilters();
 
+    // §5 — wire reference-video play buttons in server-rendered rows.
+    initializeVideoPlayButtons();
+
     // Initialize simple table sorting
     const workoutLogTable = document.querySelector('.workout-log-table');
     if (workoutLogTable) {
@@ -35,12 +39,29 @@ export function initializeWorkoutLog() {
 
     // Move modal to body for proper z-index stacking, THEN bind events
     moveModalToBody();
-    
+
     // Bind the confirm clear log button click handler AFTER modal is moved
     // Use setTimeout to ensure DOM is ready
     setTimeout(() => {
         bindClearLogButton();
     }, 100);
+}
+
+/**
+ * §5 — Bind click handlers to per-row reference-video play buttons.
+ * Rows are server-rendered Jinja (templates/workout_log.html); the button
+ * carries data-video-id (may be empty/NULL) and data-exercise-name.
+ */
+function initializeVideoPlayButtons() {
+    const buttons = document.querySelectorAll('.log-play-video-btn');
+    buttons.forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const videoId = btn.dataset.videoId || null;
+            const exerciseName = btn.dataset.exerciseName || '';
+            openExerciseVideoModal(videoId, exerciseName, btn);
+        });
+    });
 }
 
 /**

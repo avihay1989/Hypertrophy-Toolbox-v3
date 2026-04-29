@@ -92,7 +92,21 @@
                     <tr data-log-id="{{ log.id }}">
                         <td data-label="#">{{ loop.index }}</td>
                         <td data-label="Routine" class="routine-cell"><span class="routine-env">{{ routine_parts[0] if routine_parts|length > 0 else '' }}</span><span class="routine-program">{{ routine_parts[1] if routine_parts|length > 1 else '' }}</span><span class="routine-workout">{{ routine_parts[2] if routine_parts|length > 2 else '' }}</span></td>
-                        <td data-label="Exercise">{{ log.exercise }}</td>
+                        <td data-label="Exercise" class="exercise-cell">
+                            <div class="exercise-cell-content">
+                                <span class="exercise-name">{{ log.exercise }}</span>
+                                {# §5 — reference video play button. data-* attrs feed window.openExerciseVideoModal. #}
+                                <button type="button"
+                                        class="btn btn-video btn-calm-ghost log-play-video-btn"
+                                        data-action="play-video"
+                                        data-video-id="{{ log.youtube_video_id or '' }}"
+                                        data-exercise-name="{{ log.exercise }}"
+                                        title="{% if log.youtube_video_id %}Watch reference video{% else %}Search YouTube for reference video{% endif %}"
+                                        aria-label="Play reference video for {{ log.exercise }}">
+                                    <i class="fas fa-play" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </td>
                         <td data-label="Planned Sets">{{ log.planned_sets }}</td>
                         <td data-label="Planned Min Reps" class="metric-lane metric-lane--min-reps metric-lane--planned" data-field="planned_min_reps">{{ log.planned_min_reps }}</td>
                         <td data-label="Planned Max Reps" class="metric-lane metric-lane--max-reps metric-lane--planned" data-field="planned_max_reps">{{ log.planned_max_reps }}</td>
