@@ -1,6 +1,7 @@
 import { showToast } from './toast.js';
 import { api, isHandledApiError, logApiError } from './fetch-wrapper.js';
 import { notifyVolumeAffectingPlanChange } from './workout-plan-events.js';
+import { buildPlayButton } from './exercise-video-modal.js';
 
 /**
  * Transform muscle display value based on current view mode (Simple/Advanced)
@@ -1591,13 +1592,25 @@ export function updateWorkoutPlanTable(exercises) {
             </td>
         `;
 
+        // §5 — append the reference-video play button into the Exercise cell
+        // action cluster (next to Swap). DOM-node creation avoids interpolating
+        // exercise-name into an inline aria-label or onclick.
+        const cellContent = row.querySelector('.exercise-cell-content');
+        if (cellContent) {
+            const playBtn = buildPlayButton({
+                videoId: exercise.youtube_video_id,
+                exerciseName: exercise.exercise || '',
+            });
+            cellContent.appendChild(playBtn);
+        }
+
         // Add click handlers for editable cells
         row.querySelectorAll('.editable').forEach(cell => {
             cell.addEventListener('click', () => {
                 makeTableCellEditable(cell, exercise.id, cell.dataset.field);
             });
         });
-        
+
         // Add click handler for swap button
         const swapBtn = row.querySelector('.btn-swap');
         if (swapBtn) {

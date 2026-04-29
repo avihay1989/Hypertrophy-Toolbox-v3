@@ -4717,3 +4717,73 @@ h1, h2, h3 {
     transform: none !important;
   }
 }
+
+/* ============================================================================
+   §5 — Exercise reference video modal + play button (shared by /workout_plan
+   and /workout_log). Modal markup lives in templates/partials/exercise_video_modal.html
+   and is included once in base.html.
+   ============================================================================ */
+.btn.btn-video {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  margin-left: 6px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 90%, var(--accent, #4c6ef5) 10%);
+  border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 26%, transparent);
+  color: var(--accent, #4c6ef5);
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, transform 80ms ease;
+  flex-shrink: 0;
+}
+
+.btn.btn-video:hover,
+.btn.btn-video:focus-visible {
+  background: color-mix(in srgb, var(--surface-2, #ffffff) 80%, var(--accent, #4c6ef5) 20%);
+  border-color: color-mix(in srgb, var(--accent, #4c6ef5) 40%, transparent);
+}
+
+.btn.btn-video:active {
+  transform: scale(0.96);
+}
+
+.btn.btn-video > i {
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+[data-theme='dark'] .btn.btn-video {
+  background: color-mix(in srgb, var(--surface-1, #161a2d) 84%, var(--accent, #6d8dff) 16%);
+  border-color: color-mix(in srgb, var(--accent, #6d8dff) 36%, transparent);
+  color: var(--accent, #6d8dff);
+}
+
+[data-theme='dark'] .btn.btn-video:hover,
+[data-theme='dark'] .btn.btn-video:focus-visible {
+  background: color-mix(in srgb, var(--surface-1, #161a2d) 70%, var(--accent, #6d8dff) 30%);
+  border-color: color-mix(in srgb, var(--accent, #6d8dff) 50%, transparent);
+}
+
+/* Modal: 16:9 iframe via aspect-ratio so it scales responsively. */
+.exercise-video-embed-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
+}
+
+.exercise-video-iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+.exercise-video-search-wrap {
+  min-height: 120px;
+}

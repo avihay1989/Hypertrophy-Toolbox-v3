@@ -752,3 +752,164 @@ test.describe('Muscle selector body-map variants', () => {
     ).toBeVisible();
   });
 });
+
+// ============================================================================
+// §5 — Exercise reference video modal (PLANNING.md §5)
+//
+// Pattern A: a single play button per row opens a modal. Curated exercises
+// embed via youtube.com/embed; uncurated exercises fall through to a
+// search-on-YouTube CTA. Closing the modal clears the iframe src.
+// ============================================================================
+
+test.describe('Exercise reference video modal (workout-plan)', () => {
+  test.beforeEach(async ({ page, consoleErrors }) => {
+    consoleErrors.startCollecting();
+    await page.goto(ROUTES.WORKOUT_PLAN);
+    await waitForPageReady(page);
+
+    // Seed one exercise into the plan so a row renders with the play button.
+    await page.locator(SELECTORS.ROUTINE_ENV).selectOption('GYM');
+    await page.waitForFunction(() => {
+      const s = document.getElementById('routine-program') as HTMLSelectElement | null;
+      return Boolean(s && s.options.length > 1);
+    });
+    await page.locator(SELECTORS.ROUTINE_PROGRAM).selectOption('Full Body');
+    await page.waitForFunction(() => {
+      const s = document.getElementById('routine-day') as HTMLSelectElement | null;
+      return Boolean(s && s.options.length > 1);
+    });
+    await page.locator(SELECTORS.ROUTINE_DAY).selectOption('Workout A');
+    await page.waitForFunction(() => {
+      const s = document.getElementById('exercise') as HTMLSelectElement | null;
+      return Boolean(s && s.options.length > 1);
+    });
+    const exSelect = page.locator(SELECTORS.EXERCISE_SEARCH);
+    const firstValue = await exSelect.locator('option').nth(1).getAttribute('value');
+    if (firstValue) {
+      await exSelect.selectOption(firstValue);
+    }
+    await page.locator(SELECTORS.ADD_EXERCISE_BTN).click();
+    await page.waitForSelector('#workout_plan_table_body tr');
+  });
+
+  test.afterEach(async ({ consoleErrors }) => {
+    consoleErrors.assertNoErrors();
+  });
+
+  test('every row has an accessible play button next to Swap', async ({ page }) => {
+    const rows = page.locator('#workout_plan_table_body tr');
+    const rowCount = await rows.count();
+    expect(rowCount).toBeGreaterThan(0);
+
+    const firstRow = rows.first();
+    const playBtn = firstRow.locator('.btn-video');
+    await expect(playBtn).toBeVisible();
+
+    const ariaLabel = await playBtn.getAttribute('aria-label');
+    expect(ariaLabel).toMatch(/^Play reference video for /);
+
+    const swapBtn = firstRow.locator('.btn-swap');
+    await expect(swapBtn).toBeVisible();
+  });
+
+  test('uncurated exercise (NULL youtube_video_id) opens the search-fallback variant', async ({ page }) => {
+    const playBtn = page.locator('#workout_plan_table_body tr .btn-video').first();
+    await playBtn.click();
+
+    const modal = page.locator('#exerciseVideoModal');
+    await expect(modal).toBeVisible();
+
+    // Embed wrap should be hidden; search wrap visible.
+    await expect(page.locator('#exerciseVideoEmbedWrap')).toBeHidden();
+    await expect(page.locator('#exerciseVideoSearchWrap')).toBeVisible();
+
+    // External CTA points at youtube.com/results with the exercise name encoded.
+    const externalLink = page.locator('#exerciseVideoExternalLink');
+    const href = await externalLink.getAttribute('href');
+    expect(href).toMatch(/^https:\/\/www\.youtube\.com\/results\?search_query=/);
+
+    // External link must open in a new tab with safe rel attributes.
+    expect(await externalLink.getAttribute('target')).toBe('_blank');
+    expect(await externalLink.getAttribute('rel')).toBe('noopener noreferrer');
+
+    // Iframe is empty (no leaked src on uncurated rows).
+    const iframeSrc = await page.locator('#exerciseVideoIframe').getAttribute('src');
+    expect(iframeSrc === '' || iframeSrc === null).toBe(true);
+  });
+
+  test('valid id opens embed mode; close clears iframe src', async ({ page }) => {
+    // Drive the modal directly via its public API. This exercises the JS
+    // logic without mutating the live exercises table — equivalent to a
+    // curated youtube_video_id arriving in the row data.
+    await page.evaluate(() => {
+      // @ts-expect-error - exposed by static/js/modules/exercise-video-modal.js
+      window.openExerciseVideoModal('dQw4w9WgXcQ', 'Test Exercise');
+    });
+
+    const modal = page.locator('#exerciseVideoModal');
+    await expect(modal).toBeVisible();
+
+    // Embed visible, search hidden.
+    await expect(page.locator('#exerciseVideoEmbedWrap')).toBeVisible();
+    await expect(page.locator('#exerciseVideoSearchWrap')).toBeHidden();
+
+    const iframe = page.locator('#exerciseVideoIframe');
+    const src = await iframe.getAttribute('src');
+    expect(src).toMatch(/^https:\/\/www\.youtube\.com\/embed\/dQw4w9WgXcQ/);
+
+    const externalLink = page.locator('#exerciseVideoExternalLink');
+    const externalHref = await externalLink.getAttribute('href');
+    expect(externalHref).toBe('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+    expect(await externalLink.getAttribute('target')).toBe('_blank');
+    expect(await externalLink.getAttribute('rel')).toBe('noopener noreferrer');
+
+    // Close — iframe src must be blanked so playback stops.
+    await page.locator('#exerciseVideoModal .btn-close').click();
+    await expect(modal).toBeHidden();
+    const srcAfter = await iframe.getAttribute('src');
+    expect(srcAfter === '' || srcAfter === null).toBe(true);
+  });
+
+  test('opening for a different exercise swaps the URL cleanly', async ({ page }) => {
+    // First open: id A, expect iframe src to match A and title to mention A.
+    await page.evaluate(() => {
+      // @ts-expect-error - exposed by exercise-video-modal.js
+      window.openExerciseVideoModal('dQw4w9WgXcQ', 'First Exercise');
+    });
+    await expect(page.locator('#exerciseVideoModal')).toBeVisible();
+    await expect(page.locator('#exerciseVideoIframe')).toHaveAttribute(
+      'src',
+      /embed\/dQw4w9WgXcQ/,
+    );
+    await expect(page.locator('#exerciseVideoModalExerciseName')).toContainText(
+      'First Exercise',
+    );
+
+    // Second call (modal still open): contents must update in place to id B.
+    await page.evaluate(() => {
+      // @ts-expect-error - exposed by exercise-video-modal.js
+      window.openExerciseVideoModal('aaaaaaaaaaa', 'Second Exercise');
+    });
+    await expect(page.locator('#exerciseVideoIframe')).toHaveAttribute(
+      'src',
+      /embed\/aaaaaaaaaaa/,
+    );
+    await expect(page.locator('#exerciseVideoModalExerciseName')).toContainText(
+      'Second Exercise',
+    );
+  });
+
+  test('malformed id falls through to search fallback', async ({ page }) => {
+    await page.evaluate(() => {
+      // @ts-expect-error - exposed by exercise-video-modal.js
+      window.openExerciseVideoModal('not-an-id', 'Fake Exercise');
+    });
+    await expect(page.locator('#exerciseVideoModal')).toBeVisible();
+    await expect(page.locator('#exerciseVideoEmbedWrap')).toBeHidden();
+    await expect(page.locator('#exerciseVideoSearchWrap')).toBeVisible();
+
+    const href = await page.locator('#exerciseVideoExternalLink').getAttribute('href');
+    expect(href).toMatch(/^https:\/\/www\.youtube\.com\/results\?search_query=/);
+    expect(href).toContain('Fake');
+  });
+});
