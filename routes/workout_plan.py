@@ -282,12 +282,13 @@ def get_workout_plan():
                 e.secondary_muscle_group, 
                 e.tertiary_muscle_group, 
                 e.advanced_isolated_muscles,
-                e.utility, 
-                e.grips, 
-                e.stabilizers, 
+                e.utility,
+                e.grips,
+                e.stabilizers,
                 e.synergists,
                 e.movement_pattern,
-                e.movement_subpattern
+                e.movement_subpattern,
+                e.youtube_video_id
             FROM user_selection us
             LEFT JOIN exercises e ON us.exercise = e.exercise_name
             {order_by_clause}

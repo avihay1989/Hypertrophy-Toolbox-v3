@@ -6,25 +6,27 @@ logger = get_logger()
 def get_workout_logs():
     """Fetch all workout log entries."""
     query = """
-    SELECT 
-        id,
-        routine,
-        exercise,
-        planned_sets,
-        planned_min_reps,
-        planned_max_reps,
-        planned_rir,
-        planned_rpe,
-        planned_weight,
-        scored_min_reps,
-        scored_max_reps,
-        scored_rir,
-        scored_rpe,
-        scored_weight,
-        last_progression_date,
-        created_at
-    FROM workout_log 
-    ORDER BY routine, exercise
+    SELECT
+        wl.id,
+        wl.routine,
+        wl.exercise,
+        wl.planned_sets,
+        wl.planned_min_reps,
+        wl.planned_max_reps,
+        wl.planned_rir,
+        wl.planned_rpe,
+        wl.planned_weight,
+        wl.scored_min_reps,
+        wl.scored_max_reps,
+        wl.scored_rir,
+        wl.scored_rpe,
+        wl.scored_weight,
+        wl.last_progression_date,
+        wl.created_at,
+        e.youtube_video_id
+    FROM workout_log wl
+    LEFT JOIN exercises e ON wl.exercise = e.exercise_name COLLATE NOCASE
+    ORDER BY wl.routine, wl.exercise
     """
     try:
         with DatabaseHandler() as db:
