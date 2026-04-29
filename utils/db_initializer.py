@@ -43,7 +43,8 @@ def _initialize_exercises_table(db: DatabaseHandler) -> None:
             difficulty TEXT,
             movement_pattern TEXT,
             movement_subpattern TEXT,
-            youtube_video_id TEXT
+            youtube_video_id TEXT,
+            media_path TEXT
         )
         """
     )
@@ -57,6 +58,8 @@ def _initialize_exercises_table(db: DatabaseHandler) -> None:
         db.execute_query("ALTER TABLE exercises ADD COLUMN movement_subpattern TEXT")
     if 'youtube_video_id' not in col_names:
         db.execute_query("ALTER TABLE exercises ADD COLUMN youtube_video_id TEXT")
+    if 'media_path' not in col_names:
+        db.execute_query("ALTER TABLE exercises ADD COLUMN media_path TEXT")
     db.execute_query(
         """
         CREATE UNIQUE INDEX IF NOT EXISTS idx_exercise_name_nocase
