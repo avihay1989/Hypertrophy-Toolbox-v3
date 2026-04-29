@@ -607,3 +607,123 @@ test.describe('Plan Generator v1.5.0 Features', () => {
     }
   });
 });
+
+// ============================================================================
+// Muscle selector — workout-cool body map (PLANNING.md §3)
+//
+// Simple mode loads workout-cool's anatomy art (multi-key BACK region);
+// Advanced mode keeps react-body-highlighter. Switching modes must reload
+// the SVG variant and preserve `selectedMuscles` across the swap.
+// ============================================================================
+
+test.describe('Muscle selector body-map variants', () => {
+  test.beforeEach(async ({ page, consoleErrors }) => {
+    consoleErrors.startCollecting();
+    await page.goto(ROUTES.WORKOUT_PLAN);
+    await waitForPageReady(page);
+
+    await page.locator('#generate-plan-btn').click();
+    await expect(page.locator('#generatePlanModal')).toBeVisible({ timeout: 5000 });
+    // Wait for the inline SVG fetch + render in the modal.
+    await expect(
+      page.locator('#muscle-selector-container #svg-container svg')
+    ).toBeVisible({ timeout: 5000 });
+  });
+
+  test.afterEach(async ({ consoleErrors }) => {
+    consoleErrors.assertNoErrors();
+  });
+
+  test('Simple mode loads workout-cool art; Advanced reloads react-body-highlighter; selection survives swap', async ({ page }) => {
+    const svg = page.locator('#muscle-selector-container #svg-container svg');
+
+    // Default mode is simple. Workout-cool art ships with id="body-anterior-workoutcool".
+    await expect(svg).toHaveAttribute('id', /body-anterior-workoutcool/);
+
+    // Pick an arbitrary single-key region (chest) so we have something to verify
+    // selection survives across the variant swap.
+    await page.locator('#muscle-selector-container svg [data-canonical-muscles="chest"]').first().click();
+    await expect(
+      page.locator('#muscle-selector-container .legend-item[data-muscle="chest"] .legend-checkbox.checked')
+    ).toBeVisible();
+
+    // Switch to advanced — must trigger an SVG variant reload, not just a legend re-render.
+    await page.locator('#muscle-selector-container [data-view="advanced"]').click();
+    await expect(svg).toHaveAttribute('id', /body-anterior(?!-workoutcool)/);
+
+    // Selection state preserved (advanced legend renders one row per child of chest).
+    for (const child of ['upper-chest', 'mid-chest', 'lower-chest']) {
+      await expect(
+        page.locator(`#muscle-selector-container .legend-item[data-muscle="${child}"] .legend-checkbox.checked`)
+      ).toBeVisible();
+    }
+
+    // Switch back to simple — workout-cool art must reload and chest stays selected.
+    await page.locator('#muscle-selector-container [data-view="simple"]').click();
+    await expect(svg).toHaveAttribute('id', /body-anterior-workoutcool/);
+    await expect(
+      page.locator('#muscle-selector-container .legend-item[data-muscle="chest"] .legend-checkbox.checked')
+    ).toBeVisible();
+  });
+
+  test('Multi-key BACK region click cascades to all five advanced children', async ({ page }) => {
+    // Move to the back tab where workout-cool exposes the multi-key BACK region.
+    await page.locator('#muscle-selector-container [data-side="back"]').click();
+    await expect(
+      page.locator('#muscle-selector-container #svg-container svg')
+    ).toHaveAttribute('id', /body-posterior-workoutcool/);
+
+    const backRegion = page
+      .locator('#muscle-selector-container svg [data-canonical-muscles="lats,upper-back,lowerback"]')
+      .first();
+    await expect(backRegion).toBeVisible();
+
+    // First click: all three simple legend items (lats, upper-back, lowerback)
+    // must become fully checked because every advanced child of every simple
+    // key is now in selectedMuscles.
+    await backRegion.click();
+    for (const simpleKey of ['lats', 'upper-back', 'lowerback']) {
+      await expect(
+        page.locator(`#muscle-selector-container .legend-item[data-muscle="${simpleKey}"] .legend-checkbox.checked`)
+      ).toBeVisible();
+    }
+
+    // Second click: clears all five advanced children — every legend item
+    // returns to plain (no checked / partial class).
+    await backRegion.click();
+    for (const simpleKey of ['lats', 'upper-back', 'lowerback']) {
+      await expect(
+        page.locator(`#muscle-selector-container .legend-item[data-muscle="${simpleKey}"] .legend-checkbox.checked`)
+      ).toHaveCount(0);
+      await expect(
+        page.locator(`#muscle-selector-container .legend-item[data-muscle="${simpleKey}"] .legend-checkbox.partial`)
+      ).toHaveCount(0);
+    }
+  });
+
+  test('Selecting only one upper-back child in Advanced renders BACK as partial back in Simple', async ({ page }) => {
+    // Switch to advanced, navigate to back tab, select only `rhomboids` (one
+    // of three children of upper-back). This is the regression case from
+    // PLANNING.md §3.4.1 / §3.7: BACK must show `partial` because not every
+    // advanced child of {lats, upper-back, lowerback} is selected.
+    await page.locator('#muscle-selector-container [data-view="advanced"]').click();
+    await page.locator('#muscle-selector-container [data-side="back"]').click();
+
+    await page.locator('#muscle-selector-container .legend-item[data-muscle="rhomboids"]').click();
+    await expect(
+      page.locator('#muscle-selector-container .legend-item[data-muscle="rhomboids"] .legend-checkbox.checked')
+    ).toBeVisible();
+
+    // Back to simple — BACK region must render with .partial.
+    await page.locator('#muscle-selector-container [data-view="simple"]').click();
+    await expect(
+      page.locator('#muscle-selector-container #svg-container svg')
+    ).toHaveAttribute('id', /body-posterior-workoutcool/);
+
+    const backRegion = page
+      .locator('#muscle-selector-container svg [data-canonical-muscles="lats,upper-back,lowerback"]')
+      .first();
+    await expect(backRegion).toHaveClass(/partial/);
+    await expect(backRegion).not.toHaveClass(/selected(?!\.partial)/);
+  });
+});

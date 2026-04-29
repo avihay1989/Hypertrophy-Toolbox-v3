@@ -249,12 +249,29 @@ const MUSCLE_TO_BACKEND = {
 };
 
 /**
- * SVG file paths - using vendor SVGs
+ * SVG file paths keyed by viewMode × bodySide.
+ *
+ * Simple mode swaps in workout-cool's anatomy art (vendored under
+ * static/vendor/workout-cool/, ships pre-canonicalized data-canonical-muscles
+ * — see static/vendor/workout-cool/NOTICE.md). Advanced mode stays on
+ * react-body-highlighter so every scientific sub-muscle key remains
+ * clickable; that variant continues to use vendor `data-muscle` slugs that
+ * mapVendorSlugsToCanonical() translates at load time.
  */
 const SVG_PATHS = {
-    front: '/static/vendor/react-body-highlighter/body_anterior.svg',
-    back: '/static/vendor/react-body-highlighter/body_posterior.svg'
+    simple: {
+        front: '/static/vendor/workout-cool/body_anterior.svg',
+        back: '/static/vendor/workout-cool/body_posterior.svg'
+    },
+    advanced: {
+        front: '/static/vendor/react-body-highlighter/body_anterior.svg',
+        back: '/static/vendor/react-body-highlighter/body_posterior.svg'
+    }
 };
+
+function getSvgPathForMode(mode, side) {
+    return SVG_PATHS[mode][side];
+}
 
 /**
  * Which canonical keys appear on each body side
@@ -371,7 +388,7 @@ class MuscleSelector {
      * Load SVG from vendor directory and render it inline
      */
     async loadAndRenderSVG() {
-        const svgPath = SVG_PATHS[this.bodySide];
+        const svgPath = getSvgPathForMode(this.viewMode, this.bodySide);
         const svgContainer = this.container.querySelector('#svg-container');
         
         try {
@@ -412,16 +429,30 @@ class MuscleSelector {
     }
 
     /**
-     * Map vendor SVG slugs to canonical muscle keys
-     * Updates data-muscle attributes on SVG elements
+     * Map vendor SVG slugs to canonical muscle keys.
+     * Updates data attributes on SVG elements.
+     *
+     * Two SVG flavors are supported:
+     *   - Pre-canonicalized (workout-cool simple variant): each region
+     *     already carries `data-canonical-muscles="<key1>[,<key2>,...]"`.
+     *     No translation needed — left as-is.
+     *   - Vendor-slug (react-body-highlighter advanced variant): each region
+     *     carries `data-muscle="<vendor-slug>"`. Translate via
+     *     VENDOR_SLUG_TO_CANONICAL into a singular `data-canonical-muscle`.
      */
     mapVendorSlugsToCanonical() {
-        const regions = this.container.querySelectorAll('.muscle-region[data-muscle]');
-        
+        const regions = this.container.querySelectorAll('.muscle-region');
+
         regions.forEach(region => {
+            // Pre-canonicalized SVGs (workout-cool) ship the plural attribute
+            // and need no further mapping.
+            if (region.dataset.canonicalMuscles) return;
+
             const vendorSlug = region.dataset.muscle;
+            if (!vendorSlug) return;
+
             const canonicalKey = VENDOR_SLUG_TO_CANONICAL[vendorSlug];
-            
+
             if (canonicalKey === null) {
                 // Non-selectable region (e.g., head, knees)
                 region.classList.add('non-selectable');
@@ -438,43 +469,132 @@ class MuscleSelector {
     }
 
     /**
-     * Get the canonical key for a region element
+     * Get all canonical (simple) keys associated with a region.
+     *
+     * Multi-key SVG regions (workout-cool's BACK area) ship
+     * `data-canonical-muscles="lats,upper-back,lowerback"` which expands to
+     * 5 advanced children once flattened through SIMPLE_TO_ADVANCED_MAP.
+     * Single-key regions return a one-element array.
      */
-    getCanonicalKey(region) {
-        return region.dataset.canonicalMuscle || VENDOR_SLUG_TO_CANONICAL[region.dataset.muscle] || region.dataset.muscle;
+    getCanonicalKeys(region) {
+        const plural = region.dataset.canonicalMuscles;
+        if (plural) {
+            return plural.split(',').map(k => k.trim()).filter(Boolean);
+        }
+        const singular = region.dataset.canonicalMuscle;
+        if (singular) return [singular];
+        const slug = region.dataset.muscle;
+        if (slug) {
+            const mapped = VENDOR_SLUG_TO_CANONICAL[slug];
+            return mapped ? [mapped] : [slug];
+        }
+        return [];
     }
 
     /**
-     * Attach event listeners to muscle region paths
+     * Backwards-compatible single-key accessor — returns the first canonical
+     * key for a region (or null). New multi-key call sites should use
+     * getCanonicalKeys() / flattenToAdvancedChildren() instead.
+     */
+    getCanonicalKey(region) {
+        const keys = this.getCanonicalKeys(region);
+        return keys[0] || null;
+    }
+
+    /**
+     * Flatten an array of simple/advanced muscle keys into the unique set of
+     * advanced child keys that `selectedMuscles` actually stores.
+     *
+     * CRITICAL: `selectedMuscles` always holds advanced keys. Any region
+     * click that touches `selectedMuscles.has` / `.add` / `.delete` MUST go
+     * through this helper first — otherwise multi-key regions (e.g. BACK)
+     * never line up with the underlying selection state.
+     * See PLANNING.md §3.4.1.
+     */
+    flattenToAdvancedChildren(simpleKeys) {
+        const out = new Set();
+        simpleKeys.forEach(key => {
+            const children = SIMPLE_TO_ADVANCED_MAP[key];
+            if (children && children.length > 0) {
+                children.forEach(c => out.add(c));
+            } else {
+                out.add(key);
+            }
+        });
+        return Array.from(out);
+    }
+
+    /**
+     * Compute the visual state of a region from `selectedMuscles`.
+     * Returns 'selected', 'partial', or 'unselected'. Tested directly by
+     * tests/test_muscle_selector_mapping (rhomboids-only and
+     * erector-spinae-only on BACK must yield 'partial').
+     */
+    regionVisualState(region) {
+        const advancedKeys = this.flattenToAdvancedChildren(this.getCanonicalKeys(region));
+        if (advancedKeys.length === 0) return 'unselected';
+        const hits = advancedKeys.filter(k => this.selectedMuscles.has(k)).length;
+        if (hits === 0) return 'unselected';
+        if (hits === advancedKeys.length) return 'selected';
+        return 'partial';
+    }
+
+    /**
+     * Attach event listeners to muscle region paths.
+     *
+     * Multi-key regions (workout-cool BACK) carry several simple keys in
+     * `data-canonical-muscles`; clicking and hovering must operate on the
+     * full set, not the first key, so we plumb arrays through everywhere.
      */
     attachMuscleEventListeners() {
         const regions = this.container.querySelectorAll('.muscle-region:not(.non-selectable)');
-        
+
         regions.forEach(region => {
-            const canonicalKey = this.getCanonicalKey(region);
-            if (!canonicalKey) return;
-            
-            // Click handler
+            const canonicalKeys = this.getCanonicalKeys(region);
+            if (canonicalKeys.length === 0) return;
+
             region.addEventListener('click', (e) => {
                 e.stopPropagation();
-                this.toggleMuscle(canonicalKey);
+                this.toggleRegion(region);
             });
-            
-            // Hover handlers
+
             region.addEventListener('mouseenter', (e) => {
-                this.handleMuscleHover(canonicalKey, true);
-                this.showTooltip(e, canonicalKey);
+                canonicalKeys.forEach(key => this.handleMuscleHover(key, true));
+                this.showTooltip(e, canonicalKeys[0]);
             });
-            
+
             region.addEventListener('mousemove', (e) => {
                 this.moveTooltip(e);
             });
-            
+
             region.addEventListener('mouseleave', () => {
-                this.handleMuscleHover(canonicalKey, false);
+                canonicalKeys.forEach(key => this.handleMuscleHover(key, false));
                 this.hideTooltip();
             });
         });
+    }
+
+    /**
+     * Toggle every advanced child covered by a region's
+     * `data-canonical-muscles`. If all are already selected, clear them all;
+     * otherwise add the missing ones (promote `partial` → `selected`).
+     * Mirrors the parent-key cascade in `toggleMuscle()` but works for
+     * regions whose data-canonical-muscles lists multiple simple keys.
+     */
+    toggleRegion(region) {
+        const advancedKeys = this.flattenToAdvancedChildren(this.getCanonicalKeys(region));
+        if (advancedKeys.length === 0) return;
+
+        const allSelected = advancedKeys.every(k => this.selectedMuscles.has(k));
+        if (allSelected) {
+            advancedKeys.forEach(k => this.selectedMuscles.delete(k));
+        } else {
+            advancedKeys.forEach(k => this.selectedMuscles.add(k));
+        }
+
+        this.updateAllRegionStates();
+        this.renderLegend();
+        this.updateSummary();
     }
 
     /**
@@ -611,26 +731,18 @@ class MuscleSelector {
     }
 
     /**
-     * Update the visual state of all muscle regions
-     * SVG regions use simple (parent) keys, so we check if ANY child is selected
+     * Update the visual state of all muscle regions.
+     * Uses regionVisualState() so multi-key regions (BACK) honour the
+     * full advanced-children flatten before deciding selected/partial.
      */
     updateAllRegionStates() {
         const regions = this.container.querySelectorAll('.muscle-region:not(.non-selectable)');
-        
+
         regions.forEach(region => {
-            const canonicalKey = this.getCanonicalKey(region);
-            if (!canonicalKey) return;
-            
-            // Check if this parent group has any children selected
-            const children = SIMPLE_TO_ADVANCED_MAP[canonicalKey] || [canonicalKey];
-            const selectedCount = children.filter(child => this.selectedMuscles.has(child)).length;
-            const isFullySelected = selectedCount === children.length;
-            const isPartiallySelected = selectedCount > 0 && selectedCount < children.length;
-            
-            region.classList.toggle('selected', isFullySelected);
-            region.classList.toggle('partial', isPartiallySelected);
-            
-            // Debug mode: add visual indicator
+            const state = this.regionVisualState(region);
+            region.classList.toggle('selected', state === 'selected');
+            region.classList.toggle('partial', state === 'partial');
+
             if (this.debugMode) {
                 region.style.strokeWidth = '0.5';
             } else {
@@ -791,20 +903,25 @@ class MuscleSelector {
     }
 
     /**
-     * Switch view mode (simple/advanced)
+     * Switch view mode (simple/advanced).
+     *
+     * Simple and Advanced load DIFFERENT SVG art (workout-cool vs
+     * react-body-highlighter — see SVG_PATHS), so we must reload the SVG
+     * here. Selection state in `selectedMuscles` is preserved verbatim
+     * across the swap; updateAllRegionStates() re-derives the visual state
+     * from it after the new SVG mounts.
      */
     async switchViewMode(newMode) {
+        if (newMode === this.viewMode) return;
         this.viewMode = newMode;
-        
-        // Update button states
+
         this.container.querySelectorAll('[data-view]').forEach(btn => {
             const isActive = btn.dataset.view === newMode;
             btn.classList.toggle('btn-primary', isActive);
             btn.classList.toggle('btn-outline-secondary', !isActive);
         });
-        
-        // Re-render legend (may show different level of detail)
-        this.renderLegend();
+
+        await this.loadAndRenderSVG();
         this.updateSummary();
     }
 

@@ -1,8 +1,10 @@
 # Muscle Selector Vendor Integration
 
-This document describes how the MuscleSelector component integrates vendor SVG assets from [react-body-highlighter](https://github.com/giavinh79/react-body-highlighter).
+The MuscleSelector component sources SVG art from **two** vendor projects.
+Simple mode uses workout-cool; Advanced mode keeps react-body-highlighter.
+See [muscle_selector.md](muscle_selector.md) for the runtime split.
 
-## Source Attribution
+## Source Attribution — Advanced mode (react-body-highlighter)
 
 - **Package**: `react-body-highlighter` v2.0.5 (npm)
 - **Repository**: https://github.com/giavinh79/react-body-highlighter
@@ -17,6 +19,74 @@ static/vendor/react-body-highlighter/
 ├── body_anterior.svg   # Front view body diagram
 └── body_posterior.svg  # Back view body diagram
 ```
+
+## Source Attribution — Simple mode (workout-cool)
+
+- **Repository**: https://github.com/Snouzy/workout-cool
+- **License**: MIT (Mathias Bradiceanu, 2023)
+- **Pinned commit SHA**: see [`static/vendor/workout-cool/VERSION`](../static/vendor/workout-cool/VERSION).
+
+Upstream ships the body art as 14 React/TSX components (one parent
+`muscle-selection.tsx` plus 13 muscle-group files under
+`src/features/workout-builder/ui/muscles/`). Our build pipeline
+converts these into two plain SVGs:
+
+```
+static/vendor/workout-cool/
+├── LICENSE             # Verbatim upstream MIT
+├── NOTICE.md           # Attribution + change log
+├── VERSION             # Pinned upstream commit SHA + import date
+├── body_anterior.svg   # Generated — Simple mode anterior
+└── body_posterior.svg  # Generated — Simple mode posterior
+```
+
+[`scripts/build_workout_cool_svgs.py`](../scripts/build_workout_cool_svgs.py)
+fetches the TSX sources at the pinned SHA, drops invisible /
+`fill-transparent` paths, splits everything by X-cluster (low-X →
+anterior, high-X → posterior), pre-canonicalizes the muscle attribute
+to `data-canonical-muscles`, and emits two deterministic SVGs.
+
+### Refresh procedure
+
+1. Bump `UPSTREAM_SHA` in
+   [`scripts/build_workout_cool_svgs.py`](../scripts/build_workout_cool_svgs.py)
+   and the matching SHA + import date in `static/vendor/workout-cool/VERSION`.
+2. Re-run `python scripts/build_workout_cool_svgs.py` (no arguments —
+   fetches from `raw.githubusercontent.com`). For an offline rebuild,
+   pass `--src-dir <path-to-local-mirror>`.
+3. Diff the resulting SVGs and run
+   `tests/test_muscle_selector_mapping.py` to confirm coverage.
+
+### Pre-canonicalized attribute
+
+The workout-cool SVGs do **not** use vendor slugs. Each `.muscle-region`
+ships `data-canonical-muscles="<key>[,<key2>,...]"` directly, with our
+canonical keys baked in at build time per the
+`ENUM_SIDE_TO_CANONICAL` table in the build script (mirrors PLANNING.md
+§3.3). So the runtime `VENDOR_SLUG_TO_CANONICAL` table is **not used**
+for this variant — it stays in place only for the legacy
+react-body-highlighter SVGs that Advanced mode loads.
+
+The only multi-key region today is the posterior `BACK`
+(`data-canonical-muscles="lats,upper-back,lowerback"`), because
+workout-cool's art does not separate those three. Click handling
+flattens through `SIMPLE_TO_ADVANCED_MAP` to 5 advanced children
+(`lats, rhomboids, teres-major, teres-minor, erector-spinae`) before
+mutating `selectedMuscles`. See PLANNING.md §3.4.1 and
+`tests/test_muscle_selector_mapping.py::TestRegionVisualState`.
+
+### Unmapped-by-art keys
+
+Some simple keys in `MUSCLES_BY_SIDE` have no clickable region in the
+workout-cool art (legend remains clickable). Recorded in
+[`docs/workout_cool_integration/EXECUTION_LOG.md`](workout_cool_integration/EXECUTION_LOG.md):
+
+| Canonical key | Anterior | Posterior |
+|---|---|---|
+| `adductors` | unmapped | n/a |
+| `hip-abductors` | n/a | unmapped |
+| `neck` | unmapped | unmapped |
+| `triceps` | unmapped | mapped |
 
 ## Mapping Architecture
 
