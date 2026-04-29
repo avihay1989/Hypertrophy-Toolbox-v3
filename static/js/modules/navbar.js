@@ -21,6 +21,7 @@ export function initializeNavHighlighting() {
         '/workout_log': 'nav-workout-log',
         '/progression': 'nav-progression-plan',
         '/volume_splitter': 'nav-volume-splitter',
+        '/body_composition': 'nav-body-composition',
         '/backup': 'nav-backup',
         '/user_profile': 'nav-user-profile'
     };

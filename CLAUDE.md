@@ -80,6 +80,7 @@ app.py                 ← startup + middleware only; no business logic
 | `workout_plan_bp` | `routes/workout_plan.py` | `GET /workout_plan`, `POST /add_exercise`, `POST /generate_starter_plan` |
 | `progression_plan_bp` | `routes/progression_plan.py` | `GET /progression` |
 | `user_profile_bp` | `routes/user_profile.py` | `GET /user_profile`, `GET /api/user_profile/estimate` |
+| `body_composition_bp` | `routes/body_composition.py` | `GET /body_composition`, `POST /api/body_composition/snapshot`, `GET/DELETE /api/body_composition/snapshots` |
 | `volume_splitter_bp` | `routes/volume_splitter.py` | `GET /volume_splitter` |
 | `program_backup_bp` | `routes/program_backup.py` | `GET/POST /api/backups`, `POST /api/backups/<id>/restore` |
 
@@ -167,10 +168,11 @@ npx playwright test --project=chromium --reporter=line
 
 ## 5. Current State & Risks
 
-### Verified test counts (2026-04-28)
-- **pytest**: 1080 passed (~2m 22s) — 1054 pre-Issue-#20 + 26 new (Issue #20 reference-lift expansion).
-- **Relevant E2E Playwright**: 41 passed (~58s, Chromium; `user-profile.spec.ts` + `workout-plan.spec.ts`) — adds the Issue #20 questionnaire-grouping case.
-- **Adjacent E2E Playwright (Issue #20 sweep)**: 55 passed (~1m 18s, Chromium; `exercise-interactions.spec.ts` + `accessibility.spec.ts` + `smoke-navigation.spec.ts`).
+### Verified test counts (2026-04-29)
+- **pytest**: 1175 passed (~3m 20s) — 1159 pre-workout-cool §3 + 16 new (`tests/test_muscle_selector_mapping.py`: 7 in `TestWorkoutCoolSvgCoverage` for the simple-mode SVG canonical-key coverage and `BACK` multi-key region, 9 in `TestRegionVisualState` for the multi-key region state-derivation rules incl. `rhomboids`-only and `erector-spinae`-only `partial` regressions). Prior baseline 1159: 1083 pre-Issue-#21 + 76 (Issue #21 body composition).
+- **New E2E Playwright (workout-cool §3)**: 3 passed (~10s, Chromium; `e2e/workout-plan.spec.ts` "Muscle selector body-map variants") — Simple↔Advanced SVG variant reload + selection survival, multi-key BACK click cascade, single-advanced-child→partial-back-in-Simple regression.
+- **New E2E Playwright (Issue #21)**: 5 passed (~6s, Chromium; `body-composition.spec.ts`) — empty state + live result + save→history+chart + hip gender visibility + navbar highlight.
+- **Regression-relevant E2E Playwright (Issue #21 estimator-byte-identical gate)**: 112 passed (~2m 30s, Chromium; `workout-plan.spec.ts` + `workout-log.spec.ts` + `summary-pages.spec.ts` + `progression.spec.ts` + `volume-splitter.spec.ts`).
 - **Last full E2E Playwright baseline**: 314 passed (~7.2m, Chromium; 2026-04-18).
 - **Summary-page Playwright**: 20 passed (~25s; 2026-04-18).
 - **User Profile bodymap (Issue #19) verification (2026-04-28)**: included in the refreshed pytest and Chromium E2E counts above.

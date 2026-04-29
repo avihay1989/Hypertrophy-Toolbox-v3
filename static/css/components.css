@@ -4717,3 +4717,86 @@ h1, h2, h3 {
     transform: none !important;
   }
 }
+
+/* =============================================================================
+ * Body Composition tab (Issue #21)
+ * Scoped under [data-section="body fat ..."] so the rules cannot leak into
+ * other Calm-Glass cards. Lives in components.css per the 8-route-bundle cap
+ * documented in .claude/rules/frontend.md.
+ * ========================================================================== */
+
+.body-composition-card {
+  position: relative;
+}
+
+.body-composition-result__bfp {
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.body-composition-result__mass {
+  font-weight: 500;
+}
+
+.body-composition-ace-wrapper {
+  display: block;
+}
+
+.body-composition-ace-band {
+  display: block;
+  width: 100%;
+  height: 24px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.body-composition-ace-band rect[data-band="Essential fat"] { fill: rgba(96, 165, 250, 0.45); }
+.body-composition-ace-band rect[data-band="Athletes"]      { fill: rgba(74, 222, 128, 0.50); }
+.body-composition-ace-band rect[data-band="Fitness"]       { fill: rgba(250, 204, 21, 0.50); }
+.body-composition-ace-band rect[data-band="Average"]       { fill: rgba(251, 146, 60, 0.50); }
+.body-composition-ace-band rect[data-band="Obese"]         { fill: rgba(239, 68, 68, 0.50); }
+.body-composition-ace-band line[data-tick="bfp"] {
+  stroke: currentColor;
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.body-composition-ace-legend {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0;
+  list-style: none;
+  margin: 0.25rem 0 0;
+  padding: 0;
+  text-align: center;
+}
+.body-composition-ace-legend li {
+  padding: 0 0.25rem;
+}
+.body-composition-ace-legend li[aria-current="true"] {
+  font-weight: 600;
+  color: var(--color-text, inherit);
+  opacity: 1;
+}
+
+.body-composition-trend-wrapper {
+  position: relative;
+}
+.body-composition-trend-chart {
+  display: block;
+  width: 100%;
+  height: 160px;
+}
+.body-composition-trend-chart polyline[data-trend="line"] {
+  vector-effect: non-scaling-stroke;
+}
+
+.body-composition-howto summary {
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.body-composition-form [data-field-error]:not([hidden]) {
+  color: var(--color-danger, #dc2626);
+}

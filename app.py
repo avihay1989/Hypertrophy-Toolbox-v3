@@ -3,6 +3,7 @@ from flask import Flask, render_template, url_for, jsonify, request, make_respon
 from utils.db_initializer import initialize_database
 from utils.database import (
     DatabaseHandler,
+    add_body_composition_snapshots_table,
     add_progression_goals_table,
     add_user_profile_tables,
     add_volume_tracking_tables,
@@ -17,6 +18,7 @@ from routes.workout_plan import workout_plan_bp, initialize_exercise_order
 from routes.main import main_bp
 from routes.progression_plan import progression_plan_bp
 from routes.user_profile import user_profile_bp
+from routes.body_composition import body_composition_bp
 from routes.volume_splitter import volume_splitter_bp
 from routes.program_backup import program_backup_bp, init_backup_tables
 from datetime import datetime
@@ -60,6 +62,8 @@ logger.info("Adding volume tracking tables...")
 add_volume_tracking_tables()
 logger.info("Adding user profile tables...")
 add_user_profile_tables()
+logger.info("Adding body composition snapshots table...")
+add_body_composition_snapshots_table()
 logger.info("Initializing exercise order...")
 initialize_exercise_order()
 logger.info("Initializing backup tables...")
@@ -81,6 +85,7 @@ app.register_blueprint(filters_bp)
 app.register_blueprint(workout_plan_bp)
 app.register_blueprint(progression_plan_bp)
 app.register_blueprint(user_profile_bp)
+app.register_blueprint(body_composition_bp)
 app.register_blueprint(volume_splitter_bp)
 app.register_blueprint(program_backup_bp)
 
@@ -153,6 +158,7 @@ def erase_data():
             tables = [
                 'program_backup_items',  # Drop child table first (FK constraint)
                 'program_backups',        # Then parent backup table
+                'body_composition_snapshots',
                 'user_profile_preferences',
                 'user_profile_lifts',
                 'user_profile',
@@ -176,6 +182,8 @@ def erase_data():
         add_volume_tracking_tables()
         logger.info("Adding user profile tables...")
         add_user_profile_tables()
+        logger.info("Adding body composition snapshots table...")
+        add_body_composition_snapshots_table()
         logger.info("Initializing exercise order...")
         initialize_exercise_order()
         logger.info("Reinitializing backup tables...")

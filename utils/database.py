@@ -603,6 +603,43 @@ def upsert_user_profile_preference(
         handler.execute_query(query, params)
 
 
+def add_body_composition_snapshots_table() -> None:
+    """Ensure the body_composition_snapshots table and its index exist.
+
+    Standalone /body_composition tab (Issue #21). Schema mirrors the
+    spec in docs/body_composition/development_issues.md — column name
+    `weight_kg` matches `user_profile.weight_kg` for readable joins,
+    and the gender CHECK is defence-in-depth (routes already validate).
+    Idempotent: safe to call repeatedly from startup or erase-data
+    reinitialization.
+    """
+    ddl_table = """
+        CREATE TABLE IF NOT EXISTS body_composition_snapshots (
+            id              INTEGER PRIMARY KEY AUTOINCREMENT,
+            captured_at     TEXT    NOT NULL,
+            weight_kg       REAL    NOT NULL,
+            height_cm       REAL    NOT NULL,
+            neck_cm         REAL,
+            waist_cm        REAL,
+            hip_cm          REAL,
+            age_years       INTEGER NOT NULL,
+            gender          TEXT    NOT NULL CHECK(gender IN ('M', 'F')),
+            bfp_navy        REAL,
+            bfp_bmi         REAL    NOT NULL,
+            fat_mass_kg     REAL,
+            lean_mass_kg    REAL,
+            notes           TEXT
+        )
+    """
+    ddl_index = """
+        CREATE INDEX IF NOT EXISTS idx_body_composition_snapshots_captured_at
+            ON body_composition_snapshots(captured_at DESC)
+    """
+    with DatabaseHandler() as db:
+        db.execute_query(ddl_table)
+        db.execute_query(ddl_index)
+
+
 def add_volume_plan_activation_columns() -> None:
     """Ensure volume plan activation and mode columns/index exist."""
     with DatabaseHandler() as db:

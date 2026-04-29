@@ -729,7 +729,7 @@ workout-plan specs 26 passed (~36s).
 | 18 | "How the system sees you" card should be visual stats + peer-range comparisons, not text-only | 🟢 Enhancement | Profile HTML + JS + CSS + estimator | Resolved (2026-04-28) |
 | 19 | Reuse the bodymap SVG to visualise reference-lift coverage on the Profile page | 🟢 Enhancement | Profile HTML + JS + estimator | Resolved (2026-04-28) |
 | 20 | Calves / Glutes-Hips / Lower-Back have too few reference-lift options | 🟢 Enhancement | `profile_estimator.py` + Profile HTML | Resolved (2026-04-28) |
-| 21 | Body Composition tab — BFP / Lean Mass / longitudinal snapshots on a standalone `/body_composition` tab | 🟢 Enhancement | New blueprint + template + `body_fat.py` + DB table | **Moved 2026-04-28 → [`docs/body_composition/development_issues.md`](../body_composition/development_issues.md)** (still Open there) |
+| 21 | Body Composition tab — BFP / Lean Mass / longitudinal snapshots on a standalone `/body_composition` tab | 🟢 Enhancement | New blueprint + template + `body_fat.py` + DB table | **Moved 2026-04-28 → [`docs/body_composition/development_issues.md`](../body_composition/development_issues.md)** (still Open there). Cross-page display follow-up (Issue #18 *Lean mass* sub-line + Issue #17 *Body fat* line) **migrated 2026-04-29 → [Issue #22 in body_composition tracker](../body_composition/development_issues.md#issue-22--profile-page-cross-page-display-hooks-for-body-composition-data)**. |
 | 22 | Coverage map card: SVG and front/back toggles not centered; "About this page" Demographics copy stale post-#16 | 🟡 UX gap | Profile HTML + CSS | Resolved (2026-04-28) |
 | 23 | Coverage map legend swatches barely visible; replace 3 Save buttons with auto-save | 🟡 UX gap | Profile HTML + JS + CSS + E2E | Resolved (2026-04-28) |
 | 24 | Reference Lifts: split questionnaire into anterior + posterior side-by-side cards mirroring the Coverage map | 🟢 Enhancement | Profile HTML + CSS + `profile_estimator.py` partition | Resolved (2026-04-28) |
@@ -754,15 +754,18 @@ user-profile + workout-plan 43 passed, adjacent sweep
 passed; Issue #19 hover/click stabilised with `force: true` +
 scroll-to-top after the bodymap diagram shrank to half the page
 width put the 48 × 42 px chest polygon at risk of slipping under
-the sticky 64 px navbar). Open queue (2026-04-28 review):
+the sticky 64 px navbar). Open queue (2026-04-29 review):
 **Issue #21** — scope changed; moved out of the Profile page and
 re-specced as a standalone `/body_composition` tab so the longitudinal
 snapshot UX has its own surface and the Profile page stays focused on
 strength inputs. The full issue body now lives at
-[`docs/body_composition/development_issues.md`](../body_composition/development_issues.md);
-the two original Profile-page display hooks (Issue #18 cohort-tile
-*Lean mass* sub-line and Issue #17 *Body fat* line) are explicitly
-deferred to a follow-up cross-page-display issue.
+[`docs/body_composition/development_issues.md`](../body_composition/development_issues.md).
+The two Profile-page display hooks (Issue #18 cohort-tile *Lean mass*
+sub-line and Issue #17 *Body fat* line) were migrated **2026-04-29**
+to the body_composition tracker as
+[Issue #22](../body_composition/development_issues.md#issue-22--profile-page-cross-page-display-hooks-for-body-composition-data)
+so the follow-up lives next to its data source
+(`body_composition_snapshots`).
 
 History — earlier batch (2026-04-28): Issue #20 ships 16 new
 reference-lift slugs across Calves / Glutes-Hips / Lower-Back, all
@@ -2340,10 +2343,12 @@ Out of scope (consider follow-ups):
 > issue number is preserved across both files so existing cross-references
 > (Issues #17 / #18 / #19 → still in this doc) keep working.
 >
-> **Status:** Open. The two original Profile-page display hooks
-> (Issue #18 bodyweight-tile *Lean mass* sub-line and Issue #17
-> *"Body fat: X % · {ACE band}"* line) remain explicitly deferred to a
-> follow-up cross-page-display issue once `/body_composition` ships.
+> **Cross-page display follow-up moved 2026-04-29** to
+> [`docs/body_composition/development_issues.md` Issue #22](../body_composition/development_issues.md#issue-22--profile-page-cross-page-display-hooks-for-body-composition-data).
+> The two Profile-page display hooks (Issue #18 bodyweight-tile
+> *Lean mass* sub-line and Issue #17 *"Body fat: X % · {ACE band}"*
+> line) are tracked there because they read from
+> `body_composition_snapshots`, which is owned by `/body_composition`.
 
 ---
 
