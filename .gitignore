@@ -70,6 +70,7 @@ build/
 *.tmp
 *.bak
 *.backup
+/tmp/
 
 # Claude Code personal overrides
 .claude/settings.local.json
