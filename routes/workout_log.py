@@ -171,12 +171,14 @@ def get_logs():
     """Get all workout logs."""
     try:
         query = """
-        SELECT 
+        SELECT
             wl.*,
             us.routine as plan_routine,
-            us.exercise as plan_exercise
+            us.exercise as plan_exercise,
+            e.youtube_video_id
         FROM workout_log wl
         LEFT JOIN user_selection us ON wl.workout_plan_id = us.id
+        LEFT JOIN exercises e ON wl.exercise = e.exercise_name COLLATE NOCASE
         ORDER BY wl.created_at DESC
         """
         with DatabaseHandler() as db:
@@ -184,7 +186,7 @@ def get_logs():
             return jsonify(success_response(data=results))
     except Exception as e:
         logger.exception("Error fetching workout logs")
-        return error_response("INTERNAL_ERROR", "Failed to fetch workout logs", 500) 
+        return error_response("INTERNAL_ERROR", "Failed to fetch workout logs", 500)
 
 @workout_log_bp.route('/export_workout_log')
 def export_workout_log():

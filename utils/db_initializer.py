@@ -42,11 +42,12 @@ def _initialize_exercises_table(db: DatabaseHandler) -> None:
             mechanic TEXT,
             difficulty TEXT,
             movement_pattern TEXT,
-            movement_subpattern TEXT
+            movement_subpattern TEXT,
+            youtube_video_id TEXT
         )
         """
     )
-    
+
     # Add movement pattern columns if they don't exist (for existing databases)
     cols = db.fetch_all("PRAGMA table_info(exercises)")
     col_names = {row['name'] for row in cols}
@@ -54,6 +55,8 @@ def _initialize_exercises_table(db: DatabaseHandler) -> None:
         db.execute_query("ALTER TABLE exercises ADD COLUMN movement_pattern TEXT")
     if 'movement_subpattern' not in col_names:
         db.execute_query("ALTER TABLE exercises ADD COLUMN movement_subpattern TEXT")
+    if 'youtube_video_id' not in col_names:
+        db.execute_query("ALTER TABLE exercises ADD COLUMN youtube_video_id TEXT")
     db.execute_query(
         """
         CREATE UNIQUE INDEX IF NOT EXISTS idx_exercise_name_nocase
