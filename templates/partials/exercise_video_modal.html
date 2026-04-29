@@ -1,0 +1,62 @@
+{# §5 — exercise reference video modal. Included once in base.html so a single
+   modal serves /workout_plan and /workout_log. The iframe `src` is set only
+   when the modal opens (see static/js/modules/exercise-video-modal.js); on
+   close, src is cleared so playback stops and no audio plays invisibly. #}
+<div class="modal fade exercise-video-modal"
+     id="exerciseVideoModal"
+     tabindex="-1"
+     aria-labelledby="exerciseVideoModalTitle"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content frame-calm-glass">
+            <div class="modal-header py-2">
+                <h5 class="modal-title" id="exerciseVideoModalTitle">
+                    <i class="fas fa-play-circle me-2" aria-hidden="true"></i>
+                    <span id="exerciseVideoModalExerciseName">Reference video</span>
+                </h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close reference video"></button>
+            </div>
+            <div class="modal-body p-0">
+                {# Embed mode: iframe player. Hidden when there is no curated id. #}
+                <div id="exerciseVideoEmbedWrap" class="exercise-video-embed-wrap" hidden>
+                    <iframe id="exerciseVideoIframe"
+                            class="exercise-video-iframe"
+                            src=""
+                            title="Reference video"
+                            loading="lazy"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            referrerpolicy="strict-origin-when-cross-origin"
+                            allowfullscreen></iframe>
+                </div>
+                {# Search mode: shown when youtube_video_id is NULL. #}
+                <div id="exerciseVideoSearchWrap" class="exercise-video-search-wrap p-4" hidden>
+                    <p class="mb-3">
+                        <i class="fas fa-info-circle me-1" aria-hidden="true"></i>
+                        No reference video has been curated for this exercise yet.
+                    </p>
+                    <p class="text-muted mb-0">
+                        Search YouTube for
+                        <strong id="exerciseVideoSearchExerciseName"></strong>
+                        to find a form check.
+                    </p>
+                </div>
+            </div>
+            <div class="modal-footer py-2">
+                <a id="exerciseVideoExternalLink"
+                   href="#"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="btn btn-primary btn-calm-primary btn-sm">
+                    <i class="fab fa-youtube me-1" aria-hidden="true"></i>
+                    <span id="exerciseVideoExternalLabel">Watch on YouTube</span>
+                </a>
+                <button type="button"
+                        class="btn btn-secondary btn-calm-ghost btn-sm"
+                        data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

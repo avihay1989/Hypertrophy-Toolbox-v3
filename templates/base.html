@@ -250,6 +250,9 @@
         </div>
     </div>
 
+    {# §5 — shared exercise reference video modal (used by /workout_plan and /workout_log) #}
+    {% include "partials/exercise_video_modal.html" %}
+
     <!-- Error Message Placeholder (hidden by default) -->
     <div id="error-message-container" class="d-none" style="display: none !important;">
         <div class="alert alert-danger text-center" role="alert">
@@ -293,6 +296,8 @@
     <script src="{{ url_for('static', filename='js/table-responsiveness.js') }}?v={{ range(1, 1000000) | random }}"></script>
     <!-- Filter View Mode (Simple/Advanced muscle naming) -->
     <script src="{{ url_for('static', filename='js/modules/filter-view-mode.js') }}?v={{ range(1, 1000000) | random }}"></script>
+    <!-- §5 Exercise reference video modal (shared between /workout_plan and /workout_log) -->
+    <script type="module" src="{{ url_for('static', filename='js/modules/exercise-video-modal.js') }}?v={{ range(1, 1000000) | random }}"></script>
     
     <!-- Page-Specific JS (Override in child templates) -->
     {% block page_js %}{% endblock %}
