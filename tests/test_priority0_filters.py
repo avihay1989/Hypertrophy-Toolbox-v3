@@ -3,6 +3,7 @@ Priority 0 Tests: Filter Whitelist Validation (SQL Injection Protection)
 """
 import pytest
 from routes.filters import ALLOWED_TABLES, ALLOWED_COLUMNS, validate_table_name, validate_column_name
+from utils.db_initializer import initialize_database
 
 
 class TestWhitelistValidation:
@@ -86,6 +87,71 @@ class TestFilterExercisesWhitelist:
         assert "Bench Press" in exercises
         assert "Dumbbell Press" not in exercises
         assert "Squat" not in exercises
+
+    def test_barbell_curl_metadata_repair_keeps_biceps_barbell_filter(self, client, clean_db):
+        """Regression: Barbell Curl must appear under Biceps + Barbell filters."""
+        clean_db.execute_query(
+            """
+            INSERT INTO exercises (
+                exercise_name,
+                primary_muscle_group,
+                equipment,
+                mechanic
+            )
+            VALUES (?, ?, ?, ?)
+            """,
+            ("Barbell Curl", "Biceps", None, "Isolation"),
+        )
+
+        initialize_database(force=True)
+
+        response = client.post('/filter_exercises', json={
+            "Primary Muscle Group": "Biceps",
+            "Equipment": "Barbell"
+        })
+
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['ok'] is True
+        assert "Barbell Curl" in data['data']
+
+    def test_common_exercise_equipment_repairs_fill_blank_values(self, clean_db):
+        """Common catalogue rows with blank equipment are repaired on startup."""
+        expected_equipment = {
+            "Barbell Row": "Barbell",
+            "Bench Press": "Barbell",
+            "Cable Fly": "Cables",
+            "Calf Raise": "Bodyweight",
+            "Face Pull": "Cables",
+            "Hammer Curl": "Dumbbells",
+            "Incline Dumbbell Press": "Dumbbells",
+            "Lateral Raise": "Dumbbells",
+            "Leg Curl": "Machine",
+            "Leg Press": "Machine",
+            "Overhead Press": "Barbell",
+            "Pull Up": "Bodyweight",
+            "Romanian Deadlift": "Barbell",
+            "Squat": "Barbell",
+            "Tricep Pushdown": "Cables",
+        }
+
+        for exercise_name in expected_equipment:
+            clean_db.execute_query(
+                """
+                INSERT INTO exercises (exercise_name, primary_muscle_group, equipment)
+                VALUES (?, ?, ?)
+                """,
+                (exercise_name, "Chest", None),
+            )
+
+        initialize_database(force=True)
+
+        for exercise_name, equipment in expected_equipment.items():
+            row = clean_db.fetch_one(
+                "SELECT equipment FROM exercises WHERE exercise_name = ?",
+                (exercise_name,),
+            )
+            assert row["equipment"] == equipment
     
     def test_invalid_column_name_rejected(self, client):
         """Test that invalid column names return 400 with standardized error."""
@@ -201,4 +267,3 @@ class TestGetFilteredExercisesWhitelist:
         assert data['ok'] is False
         assert data['error']['code'] == 'VALIDATION_ERROR'
         assert 'invalid filter column' in data['error']['message'].lower()
-

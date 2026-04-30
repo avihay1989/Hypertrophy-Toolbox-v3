@@ -14,6 +14,57 @@ logger = get_logger()
 _INITIALIZATION_LOCK = threading.Lock()
 _INITIALIZATION_COMPLETE = False
 
+KNOWN_EXERCISE_METADATA_FIXES = {
+    "Barbell Row": {
+        "equipment": "Barbell",
+    },
+    "Barbell Curl": {
+        "equipment": "Barbell",
+    },
+    "Bench Press": {
+        "equipment": "Barbell",
+    },
+    "Cable Fly": {
+        "equipment": "Cables",
+    },
+    "Calf Raise": {
+        "equipment": "Bodyweight",
+    },
+    "Face Pull": {
+        "equipment": "Cables",
+    },
+    "Hammer Curl": {
+        "equipment": "Dumbbells",
+    },
+    "Incline Dumbbell Press": {
+        "equipment": "Dumbbells",
+    },
+    "Lateral Raise": {
+        "equipment": "Dumbbells",
+    },
+    "Leg Curl": {
+        "equipment": "Machine",
+    },
+    "Leg Press": {
+        "equipment": "Machine",
+    },
+    "Overhead Press": {
+        "equipment": "Barbell",
+    },
+    "Pull Up": {
+        "equipment": "Bodyweight",
+    },
+    "Romanian Deadlift": {
+        "equipment": "Barbell",
+    },
+    "Squat": {
+        "equipment": "Barbell",
+    },
+    "Tricep Pushdown": {
+        "equipment": "Cables",
+    },
+}
+
 
 def _initialize_exercises_table(db: DatabaseHandler) -> None:
     existing = db.fetch_all(
@@ -418,6 +469,33 @@ def _normalize_muscle_group_values(db: DatabaseHandler) -> None:
             )
 
 
+def _repair_known_exercise_metadata(db: DatabaseHandler) -> None:
+    """Backfill narrowly vetted catalogue metadata gaps without overwriting data."""
+    updates = 0
+    for exercise_name, fields in KNOWN_EXERCISE_METADATA_FIXES.items():
+        for column, value in fields.items():
+            try:
+                changed = db.execute_query(
+                    f"""
+                    UPDATE exercises
+                    SET {column} = ?
+                    WHERE LOWER(exercise_name) = LOWER(?)
+                      AND ({column} IS NULL OR TRIM({column}) = '')
+                    """,
+                    (value, exercise_name),
+                )
+                updates += changed
+            except sqlite3.Error:
+                logger.exception(
+                    "Failed to repair %s metadata for exercise '%s'",
+                    column,
+                    exercise_name,
+                )
+
+    if updates:
+        logger.info("Repaired %s known exercise metadata value%s", updates, "s" if updates != 1 else "")
+
+
 def initialize_database(force: bool = False) -> None:
     """Initialise all required tables and supporting indexes.
     
@@ -450,6 +528,7 @@ def initialize_database(force: bool = False) -> None:
             _backfill_workout_log_plan_ids(db)
             _normalize_equipment_values(db)
             _normalize_muscle_group_values(db)
+            _repair_known_exercise_metadata(db)
             _populate_movement_patterns(db)
         
         _INITIALIZATION_COMPLETE = True
