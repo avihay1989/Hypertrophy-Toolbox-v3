@@ -1,0 +1,110 @@
+Fatigue Meter — Stage 1.1 Test Baseline
+========================================
+Date:    2026-04-30
+Branch:  main
+HEAD:    818e881  feat(db): repair known catalog exercise metadata on startup
+Prior:   900d129  docs(fatigue_meter): lock §13 decisions per PLANNING.md Stage 0
+
+Working tree state at baseline run
+----------------------------------
+- Working tree CLEAN (no modified, no untracked code).
+- `data/database.db` was stashed before the run so the baseline reflects
+  HEAD's committed DB snapshot, not local data churn.
+  - Stash ref:  stash@{0}  (commit caa457dd5bf81f9dae27b2e49ebd898f0a5fea3b)
+  - Stash msg:  "stash local db snapshot before fatigue baseline"
+  - Action:     do NOT pop yet; decide later whether to restore or discard.
+
+Commands
+--------
+  pytest:     .venv/Scripts/python.exe -m pytest tests/ -q
+  Playwright: npx playwright test --project=chromium --reporter=line
+
+
+Result 1 — pytest
+=================
+  Status:    GREEN
+  Count:     1290 passed
+  Duration:  201.17s (≈3m 21s)
+
+Delta from CLAUDE.md §5 expected baseline (1216):
+  Δ = +74 tests
+  Likely sources (recent commits since CLAUDE.md was last updated):
+    - feat(db) §catalog metadata repair (818e881):  +2 tests in test_priority0_filters.py
+    - feat(workout-cool §4) vendor + schema/validator (76bcd48, d4bb636):  presumably adds tests
+    - feat(workout-cool §5) reference video modal + page wiring (ed97c08, 63fd323):
+        CLAUDE.md §5 already accounts for "+40 in tests/test_youtube_video_id.py" inside the 1216,
+        but unrelated metadata-repair test mentioned as "+1 parallel commit" — actual landed count
+        appears larger.
+  Net:  pytest is fully green at 1290; the +74 delta is explainable in-flight work, not regression.
+  Per Stage 1.1, this delta is documented here and treated as the new pre-fatigue baseline.
+
+
+Result 2 — Playwright (Chromium)
+=================================
+  Status:    RED  (16 failures — see breakdown below)
+  Counts:    406 passed,  16 failed
+  Duration:  ≈12.2m
+
+Delta from CLAUDE.md §5 expected baseline (314):
+  Pass-count Δ = +92 (presumably workout-cool §3/§4/§5 + Issue #21 body composition).
+  But 16 NEW failures exist that CLAUDE.md does not document.
+
+Failure breakdown — all pre-existing reconciliation debt, NOT caused by today's work
+------------------------------------------------------------------------------------
+A) e2e/nav-dropdown.spec.ts  (2 failures)
+   Root cause: navbar gained a new "Body" entry (Issue #21 body composition)
+   that the nav-dropdown test list was never updated to expect.
+
+   1. nav-dropdown.spec.ts:37 — "top-level nav order matches the redesigned workflow"
+        expected: ['Plan', 'Log', 'Analyze', 'Progress', 'Distribute',          'Backup']
+        received: ['Plan', 'Log', 'Analyze', 'Progress', 'Distribute', 'Body', 'Backup']
+        Fix: update the expected list in the test to include 'Body'.
+
+   2. nav-dropdown.spec.ts:117 — "dark mode toggle still works after navbar restructure"
+        Test timeout 30000ms — locator click failed because the toggle button is
+        "outside of the viewport" at the test viewport width. Same root cause as
+        #1: wider navbar pushes the toggle off-screen.
+        Fix: either widen the test viewport, or scroll/responsive-collapse handling.
+
+B) e2e/visual.spec.ts  (14 failures)
+   Root cause: stale visual snapshots after recent layout work
+   (workout-cool §3 muscle selector body-map, §5 reference video modal partial).
+   Pattern: ALL 14 failures are on `desktop` variants only (mobile + tablet pass
+   for the same pages), so layout drift is desktop-specific.
+
+   Failed snapshots (page × theme):
+     - welcome           : desktop light, desktop dark
+     - workout-plan      : desktop light, desktop dark
+     - workout-log       : desktop light, desktop dark
+     - weekly-summary    : desktop light, desktop dark
+     - session-summary   : desktop light, desktop dark
+     - progression       : desktop light, desktop dark
+     - volume-splitter   : desktop light, desktop dark
+
+   Fix: re-snap with `npx playwright test e2e/visual.spec.ts --project=chromium --update-snapshots`
+   after visual review confirms intended changes.
+
+
+Stage 1.1 status
+================
+  - Baseline captured (this file).
+  - Pytest GREEN (1290 passed) — eligible to lock as new baseline.
+  - Playwright RED (16 failures) — NOT eligible to lock until reconciled.
+  - 16 failures are pre-existing recent-commit debt, not introduced by fatigue meter work.
+
+Decision required (block before continuing to Stage 1.2)
+--------------------------------------------------------
+  Path A — Fix-and-re-baseline (preferred per 95% confidence gate):
+    A1. Update e2e/nav-dropdown.spec.ts label list to include 'Body'.
+    A2. Investigate nav-dropdown.spec.ts:117 viewport / toggle visibility fix.
+    A3. Visual review desktop snapshots; re-snap if intended drift.
+    A4. Re-run /verify-suite, save baseline-2026-04-30-v2.txt as the locked baseline.
+
+  Path B — Document-and-proceed:
+    B1. Lock 1290 pytest + (406 passed / 16 known-failed E2E) as the baseline.
+    B2. Add the 16 failure IDs to a known-failures allowlist; any new failure
+        beyond these 16 is treated as a fatigue-meter regression.
+    B3. Carry the reconciliation debt as a separate ticket.
+
+  Note: per BRAINSTORM.md §17 R10, working-tree state must be resolved before
+  fatigue work begins; the spirit extends to test baseline.
