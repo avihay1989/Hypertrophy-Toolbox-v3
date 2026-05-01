@@ -213,33 +213,42 @@ Each chapter is a single small commit. Each chapter has an explicit gate. Work o
 
 **Note:** Chapter 1.3 (read-only API) is **deleted** per §24.E / D9. This is what was Chapter 1.4.
 
-**Goal:** add `templates/_fatigue_badge.html` and include it in `session_summary.html` and `weekly_summary.html`. Compute fatigue server-side in the existing route handlers using the rows they already load (D13, no new queries).
+**Goal:** add `templates/_fatigue_badge.html` and include it in `session_summary.html` and `weekly_summary.html`. Compute fatigue server-side via a fresh query against `user_selection` joined to `exercises` — per the locked **D13 override**, do NOT reuse the already-aggregated rows in `utils/session_summary.py` / `utils/weekly_summary.py`, since fatigue needs `movement_pattern`, `min_rep_range`, `max_rep_range`, `sets`, and `rir`.
 
 **Tasks:**
-- [ ] Create `templates/_fatigue_badge.html`:
-  - [ ] Bootstrap-card-shaped partial.
-  - [ ] Inputs: `fatigue_score`, `band` (one of `light`/`moderate`/`heavy`/`very_heavy`), `period_label`.
-  - [ ] Includes a one-paragraph "what this means" tooltip.
-  - [ ] **Copy is descriptive only** — no "you should reduce", no "TOO HIGH". Use neutral phrasing.
-- [ ] Edit `routes/session_summary.py`:
-  - [ ] Import from `utils.fatigue`.
-  - [ ] In the route handler, after the existing summary computation, call `aggregate_session_fatigue(...)` using the rows already loaded.
-  - [ ] Pass `fatigue_score`, `band`, `period_label` into the template context.
-- [ ] Edit `routes/weekly_summary.py`:
-  - [ ] Same pattern as above for weekly aggregation.
-- [ ] Edit `templates/session_summary.html`:
-  - [ ] One `{% include '_fatigue_badge.html' %}` line in a designated slot near the existing volume cards.
-- [ ] Edit `templates/weekly_summary.html`:
-  - [ ] Same.
-- [ ] Verify the badge respects the user's existing `CountingMode` toggle (D3) — when the user is viewing RAW, fatigue is computed from raw sets.
+- [x] Create `templates/_fatigue_badge.html`:
+  - [x] Bootstrap-card-shaped partial.
+  - [x] Inputs: `fatigue_score`, `fatigue_band` (one of `light`/`moderate`/`heavy`/`very_heavy`), `fatigue_period_label`. *Variable names namespaced as `fatigue_*` rather than the bare `band`/`period_label` from the original task list — avoids future template-context collisions.*
+  - [x] Includes a one-paragraph "what this means" tooltip (rendered as a Bootstrap tooltip on an info button).
+  - [x] **Copy is descriptive only** — no "you should reduce", no "TOO HIGH", no MRV/MEV. Verified by smoke grep against the rendered HTML.
+  - [x] Empty-state branch: when `fatigue_score == 0` or `None`, the badge shows "No planned exercises yet" rather than a numeric zero.
+- [x] Add `utils/fatigue_data.py` (new file — necessary because `utils/fatigue.py` is pure per Chapter 1.1, but the badge needs DB access). Provides `compute_session_fatigue_for_routine`, `compute_heaviest_session_fatigue`, `compute_weekly_fatigue` — all of which run a fresh `SELECT us.routine, us.sets, us.min_rep_range, us.max_rep_range, us.rir, e.movement_pattern FROM user_selection us LEFT JOIN exercises e ...` per the D13 override.
+- [x] Edit `routes/session_summary.py`:
+  - [x] Import from `utils.fatigue_data`.
+  - [x] In the route handler, after the existing summary computation, call `compute_session_fatigue_for_routine(routine)` when a routine filter is set, else `compute_heaviest_session_fatigue()` to surface the most demanding planned routine.
+  - [x] Pass `fatigue_score`, `fatigue_band`, `fatigue_period_label` into the template context.
+  - [x] Wrapped in `try/except` so a fatigue-compute failure degrades to an empty-state badge instead of crashing the page (per BRAINSTORM §1 "fatigue meter never blocks a user action").
+- [x] Edit `routes/weekly_summary.py`:
+  - [x] Same pattern; calls `compute_weekly_fatigue()` and uses `period_label = "Planned weekly volume"`.
+- [x] Edit `templates/session_summary.html`:
+  - [x] One `{% include "_fatigue_badge.html" with context %}` at the top of `summary-frame`, just inside the calm-glass card.
+- [x] Edit `templates/weekly_summary.html`:
+  - [x] Same.
+- [x] **Stale CountingMode wording dropped per Stage 1.5 D3-supremacy note.** Original Chapter 1.4 task list contained: *"Verify the badge respects the user's existing CountingMode toggle — when the user is viewing RAW, fatigue is computed from raw sets."* That sentence was written before the D3 override locked in — it directly contradicts D3's *"Raw set count. Do not follow CountingMode."* Replacement: **the badge value MUST be invariant under CountingMode RAW ↔ EFFECTIVE** (`?counting_mode=raw` and `?counting_mode=effective` produce identical fatigue HTML — verified, see Gate). Fatigue uses raw sets unconditionally and never consults the toggle.
 
 **Gate 2.3:**
-- [ ] Full pytest = unchanged delta from Chapter 1.2 (template additions don't break server tests).
-- [ ] Targeted E2E: `npx playwright test e2e/summary-pages.spec.ts --project=chromium` → **20 passed**.
-- [ ] Manual: load `/weekly_summary` and `/session_summary` in a browser. Badge appears. No console errors. No layout breaks at 375px viewport width.
-- [ ] Manual: empty log → badge shows zero state without crashing.
-- [ ] Manual: toggle CountingMode RAW ↔ EFFECTIVE — badge value changes accordingly.
-- [ ] Commit message: `feat(fatigue §1.4): add badge partial and wire into summary pages`.
+- [x] Full pytest = **1345 passed** (matches Chapter 1.2 baseline; route+template wiring did not change test counts).
+- [ ] Targeted E2E: `npx playwright test e2e/summary-pages.spec.ts --project=chromium` → expected **20 passed**. **Deferred** — running the spec from the worktree requires either killing the user's existing main-tree dev server on port 5000 (destructive, not authorized) or temporarily reconfiguring `playwright.config.ts` (out of scope for this commit). Re-run on a fresh port-5000 once main-tree server is stopped, before the merge gate.
+- [x] Manual smoke (via Flask `test_client`, against the worktree's code):
+  - [x] `GET /weekly_summary` → 200, badge present (`class="card fatigue-badge fatigue-light mb-3"`), period label "Planned weekly volume", empty-state copy "No planned exercises yet" (correct given `user_selection` audit-confirmed empty).
+  - [x] `GET /session_summary` → 200, period label "No planned routines" (correct given empty plan), badge in light state.
+  - [x] Empty-state path renders without crashing — confirmed via the live empty DB.
+  - [x] Non-empty-render path verified by monkeypatching the fatigue helpers: weekly score 215.4 → "215" / band "heavy" / class `fatigue-heavy`; session no-routine → "Heaviest planned routine: Push A" / score 63 / band "heavy"; session with `?routine=Push%20A` → "Routine: Push A" / score 43 / band "moderate".
+  - [x] **D3 invariance:** `GET /session_summary?counting_mode=raw` and `GET /session_summary?counting_mode=effective` produce **byte-identical fatigue badge HTML** — confirmed.
+  - [x] No prescriptive / clinical language in rendered HTML — confirmed by grep: none of "you should", "must reduce", "too high", "deload now", "mrv", "mev" appear in any of the four sampled URLs.
+  - [ ] **375px viewport visual check deferred** to manual user pass; the partial uses Bootstrap utilities (`d-flex flex-wrap`, `gap-2`) so layout-break risk is low, but I can't verify pixel-level rendering without a real browser.
+  - [ ] **Console-error check deferred** — same reason; no new JavaScript was added in this chapter, so net-new console-error risk is zero.
+- [x] Commit message: `feat(fatigue §1.4): add badge partial and wire into summary pages`.
 
 ---
 
