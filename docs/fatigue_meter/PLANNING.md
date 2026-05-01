@@ -88,16 +88,24 @@ For each row, tick **either** approve **or** override. If override, write the ch
    - Two findings exceed 5% threshold (NULL movement_pattern strength-only 10.5%, NULL primary_muscle strength-only 19.6%). Both **explicitly carved out as Phase-1 known limitations** in `data-audit.md §6` — §24.B already specifies neutral-fallback (1.0) for NULL pattern with warning log; §16.1 already covers "All muscles None → unassigned bucket". Both become Phase-2 prerequisites (per-muscle channels).
 
 ### 1.3 Pre-flight backup
-- [ ] Start the dev server (`/run-tests` skill or `.venv/Scripts/python.exe app.py`) — or confirm it's running.
-- [ ] Hit `POST /api/backups` with a label like `pre-fatigue-meter-2026-04-30`.
-- [ ] Verify the backup appears in `GET /api/backups`. Record the backup id: `____`
-- [ ] Note: this is the rollback floor. Do not delete it until Phase 1 has been live and clean for ≥2 weeks.
+- [x] Start the dev server (`/run-tests` skill or `.venv/Scripts/python.exe app.py`) — or confirm it's running.
+   - Already running on `http://127.0.0.1:5000` at audit time (probed `GET /` → 200).
+- [x] Hit `POST /api/backups` with a label like `pre-fatigue-meter-2026-04-30`.
+   - Sent `{"name":"pre-fatigue-meter-2026-05-01","note":"PLANNING.md Stage 1.3 pre-flight backup ..."}` at 2026-05-01 11:38:01 (server time).
+- [x] Verify the backup appears in `GET /api/backups`. Record the backup id: `5`
+   - Full row: `{id: 5, name: "pre-fatigue-meter-2026-05-01", backup_type: "manual", item_count: 0, schema_version: 1, created_at: "2026-05-01T11:38:01.185805"}`.
+   - **Caveat — `item_count: 0`**: `user_selection` was empty at backup time (see `data-audit.md §7`). The backup row exists in `program_backups`, but has zero `program_backup_items` to restore. This is the *intended* rollback floor for the case "Phase 1 ships and we want to revert to pre-fatigue-meter state with no user routines". If the user adds routines between now and Phase 1 merge, take a **fresh** backup just before the merge gate (Stage 3.5) — id 5 will not restore those.
+- [x] Note: this is the rollback floor. Do not delete it until Phase 1 has been live and clean for ≥2 weeks.
 
 ### 1.4 Dependency check
-- [ ] No new Python packages required for Phase 1 — verified by walking the §24.E shape against project imports.
-- [ ] No new JS packages required for Phase 1 — badge is server-rendered HTML + minimal SCSS.
-- [ ] No new SCSS framework changes — new partial uses existing Bootstrap utilities.
-- [ ] If any of the above is false, escalate to a separate decision before proceeding.
+- [x] No new Python packages required for Phase 1 — verified by walking the §24.E shape against project imports.
+  - `requirements.txt` already covers the route/template stack (`Flask`, `Jinja2`) and tests (`pytest`, `playwright`). `utils/fatigue.py` can use standard-library `dataclasses`/`enum`/`typing` plus existing `utils.logger.get_logger()`.
+- [x] No new JS packages required for Phase 1 — badge is server-rendered HTML + CSS; no Chart.js or client-side fatigue module ships in Phase 1.
+  - `package.json` already contains the needed dev tooling (`sass`, `bootstrap`, Playwright). Existing summary pages use inline page scripts and Bootstrap tooltips; the Phase 1 badge does not require a new runtime package.
+- [x] No new SCSS framework changes — new partial uses the existing Sass/Bootstrap pipeline.
+  - `scss/custom-bootstrap.scss` already imports Bootstrap utilities/components (`card`, `badge`, helpers, utilities) and is rebuilt through the existing `npm run build:css` script. Phase 1 may add a local fatigue partial, but no framework or manifest change is needed.
+- [x] If any of the above is false, escalate to a separate decision before proceeding.
+  - All dependency checks passed; no separate decision needed.
 
 ### 1.5 Branch and PLANNING sign-off
 - [ ] Create feature branch: `git checkout -b feat/fatigue-meter-phase-1`.
