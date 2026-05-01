@@ -63,7 +63,7 @@ For each row, tick **either** approve **or** override. If override, write the ch
 ### 1.1 Lock the test baseline
 - [x] Working tree is clean (no `M` files in `git status` other than this PLANNING.md draft). Resolve `data/database.db`, `tests/test_priority0_filters.py`, `utils/db_initializer.py` per `BRAINSTORM.md §17 R10`.
    - `tests/test_priority0_filters.py` + `utils/db_initializer.py` committed as `818e881 feat(db): repair known catalog exercise metadata on startup`.
-   - `data/database.db` stashed pre-baseline as `stash@{0}` (commit `caa457d`, message: "stash local db snapshot before fatigue baseline"); kept untouched per Path A user direction — decide later whether to restore or discard.
+   - `data/database.db` stashed pre-baseline as commit `caa457dd5bf81f9dae27b2e49ebd898f0a5fea3b` (shorthand `caa457d`, message: "stash local db snapshot before fatigue baseline"); was at `stash@{0}` when stashed but pinning to the full hash because the slot can shift if another stash is later pushed. Kept untouched per Path A user direction — decide later whether to restore or discard.
 - [x] Run `/verify-suite`. Capture the exact output.
 - [x] Save output to `docs/fatigue_meter/baseline-2026-04-30.txt` (rename to actual date).
    - **Locked baseline is `baseline-2026-04-30-v2.txt`** (clean, both green).
@@ -78,13 +78,14 @@ For each row, tick **either** approve **or** override. If override, write the ch
    - **Actual: 422 passed** (Δ +108 vs CLAUDE.md). Delta is recent E2E additions across the same commits as above. All green; this is the new locked E2E baseline.
 
 ### 1.2 Data integrity audit
-- [ ] Count exercises in `exercise_database` with NULL `primary_muscle`. Record number: `____`
-- [ ] Count exercises with NULL / unset movement pattern. Record number: `____`
-- [ ] Count exercises that are bodyweight-only (`weight` consistently NULL in log). Record number: `____`
-- [ ] Count distinct exercises with reference 1RM in `user_profile` vs total in `exercise_database`. Record ratio: `____ / ____`
-- [ ] Spot-check: squat, bench press, deadlift, overhead press, barbell row each classify as compound under the §24.B pattern weights. Record any miss: `____`
-- [ ] Write findings to `docs/fatigue_meter/data-audit.md` (one line per finding; this file is created during this stage, not earlier).
-- [ ] Any blocking finding (e.g. >5% of exercises missing pattern) resolved or explicitly carved out as Phase-1 known limitation.
+- [x] Count exercises in `exercise_database` with NULL `primary_muscle`. Record number: `633 / 1897 (33.4%) whole catalog · 295 / 1506 (19.6%) strength-only`
+- [x] Count exercises with NULL / unset movement pattern. Record number: `454 / 1897 (23.9%) whole catalog · 158 / 1506 (10.5%) strength-only`
+- [x] Count exercises that are bodyweight-only (`weight` consistently NULL in log). Record number: `202 (catalog equipment='Bodyweight'); log-based unmeasurable — workout_log has 0 rows`
+- [x] Count distinct exercises with reference 1RM in `user_profile` vs total in `exercise_database`. Record ratio: `0 / 1897 (2 placeholder rows in user_profile_lifts, both with NULL weight_kg)`
+- [x] Spot-check: squat, bench press, deadlift, overhead press, barbell row each classify as compound under the §24.B pattern weights. Record any miss: `none — all 5 classify as compound (squat=squat, bench=horizontal_push, deadlift=hinge, OHP=vertical_push, row=horizontal_pull)`
+- [x] Write findings to `docs/fatigue_meter/data-audit.md` (one line per finding; this file is created during this stage, not earlier).
+- [x] Any blocking finding (e.g. >5% of exercises missing pattern) resolved or explicitly carved out as Phase-1 known limitation.
+   - Two findings exceed 5% threshold (NULL movement_pattern strength-only 10.5%, NULL primary_muscle strength-only 19.6%). Both **explicitly carved out as Phase-1 known limitations** in `data-audit.md §6` — §24.B already specifies neutral-fallback (1.0) for NULL pattern with warning log; §16.1 already covers "All muscles None → unassigned bucket". Both become Phase-2 prerequisites (per-muscle channels).
 
 ### 1.3 Pre-flight backup
 - [ ] Start the dev server (`/run-tests` skill or `.venv/Scripts/python.exe app.py`) — or confirm it's running.
