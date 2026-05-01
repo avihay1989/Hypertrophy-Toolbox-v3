@@ -108,15 +108,28 @@ For each row, tick **either** approve **or** override. If override, write the ch
   - All dependency checks passed; no separate decision needed.
 
 ### 1.5 Branch and PLANNING sign-off
-- [ ] Create feature branch: `git checkout -b feat/fatigue-meter-phase-1`.
-- [ ] You (the human) have read this PLANNING.md end-to-end.
-- [ ] You agree the §24.E lock-in shape is what's getting built.
+- [x] Create feature branch: `git checkout -b feat/fatigue-meter-phase-1`.
+   - Created via `git worktree add ../Hypertrophy-Toolbox-fatigue-meter -b feat/fatigue-meter-phase-1 3c2b72b` on 2026-05-01 to avoid carrying the unrelated dirty working-tree changes (`data/database.db`, muscle-selector vendor files, body-composition docs/snapshots) on `main` into the fatigue branch. Both worktrees share the same `.git`; `main` working tree retains its dirty state untouched.
+- [x] You (the human) have read this PLANNING.md end-to-end.
+   - **Scoped sign-off (2026-05-01):** the user does not have bandwidth for a full re-read and has explicitly approved the locked Phase 1 shape per the bullets below. Treat this box as ticked against the Stage 0 §0.1 D-list, not against a fresh end-to-end re-read.
+- [x] You agree the §24.E lock-in shape is what's getting built.
+   - **What is approved (locked Phase 1 shape, 2026-05-01):**
+     1. Single fatigue-score badge (D1).
+     2. Computed from planned `user_selection` (D10 override).
+     3. Raw set count for fatigue, independent of CountingMode (D3 override).
+     4. Server-rendered only, no client compute (D5).
+     5. No Phase 1 API endpoints (D9).
+     6. No `/fatigue` page (D5).
+     7. No DB schema changes (Phase 3 owns the first schema change per §6).
+     8. Bodymap / per-muscle view deferred to Phase 2 (D1 + Stage 5 preview).
+   - **Authority order when wording conflicts:** the locked decisions in Stage 0 §0.1 (especially the D3 and D10 *overrides*) are the source of truth. `BRAINSTORM.md §24.E` is the pre-lock author synthesis and is **stale wherever it conflicts with D3 or D10** — for example, §24.C #3 ("Effective, but follows the user's existing CountingMode toggle") is *superseded* by D3's "Raw set count. Do not follow CountingMode". Any §24.B / §24.E phrasing that hints at logged-data sourcing or CountingMode coupling should be read through the D-list lens, not at face value.
+   - **Implementation knock-on:** PLANNING §2.3 Chapter 1.4 still contains a stale CountingMode bullet ("Verify the badge respects the user's existing CountingMode toggle (D3) — when the user is viewing RAW, fatigue is computed from raw sets") which contradicts the D3 override; this bullet must be rewritten or dropped during Chapter 1.4 implementation, not silently followed.
 
 ### 1.6 Stage 1 exit criteria
-- [ ] Baseline file saved and committed.
-- [ ] `data-audit.md` written and committed.
-- [ ] Pre-flight backup id recorded above.
-- [ ] On feature branch.
+- [x] Baseline file saved and committed. (`baseline-2026-04-30-v2.txt` locked in `08f2e04`.)
+- [x] `data-audit.md` written and committed. (`ed5b7ae`.)
+- [x] Pre-flight backup id recorded above. (id `5`, recorded in `3c2b72b`.)
+- [x] On feature branch. (Worktree at `feat/fatigue-meter-phase-1`, see §1.5.)
 
 ---
 
@@ -400,7 +413,7 @@ Update this as you progress. Reviewers can scan it to see where the work stands.
 | Stage | Description | Status | Date |
 |---|---|---|---|
 | 0 | Lock decisions | ✅ Complete | 2026-04-30 |
-| 1 | Pre-development prerequisites | 🟡 In progress | 2026-04-30 |
+| 1 | Pre-development prerequisites | ✅ Complete | 2026-05-01 |
 | 2 | Phase 1 implementation | ⬜ Not started | — |
 | 3 | Phase 1 verification & merge | ⬜ Not started | — |
 | 4 | Post-merge calibration | ⬜ Not started | — |
