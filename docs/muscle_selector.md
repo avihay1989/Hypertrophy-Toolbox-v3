@@ -19,12 +19,61 @@ Interactive SVG body diagram component for selecting target muscle groups in the
 |------|---------|
 | [static/js/modules/muscle-selector.js](../static/js/modules/muscle-selector.js) | Main JavaScript module |
 | [static/css/pages-workout-plan.css](../static/css/pages-workout-plan.css) | Bundled styling for the component |
-| [static/vendor/react-body-highlighter/body_anterior.svg](../static/vendor/react-body-highlighter/body_anterior.svg) | Front view body SVG |
-| [static/vendor/react-body-highlighter/body_posterior.svg](../static/vendor/react-body-highlighter/body_posterior.svg) | Back view body SVG |
+| [static/vendor/workout-cool/body_anterior.svg](../static/vendor/workout-cool/body_anterior.svg) | Front view, **Simple** mode (workout-cool art) |
+| [static/vendor/workout-cool/body_posterior.svg](../static/vendor/workout-cool/body_posterior.svg) | Back view, **Simple** mode (workout-cool art) |
+| [static/vendor/react-body-highlighter/body_anterior.svg](../static/vendor/react-body-highlighter/body_anterior.svg) | Front view, **Advanced** mode |
+| [static/vendor/react-body-highlighter/body_posterior.svg](../static/vendor/react-body-highlighter/body_posterior.svg) | Back view, **Advanced** mode |
+| [scripts/build_workout_cool_svgs.py](../scripts/build_workout_cool_svgs.py) | Builds the workout-cool SVGs from upstream TSX at the pinned SHA |
 | [templates/workout_plan.html](../templates/workout_plan.html) | Integration in Generate Plan modal |
 | [static/js/app.js](../static/js/app.js) | API integration (generateStarterPlan function) |
 
 See [muscle_selector_vendor.md](muscle_selector_vendor.md) for vendor SVG attribution and mapping details.
+
+### View-mode SVG variants
+
+Simple mode and Advanced mode load different SVG art:
+
+- **Simple mode** uses workout-cool's anatomically-styled silhouette
+  ([NOTICE](../static/vendor/workout-cool/NOTICE.md)). It is shipped
+  pre-canonicalized — every `.muscle-region` carries
+  `data-canonical-muscles="<key>[,<key2>,...]"` directly, so no runtime
+  vendor-slug translation is needed for this variant. The posterior
+  `BACK` region is intentionally multi-key
+  (`lats,upper-back,lowerback`) because workout-cool's art does not
+  separate those three.
+- **Advanced mode** stays on react-body-highlighter, whose regions
+  carry vendor `data-muscle="<slug>"` attributes that
+  `mapVendorSlugsToCanonical()` translates at SVG-load time into
+  `data-canonical-muscle` (singular).
+
+`SVG_PATHS[mode][side]` and `getSvgPathForMode(mode, side)` resolve the
+right URL; `switchViewMode()` triggers a full SVG reload (not just a
+legend re-render) when the user toggles modes. Selection state in
+`MuscleSelector.selectedMuscles` is preserved verbatim across the
+swap, and `updateAllRegionStates()` re-derives the visual state from it.
+
+### Multi-key region click semantics
+
+`selectedMuscles` always stores **advanced** keys. A region whose
+`data-canonical-muscles` lists multiple simple keys (only `BACK` in the
+workout-cool variant today) must flatten through `SIMPLE_TO_ADVANCED_MAP`
+before any `.has` / `.add` / `.delete`. The helpers that enforce this:
+
+- `getCanonicalKeys(region)` — returns the array of simple keys.
+- `flattenToAdvancedChildren(simpleKeys)` — expands every simple key,
+  falling through to `[key]` for keys that have no children.
+- `regionVisualState(region)` — counts how many of the flattened
+  advanced keys are currently selected and returns `'selected'` /
+  `'partial'` / `'unselected'`.
+- `toggleRegion(region)` — mass-add / mass-remove.
+
+For the workout-cool BACK region, the flattened set is
+`['lats', 'rhomboids', 'teres-major', 'teres-minor', 'erector-spinae']`
+(5 advanced keys). Selecting only one of them in Advanced mode and
+returning to Simple mode renders BACK as `partial`. This case is
+guarded by `tests/test_muscle_selector_mapping.py::TestRegionVisualState`
+plus the `e2e/workout-plan.spec.ts` "Muscle selector body-map variants"
+block.
 
 ## Architecture
 
