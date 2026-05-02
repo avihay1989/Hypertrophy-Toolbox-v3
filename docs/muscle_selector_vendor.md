@@ -1,10 +1,12 @@
 # Muscle Selector Vendor Integration
 
-The MuscleSelector component sources SVG art from **two** vendor projects.
-Simple mode uses workout-cool; Advanced mode keeps react-body-highlighter.
+The MuscleSelector component sources Simple-mode SVG art from workout-cool.
+Advanced mode uses first-party Hypertrophy Toolbox SVGs under
+`static/bodymaps/hypertrophy-advanced/`. The legacy react-body-highlighter
+assets remain vendored for the Profile coverage body map.
 See [muscle_selector.md](muscle_selector.md) for the runtime split.
 
-## Source Attribution — Advanced mode (react-body-highlighter)
+## Source Attribution — Profile coverage map (react-body-highlighter)
 
 - **Package**: `react-body-highlighter` v2.0.5 (npm)
 - **Repository**: https://github.com/giavinh79/react-body-highlighter
@@ -64,8 +66,7 @@ ships `data-canonical-muscles="<key>[,<key2>,...]"` directly, with our
 canonical keys baked in at build time per the
 `ENUM_SIDE_TO_CANONICAL` table in the build script (mirrors PLANNING.md
 §3.3). So the runtime `VENDOR_SLUG_TO_CANONICAL` table is **not used**
-for this variant — it stays in place only for the legacy
-react-body-highlighter SVGs that Advanced mode loads.
+for this variant.
 
 The only multi-key region today is the posterior `BACK`
 (`data-canonical-muscles="lats,upper-back,lowerback"`), because
@@ -203,9 +204,10 @@ Highlights entire muscle groups. The SVG shows the full region.
 
 ### Advanced Mode
 
-Allows selection of the same muscle groups (vendor SVGs don't have sub-regions), but prepares the system for future detailed SVGs. The legend shows more specific options when available.
-
-**Note:** The vendor SVGs don't include sub-muscle regions. In Advanced mode, clicking a muscle still selects the entire group, but the UI indicates advanced mode is active.
+Uses first-party SVGs with direct sub-muscle regions. The legend and the map
+both operate on the same advanced keys, so clicking a path such as
+`upper-chest`, `rhomboids`, or `erector-spinae` selects that child without
+forcing the entire parent group.
 
 ## Bilateral Synchronization
 

@@ -2,11 +2,11 @@
  * Muscle Group Selector Module v3.0
  * SVG-based anatomically accurate body diagram for muscle group selection
  * 
- * Uses vendor SVGs from react-body-highlighter (MIT License)
- * See static/vendor/react-body-highlighter/ATTRIBUTION.md
+ * Simple mode uses workout-cool SVGs (MIT License).
+ * Advanced mode uses first-party Hypertrophy Toolbox SVGs.
  * 
  * Features:
- * - Anatomically accurate SVG polygons from react-body-highlighter
+ * - SVG muscle regions with canonical keys baked into data attributes
  * - Simple/Advanced view modes with proper parent-child mapping
  * - Front/Back tab navigation  
  * - Bilateral synchronization (both sides highlight/select together)
@@ -253,10 +253,9 @@ const MUSCLE_TO_BACKEND = {
  *
  * Simple mode swaps in workout-cool's anatomy art (vendored under
  * static/vendor/workout-cool/, ships pre-canonicalized data-canonical-muscles
- * — see static/vendor/workout-cool/NOTICE.md). Advanced mode stays on
- * react-body-highlighter so every scientific sub-muscle key remains
- * clickable; that variant continues to use vendor `data-muscle` slugs that
- * mapVendorSlugsToCanonical() translates at load time.
+ * - see static/vendor/workout-cool/NOTICE.md). Advanced mode uses
+ * first-party schematic SVGs whose regions are already keyed to the
+ * scientific sub-muscles in SIMPLE_TO_ADVANCED_MAP.
  */
 const SVG_PATHS = {
     simple: {
@@ -264,8 +263,8 @@ const SVG_PATHS = {
         back: '/static/vendor/workout-cool/body_posterior.svg'
     },
     advanced: {
-        front: '/static/vendor/react-body-highlighter/body_anterior.svg',
-        back: '/static/vendor/react-body-highlighter/body_posterior.svg'
+        front: '/static/bodymaps/hypertrophy-advanced/body_anterior.svg',
+        back: '/static/bodymaps/hypertrophy-advanced/body_posterior.svg'
     }
 };
 
@@ -432,8 +431,9 @@ class MuscleSelector {
      * Map vendor SVG slugs to canonical muscle keys.
      * Updates data attributes on SVG elements.
      *
-     * Two SVG flavors are supported:
-     *   - Pre-canonicalized (workout-cool simple variant): each region
+     * Three SVG flavors are supported:
+     *   - Pre-canonicalized (workout-cool simple variant and first-party
+     *     advanced variant): each region
      *     already carries `data-canonical-muscles="<key1>[,<key2>,...]"`.
      *     No translation needed — left as-is.
      *   - Vendor-slug (react-body-highlighter advanced variant): each region
@@ -647,14 +647,26 @@ class MuscleSelector {
     }
 
     /**
-     * Handle hover state - highlight all paths for the same canonical key
+     * Return true when a region should respond to hover for `muscleKey`.
+     * This supports both direct advanced child keys and parent/simple keys
+     * used by legend group headers.
+     */
+    regionMatchesMuscleKey(region, muscleKey) {
+        const regionKeys = this.getCanonicalKeys(region);
+        if (regionKeys.includes(muscleKey)) return true;
+
+        const targetAdvanced = this.flattenToAdvancedChildren([muscleKey]);
+        const regionAdvanced = this.flattenToAdvancedChildren(regionKeys);
+        return regionAdvanced.some(key => targetAdvanced.includes(key));
+    }
+
+    /**
+     * Handle hover state - highlight all paths covered by a canonical key.
      */
     handleMuscleHover(canonicalKey, isHovering) {
-        // Find all regions with this canonical key (handles bilateral sides)
         const regions = this.container.querySelectorAll('.muscle-region');
         regions.forEach(region => {
-            const regionKey = this.getCanonicalKey(region);
-            if (regionKey === canonicalKey) {
+            if (this.regionMatchesMuscleKey(region, canonicalKey)) {
                 region.classList.toggle('hover', isHovering);
             }
         });

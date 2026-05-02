@@ -74,3 +74,6 @@ build/
 # Claude Code personal overrides
 .claude/settings.local.json
 .claude/scheduled_tasks.lock
+
+# Body-map scratch / reference output
+static/bodymaps/GPT/

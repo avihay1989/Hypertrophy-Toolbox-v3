@@ -21,8 +21,8 @@ Interactive SVG body diagram component for selecting target muscle groups in the
 | [static/css/pages-workout-plan.css](../static/css/pages-workout-plan.css) | Bundled styling for the component |
 | [static/vendor/workout-cool/body_anterior.svg](../static/vendor/workout-cool/body_anterior.svg) | Front view, **Simple** mode (workout-cool art) |
 | [static/vendor/workout-cool/body_posterior.svg](../static/vendor/workout-cool/body_posterior.svg) | Back view, **Simple** mode (workout-cool art) |
-| [static/vendor/react-body-highlighter/body_anterior.svg](../static/vendor/react-body-highlighter/body_anterior.svg) | Front view, **Advanced** mode |
-| [static/vendor/react-body-highlighter/body_posterior.svg](../static/vendor/react-body-highlighter/body_posterior.svg) | Back view, **Advanced** mode |
+| [static/bodymaps/hypertrophy-advanced/body_anterior.svg](../static/bodymaps/hypertrophy-advanced/body_anterior.svg) | Front view, **Advanced** mode |
+| [static/bodymaps/hypertrophy-advanced/body_posterior.svg](../static/bodymaps/hypertrophy-advanced/body_posterior.svg) | Back view, **Advanced** mode |
 | [scripts/build_workout_cool_svgs.py](../scripts/build_workout_cool_svgs.py) | Builds the workout-cool SVGs from upstream TSX at the pinned SHA |
 | [templates/workout_plan.html](../templates/workout_plan.html) | Integration in Generate Plan modal |
 | [static/js/app.js](../static/js/app.js) | API integration (generateStarterPlan function) |
@@ -41,10 +41,12 @@ Simple mode and Advanced mode load different SVG art:
   `BACK` region is intentionally multi-key
   (`lats,upper-back,lowerback`) because workout-cool's art does not
   separate those three.
-- **Advanced mode** stays on react-body-highlighter, whose regions
-  carry vendor `data-muscle="<slug>"` attributes that
-  `mapVendorSlugsToCanonical()` translates at SVG-load time into
-  `data-canonical-muscle` (singular).
+- **Advanced mode** uses first-party schematic art under
+  `static/bodymaps/hypertrophy-advanced/`. These files are already keyed
+  to advanced sub-muscles (`upper-chest`, `rhomboids`,
+  `erector-spinae`, etc.) with `data-canonical-muscles`, so clicking the
+  map can select individual children instead of only broad parent
+  regions.
 
 `SVG_PATHS[mode][side]` and `getSvgPathForMode(mode, side)` resolve the
 right URL; `switchViewMode()` triggers a full SVG reload (not just a
