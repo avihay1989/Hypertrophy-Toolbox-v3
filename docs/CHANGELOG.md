@@ -11,6 +11,34 @@ All notable changes to Hypertrophy Toolbox v3.
 - Updated selector hover matching so parent legend rows highlight all covered child regions in the first-party advanced SVGs.
 - `static/vendor/react-body-highlighter/` is **retained** — `static/js/modules/bodymap-svg.js` still uses it for the `/user_profile` coverage bodymap. Swapping that surface to first-party art is deferred to a future PR.
 
+### Fatigue Meter Phase 1 — Server-Rendered Projected-Fatigue Badge
+
+- Added a single-score fatigue badge to `/weekly_summary` and `/session_summary`. Computed server-side and rendered as a Bootstrap-card partial (`templates/_fatigue_badge.html`), it surfaces one of four bands — `light`, `moderate`, `heavy`, `very_heavy` — for the planned program.
+- New pure-math module `utils/fatigue.py` (stdlib-only, no DB) implements the §24.B model: movement-pattern weights, rep-range and load-bucket multipliers, RIR multipliers, per-set / session / weekly aggregation, and threshold classification. Backed by 55 tests in `tests/test_fatigue.py`.
+- New DB shim `utils/fatigue_data.py` runs the badge's read — a fresh `SELECT us.routine, us.sets, us.min_rep_range, us.max_rep_range, us.rir, e.movement_pattern FROM user_selection us LEFT JOIN exercises e …` — per the locked D13 override (do not reuse already-aggregated summary rows).
+- Counting Mode invariant — fatigue uses raw set count unconditionally and ignores `?counting_mode=raw|effective` (locked D3 override). `/session_summary` returns byte-identical fatigue HTML under both modes.
+- New SCSS partial `scss/_fatigue.scss` provides one accent color per band, dark-mode parity, and a 576px mobile breakpoint. Wired via a single `@import "fatigue";` in `scss/custom-bootstrap.scss`.
+- Source for everything that landed: `docs/fatigue_meter/PLANNING.md` (Stage 0 → Stage 2 Chapter 1.6) and the locked decisions in `docs/fatigue_meter/BRAINSTORM.md §13` and §24.A–E.
+
+### Validation
+
+- pytest: TBD — to be filled in after the post-rebase pytest run from `feat/fatigue-meter-phase-1-rebased`.
+- Playwright (Chromium): TBD — to be filled in after the post-rebase Playwright run.
+- Copy verified prescriptive-language-free across rendered badge HTML on `/weekly_summary`, `/session_summary`, and the `?counting_mode=raw|effective` variants. Whole-word scan for `should | must | reduce | deload | too | MRV | MEV` returned zero matches.
+
+### Non-Goals (intentionally not in Phase 1)
+
+- No `/fatigue` page, no `/api/fatigue/*` endpoints — server-rendered badge only.
+- No DB schema changes — the first schema change in this feature is reserved for Phase 3 (user-calibrated thresholds).
+- No prescriptive guidance, no auto-adjusted plans, no blocked actions. Per `BRAINSTORM.md §1`, the badge is descriptive only and never gates a user action.
+- No per-muscle / Local-vs-Systemic-vs-Joint channels — deferred to Phase 2.
+
+### Migration Notes
+
+- Pre-flight backup recorded as `/api/backups` row id 5 (`pre-fatigue-meter-2026-05-01`). This is the rollback floor; do not delete until Phase 1 has been live and clean for ≥2 weeks.
+- No new Python or JS dependencies. SCSS partial routed through the existing `npm run build:css` pipeline; `static/css/bootstrap.custom.min.css` rebuilt and committed.
+- The `feat/fatigue-meter-phase-1` branch was rebased onto `origin/main` via cherry-pick into `feat/fatigue-meter-phase-1-rebased` to lift fatigue commits cleanly onto the post-§3+§4+§5 main without carrying workout-cool §4 image assets or §5 YouTube modal scope. See `docs/fatigue_meter/PLANNING.md §1.5` for the original branch rationale.
+
 ## Unreleased - April 24, 2026
 
 ### UI / Redesign
