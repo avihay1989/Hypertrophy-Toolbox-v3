@@ -8,8 +8,7 @@
     fatigue_period_label : str   — short label naming the period ("Routine: Push A",
                                    "Planned weekly volume", etc.).
 
-  Copy is descriptive only. No "should", "must", "reduce", "deload",
-  "too", "MRV", "MEV", or other prescriptive / clinical language.
+  Copy is descriptive only; keep it informational and non-clinical.
   Color tokens land in scss/_fatigue.scss in Chapter 1.5.
 #}
 {% set _band = (fatigue_band or 'light') | replace('_', '-') %}
@@ -49,7 +48,7 @@
                         data-bs-placement="left"
                         data-bs-html="true"
                         aria-label="What does projected fatigue mean?"
-                        title="A descriptive estimate of how demanding the planned program looks, based on movement pattern, rep range, and Reps In Reserve. Bands: light, moderate, heavy, very heavy. Phase 1 reads the planned routine — not actual logged sets — and ignores the Counting Mode toggle.">
+                        title="A planning estimate based on movement pattern, rep range, and Reps In Reserve. Higher bands mean the plan sits above a typical easy workload. Phase 1 reads planned routines, not logged sets, and ignores the Counting Mode toggle.">
                     <i class="fas fa-info-circle" aria-hidden="true"></i>
                     <span class="visually-hidden">About projected fatigue</span>
                 </button>
