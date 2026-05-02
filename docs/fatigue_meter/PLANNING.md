@@ -7,6 +7,14 @@
 
 ---
 
+> **Reader note (post-drop, 2026-05-03)** — §1.1 through §2.6 below chronicle work performed on the **original local-main feat branch (`feat/fatigue-meter-phase-1`)**, not the current rebased branch. They reference pytest counts (1290 / 1345 on local main), Playwright 422 on local main, the **Path A reconciliation actions** (`'Body'` nav-label addition, `dispatchEvent('click')` dark-mode toggle shim, refresh of 14 desktop visual snapshots — all carried by commit `a0a0a18`), and helper artifacts (stash `caa457d`, `baseline-2026-04-30-v2.txt`) that **do not apply to this PR's branch**.
+>
+> The current branch is **`feat/fatigue-meter-phase-1-rebased`**, rebuilt from `origin/main` (`c4bc77d`). Per owner direction, `a0a0a18` was **dropped**. Body Composition, the `'Body'` top-level nav label, and the `dispatchEvent` toggle shim are **NOT present** on this branch — `e2e/nav-dropdown.spec.ts` is byte-identical to `origin/main`. The metadata-repair commit referenced below as `818e881` lives on the rebased branch as **`6246854`**.
+>
+> Authoritative post-drop state lives in **§2.7 Post-rebase reconciliation and Post-drop resolution** below: pytest **1160 passed**, Playwright Chromium **408 passed / 2 failed** (effective **409 / 1**, where the 1 repeatable red is pre-existing on `origin/main` itself).
+
+---
+
 ## How to Use This Plan
 
 - Walk top-to-bottom. Each stage has **Entry criteria → Tasks → Exit criteria**.
