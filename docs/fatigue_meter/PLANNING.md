@@ -329,12 +329,40 @@ This is the pre-merge checklist from `BRAINSTORM.md §19`, restated as actionabl
 - [ ] PR description references `BRAINSTORM.md` and `PLANNING.md`, lists test count delta, quotes §1 non-goals.
 
 ### 3.5 Safety
-- [ ] Pre-flight backup from Stage 1.3 still exists in `/api/backups`.
-- [ ] Fresh-clone smoke: on a tree without `data/database.db`, server starts, schema initializes, `/weekly_summary` renders empty fatigue badge without crashing.
-- [ ] Restore-old-backup smoke: restoring the pre-fatigue backup → every page loads without crashing.
+
+**Strict execution order: A → B → C → D → E.** Steps A and B are mandatory and may not be skipped. Step E (restore of backup id 5) may not begin until Step B is confirmed green. Step D is owner-confirmed optional/deferred (2026-05-02). Step E is owner-required.
+
+> *Note (2026-05-02): the A → B → C → D → E ordering below is a **proposed** sequencing to make the existing §3.5 boxes safe to execute. It is not lifted from a prior locked document — it is being introduced here for owner approval before any §3.5 box is ticked. If the owner overrides the order or any required/optional flag, update this section before proceeding.*
+
+#### Step A — Pre-flight backup integrity check (no restore)
+- [ ] Confirm backup id `5` from Stage 1.3 still exists in `GET /api/backups` (id, name, `created_at`, `item_count`, `schema_version` unchanged).
+- [ ] Do **not** invoke `POST /api/backups/5/restore` in this step. A is read-only verification.
+
+#### Step B — Code, test, contract, and documentation gates green
+- [ ] All boxes in §3.1 (Code & tests) ticked.
+- [ ] All boxes in §3.2 (Contract & conventions) ticked.
+- [ ] All boxes in §3.3 (Behavior & non-goals) ticked.
+- [ ] All boxes in §3.4 (Documentation) ticked.
+- [ ] Working tree clean of merge-blocking diffs (only intentional Phase-1 fatigue files modified).
+- [ ] **Gate:** Step E may not proceed until this step is confirmed.
+
+#### Step C — Capture rollback-floor snapshot before any restore
+- [ ] `POST /api/backups` with label `pre-fatigue-restore-smoke-<YYYY-MM-DD>` to capture current live state. Record new backup id: `____`
+- [ ] This snapshot is the recovery point if Step E mutates state and needs to be undone.
+
+#### Step D — Fresh-clone smoke (optional / deferred — owner-confirmed 2026-05-02)
+- [ ] *Optional.* On a tree without `data/database.db`, server starts, schema initializes, `/weekly_summary` renders the empty fatigue badge without crashing.
+- [ ] If skipped, record reason: `____` (default reason: deferred per owner confirmation 2026-05-02).
+
+#### Step E — Restore-old-backup smoke (owner-required)
+- [ ] Steps A and B both confirmed green above. **Do not begin E otherwise.**
+- [ ] Restore backup id `5` via `POST /api/backups/5/restore`.
+- [ ] Walk every nav page: `/`, `/workout_plan`, `/workout_log`, `/weekly_summary`, `/session_summary`, `/progression`, `/user_profile`, `/body_composition`, `/volume_splitter`. Confirm each renders without crashing.
+- [ ] Restore from the Step-C snapshot to recover live state.
+- [ ] Record findings: `____`
 
 ### 3.6 Merge
-- [ ] All boxes in 3.1–3.5 ticked.
+- [ ] All boxes in 3.1–3.5 ticked (Step D may be marked skipped/deferred per its optional flag).
 - [ ] Open PR against `main`.
 - [ ] PR review approved (human).
 - [ ] Squash-merge or rebase-merge per repo convention.

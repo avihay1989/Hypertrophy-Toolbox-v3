@@ -977,4 +977,113 @@ Before development can begin, the following steps must be completed:
 
 ---
 
-*End of brainstorm. Reviewers: please leave inline comments and fill the decision log in §13. Once §13 is complete, this document graduates to a sibling `PLANNING.md` (concrete tasks per chapter) plus `data-audit.md` (§14.2 findings). The brainstorm itself stays as historical context — do not overwrite it during implementation.*
+*End of original brainstorm. §26 below is a post-lock addendum capturing a new user input (a reference visualization) that arrived after §13 was locked and before Phase 1 implementation began. Codex 2nd review requested.*
+
+---
+
+## 26. Post-Lock Input — User-Provided Reference Visualization (MuscleWiki bodymap)
+
+**Status:** new input, not yet incorporated into PLANNING.md or §13. Codex 2nd review requested before any plan adjustments.
+**Date:** 2026-05-01 (one day after Stage 0/1 lock; before any Phase 1 implementation code has been written).
+
+### 26.1 The input
+The user shared a screenshot from `musclewiki.com` (their workout-generator section) showing how MuscleWiki visualizes accumulated fatigue:
+
+- **Two SVG bodymaps** side-by-side (anterior + posterior).
+- **Per-muscle color gradient** (yellow → orange → red) representing fatigue level on each muscle group.
+- **Day toggle** at the top: `Total | Monday` — i.e., week-aggregate vs. specific-day filter.
+- **"Fatigue Gradient" legend** at the bottom (yellow → red bar).
+
+User's verbatim ask: *"I want something like this on the bodymap."*
+
+### 26.2 Why this is structurally different from the locked Phase 1 shape
+
+| Dimension | Locked Phase 1 (per §13 + §24.E) | What the screenshot implies |
+|---|---|---|
+| Output cardinality (D1) | **1 number** (single fatigue score) per session/week | **N numbers** (one per muscle group, ~12–16 for typical body coverage) |
+| Threshold model (D11) | 4 global bands `{light / moderate / heavy / very_heavy}` shared across all output | **Per-muscle thresholds** — each muscle's color depends on its own recoverable range (functionally MEV/MAV/MRV per §5 of this brainstorm) |
+| Page placement (D5) | **Embed-only** — Bootstrap card in `/weekly_summary` and `/session_summary` | Either a much larger embed (two SVGs side-by-side eats serious vertical space) or a dedicated page |
+| Time filtering | Session OR week, picked by which page you're on | A `Total / <day>` toggle in the same view, implying day-level aggregation as a first-class feature |
+| Visual surface | Card + tooltip | SVG overlay component with per-path color mapping + legend |
+
+This is closer in shape to **Phase 2** as already sketched in §5 + §9 of this brainstorm than to the locked Phase 1.
+
+### 26.3 The three honest options
+
+**Option A — Keep Phase 1 as-locked; accelerate Phase 2 with the bodymap as its concrete spec.**
+Ship the single-number badge first (per §24.E). Use Stage 4 calibration to validate the math against felt experience. Then write a `PHASE2-PLANNING.md` whose anchor deliverable is the MuscleWiki-style bodymap.
+- Pro: zero re-scoping, zero rework on Stage 0/1 lock, badge is a useful calibration tool, math is reused unchanged.
+- Pro: smaller cognitive load — finish what's started, then start what's new.
+- Con: ships an interim UI surface (the badge) the user has now signaled isn't their long-term goal — risk of "throwaway badge" feeling.
+- Con: delays the visualization the user actually wants by ~2–3 weeks (Phase 1 ship + ≥7 days calibration + Phase 2 plan + Phase 2 ship).
+
+**Option B — Re-scope Phase 1 directly to the bodymap (effectively merge Phase 1 + Phase 2).**
+Throw out Chapter 1.4/1.5 of PLANNING.md (badge work). Re-plan as: pure-math module → unit tests → per-muscle aggregation function → bodymap component → wire into a chosen page or dedicated route.
+- Pro: one ship to the user's actual ask. No interim UI to maintain.
+- Pro: avoids context-switching between badge work and bodymap work.
+- Con: explicitly re-opens **D1 (channel/output count), D5 (page placement), D11 (thresholds)** in §13. Stage 0 lock is no longer load-bearing — needs a Stage 0.5 re-lock.
+- Con: roughly doubles the surface area of the first ship. The 95%-confidence gate philosophy from §24.D is harder to meet for a larger first ship.
+- Con: per-muscle thresholds need real data to calibrate. Without Phase 1 calibration, we ship MEV/MAV/MRV defaults that are educated guesses.
+
+**Option C — Cancel locked Phase 1, replan everything with bodymap as the anchor.**
+Discard PLANNING.md entirely, write a new one from scratch.
+- Pro: cleanest mental model — no historical baggage from the badge plan.
+- Con: discards two days of locked planning work. Wastes the §24.B threshold tables which were carefully sized for the badge bands; per-muscle bands need different numbers entirely.
+- Con: largest one-shot scope.
+
+### 26.4 Recommendation: **Option A** (with one tweak)
+
+Keep Phase 1 as-locked. Ship the single-number badge as planned. **But** add one explicit Phase-2-trigger task to Stage 4 calibration (PLANNING.md Stage 4.3): "Decide between (a) keeping the badge alongside the bodymap, or (b) replacing the badge with the bodymap." That decision becomes part of Phase 2 planning.
+
+**Rationale:**
+1. **The badge is a calibration tool, not just a UI surface.** Stage 4 explicitly walks 4 weeks of real fatigue scores against felt experience to tune §24.B bands. That validation is *more* useful for the per-muscle thresholds in Phase 2 than for the badge bands themselves — because if the global band is wrong, the per-muscle bands derived from the same multipliers are also wrong. The badge is a cheap way to find that out without committing to bodymap visual work.
+2. **Math reuses 100%.** `calculate_set_fatigue` is per-set + per-muscle-contribution from day one. `aggregate_session_fatigue` currently sums those into a session number. Adding `aggregate_session_fatigue_by_muscle` is mechanically the same loop with `dict[str, float]` accumulator instead of `float` — no new math, no new edge cases that the badge tests didn't already cover.
+3. **The asset reuse story is the same in both options.** `static/vendor/workout-cool/body_anterior.svg` and `body_posterior.svg` already ship (per recent commits `d4bb636` / `76bcd48` from workout-cool §4 work). The Workout Plan muscle-selector code already maps muscle ids to SVG paths. The bodymap fatigue overlay is "color those same paths by score" — same plumbing, different palette function. This is true whether we ship the bodymap in Phase 1 or Phase 2.
+4. **The 95% confidence gate from §24.D was specifically about the small first ship.** Doubling the surface area to merge bodymap into Phase 1 invalidates the gate's premise.
+5. **Time toggle (Total / Monday) is a presentation concern.** Whatever per-day aggregation function we add for the bodymap can also feed an enhanced badge (e.g., "Monday session: heavy") — but that's Phase 2 polish, not a reason to redesign Phase 1.
+
+**The "tweak":** explicitly note in PLANNING.md Stage 4.3 that the bodymap is the anchor of Phase 2, not just one of Phase 2's possibilities. This converts the user's input from "ambient signal" into a "Phase 2 design constraint" without disturbing the lock.
+
+### 26.5 Asset reuse — concrete inventory (true under any option)
+
+| Asset | Where it lives now | Used by | Phase 2 reuse |
+|---|---|---|---|
+| `static/vendor/workout-cool/body_anterior.svg` | Vendor tree from workout-cool §4 | Workout Plan muscle selector | Bodymap base layer (front view) |
+| `static/vendor/workout-cool/body_posterior.svg` | Vendor tree from workout-cool §4 | Workout Plan muscle selector | Bodymap base layer (back view) |
+| Muscle-id → SVG-path mapping | (verify location during Phase 2 plan) | Workout Plan muscle selector — Simple/Advanced variants | Color overlay loop |
+| `aggregate_session_fatigue` per §24.E | To be created in PLANNING.md Chapter 1.1 | Phase 1 badge | Add `_by_muscle` variant that returns `dict[str, float]` instead of summed `float` |
+| §24.B `PATTERN_WEIGHTS` + `LOAD_MULTIPLIER_BUCKETS` + `INTENSITY_MULTIPLIER_BUCKETS` | To be created in PLANNING.md Chapter 1.1 | Phase 1 badge | Per-muscle aggregation uses identical multipliers; only the accumulator changes |
+
+The reuse is genuinely tight — Option A is not throwing away math.
+
+### 26.6 What a Phase 2 plan would need to add (not for Codex to design, just to make the cost honest)
+
+- Per-muscle threshold table (functionally a stripped-down §5 MEV/MAV/MRV — likely just MAV/MRV-equivalent for color stops). Needs the same "starting points, not science" caveat as §24.B.
+- Color-stop function: `score → CSS color` interpolation along yellow → orange → red.
+- SVG-path-to-muscle mapping reuse from the workout-plan muscle selector (verify it's reusable; if not, build a small lookup).
+- Day-filter parameter on the aggregator (`day: date | None = None` selecting `user_selection` rows for that ISO date; `None` = entire week).
+- Page choice: dedicated `/fatigue` route OR replace the Phase 1 badge in `/weekly_summary` with the bodymap. The user's screenshot is large enough that a dedicated route is probably right.
+- New schema: **none**, if the day filter operates on existing `user_selection.workout_day` rather than introducing logged dates.
+
+### 26.7 Specific questions for Codex's 2nd review
+
+For each, please answer with one of: **agree-with-author / disagree-with-author / needs-more-info**, plus a one-line reason.
+
+1. **Q1.** Is Option A (keep Phase 1, accelerate Phase 2) correct, or does the strength of the user's "I want this" signal warrant Option B (re-scope Phase 1 directly)?
+2. **Q2.** Does keeping the badge in Phase 1 risk creating a UI surface the user will ignore once the bodymap ships, or is the badge useful enough as a calibration / quick-glance tool to warrant keeping alongside?
+3. **Q3.** §13 D5 says "embed-only, no /fatigue page in Phase 1." If we accept Option A, should D5 carve out an explicit Phase 2 promotion to "dedicated /fatigue page" so PHASE2-PLANNING.md doesn't have to re-debate it?
+4. **Q4.** §13 D11 says "global bands `{light/moderate/heavy/very_heavy}`." Per-muscle thresholds are not a contradiction (the badge bands and the per-muscle color stops are different functions of the same score), but is there a risk of user confusion if the badge shows "heavy" while the bodymap shows mostly green muscles + one red one?
+5. **Q5.** §17 R7 (performance) was sized for a single fatigue computation per page load. Per-muscle aggregation multiplies that by ~12–16 muscle groups. Does Phase 2 need to re-evaluate R7, or is the cost still negligible because we're iterating already-loaded `user_selection` rows?
+6. **Q6.** §18 (rollback) currently says Phase 1 is purely additive (no schema changes). Does the day-filter / per-muscle aggregation in Phase 2 introduce any schema risk Codex sees, or is `user_selection` already sufficient?
+7. **Q7.** Anything in the Option-A reasoning above that strikes Codex as wishful thinking — i.e., places where the badge's reusability for Phase 2 is overstated?
+
+### 26.8 What this addendum does NOT do
+
+- It does not modify §13 (decisions stay locked).
+- It does not modify §24.E (Phase 1 lock-in shape unchanged).
+- It does not modify PLANNING.md Stages 0–3 (Phase 1 stages unchanged).
+- It only proposes a single tweak to PLANNING.md Stage 4.3 ("bodymap is Phase 2 anchor"), and only after Codex review confirms Option A.
+
+---
+
+*End of §26. Awaiting Codex 2nd review on Q1–Q7 before any PLANNING.md edits.*
