@@ -206,9 +206,10 @@ class TestMuscleSelectorJSStructure:
         """VENDOR_SLUG_TO_CANONICAL should be defined."""
         assert "VENDOR_SLUG_TO_CANONICAL" in js_content
     
-    def test_svg_paths_use_vendor_directory(self, js_content):
-        """SVG_PATHS should reference vendor directory."""
-        assert "/static/vendor/react-body-highlighter/" in js_content
+    def test_svg_paths_reference_simple_and_advanced_assets(self, js_content):
+        """SVG_PATHS should reference workout-cool simple art and first-party advanced art."""
+        assert "/static/vendor/workout-cool/" in js_content
+        assert "/static/bodymaps/hypertrophy-advanced/" in js_content
 
 
 # ============================================================================
@@ -226,6 +227,20 @@ WC_ANTERIOR_SVG = (
 )
 WC_POSTERIOR_SVG = (
     Path(__file__).parent.parent / "static" / "vendor" / "workout-cool" / "body_posterior.svg"
+)
+ADVANCED_ANTERIOR_SVG = (
+    Path(__file__).parent.parent
+    / "static"
+    / "bodymaps"
+    / "hypertrophy-advanced"
+    / "body_anterior.svg"
+)
+ADVANCED_POSTERIOR_SVG = (
+    Path(__file__).parent.parent
+    / "static"
+    / "bodymaps"
+    / "hypertrophy-advanced"
+    / "body_posterior.svg"
 )
 
 
@@ -377,6 +392,92 @@ class TestWorkoutCoolSvgCoverage:
         assert not missing_posterior, (
             f"Posterior simple keys neither drawn nor allowlisted: {missing_posterior}"
         )
+
+
+class TestFirstPartyAdvancedSvgCoverage:
+    """First-party advanced SVGs expose direct clickable sub-muscle regions."""
+
+    @pytest.fixture
+    def anterior_groups(self):
+        return extract_canonical_muscle_lists(ADVANCED_ANTERIOR_SVG)
+
+    @pytest.fixture
+    def posterior_groups(self):
+        return extract_canonical_muscle_lists(ADVANCED_POSTERIOR_SVG)
+
+    def test_advanced_svgs_exist(self):
+        assert ADVANCED_ANTERIOR_SVG.exists(), f"Missing {ADVANCED_ANTERIOR_SVG}"
+        assert ADVANCED_POSTERIOR_SVG.exists(), f"Missing {ADVANCED_POSTERIOR_SVG}"
+
+    def test_anterior_advanced_keys_are_drawn(self, anterior_groups):
+        flat = {k for grp in anterior_groups for k in grp}
+        for key in [
+            "neck",
+            "anterior-deltoid",
+            "lateral-deltoid",
+            "upper-chest",
+            "mid-chest",
+            "lower-chest",
+            "long-head-bicep",
+            "short-head-bicep",
+            "lateral-head-triceps",
+            "long-head-triceps",
+            "medial-head-triceps",
+            "wrist-flexors",
+            "wrist-extensors",
+            "brachioradialis",
+            "upper-abs",
+            "lower-abs",
+            "obliques",
+            "adductors",
+            "rectus-femoris",
+            "vastus-lateralis",
+            "vastus-medialis",
+            "vastus-intermedius",
+            "gastrocnemius",
+            "soleus",
+            "tibialis-anterior",
+        ]:
+            assert key in flat, f"Anterior advanced SVG missing '{key}'"
+
+    def test_posterior_advanced_keys_are_drawn(self, posterior_groups):
+        flat = {k for grp in posterior_groups for k in grp}
+        for key in [
+            "neck",
+            "posterior-deltoid",
+            "lateral-deltoid",
+            "upper-traps",
+            "mid-traps",
+            "lower-traps",
+            "rhomboids",
+            "teres-major",
+            "teres-minor",
+            "lats",
+            "erector-spinae",
+            "lateral-head-triceps",
+            "long-head-triceps",
+            "medial-head-triceps",
+            "wrist-flexors",
+            "wrist-extensors",
+            "brachioradialis",
+            "gluteus-maximus",
+            "gluteus-medius",
+            "gluteus-minimus",
+            "tensor-fasciae-latae",
+            "biceps-femoris",
+            "semitendinosus",
+            "semimembranosus",
+            "gastrocnemius",
+            "soleus",
+            "tibialis-anterior",
+        ]:
+            assert key in flat, f"Posterior advanced SVG missing '{key}'"
+
+    def test_advanced_svg_uses_submuscle_keys_not_parent_back_region(self, posterior_groups):
+        groups = {tuple(grp) for grp in posterior_groups}
+        assert ("lats", "upper-back", "lowerback") not in groups
+        for key in ("lats", "rhomboids", "erector-spinae"):
+            assert (key,) in groups
 
 
 class TestRegionVisualState:

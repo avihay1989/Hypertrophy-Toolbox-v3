@@ -2,6 +2,15 @@
 
 All notable changes to Hypertrophy Toolbox v3.
 
+## Unreleased - May 2, 2026
+
+### Muscle Selector — First-Party Advanced Body Map
+
+- Replaced the workout-plan Advanced-mode SVG source with original first-party body maps under `static/bodymaps/hypertrophy-advanced/`. Simple-mode (workout.cool) art is unchanged.
+- Advanced map regions now target sub-muscles directly via `data-canonical-muscles`, so clicking the SVG can select one child such as `upper-chest`, `rhomboids`, or `erector-spinae` without selecting the whole parent group.
+- Updated selector hover matching so parent legend rows highlight all covered child regions in the first-party advanced SVGs.
+- `static/vendor/react-body-highlighter/` is **retained** — `static/js/modules/bodymap-svg.js` still uses it for the `/user_profile` coverage bodymap. Swapping that surface to first-party art is deferred to a future PR.
+
 ## Unreleased - April 24, 2026
 
 ### UI / Redesign

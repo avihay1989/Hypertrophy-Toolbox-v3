@@ -612,8 +612,8 @@ test.describe('Plan Generator v1.5.0 Features', () => {
 // Muscle selector — workout-cool body map (PLANNING.md §3)
 //
 // Simple mode loads workout-cool's anatomy art (multi-key BACK region);
-// Advanced mode keeps react-body-highlighter. Switching modes must reload
-// the SVG variant and preserve `selectedMuscles` across the swap.
+// Advanced mode loads first-party sub-muscle SVGs. Switching modes must
+// reload the SVG variant and preserve `selectedMuscles` across the swap.
 // ============================================================================
 
 test.describe('Muscle selector body-map variants', () => {
@@ -634,7 +634,7 @@ test.describe('Muscle selector body-map variants', () => {
     consoleErrors.assertNoErrors();
   });
 
-  test('Simple mode loads workout-cool art; Advanced reloads react-body-highlighter; selection survives swap', async ({ page }) => {
+  test('Simple mode loads workout-cool art; Advanced reloads first-party sub-muscle art; selection survives swap', async ({ page }) => {
     const svg = page.locator('#muscle-selector-container #svg-container svg');
 
     // Default mode is simple. Workout-cool art ships with id="body-anterior-workoutcool".
@@ -649,7 +649,7 @@ test.describe('Muscle selector body-map variants', () => {
 
     // Switch to advanced — must trigger an SVG variant reload, not just a legend re-render.
     await page.locator('#muscle-selector-container [data-view="advanced"]').click();
-    await expect(svg).toHaveAttribute('id', /body-anterior(?!-workoutcool)/);
+    await expect(svg).toHaveAttribute('id', /body-anterior-hypertrophy-advanced/);
 
     // Selection state preserved (advanced legend renders one row per child of chest).
     for (const child of ['upper-chest', 'mid-chest', 'lower-chest']) {
@@ -725,5 +725,30 @@ test.describe('Muscle selector body-map variants', () => {
       .first();
     await expect(backRegion).toHaveClass(/partial/);
     await expect(backRegion).not.toHaveClass(/selected(?!\.partial)/);
+  });
+
+  test('Advanced map region selects a single sub-muscle without selecting siblings', async ({ page }) => {
+    await page.locator('#muscle-selector-container [data-view="advanced"]').click();
+    await expect(
+      page.locator('#muscle-selector-container #svg-container svg')
+    ).toHaveAttribute('id', /body-anterior-hypertrophy-advanced/);
+
+    await page
+      .locator('#muscle-selector-container svg [data-canonical-muscles="upper-chest"]')
+      .first()
+      .click();
+
+    await expect(
+      page.locator('#muscle-selector-container .legend-item[data-muscle="upper-chest"] .legend-checkbox.checked')
+    ).toBeVisible();
+    await expect(
+      page.locator('#muscle-selector-container .legend-item[data-muscle="mid-chest"] .legend-checkbox.checked')
+    ).toHaveCount(0);
+    await expect(
+      page.locator('#muscle-selector-container .legend-item[data-muscle="lower-chest"] .legend-checkbox.checked')
+    ).toHaveCount(0);
+    await expect(
+      page.locator('#muscle-selector-container .legend-group-header[data-parent="chest"] .legend-checkbox.partial')
+    ).toBeVisible();
   });
 });
