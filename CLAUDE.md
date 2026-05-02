@@ -167,7 +167,11 @@ npx playwright test --project=chromium --reporter=line
 
 ## 5. Current State & Risks
 
-### Verified test counts (2026-04-28)
+### Verified test counts (2026-05-03 — `feat/fatigue-meter-phase-1-rebased`, post-drop)
+- **pytest**: 1160 passed (~2m 25s) on 2026-05-03 from the rebased fatigue branch — 1080 origin/main baseline (2026-04-28) + 80 new across `tests/test_fatigue.py` (55), `tests/test_priority0_filters.py` extensions in `6246854`, and a handful of rebased prerequisite tests. Lower than the 1345 figure once produced from the original feat-branch tree because origin/main lacks workout-cool §3+§4+§5 + body composition.
+- **Last full E2E Playwright (Chromium)**: **408 passed, 2 failed** in 10.6m on 2026-05-03 from a clean DB. The single repeatable red is `nav-dropdown.spec.ts:117 dark mode toggle still works after navbar restructure` — a pre-existing failure on `origin/main` itself (the toggle's bounding box renders off-viewport at 1440 width; this is what dropped commit `a0a0a18` had attempted to mask via `dispatchEvent('click')`), out of fatigue meter scope. The second failure (`program-backup.spec.ts:79 can create a backup from the dedicated page`) is a DB-state-pollution flake from sequential test execution; passes in isolation. **Effective state: 409 / 1.** See `docs/fatigue_meter/PLANNING.md §2.7` post-drop addendum.
+
+### Prior verified test counts (2026-04-28, pre-rebase reference)
 - **pytest**: 1080 passed (~2m 22s) — 1054 pre-Issue-#20 + 26 new (Issue #20 reference-lift expansion).
 - **Relevant E2E Playwright**: 41 passed (~58s, Chromium; `user-profile.spec.ts` + `workout-plan.spec.ts`) — adds the Issue #20 questionnaire-grouping case.
 - **Adjacent E2E Playwright (Issue #20 sweep)**: 55 passed (~1m 18s, Chromium; `exercise-interactions.spec.ts` + `accessibility.spec.ts` + `smoke-navigation.spec.ts`).

@@ -22,8 +22,8 @@ All notable changes to Hypertrophy Toolbox v3.
 
 ### Validation
 
-- pytest: TBD — to be filled in after the post-rebase pytest run from `feat/fatigue-meter-phase-1-rebased`.
-- Playwright (Chromium): TBD — to be filled in after the post-rebase Playwright run.
+- pytest: 1160 passed (~2m 25s, 2026-05-03) on `feat/fatigue-meter-phase-1-rebased` — 1080 origin/main baseline + 80 new (55 in `tests/test_fatigue.py` covering per-set math, aggregation, threshold classification at band boundaries, and the §24.B worked example "6 exercises × 3 sets at RIR 2, 8–12 reps, mostly compound" → ≈ 32 ± 1; remainder from `tests/test_priority0_filters.py` extensions and rebased prerequisites). Lower than the 1345 figure produced from the original feat-branch tree because origin/main does not carry workout-cool §3+§4+§5 or body composition.
+- Playwright (Chromium full suite, 2026-05-03 from clean DB, post-drop of `a0a0a18`): **408 passed, 2 failed in 10.6m**. The single repeatable red is `nav-dropdown.spec.ts:117 dark mode toggle still works after navbar restructure` — a pre-existing failure on `origin/main` itself, unrelated to the fatigue meter (the dark-mode toggle bounding box renders off-viewport at 1440 width; this is what the dropped commit had been masking via `dispatchEvent('click')`). The second failure (`program-backup.spec.ts:79 can create a backup from the dedicated page`) is a DB-state-pollution flake from sequential full-suite execution — passes in isolation from a clean DB. **Effective post-drop state: 409 / 1.** The 12 weekly+session-summary visual snapshots (mobile + tablet + desktop, light + dark) were refreshed in a separate `test(fatigue §1.4)` commit; all other visual baselines remain at origin/main's authoritative copies. See `docs/fatigue_meter/PLANNING.md §2.7` post-drop addendum.
 - Copy verified prescriptive-language-free across rendered badge HTML on `/weekly_summary`, `/session_summary`, and the `?counting_mode=raw|effective` variants. Whole-word scan for `should | must | reduce | deload | too | MRV | MEV` returned zero matches.
 
 ### Non-Goals (intentionally not in Phase 1)

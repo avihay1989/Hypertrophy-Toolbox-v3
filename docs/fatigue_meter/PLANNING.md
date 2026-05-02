@@ -318,6 +318,56 @@ Each chapter is a single small commit. Each chapter has an explicit gate. Work o
 - [x] No new dependencies added. *Confirmed in §1.4: `requirements.txt` and `package.json` unchanged. The Sass build relied on the existing `npm run build:css` pipeline.*
 - [x] Branch is up-to-date with main, no merge conflicts. *Verified 2026-05-02: `git log feat/fatigue-meter-phase-1..main` empty, merge-base = main's tip `3c2b72b`. Branch is a clean linear extension of main.*
 
+### 2.7 Post-rebase reconciliation onto `origin/main` (2026-05-03)
+
+The original `feat/fatigue-meter-phase-1` branch was authored on top of **local** `main`, which carried 16 commits not on `origin/main` (body composition `dcb3bf9`, workout-cool §4 + §5, etc.). To produce a PR-able branch rooted at the actual remote, the 12 fatigue-scoped commits (10 fatigue + 2 Stage 1 prerequisites) were cherry-picked onto `origin/main` (`c4bc77d`) into a sibling worktree at `../Hypertrophy-Toolbox-fatigue-rebase`, branch `feat/fatigue-meter-phase-1-rebased`.
+
+**Cherry-pick result:** 12 commits applied cleanly except commit 12 (`docs(fatigue §1.6)`) which conflicted in `CLAUDE.md` §5 and `docs/CHANGELOG.md` headers. Resolution: collapsed the duplicate `## Unreleased - May 2, 2026` headers in CHANGELOG (kept HEAD's muscle-selector entry, appended the fatigue meter entry under the same header, dropped the now-stale `## Unreleased - April 30, 2026` header); kept HEAD's CLAUDE.md §5 verbatim and re-derived counts post-test-run.
+
+**Post-rebase test counts:**
+- pytest: **1160 passed in 145.12s** on `feat/fatigue-meter-phase-1-rebased` (2026-05-03). Lower than the 1345 figure in the §1.6 commit because origin/main lacks workout-cool §3+§4+§5 + body composition; this branch carries fatigue tests on top of origin/main only.
+- Playwright (Chromium full suite): **387 passed, 23 failed in 10.8m** (2026-05-03).
+
+**Failure breakdown (23 failures, all attributable to rebase scope drift):**
+
+1. `e2e/nav-dropdown.spec.ts:37` (1 failure) — commit `a0a0a18` (cherry of `842d7c7`) updated the expected nav-label list to include `'Body'`. Origin/main has no `routes/body_composition.py`; `dcb3bf9 feat(body-composition)` exists only on local main and was never pushed. **Resolution path:** the `'Body'` expectation must be reverted on the rebased branch (or, alternatively, the body-composition feature must be promoted to `origin/main` first).
+2. `e2e/visual.spec.ts` desktop snapshots (14 failures) — refreshed in `842d7c7` against a local-main tree that included body composition + a pre-PR#6 muscle selector. Origin/main now has PR#6 first-party advanced bodymap (`08d8665`) which changes the rendering. **Resolution path:** refresh these 14 snapshots on the rebased branch (`npx playwright test --update-snapshots --grep "visual baseline"`), or drop `842d7c7` entirely and let origin/main's snapshots be authoritative (which means re-adding the navbar overflow workaround for the dark-mode toggle test once Body is re-added in a later PR).
+3. `e2e/visual.spec.ts` mobile/tablet weekly+session snapshots (8 failures) — not refreshed in `842d7c7` (its scope was desktop only). The §1.4 fatigue badge added new content to `templates/weekly_summary.html` and `templates/session_summary.html`, so these snapshots now diff. **Resolution path:** refresh these 8 snapshots on the rebased branch — these failures are expected from the fatigue badge addition itself, not from the rebase, and would have shown up regardless of how the branch was prepared.
+
+**Pre-PR action items — resolved (2026-05-03):**
+- [x] Decide whether to keep or drop `a0a0a18`. **Owner direction: drop.** Executed via `git rebase --onto 6246854 a0a0a18` in the worktree.
+- [x] Refresh the mobile/tablet/desktop weekly+session visual snapshots (12 total) to reflect the fatigue badge. Committed as `test(fatigue §1.4): refresh session/weekly summary visual snapshots after badge wiring`.
+- [x] Drop `a0a0a18`'s 14 desktop snapshots and let origin/main's authoritative copies stand (welcome, workout-log, workout-plan, progression, volume-splitter, plus the now-superseded weekly+session × {light,dark}).
+- [x] Re-run pytest, `npm run build:css`, and Chromium Playwright; update CLAUDE.md §5 + CHANGELOG.md `### Validation` with the post-drop actuals (recorded in the post-drop addendum below).
+
+### 2.7 (cont.) — Post-drop resolution (2026-05-03, owner-confirmed)
+
+`a0a0a18` was dropped from the rebased branch. The branch is now a clean linear extension of `c4bc77d` (`origin/main`) with **13 commits**: 11 fatigue-scoped commits + 1 Stage 1 prerequisite (`6246854 feat(db): repair known catalog exercise metadata on startup`) + 1 snapshot-refresh commit + this docs commit.
+
+**Files refreshed in the snapshot commit (12 PNGs only):**
+- `e2e/__screenshots__/visual.spec.ts-snapshots/{session,weekly}-summary-{desktop,mobile,tablet}-{light,dark}.png`
+
+The other 10 desktop snapshots that `a0a0a18` had touched (`welcome`, `workout-log`, `workout-plan`, `progression`, `volume-splitter` × {light,dark}) remain at origin/main's authoritative copies — `a0a0a18`'s premise (reconcile against local-main with body composition + pre-PR#6 muscle selector) was rejected.
+
+**Final post-drop test counts (2026-05-03, clean DB):**
+
+- **pytest:** 1160 passed in 144.64s. Unchanged from the cherry-pick checkpoint (the snapshot commit is image-only, no code change).
+- **Playwright (Chromium full suite):** 408 passed, 2 failed in 10.6m sequential. Detailed below.
+
+**Failure breakdown (2 failures, 1 repeatable + 1 flake):**
+
+1. `e2e/nav-dropdown.spec.ts:117 dark mode toggle still works after navbar restructure` — **pre-existing red on `origin/main` itself**, repeatable in isolation. The dark-mode toggle's bounding box renders off-viewport at 1440 width even on plain `origin/main` (no body composition), and `a0a0a18` had attempted to mask this via `dispatchEvent('click')`. With `a0a0a18` dropped, the test is byte-identical to origin/main and the same red surfaces. **Out of fatigue meter scope.**
+2. `e2e/program-backup.spec.ts:79 can create a backup from the dedicated page` — **DB-state-pollution flake.** Passes in isolation from a clean DB. Sequential execution of the full suite mutates `data/database.db` in ways that subsequently break this test's assertions. Three other tests (`progression.spec.ts:309`, `superset-edge-cases.spec.ts:193`, `volume-splitter.spec.ts:224`, plus `visual.spec.ts workout-plan desktop light`) exhibited similar behavior in the first sequential run; all five passed when re-run from a clean DB. Test isolation issue, not a code regression.
+
+**Effective post-drop state: 409 / 1.** The single repeatable red is pre-existing on `origin/main`.
+
+**Branch invariants verified (2026-05-03):**
+- `nav-dropdown.spec.ts` is byte-identical to `origin/main` (no `'Body'` expectation, no `dispatchEvent` shim).
+- §4 free-exercise-db image assets (`d4bb636` + `76bcd48`), §5 YouTube modal work (`e7b0c1e` … `68d5825`), and `data/database.db` modifications are confirmed absent from the branch (`git diff --name-only origin/main...HEAD` shows only fatigue-scoped paths).
+- 13 commits since `c4bc77d`, no merges.
+
+**Branch is ready for PR review.** Next step: human review + push.
+
 ---
 
 ## Stage 3 — Phase 1 Verification & Merge Gate (the 95% confidence checkpoint)
