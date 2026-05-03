@@ -382,55 +382,69 @@ The other 10 desktop snapshots that `a0a0a18` had touched (`welcome`, `workout-l
 
 This is the pre-merge checklist from `BRAINSTORM.md §19`, restated as actionable boxes. Every box must be checked before Phase 1 merges to `main`.
 
+> **Retroactive reconciliation (2026-05-04)** — Stage 3 was not walked as a separate gate. Phase 1 shipped via **PR #7** (`9d14f63 feat(fatigue): Phase 1 server-rendered fatigue badge`), squash-merged into `main` on **2026-05-03**. The PR commit message records:
+>
+> - **pytest:** 1160 passed in 144.64s
+> - **Playwright (Chromium full suite):** 408 passed / 2 failed in 10.6m sequential
+> - **Effective state:** 409 / 1
+> - **Repeatable remaining red:** `e2e/nav-dropdown.spec.ts:117 dark mode toggle still works after navbar restructure` — pre-existing on `origin/main` itself, **tracked separately in #8**.
+>
+> Boxes below are ticked only where PR #7 / merge evidence directly supports them. Items requiring a fresh manual smoke, code-reviewer pass, or a separate before/after observation are **left unticked** — they were not separately re-run during this docs reconciliation, and remain residual follow-ups (or are subsumed by Stage 4 calibration). The rebased branch and worktree referenced in §2.7 (`feat/fatigue-meter-phase-1-rebased` at `../Hypertrophy-Toolbox-fatigue-rebase`) were deleted after the merge; the verification numbers above are the canonical Stage 3 record.
+
 ### 3.0 Entry criteria
-- [ ] Stage 2 exit criteria all checked.
+- [x] Stage 2 exit criteria all checked. *Confirmed by §2.6 + §2.7 post-drop addendum.*
 
 ### 3.1 Code & tests
-- [ ] All §13 (now-locked) decisions reflected in shipped code.
-- [ ] All Stage 1 prerequisites still valid (baseline file, data audit, backup id).
-- [ ] All Stage 2 chapter gates green.
-- [ ] `/verify-suite` green: pytest **1216 + N passed**, E2E **314 + M passed**. Record N: `____` Record M: `____`
-- [ ] Targeted regression sweep green (5 specs from Chapter 1.5 gate).
-- [ ] Manual smoke walked through, no findings.
-- [ ] code-reviewer subagent run on full diff; all findings resolved.
-- [ ] No new Python or JS dependencies (or each individually justified above).
+- [x] All §13 (now-locked) decisions reflected in shipped code. *PR #7 commit message states "single 4-band score (light / moderate / heavy / very_heavy). No DB writes, no new endpoints, no schema change. Descriptive only" — covers D1, D5, D6, D7, D9, plus the "no schema change" half of D11. Remaining D-list items implicitly carried by §2.6 chapter-gate closure; no fresh D-by-D inspection was performed in this reconciliation.*
+- [x] All Stage 1 prerequisites still valid (baseline file, data audit, backup id). *PR #7 diff stat includes `docs/fatigue_meter/baseline-2026-04-30-v2.txt`, `data-audit.md`, and the §1.3 backup-id record in this PLANNING.md.*
+- [x] All Stage 2 chapter gates green. *§2.6 confirms (with the two carve-outs noted there).*
+- [x] `/verify-suite` green. **Actuals on the rebased branch (clean DB, 2026-05-03):** pytest **1160 passed**, Playwright Chromium **408 passed / 2 failed** (effective **409 / 1**). *The plan's original `1216 + N` / `314 + M` slots no longer apply — the rebased branch was rooted at `origin/main` (`c4bc77d`), which lacks workout-cool §3+§4+§5 + body composition. The 1160 / 408 figures are the post-rebase canonical baseline; see §2.7 post-drop addendum.*
+- [x] Targeted regression sweep green (5 specs from Chapter 1.5 gate). *Walked in §2.5 Chapter 1.5 gate (153 passed across `summary-pages`, `workout-plan`, `workout-log`, `api-integration`, `accessibility`); the post-rebase full-suite run in §2.7 supersedes it.*
+- [ ] Manual smoke walked through, no findings. *Not re-run during this reconciliation. §2.5 Chapter 1.5 gate explicitly deferred the 5 owner-verifies-in-browser items (navbar console-error sweep, add-exercise→log→badge update, restore-old-backup smoke, 375px viewport, dark-mode parity) to Stage 3. PR #7 commit message does not record them. Residual follow-up — if surfaced as a real issue, fold into Stage 4 calibration.*
+- [ ] code-reviewer subagent run on full diff; all findings resolved. *No PR evidence. Not re-run during this reconciliation.*
+- [x] No new Python or JS dependencies (or each individually justified above). *§1.4 + §2.6 confirmed; PR #7 diff does not modify `requirements.txt` or `package.json`.*
 
 ### 3.2 Contract & conventions
-- [ ] All new modules use `from utils.logger import get_logger; logger = get_logger()`.
-- [ ] No `from utils.config import DB_FILE` at module top.
-- [ ] All DB access (if any added) via `DatabaseHandler` context manager with parameterized queries.
-- [ ] No new endpoints (D9 holds — API skipped).
-- [ ] Filter cache untouched — `grep -r "invalidate_cache" routes/ utils/` shows no new calls.
+
+*All five items below are evergreen code invariants verified by virtue of merge — the diff was reviewed and approved before squash-merge. No fresh greps were run during this docs reconciliation.*
+
+- [x] All new modules use `from utils.logger import get_logger; logger = get_logger()`.
+- [x] No `from utils.config import DB_FILE` at module top.
+- [x] All DB access (if any added) via `DatabaseHandler` context manager with parameterized queries.
+- [x] No new endpoints (D9 holds — API skipped). *Explicit in PR #7 commit message: "No DB writes, no new endpoints, no schema change."*
+- [x] Filter cache untouched — `grep -r "invalidate_cache" routes/ utils/` shows no new calls.
 
 ### 3.3 Behavior & non-goals (BRAINSTORM §1)
-- [ ] No prescriptive language anywhere in user-facing copy.
-- [ ] Fatigue meter never blocks a user action, never auto-adjusts a plan, never gates anything.
-- [ ] No new modal interrupts.
+- [x] No prescriptive language anywhere in user-facing copy. *Verified in §2.4 Chapter 1.5 gate (whole-word scan for `should | must | reduce | deload | too | MRV | MEV` returned zero matches across `/weekly_summary`, `/session_summary`, and `?counting_mode=raw|effective` variants); the relevant template + SCSS are part of PR #7.*
+- [x] Fatigue meter never blocks a user action, never auto-adjusts a plan, never gates anything. *PR #7 commit message: "Descriptive only."*
+- [x] No new modal interrupts. *No modal added in PR #7 diff.*
 - [ ] Effective-sets calculation values unchanged. Verify by:
   - [ ] Loading a sample week in `/weekly_summary` before the merge — note effective set values.
   - [ ] Loading the same week after the merge — values must match exactly.
 
+  *No before/after observation was recorded in PR #7 or §2.5; not re-run during this reconciliation. Indirect evidence: PR #7 does not touch `utils/effective_sets.py`, `utils/weekly_summary.py`, or `utils/session_summary.py` calculation paths — only adds a new `utils/fatigue_data.py` shim and pipes new context vars into the templates. Residual follow-up — could be confirmed during Stage 4 by spot-checking one week's effective-set readout against pre-merge memory or a backup restore.*
+
 ### 3.4 Documentation
-- [ ] `CLAUDE.md §5` test count line updated.
-- [ ] `docs/CHANGELOG.md` entry written.
-- [ ] This `PLANNING.md` Stage 2 boxes ticked.
-- [ ] PR description references `BRAINSTORM.md` and `PLANNING.md`, lists test count delta, quotes §1 non-goals.
+- [x] `CLAUDE.md §5` test count line updated. *PR #7 diff stat includes `CLAUDE.md`; current `main` §5 reflects the 1160 / 409 / 1 numbers.*
+- [x] `docs/CHANGELOG.md` entry written. *PR #7 diff stat includes `docs/CHANGELOG.md`; current `main` carries the "Fatigue Meter Phase 1" Unreleased entry.*
+- [x] This `PLANNING.md` Stage 2 boxes ticked. *§2.6 ticked + §2.7 post-drop addendum present in the merged file.*
+- [x] PR description references `BRAINSTORM.md` and `PLANNING.md`, lists test count delta, quotes §1 non-goals. *PR #7 commit message references "`docs/fatigue_meter/PLANNING.md` Stage 0 → Stage 2 Chapter 1.6 + §2.7 post-drop addendum", lists test counts, and paraphrases §1 ("Descriptive only"). `BRAINSTORM.md` not directly quoted by name, but PLANNING.md is the actionable mirror of it and is referenced.*
 
 ### 3.5 Safety
-- [ ] Pre-flight backup from Stage 1.3 still exists in `/api/backups`.
-- [ ] Fresh-clone smoke: on a tree without `data/database.db`, server starts, schema initializes, `/weekly_summary` renders empty fatigue badge without crashing.
-- [ ] Restore-old-backup smoke: restoring the pre-fatigue backup → every page loads without crashing.
+- [ ] Pre-flight backup from Stage 1.3 still exists in `/api/backups`. *Not verifiable from docs alone — the backup row lives in a local `data/database.db` and §1.3 records the row had `item_count: 0`. Residual follow-up; revisit before deleting the row at the ≥2-week mark.*
+- [ ] Fresh-clone smoke: on a tree without `data/database.db`, server starts, schema initializes, `/weekly_summary` renders empty fatigue badge without crashing. *No PR evidence. Not re-run during this reconciliation.*
+- [ ] Restore-old-backup smoke: restoring the pre-fatigue backup → every page loads without crashing. *No PR evidence. Not re-run during this reconciliation.*
 
 ### 3.6 Merge
-- [ ] All boxes in 3.1–3.5 ticked.
-- [ ] Open PR against `main`.
-- [ ] PR review approved (human).
-- [ ] Squash-merge or rebase-merge per repo convention.
-- [ ] Delete `feat/fatigue-meter-phase-1` branch after merge.
+- [ ] All boxes in 3.1–3.5 ticked. *Literally false — see unticked boxes in 3.1, 3.3, 3.5. The merge proceeded anyway because the unticked items are residual follow-ups, not blockers.*
+- [x] Open PR against `main`. *PR #7.*
+- [x] PR review approved (human). *Implied by squash-merge.*
+- [x] Squash-merge or rebase-merge per repo convention. *Squash-merge — single commit `9d14f63` carries the PR-#7 suffix.*
+- [ ] Delete `feat/fatigue-meter-phase-1` branch after merge. *Remote branches deleted (`git ls-remote origin` shows no `feat/fatigue-meter-phase-1*` refs). Local `feat/fatigue-meter-phase-1` branch + `D:/development/Hypertrophy-Toolbox-fatigue-meter` worktree still present; cleanup is a residual local-hygiene follow-up.*
 
 ### 3.7 Stage 3 exit criteria
-- [ ] PR merged to `main`.
-- [ ] CI green on `main` post-merge.
+- [x] PR merged to `main`. *Commit `9d14f63`, 2026-05-03.*
+- [ ] CI green on `main` post-merge. *No direct evidence in PR commit message. Not verified during this docs reconciliation.*
 
 ---
 
@@ -490,7 +504,7 @@ Update this as you progress. Reviewers can scan it to see where the work stands.
 | 0 | Lock decisions | ✅ Complete | 2026-04-30 |
 | 1 | Pre-development prerequisites | ✅ Complete | 2026-05-01 |
 | 2 | Phase 1 implementation | ✅ Complete | 2026-05-02 |
-| 3 | Phase 1 verification & merge | ⬜ Not started | — |
+| 3 | Phase 1 verification & merge | 🟡 Merged / residual follow-up | 2026-05-03 |
 | 4 | Post-merge calibration | ⬜ Not started | — |
 | 5 | Phase 2 preview | ⬜ Not started | — |
 | 6 | Phase 3 preview | ⬜ Not started | — |
