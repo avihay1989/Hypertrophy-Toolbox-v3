@@ -17,6 +17,10 @@ from utils.effective_sets import (
     parse_counting_mode as shared_parse_counting_mode,
     parse_contribution_mode as shared_parse_contribution_mode,
 )
+from utils.fatigue_data import (
+    compute_heaviest_session_fatigue,
+    compute_session_fatigue_for_routine,
+)
 from utils.logger import get_logger
 from utils.errors import error_response, is_xhr_request, success_response
 
@@ -85,7 +89,29 @@ def session_summary():
         ]
         category_results = calculate_exercise_categories()
         isolated_muscles_stats = calculate_isolated_muscles_stats()
-        
+
+        # Fatigue badge (Phase 1, D3+D10): independent of counting_mode and
+        # contribution_mode; reads planned user_selection rows directly.
+        # BRAINSTORM §1 non-goal: the badge must never block the page, so
+        # any failure here degrades to an empty-state badge.
+        fatigue_score = 0.0
+        fatigue_band = "light"
+        try:
+            if routine:
+                fatigue_session = compute_session_fatigue_for_routine(routine)
+                fatigue_period_label = f"Routine: {routine}"
+            else:
+                heaviest_routine, fatigue_session = compute_heaviest_session_fatigue()
+                if heaviest_routine:
+                    fatigue_period_label = f"Heaviest planned routine: {heaviest_routine}"
+                else:
+                    fatigue_period_label = "No planned routines"
+            fatigue_score = fatigue_session.score
+            fatigue_band = fatigue_session.band
+        except Exception:
+            logger.exception("Fatigue badge computation failed; falling back to empty state")
+            fatigue_period_label = "Projected fatigue unavailable"
+
         if is_xhr_request():
             return jsonify(success_response(data={
                 "session_summary": results,
@@ -96,7 +122,7 @@ def session_summary():
                     "contribution_mode": contribution_mode.value,
                 }
             }))
-        
+
         return render_template(
             "session_summary.html",
             session_summary=results,
@@ -104,6 +130,9 @@ def session_summary():
             isolated_muscles=isolated_muscles_stats,
             counting_mode=counting_mode.value,
             contribution_mode=contribution_mode.value,
+            fatigue_score=fatigue_score,
+            fatigue_band=fatigue_band,
+            fatigue_period_label=fatigue_period_label,
             get_volume_class=get_volume_class,
             get_volume_label=get_volume_label,
             get_volume_tooltip=get_volume_tooltip,

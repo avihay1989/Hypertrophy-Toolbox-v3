@@ -1,0 +1,58 @@
+{#
+  Fatigue Meter badge partial (Phase 1).
+
+  Inputs (passed from the parent template via include-with-context):
+    fatigue_score        : float — projected fatigue from utils.fatigue.aggregate_*.
+    fatigue_band         : str   — one of light / moderate / heavy / very_heavy.
+                                   Drives the CSS class fatigue-{band}.
+    fatigue_period_label : str   — short label naming the period ("Routine: Push A",
+                                   "Planned weekly volume", etc.).
+
+  Copy is descriptive only; keep it informational and non-clinical.
+  Color tokens land in scss/_fatigue.scss in Chapter 1.5.
+#}
+{% set _band = (fatigue_band or 'light') | replace('_', '-') %}
+{% set _empty = (fatigue_score is none) or (fatigue_score == 0) %}
+<div class="card fatigue-badge fatigue-{{ _band }} mb-3"
+     role="status"
+     aria-label="Projected fatigue for {{ fatigue_period_label or 'planned program' }}">
+    <div class="card-body py-3">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <div class="fatigue-badge__heading">
+                <div class="text-uppercase small text-muted fatigue-badge__eyebrow">
+                    Projected fatigue
+                </div>
+                <div class="fatigue-badge__period h6 mb-0">
+                    {{ fatigue_period_label or 'Planned program' }}
+                </div>
+            </div>
+            <div class="fatigue-badge__readout text-end">
+                {% if _empty %}
+                    <div class="fatigue-badge__score h4 mb-0">—</div>
+                    <div class="fatigue-badge__band small text-muted">
+                        No planned exercises yet
+                    </div>
+                {% else %}
+                    <div class="fatigue-badge__score h4 mb-0">
+                        {{ '%.0f' | format(fatigue_score) }}
+                    </div>
+                    <div class="fatigue-badge__band small text-uppercase">
+                        {{ (fatigue_band or 'light') | replace('_', ' ') }}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="fatigue-badge__info">
+                <button type="button"
+                        class="btn btn-sm btn-link p-0 fatigue-badge__info-btn"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="left"
+                        data-bs-html="true"
+                        aria-label="What does projected fatigue mean?"
+                        title="A planning estimate based on movement pattern, rep range, and Reps In Reserve. Higher bands mean the plan sits above a typical easy workload. Phase 1 reads planned routines, not logged sets, and ignores the Counting Mode toggle.">
+                    <i class="fas fa-info-circle" aria-hidden="true"></i>
+                    <span class="visually-hidden">About projected fatigue</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
