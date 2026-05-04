@@ -458,7 +458,7 @@ Salvaged from the abandoned original feat-branch's PLANNING.md draft on 2026-05-
 
 **Bonus (not in original checklist) — badge coherence**: `scripts/fatigue_stage4_remaining_smokes.py` also verifies that the rendered badge score equals `utils.fatigue_data.compute_*_fatigue().score` (rounded) for three cases (weekly, heaviest session, per-routine) — proves the route handler isn't displaying a stale/cached value. All three PASS.
 
-**Cleanup follow-up**: Backup id 6 (`pre-fatigue-restore-smoke-2026-05-04`) is the spent recovery target from item 3. Five `data/auto_backup/database_*.db` files were also created today as a side-effect of the smoke scripts each invoking `app.py`'s startup `create_startup_backup()`. Three temporary scripts under `scripts/fatigue_stage4_*.py` exist to support reproduction; can be deleted with the smoke results captured here. None of these affect Stage 4 entry — owner cleanup at convenience.
+**Cleanup follow-up**: Backup id 6 (`pre-fatigue-restore-smoke-2026-05-04`, the spent recovery target from item 3) was **deleted via `DELETE /api/backups/6` on 2026-05-04** after byte-equal restore was confirmed; the row is no longer in `program_backups` (post-delete ids: `[1, 2, 3, 4, 5]`). Six `data/auto_backup/database_*.db` files were also created today as a side-effect of the smoke scripts each invoking `app.py`'s startup `create_startup_backup()` — owner cleanup at convenience. Three temporary scripts under `scripts/fatigue_stage4_*.py` are kept until `docs/fatigue_meter/calibration-notes.md` reaches a real-data state; revisit removal then. None of these affect Stage 4 entry.
 
 ### 3.6 Merge
 - [x] All boxes in 3.1–3.5 ticked (owner-in-browser items 4 + 5 of the smoke checklist excepted, see below). *After the 2026-05-04 smoke walk, **only one §3 box remains unticked**: §3.5 fresh-clone smoke (downgraded to "documented-not-walked" — its failure modes are covered by the destructive smoke's Step D). Smoke checklist items 4 (375px viewport) and 5 (dark-mode contrast) are genuinely browser-only and remain owner-in-browser; they do not block Stage 4 entry but are open until the calibration browser session walks them.*
@@ -477,16 +477,20 @@ Salvaged from the abandoned original feat-branch's PLANNING.md draft on 2026-05-
 
 Phase 1 ships with §24.B threshold bands marked "starting points, not science". This stage validates them against real data and tunes if needed.
 
-> **Stage 4 reopened 2026-05-04** at owner direction. The Stage 3 folded smokes were walked first (§3.5 + smoke checklist above): 5 of 7 PASS, 1 documented-not-walked, 2 still owner-in-browser (375px viewport + dark-mode contrast — these do not block Stage 4 entry). Calibration §4.1 is the next step but requires owner input to pick the 4 representative weeks and supply the felt-experience comparison; assistant cannot make that judgment alone. Live fatigue values for the current populated plan as a starting datapoint: weekly = **165 (moderate)**, heaviest session = routine **D @ 44 (moderate)**, routine **A @ 39 (moderate)**.
+> **Stage 4 entry smokes walked early — 2026-05-04 (commit `c3f692c`).** Owner directed walking the Stage 3 §3.5 folded smokes ahead of the 2026-05-10 entry date so they would be out of the way when calibration proper opens. **Stage 4 calibration itself remains blocked** until ≥7 days post-merge have elapsed (2026-05-10+ at the earliest).
+>
+> Smoke results (5 of 7 PASS, 1 documented-not-walked, 2 still browser-only — see §3.5 smoke checklist above for detail). Live fatigue values for the current planned program captured as a sanity baseline: weekly = **165 (moderate)**, heaviest session = routine **D @ 44 (moderate)**, routine **A @ 39 (moderate)**, 24 `user_selection` rows across routines A/B/C/D. Recorded in `docs/fatigue_meter/calibration-notes.md` as a placeholder/sanity baseline only — **no thresholds tuned from this**.
+>
+> Calibration path chosen by owner (2026-05-04): **path (b) — planned-state sanity check only**, because `workout_log` is empty (0 rows) so real historical-week calibration is not yet possible. Real calibration awaits either (i) accumulated `workout_log` data, (ii) hypothetical week shapes + felt-experience labels from the owner, or (iii) an owner felt-experience label for the currently planned program. Until one of those paths runs, threshold values in `utils/fatigue.py` remain the §24.B defaults — unchanged.
 
 ### 4.0 Entry criteria
 - [x] Stage 3 exit criteria all checked. *2026-05-04: §3.7 both ticked. Two browser-only items (375px viewport, dark-mode contrast) remain open from the smoke checklist but do not block calibration; they get walked together with the calibration browser session.*
-- [ ] At least 7 days of post-merge use have elapsed. *Merge was 2026-05-03 17:35Z; the 7-day mark falls 2026-05-10. Owner reopened Stage 4 ahead of that mark; use this entry slot to record the actual reopen date once calibration walk happens.*
+- [ ] At least 7 days of post-merge use have elapsed. *Merge was 2026-05-03 17:35Z; the 7-day mark falls 2026-05-10. As of 2026-05-04 only 1 day has elapsed — **calibration entry is still gated**. Owner walked the §3.5 smokes early under the explicit framing of "Stage 4 entry smoke evidence walked early," NOT as Stage 4 calibration reopening. Update this box once 2026-05-10 passes and a real calibration walk happens.*
 
 ### 4.1 Validate threshold bands
-- [ ] Pick 4 representative recent weeks (one heavy, one normal, two anything). *Owner-pick required; assistant cannot select these without the felt-experience signal.*
-- [ ] For each, record the computed fatigue score and the resulting band.
-- [ ] Cross-check: does the band match how the user *felt* about that week? Document agreements and disagreements.
+- [ ] Pick 4 representative recent weeks (one heavy, one normal, two anything). *Blocked. `workout_log` is empty (0 rows) as of 2026-05-04, so no logged-week history exists. Owner chose path (b) for now: planned-state sanity check only, recorded in `docs/fatigue_meter/calibration-notes.md`. This is **not** a real calibration of the §24.B bands.*
+- [ ] For each, record the computed fatigue score and the resulting band. *Blocked on the box above.*
+- [ ] Cross-check: does the band match how the user *felt* about that week? Document agreements and disagreements. *Blocked on the box above. Owner felt-experience input or hypothetical-week shapes required to unblock.*
 
 ### 4.2 Tune if needed
 - [ ] If ≥2 weeks landed in a band that disagrees with felt experience, propose threshold adjustments.
@@ -532,7 +536,7 @@ Update this as you progress. Reviewers can scan it to see where the work stands.
 | 1 | Pre-development prerequisites | ✅ Complete | 2026-05-01 |
 | 2 | Phase 1 implementation | ✅ Complete | 2026-05-02 |
 | 3 | Phase 1 verification & merge | ✅ Closeout pass complete; 5/7 smoke items PASS, 1 documented-not-walked, 2 browser-only items open (do not block) | 2026-05-04 |
-| 4 | Post-merge calibration | 🟡 Reopened 2026-05-04, awaiting owner pick of 4 representative weeks for §4.1 | 2026-05-04 |
+| 4 | Post-merge calibration | ⬜ Not started; entry smokes walked early on 2026-05-04, calibration proper still gated by ≥7-day post-merge (2026-05-10+) | — |
 | 5 | Phase 2 preview | ⬜ Not started | — |
 | 6 | Phase 3 preview | ⬜ Not started | — |
 
@@ -546,7 +550,7 @@ Status legend: ⬜ Not started · 🟡 In progress · ✅ Complete · ❌ Blocke
 |---|---|---|
 | `docs/fatigue_meter/baseline-{date}.txt` | Stage 1.1 | Locked test baseline output. |
 | `docs/fatigue_meter/data-audit.md` | Stage 1.2 | Data integrity findings. |
-| `docs/fatigue_meter/calibration-notes.md` | Stage 4 | Real-data threshold validation. |
+| `docs/fatigue_meter/calibration-notes.md` | Stage 4 | Real-data threshold validation. *Created 2026-05-04 as placeholder/sanity baseline only — no real calibration performed; awaiting `workout_log` data or owner felt-experience input.* |
 
 ---
 
