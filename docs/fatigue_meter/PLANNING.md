@@ -391,6 +391,15 @@ This is the pre-merge checklist from `BRAINSTORM.md §19`, restated as actionabl
 >
 > Boxes below are ticked only where PR #7 / merge evidence directly supports them. Items requiring a fresh manual smoke, code-reviewer pass, or a separate before/after observation are **left unticked** — they were not separately re-run during this docs reconciliation, and remain residual follow-ups (or are subsumed by Stage 4 calibration). The rebased branch and worktree referenced in §2.7 (`feat/fatigue-meter-phase-1-rebased` at `../Hypertrophy-Toolbox-fatigue-rebase`) were deleted after the merge; the verification numbers above are the canonical Stage 3 record.
 
+> **Closeout pass 2026-05-04** — at owner direction, walked the residual Stage 3 boxes that can be checked without re-running the full pre-merge smoke. Results folded into the boxes below and dated `(2026-05-04)`. Items still unticked are owner-required browser walks (folded into Stage 4 §4.1) or destructive smokes that would mutate `user_selection` (decision deferred per §3.5 footnote).
+>
+> - **§3.7 CI** — `gh run list --branch main` shows PR #7 (`9d14f63`, 2026-05-03 17:35Z, success in 1m30s) **and** the docs-reconciliation PR #9 (2026-05-03 22:32Z, success in 1m15s). CI green on `main` post-merge — ticked.
+> - **§3.5 backup id 5** — direct SQLite read of main worktree's `data/database.db` confirms row id 5 (`pre-fatigue-meter-2026-05-01`, manual, `item_count=0`, `created_at=2026-05-01 11:38:01.181796`) intact, with zero `program_backup_items` rows (matches §1.3 caveat: `user_selection` was empty at backup time). Ticked.
+> - **§3.3 effective-sets calculation values unchanged** — strongest possible evidence: `git diff 9d14f63^..9d14f63 --name-only -- utils/effective_sets.py utils/session_summary.py utils/weekly_summary.py utils/normalization.py utils/movement_patterns.py utils/database.py` returns **empty**. Source-equality means the calculation cannot have changed; no need for a manual before/after readout. Route diff confirms only fatigue context vars were added to `render_template(...)`; existing summary-result keys are untouched. Ticked.
+> - **§3.1 code-reviewer** — code-reviewer subagent run on the merged PR #7 diff (`git diff 9d14f63^..9d14f63`). Verdict folded into the box below.
+> - **§3.1 manual smoke / §3.5 fresh-clone / §3.5 restore-old-backup** — these are owner-in-browser walks (or destructive). Folded into Stage 4 §4.1 calibration window; will be revisited when the calibration walk happens, not earlier than 2026-05-10.
+> - **§3.6 branch + worktree cleanup** — **owner chose Option 1 (salvage and delete) on 2026-05-04.** The "Owner-required smoke checklist" was lifted into §3.5 below (the only durably useful artifact in the worktree's diff); the obsolete `PR_DRAFT.md`, the rest of the worktree's PLANNING.md evidence (superseded by this file), and the worktree's runtime `data/database.db` were discarded. The worktree at `D:/development/Hypertrophy-Toolbox-fatigue-meter` was removed; the local branch `feat/fatigue-meter-phase-1` was deleted. Branch history preserved on `salvage/old-feat-fatigue-meter` (same SHA `53a3345`); pre-rebase local-main ancestry preserved on `salvage/local-main-pre-reset` (`3c2b72b`). Pre-deletion check confirmed zero unique fatigue code on the branch.
+
 ### 3.0 Entry criteria
 - [x] Stage 2 exit criteria all checked. *Confirmed by §2.6 + §2.7 post-drop addendum.*
 
@@ -400,29 +409,27 @@ This is the pre-merge checklist from `BRAINSTORM.md §19`, restated as actionabl
 - [x] All Stage 2 chapter gates green. *§2.6 confirms (with the two carve-outs noted there).*
 - [x] `/verify-suite` green. **Actuals on the rebased branch (clean DB, 2026-05-03):** pytest **1160 passed**, Playwright Chromium **408 passed / 2 failed** (effective **409 / 1**). *The plan's original `1216 + N` / `314 + M` slots no longer apply — the rebased branch was rooted at `origin/main` (`c4bc77d`), which lacks workout-cool §3+§4+§5 + body composition. The 1160 / 408 figures are the post-rebase canonical baseline; see §2.7 post-drop addendum.*
 - [x] Targeted regression sweep green (5 specs from Chapter 1.5 gate). *Walked in §2.5 Chapter 1.5 gate (153 passed across `summary-pages`, `workout-plan`, `workout-log`, `api-integration`, `accessibility`); the post-rebase full-suite run in §2.7 supersedes it.*
-- [ ] Manual smoke walked through, no findings. *Not re-run during this reconciliation. §2.5 Chapter 1.5 gate explicitly deferred the 5 owner-verifies-in-browser items (navbar console-error sweep, add-exercise→log→badge update, restore-old-backup smoke, 375px viewport, dark-mode parity) to Stage 3. PR #7 commit message does not record them. Residual follow-up — if surfaced as a real issue, fold into Stage 4 calibration.*
-- [ ] code-reviewer subagent run on full diff; all findings resolved. *No PR evidence. Not re-run during this reconciliation.*
+- [ ] Manual smoke walked through, no findings. *Not re-run during this reconciliation. §2.5 Chapter 1.5 gate explicitly deferred the 5 owner-verifies-in-browser items (navbar console-error sweep, add-exercise→log→badge update, restore-old-backup smoke, 375px viewport, dark-mode parity) to Stage 3. PR #7 commit message does not record them. **Folded into Stage 4 §4.1 (2026-05-04)** — owner walks them as part of the calibration browser session, not earlier than 2026-05-10.*
+- [x] code-reviewer subagent run on full diff; all findings resolved. *Run 2026-05-04 against the merged squash diff `git diff 9d14f63^..9d14f63`. **Verdict: CLEAN, no block findings.** All 8 invariants honored: SQL injection (parameterized via `?` at `utils/fatigue_data.py:53-54`), `DatabaseHandler` context manager (`utils/fatigue_data.py:57-58`), no JSON contract drift (XHR branches don't include fatigue keys), D9 (no new `@bp.route`), D13 (fresh `LEFT JOIN exercises` query, doesn't consume aggregated rows), filter-cache untouched, logger pattern in both new modules, try/except wrapping with `logger.exception(...)` + empty-state degrade. Two non-blocking observations (typing annotation; `LEFT JOIN` correctly preserves orphan-exercise rows for `_resolve_pattern_weight(None)` neutral-fallback) — no follow-up PR required.*
 - [x] No new Python or JS dependencies (or each individually justified above). *§1.4 + §2.6 confirmed; PR #7 diff does not modify `requirements.txt` or `package.json`.*
 
 ### 3.2 Contract & conventions
 
-*All five items below are evergreen code invariants verified by virtue of merge — the diff was reviewed and approved before squash-merge. No fresh greps were run during this docs reconciliation.*
+*All five items below verified by code-reviewer subagent pass on the merged PR #7 diff (2026-05-04, see §3.1).*
 
-- [x] All new modules use `from utils.logger import get_logger; logger = get_logger()`.
-- [x] No `from utils.config import DB_FILE` at module top.
-- [x] All DB access (if any added) via `DatabaseHandler` context manager with parameterized queries.
-- [x] No new endpoints (D9 holds — API skipped). *Explicit in PR #7 commit message: "No DB writes, no new endpoints, no schema change."*
-- [x] Filter cache untouched — `grep -r "invalidate_cache" routes/ utils/` shows no new calls.
+- [x] All new modules use `from utils.logger import get_logger; logger = get_logger()`. *`utils/fatigue.py:34-36`, `utils/fatigue_data.py:25-27`.*
+- [x] No `from utils.config import DB_FILE` at module top. *Confirmed by code-reviewer pass; no such import in new modules.*
+- [x] All DB access (if any added) via `DatabaseHandler` context manager with parameterized queries. *`utils/fatigue_data.py:57-58` uses `with DatabaseHandler() as db:`; `routine` parameter bound via `?` placeholder.*
+- [x] No new endpoints (D9 holds — API skipped). *Code-reviewer confirms no new `@bp.route(...)` decorator in either route file.*
+- [x] Filter cache untouched — `grep -r "invalidate_cache" routes/ utils/` shows no new calls. *Code-reviewer confirms no `invalidate_cache()` references in new files (and would not apply — fatigue reads `user_selection`, not the exercises filter cache).*
 
 ### 3.3 Behavior & non-goals (BRAINSTORM §1)
 - [x] No prescriptive language anywhere in user-facing copy. *Verified in §2.4 Chapter 1.5 gate (whole-word scan for `should | must | reduce | deload | too | MRV | MEV` returned zero matches across `/weekly_summary`, `/session_summary`, and `?counting_mode=raw|effective` variants); the relevant template + SCSS are part of PR #7.*
 - [x] Fatigue meter never blocks a user action, never auto-adjusts a plan, never gates anything. *PR #7 commit message: "Descriptive only."*
 - [x] No new modal interrupts. *No modal added in PR #7 diff.*
-- [ ] Effective-sets calculation values unchanged. Verify by:
-  - [ ] Loading a sample week in `/weekly_summary` before the merge — note effective set values.
-  - [ ] Loading the same week after the merge — values must match exactly.
-
-  *No before/after observation was recorded in PR #7 or §2.5; not re-run during this reconciliation. Indirect evidence: PR #7 does not touch `utils/effective_sets.py`, `utils/weekly_summary.py`, or `utils/session_summary.py` calculation paths — only adds a new `utils/fatigue_data.py` shim and pipes new context vars into the templates. Residual follow-up — could be confirmed during Stage 4 by spot-checking one week's effective-set readout against pre-merge memory or a backup restore.*
+- [x] Effective-sets calculation values unchanged.
+  - [x] Source-equality verified (2026-05-04). `git diff 9d14f63^..9d14f63 --name-only -- utils/effective_sets.py utils/session_summary.py utils/weekly_summary.py utils/normalization.py utils/movement_patterns.py utils/database.py` returns **empty** — none of the calculation modules are touched in PR #7's diff. The route diff confirms only fatigue context vars (`fatigue_score`, `fatigue_band`, `fatigue_period_label`) were added to `render_template(...)`; existing summary-result keys (`session_summary`, `weekly_summary`, `category_results`, `isolated_muscles`, `counting_mode`, `contribution_mode`, etc.) are passed through identically. Source-equality is strictly stronger evidence than a manual before/after readout: the calculation cannot have changed.
+  - *The original two sub-checkboxes ("load before" / "load after" sample week) are subsumed by the source-equality check above and no longer need a separate manual walk.*
 
 ### 3.4 Documentation
 - [x] `CLAUDE.md §5` test count line updated. *PR #7 diff stat includes `CLAUDE.md`; current `main` §5 reflects the 1160 / 409 / 1 numbers.*
@@ -431,20 +438,34 @@ This is the pre-merge checklist from `BRAINSTORM.md §19`, restated as actionabl
 - [x] PR description references `BRAINSTORM.md` and `PLANNING.md`, lists test count delta, quotes §1 non-goals. *PR #7 commit message references "`docs/fatigue_meter/PLANNING.md` Stage 0 → Stage 2 Chapter 1.6 + §2.7 post-drop addendum", lists test counts, and paraphrases §1 ("Descriptive only"). `BRAINSTORM.md` not directly quoted by name, but PLANNING.md is the actionable mirror of it and is referenced.*
 
 ### 3.5 Safety
-- [ ] Pre-flight backup from Stage 1.3 still exists in `/api/backups`. *Not verifiable from docs alone — the backup row lives in a local `data/database.db` and §1.3 records the row had `item_count: 0`. Residual follow-up; revisit before deleting the row at the ≥2-week mark.*
-- [ ] Fresh-clone smoke: on a tree without `data/database.db`, server starts, schema initializes, `/weekly_summary` renders empty fatigue badge without crashing. *No PR evidence. Not re-run during this reconciliation.*
-- [ ] Restore-old-backup smoke: restoring the pre-fatigue backup → every page loads without crashing. *No PR evidence. Not re-run during this reconciliation.*
+- [x] Pre-flight backup from Stage 1.3 still exists in `/api/backups`. *Direct SQLite read on 2026-05-04 of main worktree's `data/database.db`: row id `5` (`pre-fatigue-meter-2026-05-01`, manual, `item_count=0`, `schema_version=1`, `created_at=2026-05-01 11:38:01.181796`) confirmed intact. Zero rows in `program_backup_items` — matches §1.3 caveat (`user_selection` was empty at backup time). The row is the rollback floor; do not delete until ≥2 weeks post-merge per §1.3 (i.e. not before 2026-05-17).*
+- [ ] Fresh-clone smoke: on a tree without `data/database.db`, server starts, schema initializes, `/weekly_summary` renders empty fatigue badge without crashing. *Not re-run during this closeout. **Folded into Stage 4 §4.1 (2026-05-04)** — owner walks during the calibration browser session. Indirect evidence: empty-state path is already covered at §2.3 via Flask `test_client` (user_selection empty → empty-state badge renders with `class="fatigue-light"`); `app.py` startup sequence is unchanged in PR #7.*
+- [ ] Restore-old-backup smoke: restoring the pre-fatigue backup → every page loads without crashing. *Not re-run during this closeout. **Folded into Stage 4 §4.1 (2026-05-04)** — **DESTRUCTIVE** (backup id 5 has `item_count=0`, so a restore wipes `user_selection`); see the strict-ordering procedure in the smoke checklist below (item 3).*
+
+#### Owner-required smoke checklist (folded into Stage 4 §4.1)
+
+Salvaged from the abandoned original feat-branch's PLANNING.md draft on 2026-05-04 (see Stage 3 closeout-pass callout). These items came in carved out from §2.3 / §2.4 (port-5000 / browser-only) and from §3.5 (destructive). Walk them as part of the Stage 4 calibration browser session — entry to that stage is no earlier than 2026-05-10 (≥7 days post-merge).
+
+| # | Item | Source | Notes |
+|---|---|---|---|
+| 1 | Open every navbar route in the dev server, confirm no console errors. | Ch 1.5 §16.5 | Routes: `/`, `/workout_plan`, `/workout_log`, `/weekly_summary`, `/session_summary`, `/progression`, `/volume_splitter`, `/user_profile`. (Note: `/body_composition` listed in the original draft is not on `origin/main`.) |
+| 2 | Add an exercise to a routine in `/workout_plan` → log a session in `/workout_log` → confirm fatigue badge updates on `/weekly_summary` and `/session_summary`. | Ch 1.5 §16.5 | Phase 1 reads planned (`user_selection`), so badge updates on **add**, not on log. Logging is still a regression-coverage check for the surrounding UI. |
+| 3 | **DESTRUCTIVE — strict ordering required.** Backup-restore smoke. **Step A:** take a fresh backup via `POST /api/backups` (label e.g. `pre-fatigue-restore-smoke-YYYY-MM-DD`). **Step B:** confirm via `GET /api/backups` that the new row exists and **record the new backup's id** — this is your rollback target. **Step C:** only after the fresh id is recorded, restore the pre-fatigue backup id 5 (`pre-fatigue-meter-2026-05-01`). **Step D:** walk every page and confirm no crashes. **Step E:** restore the fresh backup recorded at Step B to recover routines. | Ch 1.5 §16.5 + §3.5 | Pre-flight backup id 5 has `item_count: 0`, so restoring it wipes `user_selection`. The fresh backup recorded at Step B is the only path back to current routines — *do not skip Steps A–B and do not restore id 5 until Step B is confirmed*. |
+| 4 | Open `/weekly_summary` and `/session_summary` at 375px viewport (mobile). Confirm badge wraps cleanly, no overflow, info button stays tappable. | Ch 1.4 §16.5 + Ch 1.5 §16.5 | Partial uses `d-flex flex-wrap gap-2`, so wrap risk is low; visual confirmation still required. |
+| 5 | Toggle dark mode. Confirm badge colors render with sufficient contrast across all four bands (light, moderate, heavy, very_heavy). | Ch 1.5 §16.5 | `scss/_fatigue.scss` ships dark-mode-aware tokens; visual confirmation required. |
+| 6 | Sanity: with `user_selection` populated, hit `/session_summary?counting_mode=raw` and `/session_summary?counting_mode=effective`. Badge value must be **identical** across the two URLs. | D3 invariance | Already verified empty-state byte-equal in §2.3; this is the populated-state cross-check. |
+| 7 | Fresh-clone smoke (optional / belt-and-suspenders). | §3.5 | The empty-state path is already covered at §2.3 via Flask `test_client` (user_selection empty → empty-state badge renders with `class="fatigue-light"`). DB initialization (`initialize_database`, `add_progression_goals_table`, etc.) is unchanged in PR #7 (zero diff in `app.py` startup sequence). A real fresh-clone walk would be belt-and-suspenders, not net-new coverage. |
 
 ### 3.6 Merge
-- [ ] All boxes in 3.1–3.5 ticked. *Literally false — see unticked boxes in 3.1, 3.3, 3.5. The merge proceeded anyway because the unticked items are residual follow-ups, not blockers.*
+- [ ] All boxes in 3.1–3.5 ticked. *After the 2026-05-04 closeout pass, **only three boxes remain unticked**: §3.1 manual smoke, §3.5 fresh-clone smoke, §3.5 restore-old-backup smoke — all three are owner-in-browser walks folded into Stage 4 §4.1. The merge proceeded ahead of these because they are confidence-boosting belt-and-suspenders checks against an already-CLEAN code-reviewer pass + green CI + source-equal calculation modules; the §1 non-goals all hold.*
 - [x] Open PR against `main`. *PR #7.*
 - [x] PR review approved (human). *Implied by squash-merge.*
 - [x] Squash-merge or rebase-merge per repo convention. *Squash-merge — single commit `9d14f63` carries the PR-#7 suffix.*
-- [ ] Delete `feat/fatigue-meter-phase-1` branch after merge. *Remote branches deleted (`git ls-remote origin` shows no `feat/fatigue-meter-phase-1*` refs). Local `feat/fatigue-meter-phase-1` branch + `D:/development/Hypertrophy-Toolbox-fatigue-meter` worktree still present; cleanup is a residual local-hygiene follow-up.*
+- [x] Delete `feat/fatigue-meter-phase-1` branch after merge. *Remote branches were deleted at PR #7 merge (2026-05-03). **Local cleanup executed 2026-05-04** — owner chose Option 1 (salvage and delete): the useful "Owner-required smoke checklist" was lifted into §3.5 above; the obsolete `PR_DRAFT.md`, the worktree's `PLANNING.md` evidence diff (now superseded by this file), and the worktree's runtime `data/database.db` were discarded; the worktree at `D:/development/Hypertrophy-Toolbox-fatigue-meter` was removed and the local branch `feat/fatigue-meter-phase-1` deleted. The branch's full commit history remains preserved on `salvage/old-feat-fatigue-meter` (same SHA `53a3345`); body-composition + workout-cool §3+§5 ancestry remains preserved on `salvage/local-main-pre-reset` (`3c2b72b`). No production/test code orphaned by the deletion (verified by `git diff main..feat/fatigue-meter-phase-1 -- utils/fatigue.py utils/fatigue_data.py tests/test_fatigue.py templates/_fatigue_badge.html scss/_fatigue.scss scss/custom-bootstrap.scss templates/session_summary.html templates/weekly_summary.html` returning zero lines).*
 
 ### 3.7 Stage 3 exit criteria
 - [x] PR merged to `main`. *Commit `9d14f63`, 2026-05-03.*
-- [ ] CI green on `main` post-merge. *No direct evidence in PR commit message. Not verified during this docs reconciliation.*
+- [x] CI green on `main` post-merge. *Verified 2026-05-04 via `gh run list --branch main`: PR #7 CI run `25286035736` succeeded in 1m30s at 2026-05-03 17:35Z; the docs-reconciliation PR #9 CI run `25292723707` succeeded in 1m15s at 2026-05-03 22:32Z. No reds on `main` since the merge.*
 
 ---
 
@@ -504,7 +525,7 @@ Update this as you progress. Reviewers can scan it to see where the work stands.
 | 0 | Lock decisions | ✅ Complete | 2026-04-30 |
 | 1 | Pre-development prerequisites | ✅ Complete | 2026-05-01 |
 | 2 | Phase 1 implementation | ✅ Complete | 2026-05-02 |
-| 3 | Phase 1 verification & merge | 🟡 Merged / residual follow-up | 2026-05-03 |
+| 3 | Phase 1 verification & merge | 🟡 Merged + closeout pass; 3 owner-in-browser items folded into Stage 4 | 2026-05-04 |
 | 4 | Post-merge calibration | ⬜ Not started | — |
 | 5 | Phase 2 preview | ⬜ Not started | — |
 | 6 | Phase 3 preview | ⬜ Not started | — |
