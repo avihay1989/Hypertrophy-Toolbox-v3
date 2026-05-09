@@ -43,6 +43,52 @@ coherence" check).
 
 ---
 
+## 2026-05-10 — entry-session decisions
+
+**Badge render confirmed in browser.** Owner opened `/weekly_summary` and
+`/session_summary` on 2026-05-10. Both pages render the Phase 1 badge correctly:
+
+- `/weekly_summary` → "Projected fatigue / Planned weekly volume / 165 / moderate"
+- `/session_summary` → "Projected fatigue / Heaviest planned routine: D / 44 /
+  moderate"
+
+No regression. Stage 4 entry is not gated by a UI bug.
+
+**Felt-label path declined.** The "fast sanity" §4.1 unblock route
+(option iii in "Next steps" below — owner provides a felt-experience label for
+the currently planned program, assistant compares against the engine's
+`moderate`) was offered and declined. Reasoning:
+
+- Both data points sit **mid-band moderate** on their respective scales.
+  Band cutoffs from `utils/fatigue.py:74-85`: weekly `light < 80, moderate 80-200,
+  heavy 200-320, very_heavy > 320`; session `light < 20, moderate 20-50, heavy
+  50-80, very_heavy > 80`. Weekly 165 sits ~mid moderate; session 44 sits
+  ~upper-mid moderate.
+- Without prior felt-experience data points to anchor against, a "moderate"
+  label is tautological and a "light" / "heavy" label is one isolated noise
+  sample, not a calibration signal.
+- Owner's read of the rendered badge — "it's not says much" — is consistent
+  with the same reasoning: the badge alone offers no frame of reference for
+  calibration without comparison data.
+
+**Browser smokes 4 + 5 walked early (2026-05-10).** Both PASS via
+`e2e/fatigue-stage4-smokes.spec.ts` (5/5 Playwright Chromium tests green;
+screenshots + metrics in `artifacts/fatigue-stage4-smokes/`). PLANNING.md
+§3.5 items 4 + 5 ticked. The strict ≥7-day post-merge gate (PLANNING.md
+§4.0) still opens at 2026-05-10 20:35 Israel time (merge was 2026-05-03
+17:35Z); §4.0 box remains unticked until then.
+
+Notable observation: the badge info button bounding box at 375 px is 70×24
+CSS px — below the WCAG 2.5.5 AAA tap-target minimum of 44×44 — but
+consistent with the project-wide `btn-link p-0` icon-button pattern and not
+a Phase 1 regression. Flagged here for future mobile-friendliness work, not
+treated as a smoke-blocker.
+
+**Path forward (unchanged):** start logging workouts. Once `workout_log` has
+≥4 weeks of representative data, walk PLANNING.md §4.1 in earnest.
+
+---
+
 ## What this is NOT
 
 - **Not a calibration.** "moderate" here describes how the *plan* looks, not
