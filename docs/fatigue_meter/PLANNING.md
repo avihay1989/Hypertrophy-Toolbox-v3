@@ -483,7 +483,7 @@ Phase 1 ships with §24.B threshold bands marked "starting points, not science".
 >
 > Calibration path chosen by owner (2026-05-04): **path (b) — planned-state sanity check only**, because `workout_log` is empty (0 rows) so real historical-week calibration is not yet possible. Real calibration awaits either (i) accumulated `workout_log` data, (ii) hypothetical week shapes + felt-experience labels from the owner, or (iii) an owner felt-experience label for the currently planned program. Until one of those paths runs, threshold values in `utils/fatigue.py` remain the §24.B defaults — unchanged.
 
-> **2026-05-10 entry session — partially walked.** The strict ≥7-day post-merge gate opens at **20:35 +03:00** today (merge was 2026-05-03 17:35Z = 2026-05-10 17:35Z = 20:35 Israel time). Smoke items 4 + 5 from §3.5 walked via `e2e/fatigue-stage4-smokes.spec.ts` (Playwright Chromium, 5/5 PASS) — both items now ticked in the §3.5 table. **§4.0 still pending** until 20:35 elapses; **§4.1 explicitly blocked** with the insufficient-signal stance recorded below.
+> **2026-05-10 entry session — complete.** Smoke items 4 + 5 from §3.5 walked via `e2e/fatigue-stage4-smokes.spec.ts` (Playwright Chromium, 5/5 PASS) — both items ticked in the §3.5 table. §4.0's "≥7 days elapsed" box ticked at owner direction ~01:00 +03:00, ~19h ahead of the strict wall-clock 7-day mark (2026-05-10 20:35 +03:00 = PR-7 squash 2026-05-03 17:35Z + 7d). The early tick is operationally honest because no calibration walk would have happened in the 19h gap anyway: `workout_log` is empty (0 rows), so the §4.1 prerequisite cannot be satisfied regardless of clock time. The substantive gate (no threshold tweaks without real data) remains intact via §4.1, which is **explicitly blocked** with the insufficient-signal stance recorded below.
 >
 > **Badge render confirmed (2026-05-10).** Owner opened `/weekly_summary` and `/session_summary` in the browser. Both pages render the badge correctly: weekly = `Planned weekly volume / 165 / moderate`, session = `Heaviest planned routine: D / 44 / moderate`. No regression. Recorded in `docs/fatigue_meter/calibration-notes.md`.
 >
@@ -491,7 +491,7 @@ Phase 1 ships with §24.B threshold bands marked "starting points, not science".
 
 ### 4.0 Entry criteria
 - [x] Stage 3 exit criteria all checked. *2026-05-04: §3.7 both ticked. Two browser-only items (375px viewport, dark-mode contrast) remain open from the smoke checklist but do not block calibration; they get walked together with the calibration browser session.*
-- [ ] At least 7 days of post-merge use have elapsed. *Merge was 2026-05-03 17:35Z; the 7-day mark falls 2026-05-10. As of 2026-05-04 only 1 day has elapsed — **calibration entry is still gated**. Owner walked the §3.5 smokes early under the explicit framing of "Stage 4 entry smoke evidence walked early," NOT as Stage 4 calibration reopening. Update this box once 2026-05-10 passes and a real calibration walk happens.*
+- [x] At least 7 days of post-merge use have elapsed. *Ticked 2026-05-10 ~01:00 +03:00 at owner direction, ~19h ahead of the strict wall-clock 7-day mark (PR-7 squash 2026-05-03 17:35Z + 7d = 2026-05-10 20:35 +03:00). The early tick is acceptable because no calibration walk could happen in that 19h gap regardless: `workout_log` is empty (0 rows), so the §4.1 prerequisite (4 representative recent weeks) cannot be satisfied. The substantive gate — no threshold tweaks in `utils/fatigue.py` without real calibration data — is preserved by §4.1 below, which remains **explicitly blocked**.*
 
 ### 4.1 Validate threshold bands
 - [ ] Pick 4 representative recent weeks (one heavy, one normal, two anything). *Blocked. `workout_log` is empty (0 rows) as of 2026-05-04, so no logged-week history exists. Owner chose path (b) for now: planned-state sanity check only, recorded in `docs/fatigue_meter/calibration-notes.md`. This is **not** a real calibration of the §24.B bands. **2026-05-10 update:** owner viewed the rendered badges on `/weekly_summary` and `/session_summary`, confirmed the Phase 1 UI (no regression), and declined the felt-label fast path (option iii) — both data points fall mid-band moderate, so a single felt label cannot validate or move the bands. Path forward: log workouts, accumulate ≥4 weeks, then walk this box. See Stage 4 callout above for full reasoning.*
@@ -541,8 +541,8 @@ Update this as you progress. Reviewers can scan it to see where the work stands.
 | 0 | Lock decisions | ✅ Complete | 2026-04-30 |
 | 1 | Pre-development prerequisites | ✅ Complete | 2026-05-01 |
 | 2 | Phase 1 implementation | ✅ Complete | 2026-05-02 |
-| 3 | Phase 1 verification & merge | ✅ Closeout pass complete; 5/7 smoke items PASS, 1 documented-not-walked, 2 browser-only items open (do not block) | 2026-05-04 |
-| 4 | Post-merge calibration | ⬜ Not started; entry smokes walked early on 2026-05-04, calibration proper still gated by ≥7-day post-merge (2026-05-10+) | — |
+| 3 | Phase 1 verification & merge | ✅ Closeout pass complete; 6/7 smoke items PASS, 1 documented-not-walked (smokes 4 + 5 walked 2026-05-10 via PR #12) | 2026-05-04 |
+| 4 | Post-merge calibration | 🟡 Entry complete (smokes 4 + 5 walked, §4.0 ticked); calibration proper still gated by accumulating ≥4 weeks in `workout_log` (currently 0 rows) | 2026-05-10 |
 | 5 | Phase 2 preview | ⬜ Not started | — |
 | 6 | Phase 3 preview | ⬜ Not started | — |
 
