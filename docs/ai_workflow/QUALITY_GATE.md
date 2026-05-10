@@ -16,7 +16,7 @@
 | AI workflow / agent config | `.claude/**`, `CLAUDE.md`, `*/CLAUDE.md`, `docs/ai_workflow/**` | manual dry-run/self-review; run tests only if source behavior changed | `code-reviewer` or careful self-review |
 | Product docs only | `docs/**`, `*.md` excluding AI workflow files above | none unless examples/scripts changed | none |
 
-> All three Tier 2 reviewers — `architecture-reviewer`, `test-strategist`, `product-risk-reviewer` — are live. Run them at the plan stage via [`/council-plan`](../../.claude/commands/council-plan.md); the table above also names them as code-time reviewers when the relevant change types are touched.
+> All three Tier 2 reviewers — `architecture-reviewer`, `test-strategist`, `product-risk-reviewer` — are live. Run them at the plan stage via [`/council-plan`](../../.claude/commands/council-plan.md). The table above also names `architecture-reviewer` and `product-risk-reviewer` as code-time reviewers when the relevant change types are touched; `test-strategist` runs at the plan stage only.
 
 ## Diff collection (used by `/unslop`)
 
@@ -37,7 +37,8 @@ For each changed file:
 - `routes/X.py` → try `tests/test_X_routes.py`, then `tests/test_X.py`, plus any tests found by `rg "routes\.X|X_bp|/route_name" tests`
 - `utils/X.py` → try `tests/test_X.py`, plus any tests found by `rg "utils\.X|from utils.X import" tests`
 - `templates/X.html` or `static/js/**/X*` → normalize underscores to hyphens and use the feature map below
-- `app.py`, `tests/conftest.py`, `.claude/**`, root configs → fall back to `/verify-suite` (cross-cutting)
+- `app.py`, `tests/conftest.py`, root configs → fall back to `/verify-suite` (cross-cutting)
+- `.claude/**`, `CLAUDE.md`, `*/CLAUDE.md`, `docs/ai_workflow/**` → manual dry-run / self-review per the AI workflow / agent config row above; run tests only if source behavior changed
 
 Run the union. If the union is empty, run `/verify-suite`.
 
