@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Operational guidance for Claude Code. Keep this file under 200 lines. Subsystem-specific detail lives in `.claude/rules/*.md` and loads only when the matching files enter context.
+Operational guidance for Claude Code. Keep this file under 200 lines. Subsystem-specific detail lives in `.claude/rules/*.md` and loads only when the matching files enter context. **For long-running work, read [`docs/MASTER_HANDOVER.md`](docs/MASTER_HANDOVER.md) first** (canonical current state); folder orientation lives in `<dir>/CLAUDE.md` files.
 
 ---
 
