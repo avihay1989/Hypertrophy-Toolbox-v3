@@ -30,8 +30,10 @@
   - [e2e/CLAUDE.md](../../e2e/CLAUDE.md)
   - [templates/CLAUDE.md](../../templates/CLAUDE.md)
   - [static/js/CLAUDE.md](../../static/js/CLAUDE.md)
-- Slash commands: `/handover`, `/unslop`, `/verify-and-polish` (in `.claude/commands/`)
-- Agents: `code-reviewer`, `unslop-reviewer` (in `.claude/agents/`)
+- [Plan Review Template](PLAN_REVIEW_TEMPLATE.md) — Plan v1 → council findings → response matrix → Plan v2 (used by `/council-plan`)
+- Slash commands: `/handover`, `/unslop`, `/verify-and-polish`, `/council-plan` (in `.claude/commands/`)
+- Agents (diff-time): `code-reviewer`, `unslop-reviewer` (in `.claude/agents/`)
+- Agents (plan-time, council): `architecture-reviewer`, `test-strategist`, `product-risk-reviewer` (in `.claude/agents/`)
 
 ## Baselines (gitignored, generated locally)
 - `baseline_pytest.txt`, `baseline_e2e.txt` — last full-suite outputs; not in git

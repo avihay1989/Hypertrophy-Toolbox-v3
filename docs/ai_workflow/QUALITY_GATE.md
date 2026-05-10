@@ -6,9 +6,9 @@
 
 | Change type | Path globs | Required gates | Required reviewers |
 |---|---|---|---|
-| Route / API | `routes/**`, `app.py` | route pytest target (`tests/test_<route>_routes.py` or `tests/test_<route>.py`) + blueprint-registration coverage in `tests/conftest.py` | `code-reviewer`; + `product-risk-reviewer` if response shape changes (Tier 2) |
-| DB / schema | `utils/db_initializer.py`, `utils/database.py`, `utils/program_backup.py`, `utils/auto_backup.py` | full `pytest` + manual backup/restore smoke | `code-reviewer` + `architecture-reviewer` (Tier 2) |
-| Business logic | `utils/**.py` (non-DB) | `pytest tests/test_<module>.py` | `code-reviewer`; + `product-risk-reviewer` (Tier 2) if `effective_sets` / `weekly_summary` / `session_summary` / `progression` / `fatigue` touched |
+| Route / API | `routes/**`, `app.py` | route pytest target (`tests/test_<route>_routes.py` or `tests/test_<route>.py`) + blueprint-registration coverage in `tests/conftest.py` | `code-reviewer`; + `product-risk-reviewer` if response shape changes |
+| DB / schema | `utils/db_initializer.py`, `utils/database.py`, `utils/program_backup.py`, `utils/auto_backup.py` | full `pytest` + manual backup/restore smoke | `code-reviewer` + `architecture-reviewer` |
+| Business logic | `utils/**.py` (non-DB) | `pytest tests/test_<module>.py` | `code-reviewer`; + `product-risk-reviewer` if `effective_sets` / `weekly_summary` / `session_summary` / `progression` / `fatigue` touched |
 | Frontend (template) | `templates/**` | matching Chromium specs from the feature map below | none required |
 | Frontend (JS) | `static/js/**` | matching Chromium specs from the feature map below + manual smoke if interactive | none required |
 | CSS | `scss/**` | `/build-css` + `e2e/visual.spec.ts` if visual surface changes | none required |
@@ -16,7 +16,7 @@
 | AI workflow / agent config | `.claude/**`, `CLAUDE.md`, `*/CLAUDE.md`, `docs/ai_workflow/**` | manual dry-run/self-review; run tests only if source behavior changed | `code-reviewer` or careful self-review |
 | Product docs only | `docs/**`, `*.md` excluding AI workflow files above | none unless examples/scripts changed | none |
 
-> **Tier 2 reviewers** (`architecture-reviewer`, `test-strategist`, `product-risk-reviewer`) ship in the next phase of `.claude/SHARED_PLAN.md`. Until they exist, fall back to `code-reviewer` plus a careful self-read.
+> All three Tier 2 reviewers — `architecture-reviewer`, `test-strategist`, `product-risk-reviewer` — are live. Run them at the plan stage via [`/council-plan`](../../.claude/commands/council-plan.md); the table above also names them as code-time reviewers when the relevant change types are touched.
 
 ## Diff collection (used by `/unslop`)
 

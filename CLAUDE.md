@@ -64,7 +64,7 @@ app.py                 ← startup + middleware only; no business logic
 
 - Routes import from utils; utils never import from routes.
 - Prefer concrete module imports such as `utils.db_initializer`; `utils/__init__.py` is no longer the authoritative facade for new code.
-- All DB access via `DatabaseHandler` context manager (`utils/database.py:200`).
+- All DB access via `DatabaseHandler` context manager (class at `utils/database.py:185`; `__enter__` / `__exit__` at `utils/database.py:414`).
 - All JSON responses via `success_response()` / `error_response()` (`utils/errors.py:22,67`).
 - All logging via `get_logger()` (`utils/logger.py:121`).
 
@@ -181,9 +181,9 @@ npx playwright test --project=chromium --reporter=line
 
 Re-verify after significant changes and update counts above.
 
-### Known response-contract exceptions (2026-04-18)
-- `routes/weekly_summary.py:133,139` — pattern coverage still returns legacy `success`/`error` JSON.
-- `routes/workout_plan.py:1079,1093,1114,1125` — replace-exercise fallback paths return legacy ad-hoc JSON with 200 error payloads.
+### Known response-contract exceptions (2026-05-11)
+- `routes/weekly_summary.py:152,158` — pattern coverage still returns legacy `success`/`error` JSON.
+- `routes/workout_plan.py:1090,1104,1125,1136` — replace-exercise fallback paths return legacy ad-hoc JSON with 200 error payloads.
 
 ### Filter cache: TTL-only invalidation
 `utils/filter_cache.py:13` — TTL 3600s. `invalidate_cache()` exists but is never called from any route. Stale filter options may persist up to 1 hour after exercise data changes.
