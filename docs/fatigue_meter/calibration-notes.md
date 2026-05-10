@@ -123,6 +123,34 @@ experience.
 
 ---
 
+## 2026-05-10 — full generated calibration report
+
+`scripts/fatigue_calibration_report.py` writes
+[generated-calibration-report.md](generated-calibration-report.md): four
+scenarios (deload / normal / hard / overreach) built via the starter-plan
+generator with `persist=False`, scored by the shipped fatigue math, with full
+per-exercise routine tables and a per-scenario `Owner label:` slot.
+
+**Owner labels: all four blank.** No felt-experience labels have been written
+into the report. `intended_anchor` is the assistant's build target, not an
+owner label.
+
+**Hard 4-day mismatch (recorded, not actioned).** The hard scenario was built
+with `intended_anchor='heavy'` (`training_days=4, volume_scale=1.35,
+rir_delta=-1`, 86 total sets across A/B/C/D) but computed weekly 161.9 →
+`moderate`; all four routine sessions also landed `moderate` (37.0, 43.5, 37.0,
+44.4). The score sits mid-band relative to the weekly moderate range (80-200),
+and the denser synthetic "hard accumulation" reference above (96 sets, RIR 1
+throughout, 217 → `heavy`) carried more work per session, so this is
+consistent with the band boundaries rather than evidence of miscalibration.
+
+**Decision:** no threshold changes. A single intended-vs-computed mismatch
+without an owner felt label is not a calibration signal — same "felt label
+required" caveat as the synthetic pass above. Re-evaluate when owner labels
+are filled in or `workout_log` is no longer empty.
+
+---
+
 ## What this is NOT
 
 - **Not a calibration.** "moderate" here describes how the *plan* looks, not
