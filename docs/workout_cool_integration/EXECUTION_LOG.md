@@ -2,6 +2,48 @@
 
 Tracks concrete work against `PLANNING.md`. Newest entry on top.
 
+## 2026-05-11 — §5 shipped on `main` (YouTube reference video modal)
+
+**Scope**: §5.1-§5.8 (Pattern A modal + nullable schema field, apply script,
+and `/workout_plan` and `/workout_log` wiring). This was adapted from historical
+off-main §5 commits and landed on current `main` after the AI workflow refit.
+Curated CSV ships header-only, so every uncurated row uses the search fallback.
+
+### Commits on `main`
+
+| Commit | What landed |
+|---|---|
+| `bc88ee8` | Schema + apply script + route contracts. Adds nullable `youtube_video_id TEXT` to `exercises`, guarded migration for existing DBs, `/get_workout_plan` and `/get_workout_logs` JSON fields, server-rendered workout-log metadata, header-only curated CSV, and validation tests. |
+| `0842778` | Shared modal and `/workout_plan` wiring. Adds `exercise-video-modal.js`, `templates/partials/exercise_video_modal.html`, one base-template include, shared button/modal CSS, and plan-page Playwright coverage. |
+| `1e5a1c0` | `/workout_log` wiring. Adds server-rendered play buttons, log-page JS binding, and workout-log Playwright coverage. |
+
+### Conflict resolution note
+
+The historical modal commit conflicted in `static/css/components.css`. The
+resolution kept the current `main` CSS and added only the §5 video modal/button
+styles; an unrelated body-composition CSS block from the old branch was not
+ported.
+
+### Compliance posture (§5.6)
+
+- Embed via `https://www.youtube.com/embed/<id>` only. No download, cache, or
+  rehosting of video data or thumbnails.
+- "Watch on YouTube" link is present in the embed surface with `target="_blank"`
+  and `rel="noopener noreferrer"`.
+- NULL or malformed IDs fall back to a YouTube search URL for the exercise name.
+
+### Verification
+
+Run on 2026-05-11 against current `main`:
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-pytest.ps1 tests/test_youtube_video_id.py` — 40 passed in 4.64s.
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-playwright.ps1 e2e/workout-plan.spec.ts e2e/workout-log.spec.ts` — 52 passed in 1.6m.
+
+### Outstanding / next sessions
+
+- §4 (free-exercise-db media + path validation + thumbnail rendering) is next.
+- §3.6 (Profile coverage body map) remains deferred.
+
 ## 2026-04-29 — §3 kickoff (workout-plan body map only)
 
 **Scope**: §3.1–§3.5 + §3.7. Profile coverage body map (§3.6) deferred per

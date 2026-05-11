@@ -4,25 +4,24 @@
 
 ## Current State
 - **Branch**: `main`
-- **Last committed milestone**: `1a889d8` — docs(ai-workflow): apply CODEX cross-review to Tier 2.2 council (#18)
-- **Last verified pytest**: 1160 passed in 159.70s on 2026-05-10
-- **Last verified E2E (Chromium)**: 414 passed / 1 failed on 2026-05-10. Failure is pre-existing & out-of-scope: `nav-dropdown.spec.ts:117` dark-mode toggle off-viewport at 1440 width. The previous `program-backup.spec.ts:79` DB-state-pollution flake passed in this full run.
+- **Last committed milestone**: `1e5a1c0` — feat(workout-cool §5): wire reference video modal into /workout_log
+- **Last verified pytest**: targeted §5 gate 40 passed in 4.64s on 2026-05-11 (`tests/test_youtube_video_id.py`). Last full pytest baseline remains 1160 passed in 159.70s on 2026-05-10.
+- **Last verified E2E (Chromium)**: targeted §5 gate 52 passed in 1.6m on 2026-05-11 (`e2e/workout-plan.spec.ts`, `e2e/workout-log.spec.ts`). Last full E2E baseline remains 414 passed / 1 failed on 2026-05-10; failure is pre-existing & out-of-scope: `nav-dropdown.spec.ts:117` dark-mode toggle off-viewport at 1440 width.
 
 ## Active Workstreams
 | Workstream | Status | Next safe step | Docs |
 |---|---|---|---|
-| Avi Lewis AI workflow refit | complete through Tier 2; T3.1 docs complete in current change | Use [docs/ai_workflow/INDEX.md](ai_workflow/INDEX.md) + this handover as active truth; treat `.claude/SHARED_PLAN.md` as audit history only | [docs/ai_workflow/INDEX.md](ai_workflow/INDEX.md) |
+| Avi Lewis AI workflow refit | complete through Tier 2 + T3.1 | Use [docs/ai_workflow/INDEX.md](ai_workflow/INDEX.md) + this handover as active truth; treat `.claude/SHARED_PLAN.md` as local audit history only | [docs/ai_workflow/INDEX.md](ai_workflow/INDEX.md) |
 | Fatigue meter | parked (Phase 1 + Stage 4 entry shipped) | Hold; no Phase 2 / `utils/fatigue.py` edits without real data or explicit go-ahead | [docs/fatigue_meter/PLANNING.md](fatigue_meter/PLANNING.md) |
-| workout.cool integration | §3 shipped on `main`; §5 and §4 are pending in the active plan | Start §5 YouTube modal first per risk-ordered sequence, then §4 free-exercise-db media. Historical §4/§5 commits exist off-main and can be used as reference only. | [docs/workout_cool_integration/PLANNING.md](workout_cool_integration/PLANNING.md) |
+| workout.cool integration | §3 + §5 shipped on `main`; §4 pending | Start §4 free-exercise-db media. Historical off-main §4 commits exist and can be used as reference only after review against current `main`. | [docs/workout_cool_integration/PLANNING.md](workout_cool_integration/PLANNING.md) |
 | Redesign post-P8 triage | #6 done; 5 issues remaining | #7 + #8 | local-only `debug/redesign_post_p8_issues_SESSION_STATE.md` |
 | phase5_3i_plan | paused mid-draft | Resume from session-state file | local-only `debug/phase5_3i_plan_SESSION_STATE.md` |
 
 ## Open Decisions
-- Whether to archive or leave `.claude/SHARED_PLAN.md` as local audit history. It is no longer the active workflow source of truth.
-- Before starting workout.cool §5, decide whether to cherry-pick/adapt the historical off-main §5 commits or reimplement from the active plan.
+- Whether to mine the historical off-main §4 commits or reimplement §4 from the active plan. Review against current `main` before cherry-picking because those commits came from an older branch lineage.
 
 ## Blockers
 - None.
 
 ## Next Safe Step
-Commit the T3.1 workflow docs closeout, then start workout.cool §5 (YouTube modal) from [docs/workout_cool_integration/PLANNING.md](workout_cool_integration/PLANNING.md) §5. Use historical off-main §5 commits as reference only after reviewing their diff against current `main`.
+Start workout.cool §4 (free-exercise-db media) from [docs/workout_cool_integration/PLANNING.md](workout_cool_integration/PLANNING.md) §4. Begin by reviewing the historical off-main §4 commits against current `main`, then land schema/path-validation pieces before large media assets.

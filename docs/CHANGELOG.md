@@ -2,6 +2,19 @@
 
 All notable changes to Hypertrophy Toolbox v3.
 
+## Unreleased - May 11, 2026
+
+### AI Workflow Refit
+
+- Completed the local second-brain T3.1 closeout: lightweight ADR format in `docs/DECISIONS.md`, documentation retention rules in `docs/ai_workflow/DOC_RETENTION.md`, and refreshed workflow/doc indexes.
+- Marked `.claude/SHARED_PLAN.md` as local audit history in `.gitignore`; active workflow truth is now `docs/MASTER_HANDOVER.md` plus `docs/ai_workflow/INDEX.md`.
+
+### workout.cool Integration §5 — Exercise Reference Video Modal
+
+- Added nullable `youtube_video_id TEXT` support for `exercises`, route contracts for `/get_workout_plan` and `/get_workout_logs`, and a strict header-only curated CSV/apply script path for future manual video IDs.
+- Added a shared Bootstrap reference-video modal and per-row play buttons on `/workout_plan` and `/workout_log`. NULL or malformed IDs open a YouTube search fallback; valid IDs use official `https://www.youtube.com/embed/<id>` embeds and clear the iframe on close.
+- Verification: `tests/test_youtube_video_id.py` 40/40 passed; Chromium Playwright `e2e/workout-plan.spec.ts` + `e2e/workout-log.spec.ts` 52/52 passed.
+
 ## Unreleased - May 2, 2026
 
 ### Muscle Selector — First-Party Advanced Body Map
