@@ -2,6 +2,70 @@
 
 Tracks concrete work against `PLANNING.md`. Newest entry on top.
 
+## 2026-05-11 — §4 checkpoint 1 shipped on `main` (schema + validator + apply script)
+
+**Scope**: §4.3-§4.6 data/import layer only. No vendor assets, no UI wiring.
+Adapted from historical off-main commit `76bcd48` (checkpoint 1 of six), ported
+against current `main` after diffing the schema patch context for the
+intervening §5 `youtube_video_id` addition (the only collision was the trailing
+comma on `youtube_video_id TEXT` inside `CREATE TABLE`, and an analogous
+guarded `ALTER` next to the existing one).
+
+### Polish after Codex review
+
+Codex flagged three follow-ups against the first draft of the port; all
+addressed before commit:
+
+1. **Apply script is now truly transactional.** `apply_rows()` issues each
+   `UPDATE` with `commit=False` so per-statement commits are suppressed;
+   `DatabaseHandler.__exit__` performs one commit on success or one rollback
+   on exception. A new test injects a synthetic `sqlite3.OperationalError`
+   on the second `UPDATE EXERCISES` call and asserts every prior row's
+   `media_path` rolled back to `NULL`.
+2. **Shape validator tightened.** `is_valid_media_path_shape` now rejects
+   `:` anywhere (blocks `C:/temp/0.jpg` and `C:temp/0.jpg`) and rejects
+   single-dot path segments (blocks `./dir/0.jpg` and `dir/./0.jpg`, which
+   would otherwise normalise away on `Path.resolve()` and silently work).
+   Five new parametrised reject cases cover these inputs.
+3. **Docs flipped to past tense** in the same commit so the planning state
+   matches the committed tree.
+
+### Files added / modified
+
+| File | Status | What landed |
+|---|---|---|
+| `utils/db_initializer.py` | modified | Adds nullable `media_path TEXT` to `CREATE TABLE IF NOT EXISTS exercises` AND a guarded `ALTER TABLE exercises ADD COLUMN media_path TEXT` for legacy DBs. Fresh and migrated DBs converge on the same shape. |
+| `utils/media_path.py` | new | Pure-function shape validator (`is_valid_media_path_shape`, `explain_media_path_shape_failure`) and filesystem resolver (`media_path_resolves`). Mirrors §4.3 rules: non-empty, no leading slash/backslash, no `..`, no empty segments, jpg/jpeg/png/gif/webp extension allowlist, file must live under `static/vendor/free-exercise-db/exercises/`. |
+| `scripts/apply_free_exercise_db_mapping.py` | new | All-or-nothing apply: parses CSV, validates header + per-row shape + uniqueness + review_status, checks every `exercise_name` against the catalogue (case-insensitive), checks every confirmed/manual asset against the vendor base, then writes `media_path` for `confirmed`/`manual` rows only. `--dry-run` and `--vendor-base` flags. Idempotent. |
+| `data/free_exercise_db_mapping.csv` | new (header-only) | Canonical column scaffold: `exercise_name,suggested_fed_id,suggested_image_path,score,review_status`. No rows yet. |
+| `tests/test_free_exercise_db_mapping.py` | new | 73 cases covering validator accept/reject, schema additivity (fresh / legacy `ALTER` / re-init no-op), CSV shape, apply-script atomicity (unknown exercise, missing asset, invalid path all abort with no DB write), happy path, idempotency, CLI smoke. |
+
+### Verification
+
+Run on 2026-05-11 against this slice (post-polish):
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-pytest.ps1 tests/test_free_exercise_db_mapping.py` — 79 passed in 3.80s (73 original + 5 new validator-reject cases + 1 mid-loop rollback test).
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-pytest.ps1 tests/test_youtube_video_id.py tests/test_priority0_filters.py tests/test_workout_plan_routes.py tests/test_workout_log_routes.py` — 122 passed in 20.09s (adjacent route/contract + §5 schema neighbour; no regressions).
+
+### Out of scope for this checkpoint
+
+- No vendored `static/vendor/free-exercise-db/` assets (the historical `d4bb636`
+  commit lands ~21 MB of images plus `exercises.json`; deferred to its own
+  checkpoint so the schema slice can be reviewed in isolation).
+- No `routes/workout_plan.py` / `routes/workout_log.py` SELECT changes.
+- No `templates/workout_plan.html` / `templates/workout_log.html` thumbnail
+  rendering.
+- No `escapeHtml()` rollout in `static/js/modules/workout-plan.js`.
+- No `tests/test_workout_plan_routes.py` or `tests/test_workout_log_routes.py`
+  contract extension for the new field.
+
+### Next sessions
+
+1. Vendor `static/vendor/free-exercise-db/{LICENSE,NOTICE.md,VERSION,exercises.json,exercises/}`. Cross-reference historical commit `d4bb636` for the file list; do not blindly cherry-pick — re-derive the pin and re-fetch from the upstream commit.
+2. Generate `data/free_exercise_db_mapping.csv` proposals via a `scripts/map_free_exercise_db.py` mapper (per PLANNING.md §4.3) and human-review them.
+3. Apply via the script. Add backend route-contract tests once a non-empty mapping is in place.
+4. Thumbnail rendering + `escapeHtml()` rollout per §4.4 (depends on a populated mapping or a fixture row).
+
 ## 2026-05-11 — §5 shipped on `main` (YouTube reference video modal)
 
 **Scope**: §5.1-§5.8 (Pattern A modal + nullable schema field, apply script,
