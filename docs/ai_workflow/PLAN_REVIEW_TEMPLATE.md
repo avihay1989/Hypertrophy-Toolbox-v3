@@ -20,7 +20,8 @@
 | `routes/<X>.py` | new / modify | <one line> |
 | `utils/<X>.py` | new / modify | <one line> |
 | `templates/<X>.html` | new / modify | <one line> |
-| `tests/test_<X>.py` | new / modify | <one line> |
+| `tests/test_<X>_routes.py` | new / modify | <route HTTP tests> |
+| `tests/test_<X>.py` | new / modify | <util unit tests> |
 
 **Effort**: S / M / L · **Owner**: <agent or human> · **Depends on**: <other tickets / tiers>
 

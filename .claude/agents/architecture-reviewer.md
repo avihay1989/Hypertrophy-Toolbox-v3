@@ -18,9 +18,9 @@ You are the architecture reviewer for the Hypertrophy Toolbox Flask app. Your jo
 
 3. **Schema-change registration** — new tables require a creator helper called from both `app.py` startup and `tests/conftest.py` `app` fixture (and optionally `erase_data()`). Plans must name where the creator lives (`utils/db_initializer.py` or feature-specific `utils/X.py`) and which fixture wires it in. See [.claude/rules/database.md](../../.claude/rules/database.md).
 
-4. **DB-access pattern** — any planned DB read/write must go through `with DatabaseHandler() as db:` (`utils/database.py:200`). Flag `sqlite3.connect()` references or raw cursor usage in the plan.
+4. **DB-access pattern** — any planned DB read/write must go through `with DatabaseHandler() as db:` (class at `utils/database.py:185`; `__enter__` / `__exit__` at `utils/database.py:414`). Flag `sqlite3.connect()` references or raw cursor usage in the plan.
 
-5. **Response-contract** — new JSON routes must use `success_response()` / `error_response()` from `utils/errors.py`. Flag plans that propose ad-hoc `{"success": …}` / `{"error": …}` shapes. Known legacy exceptions (`weekly_summary.py:133,139`; `workout_plan.py:1079,1093,1114,1125`) are documented; do not propagate them.
+5. **Response-contract** — new JSON routes must use `success_response()` / `error_response()` from `utils/errors.py`. Flag plans that propose ad-hoc `{"success": …}` / `{"error": …}` shapes. Known legacy exceptions (`routes/weekly_summary.py:152,158`; `routes/workout_plan.py:1090,1104,1125,1136`) are documented; do not propagate them.
 
 6. **Logger discipline** — modules use `get_logger()` from `utils/logger.py`. Flag plans that propose `print()` or `logging.getLogger(__name__)` directly.
 

@@ -12,7 +12,7 @@ Run the plan-review council from [`.claude/SHARED_PLAN.md`](../../.claude/SHARED
 
 ## When NOT to use
 - One-line bug fix with an obvious test target.
-- Comment / typo / docs-only edit.
+- Comment / typo / product-docs-only edit (i.e. `docs/**` excluding `docs/ai_workflow/**`). Edits to `.claude/**`, root `CLAUDE.md`, folder `CLAUDE.md`, or `docs/ai_workflow/**` are agent config — they change agent behavior and may still warrant the council.
 - A plan small enough that targeted review during implementation (`/unslop` or `/verify-and-polish`) covers it.
 
 ## Steps
