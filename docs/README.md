@@ -6,8 +6,10 @@ This directory keeps the current project docs. Completed execution plans and mig
 
 ### Project State
 - **[CHANGELOG.md](CHANGELOG.md)** - Version history and recent work
-- **[DECISIONS.md](DECISIONS.md)** - Data import and normalization rules
+- **[DECISIONS.md](DECISIONS.md)** - Durable project decisions and lightweight ADRs
 - **[CLAUDE_MD_AUDIT.md](CLAUDE_MD_AUDIT.md)** - Current architecture debt snapshot
+- **[ai_workflow/INDEX.md](ai_workflow/INDEX.md)** - AI workflow navigation spine
+- **[ai_workflow/DOC_RETENTION.md](ai_workflow/DOC_RETENTION.md)** - Rules for keeping, archiving, or deleting docs
 
 ### Runtime, UI, And Testing
 - **[CSS_OWNERSHIP_MAP.md](CSS_OWNERSHIP_MAP.md)** - Current CSS loading and ownership map
@@ -35,4 +37,4 @@ These files are historical reference only. They should not be treated as active 
 
 The old Backup Center hardening plan, Calm Glass redesign plan/audit/mockup, seed-fix plan, and spring-cleanup Phase 4/5 execution plans were completed and superseded by the current source, changelog, CSS map, and Backup Center docs.
 
-Last updated: 2026-04-24
+Last updated: 2026-05-11

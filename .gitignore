@@ -81,3 +81,4 @@ static/bodymaps/GPT/
 # AI workflow scratch (see .claude/SHARED_PLAN.md Appendix A1.1, A2.1)
 MASTER_HANDOVER.local.md
 WORKSTREAM_OWNERSHIP.local.md
+.claude/SHARED_PLAN.md
