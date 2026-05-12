@@ -24,6 +24,7 @@
 
 ## Workflow artifacts
 - [Quality Gate](QUALITY_GATE.md) — change-type → required tests/reviewers map
+- [Autonomy Model](AUTONOMY.md) — Codex/Claude approval, sandbox, worktree, and review boundaries
 - Folder orientation maps (Claude Code auto-loads on path entry):
   - [routes/CLAUDE.md](../../routes/CLAUDE.md)
   - [utils/CLAUDE.md](../../utils/CLAUDE.md)
