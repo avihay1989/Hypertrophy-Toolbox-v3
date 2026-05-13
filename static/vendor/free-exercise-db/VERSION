@@ -1,0 +1,14 @@
+source: https://github.com/yuhonas/free-exercise-db
+commit: acd61f751fe15d618862ee3084f27e839222a28f
+ref: HEAD (resolved at fetch time; pinned thereafter)
+imported: 2026-05-13
+license: Unlicense / public domain (see LICENSE)
+
+vendored:
+  - exercises.json (the bundled `dist/exercises.json` catalogue, 873 entries)
+  - exercises/<name>/0.jpg for every exercise directory (873 files)
+
+deliberately omitted:
+  - exercises/<name>/1.jpg (alternate-angle frames; see NOTICE.md "Deviations from upstream")
+  - per-exercise JSON files at exercises/<name>.json (duplicates of entries
+    already present in exercises.json)
