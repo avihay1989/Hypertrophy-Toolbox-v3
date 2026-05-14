@@ -217,8 +217,6 @@ class TestMappingCsv:
     def test_csv_passes_validator(self):
         rows, errors = parse_csv(MAPPING_CSV)
         assert errors == [], f"CSV validation failed: {errors}"
-        # Checkpoint 1 ships a header-only CSV.
-        assert rows == []
 
     def test_csv_no_duplicate_names(self):
         with MAPPING_CSV.open("r", encoding="utf-8", newline="") as f:
