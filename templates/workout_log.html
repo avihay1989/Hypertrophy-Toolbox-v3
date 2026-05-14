@@ -94,6 +94,16 @@
                         <td data-label="Routine" class="routine-cell"><span class="routine-env">{{ routine_parts[0] if routine_parts|length > 0 else '' }}</span><span class="routine-program">{{ routine_parts[1] if routine_parts|length > 1 else '' }}</span><span class="routine-workout">{{ routine_parts[2] if routine_parts|length > 2 else '' }}</span></td>
                         <td data-label="Exercise" class="exercise-cell">
                             <div class="exercise-cell-content">
+                                {# §4 — free-exercise-db thumbnail. `safe_media_path` revalidates against the §4.3 shape rules (defense-in-depth — the apply script validates on write, but rows can be edited out-of-band). #}
+                                {% set safe_path = log.media_path | safe_media_path %}
+                                {% if safe_path %}
+                                <img class="exercise-thumbnail"
+                                     src="{{ url_for('static', filename='vendor/free-exercise-db/exercises/' + safe_path) }}"
+                                     alt="{{ log.exercise }} reference"
+                                     loading="lazy"
+                                     width="32"
+                                     height="32">
+                                {% endif %}
                                 <span class="exercise-name">{{ log.exercise }}</span>
                                 {# §5 — reference video play button. data-* attrs feed window.openExerciseVideoModal. #}
                                 <button type="button"

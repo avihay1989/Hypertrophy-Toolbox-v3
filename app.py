@@ -104,6 +104,19 @@ def format_datetime(value, format='%d-%m-%Y'):
             return value
     return ''
 
+
+@app.template_filter('safe_media_path')
+def safe_media_path(value):
+    """Return `value` if it satisfies the §4.3 media_path shape rules, else None.
+
+    Defense-in-depth: the apply script validates on write, but rows can be
+    edited out-of-band and PLANNING §4.4 mandates revalidation on render.
+    Templates wrap `log.media_path | safe_media_path` and skip the `<img>`
+    when the filter returns None.
+    """
+    from utils.media_path import is_valid_media_path_shape
+    return value if is_valid_media_path_shape(value) else None
+
 @app.before_request
 def clear_trailing():
     from flask import redirect, request

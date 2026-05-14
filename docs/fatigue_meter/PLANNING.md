@@ -490,6 +490,8 @@ Phase 1 ships with §24.B threshold bands marked "starting points, not science".
 > **Felt-label path (option iii) declined by owner (2026-05-10).** Engine reports weekly = 165 and heaviest session = 44, both **mid-band moderate** (band cutoffs: weekly 80–200, session 20–50, from `utils/fatigue.py:74-85`). With both data points sitting in the middle of their bands and zero prior felt-experience anchors, a "moderate" label would be tautological and a "light" / "heavy" label would be one isolated noise sample, not a calibration signal. Path forward unchanged: log workouts, accumulate ≥4 representative weeks, then walk §4.1 in earnest.
 >
 > **Assistant-generated synthetic pass (2026-05-10).** At owner request, generated four hypothetical weeks and ran them through the shipped `utils.fatigue` functions: deload = **30 (light)**, normal hypertrophy = **88 (moderate)**, hard accumulation = **217 (heavy)**, overload = **463 (very_heavy)**. All four landed in the intended stress order and band; current planned weekly score **165 (moderate)** sits plausibly between generated normal and hard weeks. Recorded in `docs/fatigue_meter/calibration-notes.md`. **Decision: no threshold changes.** This is a math/coherence stress test, not real calibration, because the felt labels were assistant-generated rather than anchored to lived training experience.
+>
+> **2026-05-13 parked decision.** Owner chose Option 1: stay parked. This is a deliberate complete-for-now state, not a failed task. No further fatigue-meter work should proceed until `workout_log` contains real representative weeks, owner labels are supplied, or the owner explicitly overrides the parked state. Operational handoff: `docs/fatigue_meter/STAGE4_PARKED_HANDOFF.md`.
 
 ### 4.0 Entry criteria
 - [x] Stage 3 exit criteria all checked. *2026-05-04: §3.7 both ticked. Two browser-only items (375px viewport, dark-mode contrast) remain open from the smoke checklist but do not block calibration; they get walked together with the calibration browser session.*
@@ -544,7 +546,7 @@ Update this as you progress. Reviewers can scan it to see where the work stands.
 | 1 | Pre-development prerequisites | ✅ Complete | 2026-05-01 |
 | 2 | Phase 1 implementation | ✅ Complete | 2026-05-02 |
 | 3 | Phase 1 verification & merge | ✅ Closeout pass complete; 6/7 smoke items PASS, 1 documented-not-walked (smokes 4 + 5 walked 2026-05-10 via PR #12) | 2026-05-04 |
-| 4 | Post-merge calibration | 🟡 Entry complete (smokes 4 + 5 walked, §4.0 ticked); calibration proper still gated by accumulating ≥4 weeks in `workout_log` (currently 0 rows) | 2026-05-10 |
+| 4 | Post-merge calibration | 🟡 Parked by owner choice (Option 1 confirmed 2026-05-13); entry complete, calibration proper still gated by accumulating ≥4 weeks in `workout_log` or owner labels | 2026-05-13 |
 | 5 | Phase 2 preview | ⬜ Not started | — |
 | 6 | Phase 3 preview | ⬜ Not started | — |
 
@@ -559,6 +561,7 @@ Status legend: ⬜ Not started · 🟡 In progress · ✅ Complete · ❌ Blocke
 | `docs/fatigue_meter/baseline-{date}.txt` | Stage 1.1 | Locked test baseline output. |
 | `docs/fatigue_meter/data-audit.md` | Stage 1.2 | Data integrity findings. |
 | `docs/fatigue_meter/calibration-notes.md` | Stage 4 | Real-data threshold validation. *Created 2026-05-04 as placeholder/sanity baseline only — no real calibration performed; awaiting `workout_log` data or owner felt-experience input.* |
+| `docs/fatigue_meter/STAGE4_PARKED_HANDOFF.md` | Stage 4 | Operational parked-state handoff for future agents. *Created 2026-05-13 after owner chose Option 1; tells agents to proceed elsewhere unless real data, owner labels, or explicit override arrive.* |
 
 ---
 

@@ -217,8 +217,6 @@ class TestMappingCsv:
     def test_csv_passes_validator(self):
         rows, errors = parse_csv(MAPPING_CSV)
         assert errors == [], f"CSV validation failed: {errors}"
-        # Checkpoint 1 ships a header-only CSV.
-        assert rows == []
 
     def test_csv_no_duplicate_names(self):
         with MAPPING_CSV.open("r", encoding="utf-8", newline="") as f:
@@ -678,6 +676,116 @@ class TestApplyHappyPath:
 # ---------------------------------------------------------------------------
 # CLI smoke
 # ---------------------------------------------------------------------------
+
+
+class TestSafeMediaPathJinjaFilter:
+    """`safe_media_path` filter revalidates path-shape rules at render time."""
+
+    def test_filter_returns_value_for_valid_path(self, app):
+        with app.app_context():
+            f = app.jinja_env.filters["safe_media_path"]
+            assert f("Squat_Barbell/0.jpg") == "Squat_Barbell/0.jpg"
+
+    def test_filter_returns_none_for_invalid_path(self, app):
+        with app.app_context():
+            f = app.jinja_env.filters["safe_media_path"]
+            for bad in (
+                None,
+                "",
+                "/abs/path/0.jpg",
+                "../etc/passwd",
+                "dir/with/..//evil.jpg",
+                "dir\\img.jpg",
+                "C:/temp/0.jpg",
+                "dir/img.exe",
+                "dir/img",
+                123,
+            ):
+                assert f(bad) is None, f"Expected None for {bad!r}"
+
+
+class TestRouteContracts:
+    """`/get_workout_plan` and `/get_workout_logs` expose `media_path`."""
+
+    def test_get_workout_plan_includes_field_null(
+        self, client, clean_db, exercise_factory, workout_plan_factory
+    ):
+        exercise_factory("Bench Press")
+        workout_plan_factory(exercise_name="Bench Press")
+
+        resp = client.get("/get_workout_plan")
+        assert resp.status_code == 200
+        body = resp.get_json()
+        assert body["ok"] is True
+        rows = body["data"]
+        assert len(rows) >= 1
+        assert "media_path" in rows[0]
+        assert rows[0]["media_path"] is None
+
+    def test_get_workout_plan_includes_field_set(
+        self, client, clean_db, exercise_factory, workout_plan_factory
+    ):
+        exercise_factory("Bench Press")
+        workout_plan_factory(exercise_name="Bench Press")
+        with DatabaseHandler() as db:
+            db.execute_query(
+                "UPDATE exercises SET media_path = ? "
+                "WHERE exercise_name = 'Bench Press'",
+                ("Bench_Press/0.jpg",),
+            )
+
+        resp = client.get("/get_workout_plan")
+        body = resp.get_json()
+        target = next(
+            r for r in body["data"] if r["exercise"] == "Bench Press"
+        )
+        assert target["media_path"] == "Bench_Press/0.jpg"
+
+    def test_get_workout_logs_includes_field_null(
+        self,
+        client,
+        clean_db,
+        exercise_factory,
+        workout_plan_factory,
+        workout_log_factory,
+    ):
+        exercise_factory("Bench Press")
+        plan_id = workout_plan_factory(exercise_name="Bench Press")
+        workout_log_factory(plan_id=plan_id, exercise="Bench Press")
+
+        resp = client.get("/get_workout_logs")
+        assert resp.status_code == 200
+        body = resp.get_json()
+        assert body["ok"] is True
+        rows = body["data"]
+        assert len(rows) >= 1
+        assert "media_path" in rows[0]
+        assert all(r["media_path"] is None for r in rows)
+
+    def test_get_workout_logs_includes_field_set(
+        self,
+        client,
+        clean_db,
+        exercise_factory,
+        workout_plan_factory,
+        workout_log_factory,
+    ):
+        exercise_factory("Bench Press")
+        plan_id = workout_plan_factory(exercise_name="Bench Press")
+        workout_log_factory(plan_id=plan_id, exercise="Bench Press")
+        with DatabaseHandler() as db:
+            db.execute_query(
+                "UPDATE exercises SET media_path = ? "
+                "WHERE exercise_name = 'Bench Press'",
+                ("Bench_Press/0.jpg",),
+            )
+
+        resp = client.get("/get_workout_logs")
+        body = resp.get_json()
+        target = next(
+            r for r in body["data"] if r["exercise"] == "Bench Press"
+        )
+        assert target["media_path"] == "Bench_Press/0.jpg"
 
 
 class TestApplyScriptCli:

@@ -23,7 +23,8 @@ def get_workout_logs():
         wl.scored_weight,
         wl.last_progression_date,
         wl.created_at,
-        e.youtube_video_id
+        e.youtube_video_id,
+        e.media_path
     FROM workout_log wl
     LEFT JOIN exercises e ON wl.exercise = e.exercise_name COLLATE NOCASE
     ORDER BY wl.routine, wl.exercise

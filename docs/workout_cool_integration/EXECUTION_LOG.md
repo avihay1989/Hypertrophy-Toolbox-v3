@@ -2,6 +2,414 @@
 
 Tracks concrete work against `PLANNING.md`. Newest entry on top.
 
+## 2026-05-14 — §4 checkpoint 6 (thumbnail UI + escapeHtml rollout)
+
+**Scope**: PLANNING.md §4.4 Option A. Adds a shared `escapeHtml()` /
+`resolveExerciseMediaSrc()` helper module, renders free-exercise-db
+thumbnails in the workout-plan + workout-log Exercise cells, routes the
+workout-plan row template-literal interpolations through `escapeHtml()`
+so the new `alt`/`src` work isn't the only safe spot in an otherwise
+unsafe row, and revalidates `media_path` at render time on the
+server-rendered log page via a new `safe_media_path` Jinja filter.
+
+### What landed
+
+| File | Status | What landed |
+|---|---|---|
+| `static/js/modules/exercise-helpers.js` | new | Shared `escapeHtml(value)` + `isValidMediaPathShape(value)` + `resolveExerciseMediaSrc(mediaPath)`. Path-shape rules mirror `utils/media_path.py::is_valid_media_path_shape` verbatim (non-empty, no leading slash, no `\`, no `:`, no `..`/`.`/empty segments, jpg/jpeg/png/gif/webp extension allowlist). URL builder runs each path segment through `encodeURIComponent` and re-joins with `/`. |
+| `static/js/modules/workout-plan.js` | modified | Imports the helpers. Row renderer at the §4.4 site (~line 1543) now `escapeHtml()`-wraps every interpolated value (exercise name, routine, muscle raw-value attrs, utility/movement/grips/stabilizers/synergists, sets/reps/RIR/RPE/weight, superset-group, aria-label). Pre-existing routine helpers `formatRoutineForDisplay` and `formatRoutineForTab` also escape their parsed parts. New thumbnail `<img>` prepended into the Exercise cell when `resolveExerciseMediaSrc(exercise.media_path)` returns a URL (else nothing rendered, matching pre-checkpoint behaviour). |
+| `app.py` | modified | Registers a `safe_media_path` Jinja filter that returns the path iff `utils.media_path.is_valid_media_path_shape` accepts it, else `None`. Defense-in-depth: the apply script validates on write, but rows can be edited out-of-band and PLANNING §4.4 mandates revalidation at render time. |
+| `tests/conftest.py` | modified | Registers the same `safe_media_path` filter on the test-only Flask app (which is built from scratch in the fixture rather than imported from `app.py`). |
+| `templates/workout_log.html` | modified | Server-rendered thumbnail `<img class="exercise-thumbnail" …>` prepended into the Exercise-cell content block when `log.media_path | safe_media_path` returns a non-None value. Jinja auto-escaping handles the `alt`; `url_for('static', filename='vendor/free-exercise-db/exercises/' + safe_path)` builds the URL only after the filter accepts the path. |
+| `static/css/components.css` | modified | `.exercise-cell .exercise-thumbnail` — 32×32, 1:1 aspect-ratio, rounded corners, `object-fit: cover`, neutral background. Dark-mode override adjusts the placeholder background. |
+| `static/css/pages-workout-plan.css` | modified | Advanced view-mode override: thumbnail `align-self: flex-start` to coexist with the wrapped exercise-name + swap/play buttons. |
+| `e2e/workout-plan.spec.ts` | modified | +4 tests in new `§4 free-exercise-db thumbnails` describe block, all **self-contained** (no live-DB dependency): they call `updateWorkoutPlanTable([mockRow])` via dynamic `import('/static/js/modules/workout-plan.js')` to render synthetic rows directly. Coverage: (a) `media_path: 'Band_Good_Morning/0.jpg'` → renders `<img.exercise-thumbnail>` with safe `src`, `alt`, `loading=lazy`, `width=height=32`; (b) `media_path: null` → no `<img>`, no console errors; (c) `exercise: "Coach's <Test> Press"` → `.exercise-name` textContent matches the literal angle brackets and zero injected `<Test>` elements (proves `escapeHtml` works end-to-end); (d) `page.evaluate()` drives `escapeHtml()` + `resolveExerciseMediaSrc()` across the full accept/reject matrix from §4.6 — synthetic `Coach's <Test> Press`, ampersand, null, valid jpg, upper-case `.PNG`, empty, abs path, `..`, backslash, `:`, `.exe`, no-extension, and `weird name/0.jpg` URL-encoding. |
+| `tests/test_free_exercise_db_mapping.py` | modified | +2 unit tests in new `TestSafeMediaPathJinjaFilter` class covering accept (`Squat_Barbell/0.jpg`) and reject (None, empty, abs path, `..`, double slash, backslash, `:`, `.exe`, no-extension, int) for the `safe_media_path` filter. |
+
+### Why E2E is mock-driven, not DB-driven
+
+The earlier draft seeded the test by adding `Band Good Morning` through
+the cascade UI and asserting the rendered thumbnail. That depends on
+the live `data/database.db` carrying a populated `media_path` for the
+row, which is true only after running `scripts/apply_free_exercise_db_mapping.py`
+against the local DB — and `data/database.db` is intentionally not
+committed, so a clean CI checkout would render no thumbnail and the
+test would fail.
+
+The revised tests render synthetic rows by calling
+`updateWorkoutPlanTable([mockExercise])` directly via dynamic
+`import('/static/js/modules/workout-plan.js')`. This exercises the same
+template-literal renderer the production code uses, but the input is
+controlled by the test rather than the DB. The route contract is
+covered by `tests/test_free_exercise_db_mapping.py::TestRouteContracts`
+(checkpoint 5).
+
+### Why a server-side path-shape filter
+
+PLANNING §4.4 explicitly mandates "Re-validates `mediaPath` against the
+§4.3 path-shape rules before constructing a URL (defense in depth —
+DB rows can still be edited out-of-band)" for the client-side helper.
+The same logic applies to the server-rendered log template: even with
+the apply-script invariant in place, anyone editing the SQLite file by
+hand could bypass shape validation and inject `../../../etc/passwd` or
+similar into the URL. The `safe_media_path` Jinja filter mirrors
+`utils.media_path.is_valid_media_path_shape` and returns `None` for
+any value that fails, causing the template to skip the `<img>` and
+behave like the NULL case.
+
+### Apply pass (informational; not part of the committed slice)
+
+`scripts/apply_free_exercise_db_mapping.py` was run against the live
+DB during checkpoint-6 development to confirm the route contract
+populated the `media_path` field end-to-end:
+
+```
+OK: applied 108 row(s) to exercises.media_path (1789 ignored as auto/rejected).
+```
+
+`data/database.db` is **not** committed (excluded as a local/runtime
+file per the standing rule). To apply mappings on any environment:
+
+```bash
+.venv/Scripts/python.exe scripts/apply_free_exercise_db_mapping.py
+```
+
+It's idempotent and all-or-nothing — safe to re-run.
+
+### Verification
+
+- `.venv/Scripts/python.exe -m pytest tests/ -q` → **1289 passed in 171.47s** on 2026-05-14 (was 1287; +2 `safe_media_path` filter tests).
+- `npx playwright test e2e/workout-plan.spec.ts e2e/workout-log.spec.ts --project=chromium --reporter=line` → **56 passed in 1.6m** (was 52 baseline; +4 thumbnail/helper tests, all self-contained).
+
+### Out of scope
+
+- No further hardening of `transformMuscleDisplay()` / `renderExecutionStyleBadge()` — they operate on normalised enum-like DB columns. If future audit determines they need escaping too, that's a separate, narrowly scoped commit.
+- No visual-regression baseline updates. PLANNING §4.6 calls for desktop / tablet / mobile, light / dark, simple / advanced snapshots; deferred to a dedicated visual-baseline pass.
+- No backup-center / program-backup `escapeHtml()` consolidation — those modules already have local copies that work; converging them with the new shared helper is a tidy-up for later.
+
+### Next sessions
+
+1. PR the four-commit branch (checkpoints 3 → 6) once you're happy.
+2. Visual-baseline pass per §4.6 (desktop / tablet / mobile + light / dark + simple / advanced) — fold into the next visual snapshot session.
+3. Future curation passes can lift more rows from `auto` → `confirmed`/`manual` (the structural-equivalence rule under-confirms; manual-spot-check rule still applies).
+
+## 2026-05-14 — §4 checkpoint 5 (DB whitespace trim + route SELECT updates) — shipped at `df27c8d`
+
+**Scope**: PLANNING.md §4.5 — surface `media_path` in the page/JSON
+contracts. Resolves the open trailing-whitespace catalogue row blocker by
+adding a guarded startup trim repair (path (a) from checkpoint 4's
+followups). No UI/template work; no `escapeHtml()` rollout — those remain
+for checkpoint 6.
+
+### What landed
+
+| File | Status | What landed |
+|---|---|---|
+| `utils/db_initializer.py` | modified | New `_trim_exercise_name_whitespace` pass added to the startup sequence between `_normalize_muscle_group_values` and `_repair_known_exercise_metadata`. Trims `exercises.exercise_name` PK values that drift on whitespace and updates the FK and FK-less text references in `exercise_isolated_muscles`, `user_selection`, and `workout_log` in lockstep under `PRAGMA defer_foreign_keys = ON`. Skips trims that would collide with an existing case-insensitive name. Idempotent on a clean DB. |
+| `routes/workout_plan.py` | modified | `/get_workout_plan` JSON now returns `e.media_path` alongside `e.youtube_video_id`. |
+| `routes/workout_log.py` | modified | `/get_workout_logs` JSON now returns `e.media_path` alongside `e.youtube_video_id`. |
+| `utils/workout_log.py` | modified | `get_workout_logs()` SQL adds `e.media_path` so the page render and export inherit the field without further wiring. |
+| `tests/test_priority0_filters.py` | modified | +4 trim tests (`test_trim_repair_strips_trailing_space_from_exercise_name`, `test_trim_repair_cascades_to_fk_references`, `test_trim_repair_is_idempotent`, `test_trim_repair_skips_when_trimmed_collides`). Cascade test calls `_trim_exercise_name_whitespace` directly because TESTING=1 drops `user_selection` / `workout_log` inside `initialize_database`. |
+| `tests/test_free_exercise_db_mapping.py` | modified | +4 route-contract tests in new `TestRouteContracts` class, mirroring the §5 `youtube_video_id` shape: `/get_workout_plan` and `/get_workout_logs` return `media_path: null` by default and propagate the curated value when set. |
+| `data/free_exercise_db_mapping.csv` | modified | Removed the trailing whitespace from `Dumbbell Shoulder Internal Rotation` (CSV line 909) so the CSV's canonical form matches the trimmed DB row. |
+
+### Trim repair design
+
+The `exercises.exercise_name` PK schema lacks `ON UPDATE CASCADE`, so a
+plain `UPDATE exercises SET exercise_name = TRIM(...)` would fail FK
+checks for any row in `exercise_isolated_muscles` or `user_selection`
+referencing the dirty name. The repair therefore wraps the parent +
+child updates in a single transaction with `PRAGMA defer_foreign_keys =
+ON` (FKs deferred until commit). On commit, all rows are consistent, so
+FK enforcement passes. `workout_log.exercise` is updated in lockstep
+even though it has no formal FK, to keep cross-table text references in
+sync.
+
+The function is defensive:
+
+- Identifies dirty rows via `WHERE exercise_name != TRIM(exercise_name)`.
+- Skips rows whose trimmed form would collide with an existing
+  case-insensitive row (logs a warning instead of corrupting the
+  catalogue).
+- Idempotent — once trimmed, re-running the pass finds zero dirty rows.
+- Each `execute_query` call uses `commit=False` so the surrounding
+  transaction holds until the explicit `db.connection.commit()`.
+
+### Live DB unblock
+
+Before the trim landed, the unscoped `apply_free_exercise_db_mapping.py
+--dry-run` failed on line 909:
+```
+FAILED: 1 row(s) reference unknown exercises:
+  - line 909: exercise_name 'Dumbbell Shoulder Internal Rotation' not found in exercises table
+```
+After running `initialize_database(force=True)` against the live DB:
+```
+[INFO] Trimmed whitespace from 1 exercise_name row
+```
+The unscoped dry-run is now clean:
+```
+OK (dry-run): 108 row(s) would be applied (1789 ignored as auto/rejected).
+```
+
+### Verification
+
+- `.venv/Scripts/python.exe -m pytest tests/test_priority0_filters.py -q`
+  → **23 passed in 4.03s** (was 19; +4 trim tests).
+- `.venv/Scripts/python.exe -m pytest tests/test_free_exercise_db_mapping.py -q`
+  → **83 passed in 4.60s** (was 79; +4 route-contract tests).
+- `.venv/Scripts/python.exe -m pytest tests/test_priority0_filters.py tests/test_workout_plan_routes.py tests/test_workout_log_routes.py tests/test_youtube_video_id.py -q`
+  → **126 passed in 47.31s** (adjacent regression batch; no regressions).
+- `.venv/Scripts/python.exe -m pytest tests/ -q`
+  → **1287 passed in 158.99s** (full suite gate green).
+- `.venv/Scripts/python.exe scripts/apply_free_exercise_db_mapping.py --dry-run`
+  → **OK: 108 row(s) would be applied (1789 ignored as auto/rejected).**
+
+### Out of scope for this checkpoint
+
+- No template-side rendering of `<img>` thumbnails (checkpoint 6).
+- No `resolveExerciseMediaSrc()` helper or `escapeHtml()` rollout in
+  `static/js/modules/workout-plan.js` (checkpoint 6).
+- `get_exercise_details` (modal endpoint) not extended — it doesn't
+  currently expose `youtube_video_id` either, so the parallel keeps
+  scope tight; can be added with the modal redesign if needed.
+
+### Next sessions
+
+1. Open checkpoint 6: thumbnail rendering in `templates/workout_plan.html`
+   and `templates/workout_log.html`, plus the `escapeHtml()` rollout per
+   §4.4 Option A.
+2. Once thumbnails ship, run an apply pass (`scripts/apply_free_exercise_db_mapping.py`)
+   so the curated 108 rows pick up populated `media_path` values, then
+   re-verify the page renders without console errors.
+
+## 2026-05-14 — §4 checkpoint 4 (mapping curation, in-branch) — follow-up pass
+
+**Scope (follow-up)**: extend the curation beyond the structural-rule
+floor with a small manual pass targeted at starter-plan + common-strength
+exercises that the structural rule under-confirms, mark a handful of
+obvious wrong-matches as `rejected`, and unblock the §4 pytest gate by
+retiring a stale checkpoint-1-era assertion. No DB writes; no route or
+template changes.
+
+### What landed (follow-up)
+
+| File | Status | What landed |
+|---|---|---|
+| `data/free_exercise_db_mapping.csv` | modified | 10 additional rows flipped `auto` → `manual` (clear naming-variance / implicit-modifier matches with verified upstream + on-disk asset) and 5 rows flipped `auto` → `rejected` (clear false-positive high-score suggestions). Final distribution: 1784 auto, 98 confirmed, 10 manual, 5 rejected. Total reviewed: **113** (≥50 §4.7 tertiary acceptance bar). |
+| `tests/test_free_exercise_db_mapping.py` | modified | `TestMappingCsv.test_csv_passes_validator` retired its stale `assert rows == []` line. That assertion was authored under checkpoint 1's header-only CSV and was not refreshed when checkpoint 3 (`1ff57ff`) committed the 1,897-row populated CSV; the test has been red on the branch ever since. The retained `assert errors == []` still enforces the CSV-validator contract end-to-end on the populated CSV, which is now the meaningful invariant. |
+
+### Manual confirmations (10 rows → `manual`)
+
+Each row was hand-verified against the upstream `exercises.json` name and
+the on-disk asset at `static/vendor/free-exercise-db/exercises/<fed_id>/0.jpg`:
+
+| Local exercise | Upstream `fed_id` | Reason |
+|---|---|---|
+| `Cable Standing Shoulder Press` | `Cable_Shoulder_Press` | starter plan; "standing" implicit |
+| `Cable Rope Hammer Curl` | `Cable_Hammer_Curls_-_Rope_Attachment` | starter plan; rope attachment matches |
+| `Machine Seated Calf Raises` | `Seated_Calf_Raise` | starter plan; "machine" implicit |
+| `Pull Ups` | `Pullups` | common strength; compound vs spaced |
+| `Situp` | `Sit-Up` | common strength; compound vs hyphenated |
+| `Barbell Squat` | `Barbell_Full_Squat` | common strength; "full" = standard ROM |
+| `Barbell Squat - Quadriceps focused` | `Barbell_Full_Squat` | same plus local cue suffix |
+| `Cable Pallof Press Rotation` | `Pallof_Press_With_Rotation` | common strength; word order |
+| `Band Skullcrusher` | `Band_Skull_Crusher` | naming variance only |
+| `Dumbbell Seated One Arm Triceps Extension` | `Dumbbell_One-Arm_Triceps_Extension` | "seated" implicit for this movement |
+
+### Manual rejections (5 rows → `rejected`)
+
+These were score-100 auto suggestions the mapper proposed at the top of
+the §4.3 step-2 review queue; each is a clear false positive. Marking
+them `rejected` signals to future curation passes that they have been
+reviewed and have no good upstream match:
+
+| Local exercise | Mapper's suggestion | Why rejected |
+|---|---|---|
+| `Barbell Decline Bench Press` | `Barbell_Incline_Bench_Press` | decline ≠ incline |
+| `Barbell Split Squat` | `Barbell_Side_Split_Squat` | split ≠ side split (different exercise) |
+| `Smith Machine Bench Press` | `Machine_Bench_Press` | smith machine ≠ generic machine |
+| `Smith Machine Incline Bench Press` | `Smith_Machine_Bench_Press` | loses incline modifier |
+| `Smith Deadlift` | `Axle_Deadlift` | smith machine ≠ axle bar |
+
+### Verification (follow-up)
+
+- `.venv/Scripts/python.exe scripts/curate_free_exercise_db_mapping.py --dry-run`
+  → idempotent: 0 additional auto rows flipped; recognises the 15 newly
+  reviewed rows as "other status" (script preserves `manual` / `rejected`).
+- `.venv/Scripts/python.exe -m pytest tests/test_free_exercise_db_mapping.py -q`
+  → **79 passed in 2.52s** (back to green after the stale assertion was
+  retired).
+- Scoped apply dry-run (filter CSV to `confirmed` + `manual` rows, run
+  `scripts/apply_free_exercise_db_mapping.py --dry-run`):
+  ```
+  Scoped CSV: 108 confirmed/manual rows
+  OK (dry-run): 108 row(s) would be applied (0 ignored as auto/rejected).
+  ```
+- Unscoped `scripts/apply_free_exercise_db_mapping.py --dry-run` still
+  fails on the **pre-existing trailing-whitespace catalogue row**
+  documented at the top of the original entry — `'Dumbbell Shoulder
+  Internal Rotation '` at line 909 of the CSV (review_status `auto`, so
+  not applied; the all-or-nothing validator aborts on the row anyway).
+  Fix path (a)/(b)/(c) decision still deferred to checkpoint 5.
+
+### Coverage delta
+
+- Catalogue-wide: 108 of 1,897 rows now apply (5.7%), up from 98 (5.2%).
+- Starter-plan defaults (17 exercises per `checkpoint3_coverage.md`):
+  6 of 17 covered after this pass (3 previously confirmed by the
+  structural rule + 3 added via manual `Cable Standing Shoulder
+  Press` / `Cable Rope Hammer Curl` / `Machine Seated Calf Raises`).
+  The remaining 11 starter-plan slots are either ambiguous (auto rows
+  the script left in `auto`) or have no upstream match (`Hollow Hold`,
+  `Cable Pushdown with back support`, etc.).
+- §4.7 thresholds: tertiary (≥50 reviewed) cleared with margin (113).
+  Primary (NULL `media_path` rows render exactly like today) is gated on
+  checkpoint 5/6 template work and is not exercised by this checkpoint.
+
+### Why this is the right stopping point
+
+Beyond the obvious naming-variance and implicit-modifier cases listed
+above, remaining `auto` rows trip the autonomous-policy bar in
+`docs/ACTIVE_DEVELOPMENT.md` Next Task: "Leave ambiguous rows as `auto`
+or `rejected`; do not ask the owner for routine judgement calls." For
+example, `Cable Low Single Arm Lateral Raise` → `Cable_Seated_Lateral_Raise`
+(score 68) drops both "Low" and "Single Arm" and gains "Seated" —
+arguably correct enough to render a thumbnail, but not unambiguous
+enough for an unattended flip. Those judgements belong to a future
+human review pass and are explicitly outside the scope of this
+checkpoint.
+
+## 2026-05-14 — §4 checkpoint 4 (mapping curation, in-branch)
+
+**Scope**: §4.3 step 2 (human review of CSV proposals). Branch
+`feat/workout-cool-section-4-checkpoint-3`, on top of `1ff57ff`. No DB
+writes. No route/template changes. No new tests yet (the existing
+`tests/test_free_exercise_db_mapping.py` already covers the validator
+and apply-script contract; the curation script is a reproducible
+artifact, not a production code path).
+
+### What landed
+
+| File | Status | What landed |
+|---|---|---|
+| `scripts/curate_free_exercise_db_mapping.py` | new | Reproducible curation pass. Reads `data/free_exercise_db_mapping.csv`, flips `auto` → `confirmed` for rows whose local + upstream names produce equal token sets after lenient normalization (lowercase, punctuation noise removal, alias collapse for `band/bands` etc., stopword removal, plural-strip, and a small `" - <muscle> focused"` cue-suffix strip on the local side). Score floor and asset existence are also enforced. Idempotent: re-running on a curated CSV flips zero additional rows. |
+| `data/free_exercise_db_mapping.csv` | modified | 98 of 1,897 rows flipped from `review_status=auto` to `confirmed` by the curation script. All 98 pass `scripts/apply_free_exercise_db_mapping.py` validation (DB-name lookup + on-disk asset existence). |
+
+### Curation rule (encoded in the script, not in human edits)
+
+A row is flipped to `confirmed` iff **all** of the following hold:
+
+1. Current `review_status == auto`.
+2. `score >= 60` (mapper's combined name + equipment + muscle score).
+3. `suggested_image_path` is non-blank and the upstream `fed_id`
+   resolves to a name in `static/vendor/free-exercise-db/exercises.json`.
+4. After the local cue-suffix strip and lenient token normalization
+   (alias collapse, plural-strip, stopword removal), the local name
+   and the **full** upstream name (including any `" - <variant>"`
+   suffix) produce identical token sets.
+5. The on-disk asset at `static/vendor/free-exercise-db/exercises/<path>`
+   exists.
+
+Rule (4) is the gate that rejects false positives the mapper's score
+threshold misses on its own — e.g., `Barbell Decline Bench Press` →
+`Barbell_Incline_Bench_Press` (score 100) is left as `auto` because
+`{decline}` and `{incline}` differ. Hand-spot-checked all 98 flipped
+rows; zero visible mismatches.
+
+### Coverage hit
+
+The starter-plan default-args subset is **non-deterministic** (the
+generator draws from candidate sets), so its precise overlap with the
+98 confirmed rows shifts between runs. Catalog-wide coverage from this
+pass: 98 / 1,897 = 5.2%. That clears the §4.7 tertiary acceptance bar
+(≥50 reviewed mappings) and is the explicit `auto`-→-`confirmed` floor
+called out in `docs/MASTER_HANDOVER.md` Next Safe Step. Remaining `auto`
+rows include both genuine high-score matches that the structural rule
+under-confirms (cases where the upstream variant adds equipment text
+that's already implicit in the local name) and genuine no-match rows
+where no upstream exercise exists. Future curation passes can lift
+these row-by-row.
+
+### Apply-script dry-run
+
+`scripts/apply_free_exercise_db_mapping.py --dry-run` returns 1 because
+of a **pre-existing, unrelated DB defect** surfaced by validation:
+
+```
+FAILED: 1 row(s) reference unknown exercises:
+  - line 909: exercise_name 'Dumbbell Shoulder Internal Rotation' not found in exercises table
+```
+
+The catalogue row literally exists as `'Dumbbell Shoulder Internal
+Rotation '` (with a trailing space) in `data/database.db`. The
+checkpoint-3 mapper preserved that whitespace in the generated CSV; the
+apply script strips whitespace on read; the resulting trimmed name
+fails the `WHERE exercise_name = ? COLLATE NOCASE` lookup against the
+trailing-space row. This is the only such row in the catalogue.
+
+**This is not a curation defect.** The affected row's
+`review_status` is `auto`, not `confirmed`, so it would not actually be
+applied. Apply-script all-or-nothing validation runs across every row,
+including non-apply ones, which is why it aborts.
+
+Scoping validation to only the 98 `confirmed` rows passes cleanly:
+
+```
+SCOPED-TO-CONFIRMED dry-run result:
+  OK: all 98 confirmed/manual rows pass validation.
+```
+
+### Followups (not blocking checkpoint 4)
+
+1. Resolve the trailing-whitespace catalogue row before checkpoint 5
+   (route SELECT updates / thumbnail UI). Three viable paths:
+   (a) extend the startup metadata repair in `utils/db_initializer.py`
+       (the same pattern shipped in `6246854`) to `UPDATE exercises SET
+       exercise_name = TRIM(exercise_name) WHERE exercise_name !=
+       TRIM(exercise_name)`, then regenerate the CSV from the cleaned
+       DB;
+   (b) patch `scripts/map_free_exercise_db.py` `load_local()` to TRIM
+       on read and regenerate the CSV;
+   (c) patch `scripts/apply_free_exercise_db_mapping.py`
+       `validate_against_db()` to use `WHERE TRIM(exercise_name) = ?
+       COLLATE NOCASE` and accept that the live DB carries dirty rows.
+
+   Path (a) is the architectural fix (PK should not carry significant
+   whitespace) and matches the existing repair pattern. Decision
+   deferred to checkpoint-5 owner.
+
+2. The mapper script's `usage_subset` query returns near-zero results
+   today because `workout_log` is empty (see fatigue-meter Stage 4
+   notes) and `user_selection` has minimal entries. The "common
+   strength (usage + starter)" subset in `checkpoint3_coverage.md` is
+   therefore mostly starter-plan-only and is small. This is fine for
+   checkpoint 4 (the structural rule covered ~5× the §4.7 floor on
+   the strength subset directly), but the §4.7 secondary acceptance
+   bar (≥70% of a ~150–250-row "common strength" subset) is gated on
+   real `user_selection` / `workout_log` data accumulating.
+
+### Verification
+
+- `python scripts/curate_free_exercise_db_mapping.py --dry-run` →
+  98 rows would flip; idempotent re-run on the curated CSV flips 0.
+- `python scripts/apply_free_exercise_db_mapping.py --dry-run` → fails
+  on the unrelated trailing-space row at line 909; scoped validation
+  on the 98 confirmed rows passes cleanly.
+- No new pytest cases run (curation produces an artifact, not a
+  production code path); existing `tests/test_free_exercise_db_mapping.py`
+  79-test suite remains green on the branch's pre-curation tree.
+
+### Next sessions
+
+1. Fix the trailing-whitespace catalogue row per one of (a)/(b)/(c)
+   above so the unscoped apply dry-run is also clean.
+2. Open checkpoint 5: route SELECT updates (`routes/workout_plan.py`,
+   `routes/workout_log.py`, `utils/workout_log.py`) to include
+   `media_path` in the page/JSON contract.
+3. Open checkpoint 6: thumbnail rendering in templates + `escapeHtml()`
+   rollout per §4.4 Option A.
+
 ## 2026-05-11 — §4 checkpoint 1 shipped on `main` (schema + validator + apply script)
 
 **Scope**: §4.3-§4.6 data/import layer only. No vendor assets, no UI wiring.

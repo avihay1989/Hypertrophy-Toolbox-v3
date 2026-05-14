@@ -4,6 +4,7 @@
 **Created:** 2026-05-04
 **Pending:** 4 representative logged weeks, owner felt-experience labels, or
 explicit Phase 2 planning.
+**Parking decision:** owner chose Option 1, stay parked, on 2026-05-13.
 
 ---
 
@@ -186,6 +187,18 @@ Real calibration requires one of:
 
 Until one of those paths runs, threshold values in `utils/fatigue.py` remain
 the §24.B defaults — unchanged.
+
+## 2026-05-13 — owner chose parked path
+
+Owner chose **Option 1: stay parked** after reviewing the Stage 4 state.
+
+This is now an intentional complete-for-now state, not an unresolved work item.
+Future agents should not keep trying to make progress on fatigue calibration
+without new signal. The operational handoff is
+[STAGE4_PARKED_HANDOFF.md](STAGE4_PARKED_HANDOFF.md).
+
+Proceed with other repo work unless one of the reopen criteria in that handoff
+is met.
 
 ---
 

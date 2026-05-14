@@ -3,7 +3,10 @@ Priority 0 Tests: Filter Whitelist Validation (SQL Injection Protection)
 """
 import pytest
 from routes.filters import ALLOWED_TABLES, ALLOWED_COLUMNS, validate_table_name, validate_column_name
-from utils.db_initializer import initialize_database
+from utils.db_initializer import (
+    _trim_exercise_name_whitespace,
+    initialize_database,
+)
 
 
 class TestWhitelistValidation:
@@ -152,7 +155,109 @@ class TestFilterExercisesWhitelist:
                 (exercise_name,),
             )
             assert row["equipment"] == equipment
-    
+
+    def test_trim_repair_strips_trailing_space_from_exercise_name(self, clean_db):
+        """Trailing whitespace on exercise_name PK is stripped on init."""
+        clean_db.execute_query(
+            "INSERT INTO exercises (exercise_name, primary_muscle_group) VALUES (?, ?)",
+            ("Dumbbell Shoulder Internal Rotation ", "Shoulders"),
+        )
+
+        initialize_database(force=True)
+
+        clean_row = clean_db.fetch_one(
+            "SELECT exercise_name FROM exercises "
+            "WHERE exercise_name = 'Dumbbell Shoulder Internal Rotation'",
+        )
+        assert clean_row is not None
+        dirty_row = clean_db.fetch_one(
+            "SELECT exercise_name FROM exercises "
+            "WHERE exercise_name = 'Dumbbell Shoulder Internal Rotation '",
+        )
+        assert dirty_row is None
+
+    def test_trim_repair_cascades_to_fk_references(self, clean_db):
+        """Trim repair updates FK and FK-less references in lockstep.
+
+        Calls `_trim_exercise_name_whitespace` directly because TESTING=1
+        causes `initialize_database` to drop user_selection / workout_log,
+        which would wipe the seeded child rows before the trim runs.
+        """
+        clean_db.execute_query(
+            "INSERT INTO exercises (exercise_name, primary_muscle_group) VALUES (?, ?)",
+            (" Squat ", "Quadriceps"),
+        )
+        clean_db.execute_query(
+            "INSERT INTO exercise_isolated_muscles (exercise_name, muscle) VALUES (?, ?)",
+            (" Squat ", "quadriceps"),
+        )
+        clean_db.execute_query(
+            """
+            INSERT INTO user_selection (routine, exercise, sets, min_rep_range, max_rep_range, weight)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            ("GYM - Test", " Squat ", 3, 8, 12, 100.0),
+        )
+        clean_db.execute_query(
+            """
+            INSERT INTO workout_log (routine, exercise, planned_sets, planned_min_reps, planned_max_reps)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            ("GYM - Test", " Squat ", 3, 8, 12),
+        )
+
+        _trim_exercise_name_whitespace(clean_db)
+
+        for table, column in (
+            ("exercises", "exercise_name"),
+            ("exercise_isolated_muscles", "exercise_name"),
+            ("user_selection", "exercise"),
+            ("workout_log", "exercise"),
+        ):
+            row = clean_db.fetch_one(
+                f"SELECT {column} FROM {table} WHERE {column} = 'Squat'"
+            )
+            assert row is not None, f"Trim did not propagate to {table}.{column}"
+            dirty = clean_db.fetch_one(
+                f"SELECT {column} FROM {table} WHERE {column} = ' Squat '"
+            )
+            assert dirty is None, f"Stale dirty row still present in {table}.{column}"
+
+    def test_trim_repair_is_idempotent(self, clean_db):
+        """Re-running initialize_database after a trim is a no-op."""
+        clean_db.execute_query(
+            "INSERT INTO exercises (exercise_name, primary_muscle_group) VALUES (?, ?)",
+            ("Trim Me ", "Chest"),
+        )
+        initialize_database(force=True)
+        initialize_database(force=True)
+        row = clean_db.fetch_one(
+            "SELECT exercise_name FROM exercises WHERE exercise_name = 'Trim Me'"
+        )
+        assert row is not None
+
+    def test_trim_repair_skips_when_trimmed_collides(self, clean_db):
+        """If a trimmed name already exists, the dirty row is left untouched."""
+        clean_db.execute_query(
+            "INSERT INTO exercises (exercise_name, primary_muscle_group) VALUES (?, ?)",
+            ("Bench Press", "Chest"),
+        )
+        clean_db.execute_query(
+            "INSERT INTO exercises (exercise_name, primary_muscle_group) VALUES (?, ?)",
+            ("Bench Press ", "Chest"),
+        )
+
+        initialize_database(force=True)
+
+        clean_row = clean_db.fetch_one(
+            "SELECT exercise_name FROM exercises WHERE exercise_name = 'Bench Press'"
+        )
+        dirty_row = clean_db.fetch_one(
+            "SELECT exercise_name FROM exercises WHERE exercise_name = 'Bench Press '"
+        )
+        assert clean_row is not None
+        assert dirty_row is not None
+
     def test_invalid_column_name_rejected(self, client):
         """Test that invalid column names return 400 with standardized error."""
         response = client.post('/filter_exercises', json={

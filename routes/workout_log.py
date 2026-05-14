@@ -175,7 +175,8 @@ def get_logs():
             wl.*,
             us.routine as plan_routine,
             us.exercise as plan_exercise,
-            e.youtube_video_id
+            e.youtube_video_id,
+            e.media_path
         FROM workout_log wl
         LEFT JOIN user_selection us ON wl.workout_plan_id = us.id
         LEFT JOIN exercises e ON wl.exercise = e.exercise_name COLLATE NOCASE
