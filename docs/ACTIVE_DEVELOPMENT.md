@@ -8,7 +8,7 @@ This file is the execution source of truth for autonomous development sessions. 
 
 ## Current Branch
 
-`feat/workout-cool-section-4-checkpoint-3` — 5 commits ahead of `origin/main`.
+`feat/workout-cool-section-4-checkpoint-3` — 6 commits ahead of `origin/main` (four checkpoint commits plus two docs stamps).
 
 Known history:
 
@@ -18,6 +18,7 @@ Known history:
 - Branch at `df27c8d`: workout.cool §4 checkpoint 5, DB trim repair + `media_path` route contracts.
 - Branch at `553d52a`: docs stamp for shipped checkpoint 5.
 - Branch at `d00eae6`: workout.cool §4 checkpoint 6, thumbnail UI + escapeHtml rollout + `safe_media_path` Jinja filter.
+- Branch at `966a338`: docs stamp for shipped checkpoint 6.
 
 ## Already Done
 
@@ -35,13 +36,14 @@ Known history:
 
 ### Step 1 — PR the branch against `main`
 
-Five branch commits — four checkpoint commits plus the docs stamp:
+Six branch commits — four checkpoint commits plus two docs stamps:
 
 - `1ff57ff` checkpoint 3 — mapping proposals + coverage report
 - `e3ebd43` checkpoint 4 — curated CSV + fatigue parked-decision docs
 - `df27c8d` checkpoint 5 — DB trim repair + `media_path` route contracts
 - `553d52a` docs stamp for shipped checkpoint 5
 - `d00eae6` checkpoint 6 — thumbnail UI + escapeHtml rollout + `safe_media_path` filter
+- `966a338` docs stamp for shipped checkpoint 6
 
 ### Step 2 — visual baseline pass (deferred)
 
