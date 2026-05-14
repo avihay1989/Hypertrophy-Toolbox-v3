@@ -13,56 +13,46 @@ Finish workout.cool §4 exercise thumbnails through mapping curation, mapping ap
 Known history:
 
 - `origin/main` at `7a77315`: workout.cool §4 checkpoint 2, free-exercise-db assets vendored.
-- Current branch at `1ff57ff`: workout.cool §4 checkpoint 3, mapping proposals and coverage report generated.
+- Branch at `1ff57ff`: workout.cool §4 checkpoint 3, mapping proposals and coverage report generated.
+- Branch at `e3ebd43`: workout.cool §4 checkpoint 4, curated CSV (113 reviewed rows) + fatigue parked-decision docs.
 
 ## Already Done
 
 - §4 checkpoint 1: `media_path` schema, path validator, and `scripts/apply_free_exercise_db_mapping.py`.
 - §4 checkpoint 2: `static/vendor/free-exercise-db/` assets, `LICENSE`, `NOTICE.md`, `VERSION`, `exercises.json`, and 873 `0.jpg` images.
 - §4 checkpoint 3: `scripts/map_free_exercise_db.py`, `data/free_exercise_db_mapping.csv`, and `docs/workout_cool_integration/checkpoint3_coverage.md`.
-- §4 checkpoint 4 (in-branch, uncommitted): `scripts/curate_free_exercise_db_mapping.py` flipped 98 rows `auto` → `confirmed` via the structural-equivalence rule; a follow-up manual pass flipped 10 rows to `manual` and 5 rows to `rejected`. Final review-status distribution: 1784 auto, 98 confirmed, 10 manual, 5 rejected — **113 reviewed** rows, clearing the §4.7 tertiary acceptance bar (≥50). Scoped apply dry-run on the 108 confirmed+manual rows passes cleanly. Targeted pytest gate `tests/test_free_exercise_db_mapping.py`: **79 passed in 2.52s on 2026-05-14**. Stale `assert rows == []` in `TestMappingCsv.test_csv_passes_validator` was retired (it pre-dated the populated CSV in `1ff57ff`).
+- §4 checkpoint 4 (shipped at `e3ebd43`): `scripts/curate_free_exercise_db_mapping.py` (structural-equivalence rule) + curated `data/free_exercise_db_mapping.csv` (1784 auto / 98 confirmed / 10 manual / 5 rejected = 113 reviewed) + stale-assertion fix + bundled fatigue Stage 4 parked-decision docs.
+- §4 checkpoint 5 (in-branch, uncommitted): `_trim_exercise_name_whitespace` repair pass in `utils/db_initializer.py` (path (a)), `media_path` surfaced in `/get_workout_plan` + `/get_workout_logs` JSON and in `utils/workout_log.py::get_workout_logs` (workout-log page render), `data/free_exercise_db_mapping.csv` line-909 trailing-space cleanup, 4 trim tests in `tests/test_priority0_filters.py`, 4 route-contract tests in `tests/test_free_exercise_db_mapping.py::TestRouteContracts`. Unscoped `apply_free_exercise_db_mapping.py --dry-run` now reports `OK: 108 row(s) would be applied (1789 ignored as auto/rejected)`. Full pytest: 1287 passed in 158.99s.
 - Fatigue meter Phase 1 / Stage 4 entry is parked by owner choice (Option 1 confirmed 2026-05-13). Do not work on fatigue unless explicit reopen criteria are met.
 
 ## Next Task
 
-Commit the in-branch checkpoint-4 slice, then open checkpoint 5.
+Commit the in-branch checkpoint-5 slice, then open checkpoint 6.
 
-### Step 1 — commit checkpoint 4
+### Step 1 — commit checkpoint 5
 
 Stage only these files:
 
-- `scripts/curate_free_exercise_db_mapping.py` (new)
-- `data/free_exercise_db_mapping.csv` (curated)
-- `tests/test_free_exercise_db_mapping.py` (stale-assertion fix)
-- `docs/workout_cool_integration/EXECUTION_LOG.md` (follow-up entry)
-- `docs/MASTER_HANDOVER.md` (current-state update)
-- `docs/ACTIVE_DEVELOPMENT.md` (this file)
-- `docs/fatigue_meter/STAGE4_PARKED_HANDOFF.md` (new) + `docs/fatigue_meter/PLANNING.md` + `docs/fatigue_meter/calibration-notes.md` (the matching 2026-05-13 parked-decision slice referenced from `MASTER_HANDOVER.md`)
+- `utils/db_initializer.py` (new `_trim_exercise_name_whitespace` pass + call-site)
+- `routes/workout_plan.py` (`/get_workout_plan` adds `e.media_path`)
+- `routes/workout_log.py` (`/get_workout_logs` adds `e.media_path`)
+- `utils/workout_log.py` (`get_workout_logs()` SQL adds `e.media_path`)
+- `tests/test_priority0_filters.py` (+4 trim regression tests)
+- `tests/test_free_exercise_db_mapping.py` (+4 route-contract tests in `TestRouteContracts`)
+- `data/free_exercise_db_mapping.csv` (line 909 trailing-space cleanup)
+- `docs/MASTER_HANDOVER.md`, `docs/workout_cool_integration/EXECUTION_LOG.md`, `docs/ACTIVE_DEVELOPMENT.md`
 
-Do **not** stage unrelated dirty files: `data/database.db`, `.mcp.json`, `.claude/settings.json`, `package.json`, `package-lock.json`, `requirements.txt`, `e2e/nav-dropdown.spec.ts`. They are local/runtime drift and belong in their own commits if anywhere.
+Do **not** stage unrelated dirty files: `data/database.db` (mutated locally by `initialize_database(force=True)` during verification), `.mcp.json`, `.claude/settings.json`, `package.json`, `package-lock.json`, `requirements.txt`, `e2e/nav-dropdown.spec.ts`.
 
-### Step 2 — open checkpoint 5 (route SELECT updates + trailing-whitespace fix)
+### Step 2 — open checkpoint 6 (thumbnail rendering + escapeHtml rollout)
 
-The pre-existing trailing-whitespace catalogue row at CSV line 909 (`'Dumbbell Shoulder Internal Rotation '`) still blocks the unscoped apply dry-run. Resolve via **path (a) — DB-side TRIM in `utils/db_initializer.py`** using the guarded metadata-repair pattern shipped in `6246854`:
+Per PLANNING.md §4.4 Option A — server-rendered thumbnail tags on plan/log pages, plus the `escapeHtml()` rollout in `static/js/modules/workout-plan.js`.
 
-```sql
-UPDATE exercises SET exercise_name = TRIM(exercise_name)
-WHERE exercise_name != TRIM(exercise_name);
-```
-
-After that:
-
-1. Regenerate `data/free_exercise_db_mapping.csv` from the cleaned DB and validate (or re-run `scripts/curate_free_exercise_db_mapping.py` if the row content survives the trim).
-2. Confirm unscoped `scripts/apply_free_exercise_db_mapping.py --dry-run` is now clean.
-3. Add SELECT-column changes to surface `media_path` in the page/JSON contracts:
-   - `routes/workout_plan.py` — `/workout_plan` and `/get_workout_plan` (or equivalent JSON endpoint).
-   - `routes/workout_log.py` and `utils/workout_log.py` — `/workout_log` and `/get_workout_logs` (or equivalent).
-4. Extend `tests/test_workout_plan_routes.py` and `tests/test_workout_log_routes.py` for the new field.
-5. Re-run the §4 pytest gate and adjacent regression batch.
-
-### Step 3 — open checkpoint 6 (thumbnail rendering + escapeHtml rollout)
-
-Per PLANNING.md §4.4 Option A — server-rendered thumbnail tags on plan/log pages, plus the `escapeHtml()` rollout in `static/js/modules/workout-plan.js`. Out of scope for checkpoints 4 and 5.
+1. Add a `resolveExerciseMediaSrc()` helper (or equivalent) that returns the `static/vendor/free-exercise-db/exercises/<media_path>` URL when `media_path` is non-null, and falls back gracefully otherwise.
+2. Render the thumbnail in `templates/workout_plan.html` and `templates/workout_log.html` adjacent to the exercise name (size + placement per §4.4 mocks).
+3. Roll out `escapeHtml()` for any user-rendered strings in the affected JS paths.
+4. Apply the curated mappings to the live DB via `scripts/apply_free_exercise_db_mapping.py` so the 108 confirmed/manual rows pick up `media_path` values.
+5. Add Playwright coverage (visual or attribute-level) for at least one row with a populated thumbnail and one with null.
 
 ## Agent Authority
 

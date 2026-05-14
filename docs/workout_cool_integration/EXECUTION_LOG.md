@@ -2,6 +2,96 @@
 
 Tracks concrete work against `PLANNING.md`. Newest entry on top.
 
+## 2026-05-14 — §4 checkpoint 5 (DB whitespace trim + route SELECT updates)
+
+**Scope**: PLANNING.md §4.5 — surface `media_path` in the page/JSON
+contracts. Resolves the open trailing-whitespace catalogue row blocker by
+adding a guarded startup trim repair (path (a) from checkpoint 4's
+followups). No UI/template work; no `escapeHtml()` rollout — those remain
+for checkpoint 6.
+
+### What landed
+
+| File | Status | What landed |
+|---|---|---|
+| `utils/db_initializer.py` | modified | New `_trim_exercise_name_whitespace` pass added to the startup sequence between `_normalize_muscle_group_values` and `_repair_known_exercise_metadata`. Trims `exercises.exercise_name` PK values that drift on whitespace and updates the FK and FK-less text references in `exercise_isolated_muscles`, `user_selection`, and `workout_log` in lockstep under `PRAGMA defer_foreign_keys = ON`. Skips trims that would collide with an existing case-insensitive name. Idempotent on a clean DB. |
+| `routes/workout_plan.py` | modified | `/get_workout_plan` JSON now returns `e.media_path` alongside `e.youtube_video_id`. |
+| `routes/workout_log.py` | modified | `/get_workout_logs` JSON now returns `e.media_path` alongside `e.youtube_video_id`. |
+| `utils/workout_log.py` | modified | `get_workout_logs()` SQL adds `e.media_path` so the page render and export inherit the field without further wiring. |
+| `tests/test_priority0_filters.py` | modified | +4 trim tests (`test_trim_repair_strips_trailing_space_from_exercise_name`, `test_trim_repair_cascades_to_fk_references`, `test_trim_repair_is_idempotent`, `test_trim_repair_skips_when_trimmed_collides`). Cascade test calls `_trim_exercise_name_whitespace` directly because TESTING=1 drops `user_selection` / `workout_log` inside `initialize_database`. |
+| `tests/test_free_exercise_db_mapping.py` | modified | +4 route-contract tests in new `TestRouteContracts` class, mirroring the §5 `youtube_video_id` shape: `/get_workout_plan` and `/get_workout_logs` return `media_path: null` by default and propagate the curated value when set. |
+| `data/free_exercise_db_mapping.csv` | modified | Removed the trailing whitespace from `Dumbbell Shoulder Internal Rotation` (CSV line 909) so the CSV's canonical form matches the trimmed DB row. |
+
+### Trim repair design
+
+The `exercises.exercise_name` PK schema lacks `ON UPDATE CASCADE`, so a
+plain `UPDATE exercises SET exercise_name = TRIM(...)` would fail FK
+checks for any row in `exercise_isolated_muscles` or `user_selection`
+referencing the dirty name. The repair therefore wraps the parent +
+child updates in a single transaction with `PRAGMA defer_foreign_keys =
+ON` (FKs deferred until commit). On commit, all rows are consistent, so
+FK enforcement passes. `workout_log.exercise` is updated in lockstep
+even though it has no formal FK, to keep cross-table text references in
+sync.
+
+The function is defensive:
+
+- Identifies dirty rows via `WHERE exercise_name != TRIM(exercise_name)`.
+- Skips rows whose trimmed form would collide with an existing
+  case-insensitive row (logs a warning instead of corrupting the
+  catalogue).
+- Idempotent — once trimmed, re-running the pass finds zero dirty rows.
+- Each `execute_query` call uses `commit=False` so the surrounding
+  transaction holds until the explicit `db.connection.commit()`.
+
+### Live DB unblock
+
+Before the trim landed, the unscoped `apply_free_exercise_db_mapping.py
+--dry-run` failed on line 909:
+```
+FAILED: 1 row(s) reference unknown exercises:
+  - line 909: exercise_name 'Dumbbell Shoulder Internal Rotation' not found in exercises table
+```
+After running `initialize_database(force=True)` against the live DB:
+```
+[INFO] Trimmed whitespace from 1 exercise_name row
+```
+The unscoped dry-run is now clean:
+```
+OK (dry-run): 108 row(s) would be applied (1789 ignored as auto/rejected).
+```
+
+### Verification
+
+- `.venv/Scripts/python.exe -m pytest tests/test_priority0_filters.py -q`
+  → **23 passed in 4.03s** (was 19; +4 trim tests).
+- `.venv/Scripts/python.exe -m pytest tests/test_free_exercise_db_mapping.py -q`
+  → **83 passed in 4.60s** (was 79; +4 route-contract tests).
+- `.venv/Scripts/python.exe -m pytest tests/test_priority0_filters.py tests/test_workout_plan_routes.py tests/test_workout_log_routes.py tests/test_youtube_video_id.py -q`
+  → **126 passed in 47.31s** (adjacent regression batch; no regressions).
+- `.venv/Scripts/python.exe -m pytest tests/ -q`
+  → **1287 passed in 158.99s** (full suite gate green).
+- `.venv/Scripts/python.exe scripts/apply_free_exercise_db_mapping.py --dry-run`
+  → **OK: 108 row(s) would be applied (1789 ignored as auto/rejected).**
+
+### Out of scope for this checkpoint
+
+- No template-side rendering of `<img>` thumbnails (checkpoint 6).
+- No `resolveExerciseMediaSrc()` helper or `escapeHtml()` rollout in
+  `static/js/modules/workout-plan.js` (checkpoint 6).
+- `get_exercise_details` (modal endpoint) not extended — it doesn't
+  currently expose `youtube_video_id` either, so the parallel keeps
+  scope tight; can be added with the modal redesign if needed.
+
+### Next sessions
+
+1. Open checkpoint 6: thumbnail rendering in `templates/workout_plan.html`
+   and `templates/workout_log.html`, plus the `escapeHtml()` rollout per
+   §4.4 Option A.
+2. Once thumbnails ship, run an apply pass (`scripts/apply_free_exercise_db_mapping.py`)
+   so the curated 108 rows pick up populated `media_path` values, then
+   re-verify the page renders without console errors.
+
 ## 2026-05-14 — §4 checkpoint 4 (mapping curation, in-branch) — follow-up pass
 
 **Scope (follow-up)**: extend the curation beyond the structural-rule

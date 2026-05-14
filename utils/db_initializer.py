@@ -469,6 +469,99 @@ def _normalize_muscle_group_values(db: DatabaseHandler) -> None:
             )
 
 
+def _trim_exercise_name_whitespace(db: DatabaseHandler) -> None:
+    """Trim leading/trailing whitespace from `exercises.exercise_name`.
+
+    The PK lacks `ON UPDATE CASCADE`, so child tables that reference it
+    (`exercise_isolated_muscles.exercise_name`, `user_selection.exercise`)
+    plus the un-FKed `workout_log.exercise` text column must be updated in
+    lockstep. `PRAGMA defer_foreign_keys = ON` defers FK enforcement to
+    end-of-transaction; the parent and child updates are issued with
+    `commit=False` so they coexist in one open transaction, then this
+    function commits the batch via `db.connection.commit()` (the explicit
+    commit checks deferred FKs and finalises the trim).
+    """
+    try:
+        rows = db.fetch_all(
+            "SELECT exercise_name FROM exercises "
+            "WHERE exercise_name != TRIM(exercise_name)"
+        )
+    except sqlite3.Error:
+        logger.exception("Failed to identify whitespace drift in exercise_name")
+        return
+
+    if not rows:
+        return
+
+    targets: list[tuple[str, str]] = []
+    for row in rows:
+        original = row.get("exercise_name")
+        if not original:
+            continue
+        trimmed = original.strip()
+        if not trimmed or trimmed == original:
+            continue
+        try:
+            collision = db.fetch_one(
+                "SELECT 1 FROM exercises "
+                "WHERE exercise_name = ? COLLATE NOCASE AND exercise_name != ?",
+                (trimmed, original),
+            )
+        except sqlite3.Error:
+            logger.exception(
+                "Failed collision check for trimmed exercise_name '%s'", original
+            )
+            continue
+        if collision:
+            logger.warning(
+                "Skipping whitespace trim of exercise_name '%s': a row named "
+                "'%s' already exists",
+                original,
+                trimmed,
+            )
+            continue
+        targets.append((original, trimmed))
+
+    if not targets:
+        return
+
+    try:
+        db.execute_query("PRAGMA defer_foreign_keys = ON", commit=False)
+        for original, trimmed in targets:
+            db.execute_query(
+                "UPDATE exercise_isolated_muscles SET exercise_name = ? "
+                "WHERE exercise_name = ?",
+                (trimmed, original),
+                commit=False,
+            )
+            db.execute_query(
+                "UPDATE user_selection SET exercise = ? WHERE exercise = ?",
+                (trimmed, original),
+                commit=False,
+            )
+            db.execute_query(
+                "UPDATE workout_log SET exercise = ? WHERE exercise = ?",
+                (trimmed, original),
+                commit=False,
+            )
+            db.execute_query(
+                "UPDATE exercises SET exercise_name = ? WHERE exercise_name = ?",
+                (trimmed, original),
+                commit=False,
+            )
+        db.connection.commit()
+    except sqlite3.Error:
+        logger.exception("Failed to trim whitespace from exercise_name PKs")
+        db.connection.rollback()
+        return
+
+    logger.info(
+        "Trimmed whitespace from %s exercise_name row%s",
+        len(targets),
+        "s" if len(targets) != 1 else "",
+    )
+
+
 def _repair_known_exercise_metadata(db: DatabaseHandler) -> None:
     """Backfill narrowly vetted catalogue metadata gaps without overwriting data."""
     updates = 0
@@ -528,6 +621,7 @@ def initialize_database(force: bool = False) -> None:
             _backfill_workout_log_plan_ids(db)
             _normalize_equipment_values(db)
             _normalize_muscle_group_values(db)
+            _trim_exercise_name_whitespace(db)
             _repair_known_exercise_metadata(db)
             _populate_movement_patterns(db)
         

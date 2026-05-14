@@ -678,6 +678,90 @@ class TestApplyHappyPath:
 # ---------------------------------------------------------------------------
 
 
+class TestRouteContracts:
+    """`/get_workout_plan` and `/get_workout_logs` expose `media_path`."""
+
+    def test_get_workout_plan_includes_field_null(
+        self, client, clean_db, exercise_factory, workout_plan_factory
+    ):
+        exercise_factory("Bench Press")
+        workout_plan_factory(exercise_name="Bench Press")
+
+        resp = client.get("/get_workout_plan")
+        assert resp.status_code == 200
+        body = resp.get_json()
+        assert body["ok"] is True
+        rows = body["data"]
+        assert len(rows) >= 1
+        assert "media_path" in rows[0]
+        assert rows[0]["media_path"] is None
+
+    def test_get_workout_plan_includes_field_set(
+        self, client, clean_db, exercise_factory, workout_plan_factory
+    ):
+        exercise_factory("Bench Press")
+        workout_plan_factory(exercise_name="Bench Press")
+        with DatabaseHandler() as db:
+            db.execute_query(
+                "UPDATE exercises SET media_path = ? "
+                "WHERE exercise_name = 'Bench Press'",
+                ("Bench_Press/0.jpg",),
+            )
+
+        resp = client.get("/get_workout_plan")
+        body = resp.get_json()
+        target = next(
+            r for r in body["data"] if r["exercise"] == "Bench Press"
+        )
+        assert target["media_path"] == "Bench_Press/0.jpg"
+
+    def test_get_workout_logs_includes_field_null(
+        self,
+        client,
+        clean_db,
+        exercise_factory,
+        workout_plan_factory,
+        workout_log_factory,
+    ):
+        exercise_factory("Bench Press")
+        plan_id = workout_plan_factory(exercise_name="Bench Press")
+        workout_log_factory(plan_id=plan_id, exercise="Bench Press")
+
+        resp = client.get("/get_workout_logs")
+        assert resp.status_code == 200
+        body = resp.get_json()
+        assert body["ok"] is True
+        rows = body["data"]
+        assert len(rows) >= 1
+        assert "media_path" in rows[0]
+        assert all(r["media_path"] is None for r in rows)
+
+    def test_get_workout_logs_includes_field_set(
+        self,
+        client,
+        clean_db,
+        exercise_factory,
+        workout_plan_factory,
+        workout_log_factory,
+    ):
+        exercise_factory("Bench Press")
+        plan_id = workout_plan_factory(exercise_name="Bench Press")
+        workout_log_factory(plan_id=plan_id, exercise="Bench Press")
+        with DatabaseHandler() as db:
+            db.execute_query(
+                "UPDATE exercises SET media_path = ? "
+                "WHERE exercise_name = 'Bench Press'",
+                ("Bench_Press/0.jpg",),
+            )
+
+        resp = client.get("/get_workout_logs")
+        body = resp.get_json()
+        target = next(
+            r for r in body["data"] if r["exercise"] == "Bench Press"
+        )
+        assert target["media_path"] == "Bench_Press/0.jpg"
+
+
 class TestApplyScriptCli:
     def test_help_runs(self):
         result = subprocess.run(

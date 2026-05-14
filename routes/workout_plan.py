@@ -288,7 +288,8 @@ def get_workout_plan():
                 e.synergists,
                 e.movement_pattern,
                 e.movement_subpattern,
-                e.youtube_video_id
+                e.youtube_video_id,
+                e.media_path
             FROM user_selection us
             LEFT JOIN exercises e ON us.exercise = e.exercise_name
             {order_by_clause}
