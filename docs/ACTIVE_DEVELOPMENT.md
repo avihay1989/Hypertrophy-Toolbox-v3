@@ -4,11 +4,11 @@ This file is the execution source of truth for autonomous development sessions. 
 
 ## Current Objective
 
-Finish workout.cool §4 exercise thumbnails through mapping curation, mapping apply, route contracts, thumbnail UI, escaping, and validation.
+§4 free-exercise-db thumbnails is **feature-complete** on the branch. Remaining work is PR review/merge plus the deferred visual-baseline pass.
 
 ## Current Branch
 
-`feat/workout-cool-section-4-checkpoint-3`
+`feat/workout-cool-section-4-checkpoint-3` — 5 commits ahead of `origin/main`.
 
 Known history:
 
@@ -17,6 +17,7 @@ Known history:
 - Branch at `e3ebd43`: workout.cool §4 checkpoint 4, curated CSV (113 reviewed rows) + fatigue parked-decision docs.
 - Branch at `df27c8d`: workout.cool §4 checkpoint 5, DB trim repair + `media_path` route contracts.
 - Branch at `553d52a`: docs stamp for shipped checkpoint 5.
+- Branch at `d00eae6`: workout.cool §4 checkpoint 6, thumbnail UI + escapeHtml rollout + `safe_media_path` Jinja filter.
 
 ## Already Done
 
@@ -25,37 +26,30 @@ Known history:
 - §4 checkpoint 3 (shipped at `1ff57ff`): `scripts/map_free_exercise_db.py`, `data/free_exercise_db_mapping.csv` (raw 1,897 rows), and `docs/workout_cool_integration/checkpoint3_coverage.md`.
 - §4 checkpoint 4 (shipped at `e3ebd43`): `scripts/curate_free_exercise_db_mapping.py` (structural-equivalence rule) + curated `data/free_exercise_db_mapping.csv` (1784 auto / 98 confirmed / 10 manual / 5 rejected = 113 reviewed) + stale-assertion fix + bundled fatigue Stage 4 parked-decision docs.
 - §4 checkpoint 5 (shipped at `df27c8d`): `_trim_exercise_name_whitespace` repair pass in `utils/db_initializer.py` (path (a)); `media_path` surfaced in `/get_workout_plan` + `/get_workout_logs` JSON and in `utils/workout_log.py::get_workout_logs` (workout-log page render); +4 trim tests in `tests/test_priority0_filters.py`, +4 route-contract tests in `tests/test_free_exercise_db_mapping.py::TestRouteContracts`.
-- §4 checkpoint 6 (in-branch, uncommitted): new `static/js/modules/exercise-helpers.js` with `escapeHtml()` + `resolveExerciseMediaSrc()`; workout-plan row renderer routes interpolations through `escapeHtml()` and renders a 32×32 thumbnail when `media_path` is set; workout-log template server-renders the same thumbnail gated by the new `safe_media_path` Jinja filter (registered in `app.py` + `tests/conftest.py`) that revalidates §4.3 shape rules at render time per PLANNING §4.4 defense-in-depth; thumbnail CSS in `static/css/components.css` + advanced-view override in `static/css/pages-workout-plan.css`; +4 self-contained Playwright tests in `e2e/workout-plan.spec.ts` (mock rows via dynamic `import('/static/js/modules/workout-plan.js')` + `updateWorkoutPlanTable([row])` — no live-DB dependency); +2 filter unit tests in `tests/test_free_exercise_db_mapping.py::TestSafeMediaPathJinjaFilter`. Full pytest: 1289 passed in 171.47s. Plan+log E2E: 56 passed in 1.6m.
+- §4 checkpoint 6 (shipped at `d00eae6`): new `static/js/modules/exercise-helpers.js` with `escapeHtml()` + `resolveExerciseMediaSrc()`; workout-plan row renderer routes interpolations through `escapeHtml()` and renders a 32×32 thumbnail when `media_path` is set; workout-log template server-renders the same thumbnail gated by the new `safe_media_path` Jinja filter (registered in `app.py` + `tests/conftest.py`) that revalidates §4.3 shape rules at render time per PLANNING §4.4 defense-in-depth; thumbnail CSS in `static/css/components.css` + advanced-view override in `static/css/pages-workout-plan.css`; +4 self-contained Playwright tests in `e2e/workout-plan.spec.ts` (mock rows via dynamic `import('/static/js/modules/workout-plan.js')` + `updateWorkoutPlanTable([row])` — no live-DB dependency); +2 filter unit tests in `tests/test_free_exercise_db_mapping.py::TestSafeMediaPathJinjaFilter`. Full pytest: 1289 passed in 171.47s. Plan+log E2E: 56 passed in 1.6m.
 - Fatigue meter Phase 1 / Stage 4 entry is parked by owner choice (Option 1 confirmed 2026-05-13). Do not work on fatigue unless explicit reopen criteria are met.
 
 ## Next Task
 
-Commit the in-branch checkpoint-6 slice; §4 is then feature-complete.
+§4 is feature-complete on the branch. Remaining work:
 
-### Step 1 — commit checkpoint 6
+### Step 1 — PR the branch against `main`
 
-Stage only these files:
+Five branch commits — four checkpoint commits plus the docs stamp:
 
-- `static/js/modules/exercise-helpers.js` (new)
-- `static/js/modules/workout-plan.js` (helper imports, escaped interpolations, thumbnail in Exercise cell)
-- `app.py` (registers `safe_media_path` Jinja filter)
-- `tests/conftest.py` (registers the same filter on the test app)
-- `templates/workout_log.html` (server-rendered thumbnail gated on `safe_media_path` filter)
-- `static/css/components.css` (thumbnail + dark-mode override)
-- `static/css/pages-workout-plan.css` (advanced-view thumbnail alignment override)
-- `e2e/workout-plan.spec.ts` (+4 self-contained thumbnail/helper tests)
-- `tests/test_free_exercise_db_mapping.py` (+2 filter unit tests in `TestSafeMediaPathJinjaFilter`)
-- `docs/MASTER_HANDOVER.md`, `docs/workout_cool_integration/EXECUTION_LOG.md`, `docs/ACTIVE_DEVELOPMENT.md`
+- `1ff57ff` checkpoint 3 — mapping proposals + coverage report
+- `e3ebd43` checkpoint 4 — curated CSV + fatigue parked-decision docs
+- `df27c8d` checkpoint 5 — DB trim repair + `media_path` route contracts
+- `553d52a` docs stamp for shipped checkpoint 5
+- `d00eae6` checkpoint 6 — thumbnail UI + escapeHtml rollout + `safe_media_path` filter
 
-Do **not** stage unrelated dirty files: `data/database.db` (mutated locally during validation — reproducible from the committed CSV via `scripts/apply_free_exercise_db_mapping.py`), `.mcp.json`, `.claude/settings.json`, `package.json`, `package-lock.json`, `requirements.txt`, `e2e/nav-dropdown.spec.ts`.
+### Step 2 — visual baseline pass (deferred)
 
-### Step 2 — PR the four feature commits
+PLANNING §4.6 calls for desktop / tablet / mobile + light / dark + simple / advanced snapshots. Fold into the next dedicated visual snapshot session — not blocking PR.
 
-`1ff57ff` → `e3ebd43` → `df27c8d` → `553d52a` → (checkpoint 6 commit) form the §4 feature slice ready for PR against `main`. §4 is then feature-complete.
+### Step 3 — apply the curated mappings on the merged main
 
-### Step 3 — visual baseline pass (deferred)
-
-PLANNING §4.6 calls for desktop / tablet / mobile + light / dark + simple / advanced snapshots. Fold into the next dedicated visual snapshot session.
+After PR merge, run `scripts/apply_free_exercise_db_mapping.py` against whichever environment carries the canonical DB. The committed CSV is reproducible and idempotent; the apply step populates `exercises.media_path` for the 108 confirmed/manual rows.
 
 ## Agent Authority
 
