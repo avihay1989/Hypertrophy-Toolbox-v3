@@ -2,7 +2,7 @@
 
 Tracks concrete work against `PLANNING.md`. Newest entry on top.
 
-## 2026-05-14 — §4 checkpoint 5 (DB whitespace trim + route SELECT updates)
+## 2026-05-14 — §4 checkpoint 5 (DB whitespace trim + route SELECT updates) — shipped at `df27c8d`
 
 **Scope**: PLANNING.md §4.5 — surface `media_path` in the page/JSON
 contracts. Resolves the open trailing-whitespace catalogue row blocker by
