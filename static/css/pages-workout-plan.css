@@ -5199,6 +5199,11 @@ tr.superset-partner-dragging {
   margin-top: 0;
 }
 
+#workout[data-page="workout-plan"] .workout-plan-table.tbl--view-advanced .exercise-cell .exercise-thumbnail {
+  flex: 0 0 auto;
+  align-self: flex-start;
+}
+
 #workout[data-page="workout-plan"] .workout-plan-table.tbl--view-advanced td[data-label="Primary Muscle"],
 #workout[data-page="workout-plan"] .workout-plan-table.tbl--view-advanced th[data-label="Primary Muscle"],
 #workout[data-page="workout-plan"] .workout-plan-table.tbl--view-advanced td[data-label="Secondary Muscle"],

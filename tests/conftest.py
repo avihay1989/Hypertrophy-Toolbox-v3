@@ -90,6 +90,12 @@ def app(test_db_path):
     app.register_blueprint(volume_splitter_bp)
     app.register_blueprint(program_backup_bp)
 
+    from utils.media_path import is_valid_media_path_shape
+
+    @app.template_filter('safe_media_path')
+    def _safe_media_path(value):
+        return value if is_valid_media_path_shape(value) else None
+
     @app.route('/erase-data', methods=['POST'])
     def erase_data():
         try:

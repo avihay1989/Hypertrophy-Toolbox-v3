@@ -678,6 +678,32 @@ class TestApplyHappyPath:
 # ---------------------------------------------------------------------------
 
 
+class TestSafeMediaPathJinjaFilter:
+    """`safe_media_path` filter revalidates path-shape rules at render time."""
+
+    def test_filter_returns_value_for_valid_path(self, app):
+        with app.app_context():
+            f = app.jinja_env.filters["safe_media_path"]
+            assert f("Squat_Barbell/0.jpg") == "Squat_Barbell/0.jpg"
+
+    def test_filter_returns_none_for_invalid_path(self, app):
+        with app.app_context():
+            f = app.jinja_env.filters["safe_media_path"]
+            for bad in (
+                None,
+                "",
+                "/abs/path/0.jpg",
+                "../etc/passwd",
+                "dir/with/..//evil.jpg",
+                "dir\\img.jpg",
+                "C:/temp/0.jpg",
+                "dir/img.exe",
+                "dir/img",
+                123,
+            ):
+                assert f(bad) is None, f"Expected None for {bad!r}"
+
+
 class TestRouteContracts:
     """`/get_workout_plan` and `/get_workout_logs` expose `media_path`."""
 

@@ -2,6 +2,97 @@
 
 Tracks concrete work against `PLANNING.md`. Newest entry on top.
 
+## 2026-05-14 — §4 checkpoint 6 (thumbnail UI + escapeHtml rollout)
+
+**Scope**: PLANNING.md §4.4 Option A. Adds a shared `escapeHtml()` /
+`resolveExerciseMediaSrc()` helper module, renders free-exercise-db
+thumbnails in the workout-plan + workout-log Exercise cells, routes the
+workout-plan row template-literal interpolations through `escapeHtml()`
+so the new `alt`/`src` work isn't the only safe spot in an otherwise
+unsafe row, and revalidates `media_path` at render time on the
+server-rendered log page via a new `safe_media_path` Jinja filter.
+
+### What landed
+
+| File | Status | What landed |
+|---|---|---|
+| `static/js/modules/exercise-helpers.js` | new | Shared `escapeHtml(value)` + `isValidMediaPathShape(value)` + `resolveExerciseMediaSrc(mediaPath)`. Path-shape rules mirror `utils/media_path.py::is_valid_media_path_shape` verbatim (non-empty, no leading slash, no `\`, no `:`, no `..`/`.`/empty segments, jpg/jpeg/png/gif/webp extension allowlist). URL builder runs each path segment through `encodeURIComponent` and re-joins with `/`. |
+| `static/js/modules/workout-plan.js` | modified | Imports the helpers. Row renderer at the §4.4 site (~line 1543) now `escapeHtml()`-wraps every interpolated value (exercise name, routine, muscle raw-value attrs, utility/movement/grips/stabilizers/synergists, sets/reps/RIR/RPE/weight, superset-group, aria-label). Pre-existing routine helpers `formatRoutineForDisplay` and `formatRoutineForTab` also escape their parsed parts. New thumbnail `<img>` prepended into the Exercise cell when `resolveExerciseMediaSrc(exercise.media_path)` returns a URL (else nothing rendered, matching pre-checkpoint behaviour). |
+| `app.py` | modified | Registers a `safe_media_path` Jinja filter that returns the path iff `utils.media_path.is_valid_media_path_shape` accepts it, else `None`. Defense-in-depth: the apply script validates on write, but rows can be edited out-of-band and PLANNING §4.4 mandates revalidation at render time. |
+| `tests/conftest.py` | modified | Registers the same `safe_media_path` filter on the test-only Flask app (which is built from scratch in the fixture rather than imported from `app.py`). |
+| `templates/workout_log.html` | modified | Server-rendered thumbnail `<img class="exercise-thumbnail" …>` prepended into the Exercise-cell content block when `log.media_path | safe_media_path` returns a non-None value. Jinja auto-escaping handles the `alt`; `url_for('static', filename='vendor/free-exercise-db/exercises/' + safe_path)` builds the URL only after the filter accepts the path. |
+| `static/css/components.css` | modified | `.exercise-cell .exercise-thumbnail` — 32×32, 1:1 aspect-ratio, rounded corners, `object-fit: cover`, neutral background. Dark-mode override adjusts the placeholder background. |
+| `static/css/pages-workout-plan.css` | modified | Advanced view-mode override: thumbnail `align-self: flex-start` to coexist with the wrapped exercise-name + swap/play buttons. |
+| `e2e/workout-plan.spec.ts` | modified | +4 tests in new `§4 free-exercise-db thumbnails` describe block, all **self-contained** (no live-DB dependency): they call `updateWorkoutPlanTable([mockRow])` via dynamic `import('/static/js/modules/workout-plan.js')` to render synthetic rows directly. Coverage: (a) `media_path: 'Band_Good_Morning/0.jpg'` → renders `<img.exercise-thumbnail>` with safe `src`, `alt`, `loading=lazy`, `width=height=32`; (b) `media_path: null` → no `<img>`, no console errors; (c) `exercise: "Coach's <Test> Press"` → `.exercise-name` textContent matches the literal angle brackets and zero injected `<Test>` elements (proves `escapeHtml` works end-to-end); (d) `page.evaluate()` drives `escapeHtml()` + `resolveExerciseMediaSrc()` across the full accept/reject matrix from §4.6 — synthetic `Coach's <Test> Press`, ampersand, null, valid jpg, upper-case `.PNG`, empty, abs path, `..`, backslash, `:`, `.exe`, no-extension, and `weird name/0.jpg` URL-encoding. |
+| `tests/test_free_exercise_db_mapping.py` | modified | +2 unit tests in new `TestSafeMediaPathJinjaFilter` class covering accept (`Squat_Barbell/0.jpg`) and reject (None, empty, abs path, `..`, double slash, backslash, `:`, `.exe`, no-extension, int) for the `safe_media_path` filter. |
+
+### Why E2E is mock-driven, not DB-driven
+
+The earlier draft seeded the test by adding `Band Good Morning` through
+the cascade UI and asserting the rendered thumbnail. That depends on
+the live `data/database.db` carrying a populated `media_path` for the
+row, which is true only after running `scripts/apply_free_exercise_db_mapping.py`
+against the local DB — and `data/database.db` is intentionally not
+committed, so a clean CI checkout would render no thumbnail and the
+test would fail.
+
+The revised tests render synthetic rows by calling
+`updateWorkoutPlanTable([mockExercise])` directly via dynamic
+`import('/static/js/modules/workout-plan.js')`. This exercises the same
+template-literal renderer the production code uses, but the input is
+controlled by the test rather than the DB. The route contract is
+covered by `tests/test_free_exercise_db_mapping.py::TestRouteContracts`
+(checkpoint 5).
+
+### Why a server-side path-shape filter
+
+PLANNING §4.4 explicitly mandates "Re-validates `mediaPath` against the
+§4.3 path-shape rules before constructing a URL (defense in depth —
+DB rows can still be edited out-of-band)" for the client-side helper.
+The same logic applies to the server-rendered log template: even with
+the apply-script invariant in place, anyone editing the SQLite file by
+hand could bypass shape validation and inject `../../../etc/passwd` or
+similar into the URL. The `safe_media_path` Jinja filter mirrors
+`utils.media_path.is_valid_media_path_shape` and returns `None` for
+any value that fails, causing the template to skip the `<img>` and
+behave like the NULL case.
+
+### Apply pass (informational; not part of the committed slice)
+
+`scripts/apply_free_exercise_db_mapping.py` was run against the live
+DB during checkpoint-6 development to confirm the route contract
+populated the `media_path` field end-to-end:
+
+```
+OK: applied 108 row(s) to exercises.media_path (1789 ignored as auto/rejected).
+```
+
+`data/database.db` is **not** committed (excluded as a local/runtime
+file per the standing rule). To apply mappings on any environment:
+
+```bash
+.venv/Scripts/python.exe scripts/apply_free_exercise_db_mapping.py
+```
+
+It's idempotent and all-or-nothing — safe to re-run.
+
+### Verification
+
+- `.venv/Scripts/python.exe -m pytest tests/ -q` → **1289 passed in 171.47s** on 2026-05-14 (was 1287; +2 `safe_media_path` filter tests).
+- `npx playwright test e2e/workout-plan.spec.ts e2e/workout-log.spec.ts --project=chromium --reporter=line` → **56 passed in 1.6m** (was 52 baseline; +4 thumbnail/helper tests, all self-contained).
+
+### Out of scope
+
+- No further hardening of `transformMuscleDisplay()` / `renderExecutionStyleBadge()` — they operate on normalised enum-like DB columns. If future audit determines they need escaping too, that's a separate, narrowly scoped commit.
+- No visual-regression baseline updates. PLANNING §4.6 calls for desktop / tablet / mobile, light / dark, simple / advanced snapshots; deferred to a dedicated visual-baseline pass.
+- No backup-center / program-backup `escapeHtml()` consolidation — those modules already have local copies that work; converging them with the new shared helper is a tidy-up for later.
+
+### Next sessions
+
+1. PR the four-commit branch (checkpoints 3 → 6) once you're happy.
+2. Visual-baseline pass per §4.6 (desktop / tablet / mobile + light / dark + simple / advanced) — fold into the next visual snapshot session.
+3. Future curation passes can lift more rows from `auto` → `confirmed`/`manual` (the structural-equivalence rule under-confirms; manual-spot-check rule still applies).
+
 ## 2026-05-14 — §4 checkpoint 5 (DB whitespace trim + route SELECT updates) — shipped at `df27c8d`
 
 **Scope**: PLANNING.md §4.5 — surface `media_path` in the page/JSON

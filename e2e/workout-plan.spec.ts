@@ -7,6 +7,7 @@
  * - Add exercise flow
  * - Export actions
  */
+import type { Page } from '@playwright/test';
 import { test, expect, ROUTES, SELECTORS, waitForPageReady, resetWorkoutPlan } from './fixtures';
 
 test.beforeEach(async ({ page }) => {
@@ -911,5 +912,147 @@ test.describe('Exercise reference video modal (workout-plan)', () => {
     const href = await page.locator('#exerciseVideoExternalLink').getAttribute('href');
     expect(href).toMatch(/^https:\/\/www\.youtube\.com\/results\?search_query=/);
     expect(href).toContain('Fake');
+  });
+});
+
+test.describe('§4 free-exercise-db thumbnails', () => {
+  test.beforeEach(async ({ page, consoleErrors }) => {
+    consoleErrors.startCollecting();
+    await resetWorkoutPlan(page);
+    await page.goto(ROUTES.WORKOUT_PLAN);
+    await waitForPageReady(page);
+  });
+
+  test.afterEach(async ({ consoleErrors }) => {
+    consoleErrors.assertNoErrors();
+  });
+
+  // Render a mocked row directly via the module's `updateWorkoutPlanTable`
+  // entry point so the assertions don't depend on the live DB carrying a
+  // curated `media_path`. Mirrors the JSON shape `/get_workout_plan` returns.
+  async function renderMockExercises(page: Page, exercises: Record<string, unknown>[]) {
+    await page.evaluate(async (rows) => {
+      const mod = await import('/static/js/modules/workout-plan.js');
+      mod.updateWorkoutPlanTable(rows as never);
+    }, exercises);
+  }
+
+  test('mocked row with media_path renders a thumbnail img with safe src', async ({ page }) => {
+    await renderMockExercises(page, [
+      {
+        id: 9001,
+        routine: 'GYM - Full Body - Workout A',
+        exercise: 'Band Good Morning',
+        media_path: 'Band_Good_Morning/0.jpg',
+        primary_muscle_group: 'Hamstrings',
+        sets: 3,
+        min_rep_range: 8,
+        max_rep_range: 12,
+        rir: 2,
+        weight: 50,
+      },
+    ]);
+
+    const row = page.locator('#workout_plan_table_body tr').first();
+    await expect(row).toBeVisible();
+
+    const thumb = row.locator('img.exercise-thumbnail');
+    await expect(thumb).toBeVisible();
+
+    const src = await thumb.getAttribute('src');
+    expect(src).toBe('/static/vendor/free-exercise-db/exercises/Band_Good_Morning/0.jpg');
+    expect(src).not.toContain('..');
+
+    const alt = await thumb.getAttribute('alt');
+    expect(alt).toBe('Band Good Morning reference');
+
+    expect(await thumb.getAttribute('loading')).toBe('lazy');
+    expect(await thumb.getAttribute('width')).toBe('32');
+    expect(await thumb.getAttribute('height')).toBe('32');
+  });
+
+  test('mocked row with NULL media_path renders no img and no console errors', async ({ page }) => {
+    await renderMockExercises(page, [
+      {
+        id: 9002,
+        routine: 'GYM - Full Body - Workout A',
+        exercise: 'Some Uncurated Exercise',
+        media_path: null,
+        primary_muscle_group: 'Quadriceps',
+        sets: 3,
+        min_rep_range: 5,
+        max_rep_range: 8,
+        rir: 1,
+        weight: 80,
+      },
+    ]);
+
+    const row = page.locator('#workout_plan_table_body tr').first();
+    await expect(row).toBeVisible();
+    await expect(row.locator('img.exercise-thumbnail')).toHaveCount(0);
+  });
+
+  test('mocked row with HTML-special exercise name renders escaped (no raw markup leaks)', async ({ page }) => {
+    await renderMockExercises(page, [
+      {
+        id: 9003,
+        routine: 'GYM - Full Body - Workout A',
+        exercise: `Coach's <Test> Press`,
+        media_path: 'Band_Good_Morning/0.jpg',
+        primary_muscle_group: 'Chest',
+        sets: 3,
+        min_rep_range: 8,
+        max_rep_range: 12,
+        rir: 2,
+        weight: 60,
+      },
+    ]);
+
+    const row = page.locator('#workout_plan_table_body tr').first();
+    // textContent strips markup; if escapeHtml is working, the literal angle brackets are present.
+    await expect(row.locator('.exercise-name')).toHaveText(`Coach's <Test> Press`);
+    // And no nested <Test> element was injected from the angle brackets.
+    expect(await row.locator('.exercise-name Test').count()).toBe(0);
+
+    const thumb = row.locator('img.exercise-thumbnail');
+    const alt = await thumb.getAttribute('alt');
+    expect(alt).toBe(`Coach's <Test> Press reference`);
+  });
+
+  test('escapeHtml + resolveExerciseMediaSrc behave per the §4.3/§4.4 contract', async ({ page }) => {
+    const result = await page.evaluate(async () => {
+      const mod = await import('/static/js/modules/exercise-helpers.js');
+      return {
+        escapeMixed: mod.escapeHtml(`Coach's <Test> Press`),
+        escapeAmp: mod.escapeHtml('A & B'),
+        escapeNull: mod.escapeHtml(null),
+        validJpg: mod.resolveExerciseMediaSrc('Band_Good_Morning/0.jpg'),
+        validUpperExt: mod.resolveExerciseMediaSrc('Foo/0.PNG'),
+        invalidEmpty: mod.resolveExerciseMediaSrc(''),
+        invalidNull: mod.resolveExerciseMediaSrc(null),
+        invalidAbs: mod.resolveExerciseMediaSrc('/abs/path/0.jpg'),
+        invalidParent: mod.resolveExerciseMediaSrc('../etc/passwd'),
+        invalidBackslash: mod.resolveExerciseMediaSrc('dir\\img.jpg'),
+        invalidColon: mod.resolveExerciseMediaSrc('C:/temp/0.jpg'),
+        invalidExt: mod.resolveExerciseMediaSrc('dir/img.exe'),
+        invalidNoExt: mod.resolveExerciseMediaSrc('dir/img'),
+        encodesSpace: mod.resolveExerciseMediaSrc('weird name/0.jpg'),
+      };
+    });
+
+    expect(result.escapeMixed).toBe('Coach&#39;s &lt;Test&gt; Press');
+    expect(result.escapeAmp).toBe('A &amp; B');
+    expect(result.escapeNull).toBe('');
+    expect(result.validJpg).toBe('/static/vendor/free-exercise-db/exercises/Band_Good_Morning/0.jpg');
+    expect(result.validUpperExt).toBe('/static/vendor/free-exercise-db/exercises/Foo/0.PNG');
+    expect(result.invalidEmpty).toBeNull();
+    expect(result.invalidNull).toBeNull();
+    expect(result.invalidAbs).toBeNull();
+    expect(result.invalidParent).toBeNull();
+    expect(result.invalidBackslash).toBeNull();
+    expect(result.invalidColon).toBeNull();
+    expect(result.invalidExt).toBeNull();
+    expect(result.invalidNoExt).toBeNull();
+    expect(result.encodesSpace).toBe('/static/vendor/free-exercise-db/exercises/weird%20name/0.jpg');
   });
 });

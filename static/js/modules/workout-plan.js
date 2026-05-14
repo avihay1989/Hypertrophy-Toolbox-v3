@@ -2,6 +2,7 @@ import { showToast } from './toast.js';
 import { api, isHandledApiError, logApiError } from './fetch-wrapper.js';
 import { notifyVolumeAffectingPlanChange } from './workout-plan-events.js';
 import { buildPlayButton } from './exercise-video-modal.js';
+import { escapeHtml, resolveExerciseMediaSrc } from './exercise-helpers.js';
 
 /**
  * Transform muscle display value based on current view mode (Simple/Advanced)
@@ -402,7 +403,7 @@ function formatRoutineForDisplay(routine) {
     if (!routine) return 'N/A';
     const parsed = parseRoutine(routine);
     if (!parsed.env && !parsed.program && !parsed.workout) return 'N/A';
-    return `<span class="routine-env">${parsed.env || ''}</span><span class="routine-program">${parsed.program || ''}</span><span class="routine-workout">${parsed.workout || ''}</span>`;
+    return `<span class="routine-env">${escapeHtml(parsed.env || '')}</span><span class="routine-program">${escapeHtml(parsed.program || '')}</span><span class="routine-workout">${escapeHtml(parsed.workout || '')}</span>`;
 }
 
 /**
@@ -413,8 +414,8 @@ function formatRoutineForDisplay(routine) {
 function formatRoutineForTab(routine) {
     if (!routine) return 'N/A';
     const parsed = parseRoutine(routine);
-    if (!parsed.env && !parsed.program && !parsed.workout) return routine;
-    return `<span class="tab-env">${parsed.env || ''}</span><span class="tab-program">${parsed.program || ''}</span><span class="tab-workout">${parsed.workout || ''}</span>`;
+    if (!parsed.env && !parsed.program && !parsed.workout) return escapeHtml(routine);
+    return `<span class="tab-env">${escapeHtml(parsed.env || '')}</span><span class="tab-program">${escapeHtml(parsed.program || '')}</span><span class="tab-workout">${escapeHtml(parsed.workout || '')}</span>`;
 }
 
 /**
@@ -1539,14 +1540,20 @@ export function updateWorkoutPlanTable(exercises) {
             row.className = supersetClasses;
         }
         
+        const exerciseName = exercise.exercise || 'N/A';
+        const mediaSrc = resolveExerciseMediaSrc(exercise.media_path);
+        const thumbnailHtml = mediaSrc
+            ? `<img class="exercise-thumbnail" src="${escapeHtml(mediaSrc)}" alt="${escapeHtml(exerciseName)} reference" loading="lazy" width="32" height="32">`
+            : '';
+
         // Add checkbox column, drag handle and other cells with priority classes and data-labels
         row.innerHTML = `
             <td class="superset-select-col" data-label="Select">
-                <input type="checkbox" class="superset-checkbox" 
-                       data-exercise-id="${exercise.id}" 
-                       data-routine="${exercise.routine || ''}"
-                       data-superset-group="${supersetGroup || ''}"
-                       aria-label="Select ${exercise.exercise} for superset">
+                <input type="checkbox" class="superset-checkbox"
+                       data-exercise-id="${exercise.id}"
+                       data-routine="${escapeHtml(exercise.routine || '')}"
+                       data-superset-group="${escapeHtml(supersetGroup || '')}"
+                       aria-label="Select ${escapeHtml(exerciseName)} for superset">
             </td>
             <td class="drag-handle" title="Drag to reorder">
                 <i class="fas fa-grip-vertical"></i>
@@ -1554,7 +1561,8 @@ export function updateWorkoutPlanTable(exercises) {
             <td class="col--high routine-cell" data-label="Routine">${formatRoutineForDisplay(exercise.routine)}</td>
             <td class="col--high exercise-cell" data-label="Exercise">
                 <div class="exercise-cell-content">
-                    <span class="exercise-name">${exercise.exercise || 'N/A'}</span>
+                    ${thumbnailHtml}
+                    <span class="exercise-name">${escapeHtml(exerciseName)}</span>
                     ${supersetBadgeHtml}
                     <button type="button"
                             class="btn btn-swap btn-calm-ghost"
@@ -1566,25 +1574,25 @@ export function updateWorkoutPlanTable(exercises) {
                     </button>
                 </div>
             </td>
-            <td class="col--med" data-label="Primary Muscle" data-raw-value="${exercise.primary_muscle_group || ''}">${transformMuscleDisplay(exercise.primary_muscle_group, 'primary', exercise.advanced_isolated_muscles)}</td>
-            <td class="col--low" data-label="Secondary Muscle" data-raw-value="${exercise.secondary_muscle_group || ''}">${transformMuscleDisplay(exercise.secondary_muscle_group, 'primary', exercise.advanced_isolated_muscles)}</td>
-            <td class="col--low" data-label="Tertiary Muscle" data-raw-value="${exercise.tertiary_muscle_group || ''}">${transformMuscleDisplay(exercise.tertiary_muscle_group, 'primary', exercise.advanced_isolated_muscles)}</td>
-            <td class="col--low" data-label="Isolated Muscles" data-raw-value="${exercise.advanced_isolated_muscles || ''}">${transformMuscleDisplay(exercise.advanced_isolated_muscles, 'isolated')}</td>
-            <td class="col--low" data-label="Utility">${exercise.utility || 'N/A'}</td>
-            <td class="col--low" data-label="Movement Pattern">${exercise.movement_pattern || 'N/A'}</td>
-            <td class="col--low" data-label="Movement Subpattern">${exercise.movement_subpattern || 'N/A'}</td>
-            <td class="col--high is-num editable" data-field="sets" data-label="Sets">${exercise.sets || 'N/A'}</td>
-            <td class="col--high is-num editable" data-field="min_rep_range" data-label="Min Rep">${exercise.min_rep_range || 'N/A'}</td>
-            <td class="col--high is-num editable" data-field="max_rep_range" data-label="Max Rep">${exercise.max_rep_range || 'N/A'}</td>
-            <td class="col--med is-num editable" data-field="rir" data-label="RIR">${exercise.rir || 'N/A'}</td>
-            <td class="col--med is-num editable" data-field="rpe" data-label="RPE">${exercise.rpe || 'N/A'}</td>
-            <td class="col--high is-num editable" data-field="weight" data-label="Weight">${exercise.weight || 'N/A'}</td>
+            <td class="col--med" data-label="Primary Muscle" data-raw-value="${escapeHtml(exercise.primary_muscle_group || '')}">${transformMuscleDisplay(exercise.primary_muscle_group, 'primary', exercise.advanced_isolated_muscles)}</td>
+            <td class="col--low" data-label="Secondary Muscle" data-raw-value="${escapeHtml(exercise.secondary_muscle_group || '')}">${transformMuscleDisplay(exercise.secondary_muscle_group, 'primary', exercise.advanced_isolated_muscles)}</td>
+            <td class="col--low" data-label="Tertiary Muscle" data-raw-value="${escapeHtml(exercise.tertiary_muscle_group || '')}">${transformMuscleDisplay(exercise.tertiary_muscle_group, 'primary', exercise.advanced_isolated_muscles)}</td>
+            <td class="col--low" data-label="Isolated Muscles" data-raw-value="${escapeHtml(exercise.advanced_isolated_muscles || '')}">${transformMuscleDisplay(exercise.advanced_isolated_muscles, 'isolated')}</td>
+            <td class="col--low" data-label="Utility">${escapeHtml(exercise.utility || 'N/A')}</td>
+            <td class="col--low" data-label="Movement Pattern">${escapeHtml(exercise.movement_pattern || 'N/A')}</td>
+            <td class="col--low" data-label="Movement Subpattern">${escapeHtml(exercise.movement_subpattern || 'N/A')}</td>
+            <td class="col--high is-num editable" data-field="sets" data-label="Sets">${escapeHtml(exercise.sets ?? 'N/A')}</td>
+            <td class="col--high is-num editable" data-field="min_rep_range" data-label="Min Rep">${escapeHtml(exercise.min_rep_range ?? 'N/A')}</td>
+            <td class="col--high is-num editable" data-field="max_rep_range" data-label="Max Rep">${escapeHtml(exercise.max_rep_range ?? 'N/A')}</td>
+            <td class="col--med is-num editable" data-field="rir" data-label="RIR">${escapeHtml(exercise.rir ?? 'N/A')}</td>
+            <td class="col--med is-num editable" data-field="rpe" data-label="RPE">${escapeHtml(exercise.rpe ?? 'N/A')}</td>
+            <td class="col--high is-num editable" data-field="weight" data-label="Weight">${escapeHtml(exercise.weight ?? 'N/A')}</td>
             <td class="col--med execution-style-cell" data-label="Execution Style" data-exercise-id="${exercise.id}">
                 ${renderExecutionStyleBadge(exercise)}
             </td>
-            <td class="col--low" data-label="Grips">${exercise.grips || 'N/A'}</td>
-            <td class="col--low" data-label="Stabilizers">${exercise.stabilizers || 'N/A'}</td>
-            <td class="col--low" data-label="Synergists">${exercise.synergists || 'N/A'}</td>
+            <td class="col--low" data-label="Grips">${escapeHtml(exercise.grips || 'N/A')}</td>
+            <td class="col--low" data-label="Stabilizers">${escapeHtml(exercise.stabilizers || 'N/A')}</td>
+            <td class="col--low" data-label="Synergists">${escapeHtml(exercise.synergists || 'N/A')}</td>
             <td class="col--high" data-label="Actions">
                 <button class="btn btn-danger btn-sm text-white btn-calm-danger" onclick="removeExercise(${exercise.id})">
                     <i class="fas fa-trash"></i> Remove
