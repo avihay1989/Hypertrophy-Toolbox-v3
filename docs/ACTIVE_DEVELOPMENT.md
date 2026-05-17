@@ -4,21 +4,17 @@ This file is the execution source of truth for autonomous development sessions. 
 
 ## Current Objective
 
-§4 free-exercise-db thumbnails is **feature-complete** on the branch. Remaining work is PR review/merge plus the deferred visual-baseline pass.
+§4 free-exercise-db thumbnails is **shipped on `origin/main`** as squash-merge `8b348a5` (PR #20, 2026-05-15). Remaining work is post-merge housekeeping: classify the dirty working tree, sync local `main`, run the deferred visual baseline pass, then apply the curated mapping to the canonical DB.
 
 ## Current Branch
 
-`feat/workout-cool-section-4-checkpoint-3` — 6 commits ahead of `origin/main` (four checkpoint commits plus two docs stamps).
+`feat/workout-cool-section-4-checkpoint-3`. **Upstream `[gone]`** — remote branch was deleted post-merge. `git diff origin/main..HEAD` is empty: no code remains unique to this branch. Local `main` is one commit behind `origin/main` (missing `8b348a5`).
 
 Known history:
 
-- `origin/main` at `7a77315`: workout.cool §4 checkpoint 2, free-exercise-db assets vendored.
-- Branch at `1ff57ff`: workout.cool §4 checkpoint 3, mapping proposals and coverage report generated.
-- Branch at `e3ebd43`: workout.cool §4 checkpoint 4, curated CSV (113 reviewed rows) + fatigue parked-decision docs.
-- Branch at `df27c8d`: workout.cool §4 checkpoint 5, DB trim repair + `media_path` route contracts.
-- Branch at `553d52a`: docs stamp for shipped checkpoint 5.
-- Branch at `d00eae6`: workout.cool §4 checkpoint 6, thumbnail UI + escapeHtml rollout + `safe_media_path` Jinja filter.
-- Branch at `966a338`: docs stamp for shipped checkpoint 6.
+- `origin/main` at `8b348a5` (2026-05-15): **workout.cool §4 squash-merge — PR #20**. Bundles checkpoints 3–6 (mapping proposal + curation, `media_path` route contracts, DB whitespace repair, thumbnail UI + helpers, `safe_media_path` Jinja filter).
+- `origin/main` at `7a77315` (prior): workout.cool §4 checkpoint 2, free-exercise-db assets vendored (PR #19).
+- Branch commits `1ff57ff`, `e3ebd43`, `df27c8d`, `553d52a`, `d00eae6`, `966a338`, `8fd6ffe` were the per-checkpoint development trail; all collapsed into `8b348a5` and no longer differ from `origin/main`.
 
 ## Already Done
 
@@ -32,43 +28,49 @@ Known history:
 
 ## Next Task
 
-§4 is feature-complete on the branch. Remaining work:
+§4 is **shipped on `origin/main`**. PR creation is not part of the remaining work. The next safe sequence is:
 
-### Step 1 — PR the branch against `main`
+### Step 1 — Classify and dispose of dirty working-tree files (owner decision)
 
-Six branch commits — four checkpoint commits plus two docs stamps:
+`git status` carries seven dirty entries left over from the pre-merge worktree. Code on `HEAD` is byte-identical to `origin/main`, so none of these are unmerged feature code — they are local follow-ups. Categories:
 
-- `1ff57ff` checkpoint 3 — mapping proposals + coverage report
-- `e3ebd43` checkpoint 4 — curated CSV + fatigue parked-decision docs
-- `df27c8d` checkpoint 5 — DB trim repair + `media_path` route contracts
-- `553d52a` docs stamp for shipped checkpoint 5
-- `d00eae6` checkpoint 6 — thumbnail UI + escapeHtml rollout + `safe_media_path` filter
-- `966a338` docs stamp for shipped checkpoint 6
+- **Candidate for a small follow-up commit** (real code/config not yet on `origin/main`):
+  - `e2e/nav-dropdown.spec.ts` — adds `clickDarkModeToggle` helper that fires `evaluate(() => toggle.click())` to bypass the off-viewport bounding-box red tracked in fatigue PLANNING §2.7 and Issue #8. This is a genuine test-stability fix.
+  - `package.json` + `package-lock.json` — pins Playwright 1.58.1→1.60.0, sass 1.69→1.94, typescript 5.3→5.9, `@types/node` 20.10→20.19.32, node engine `>=16`→`>=18`.
+  - `requirements.txt` — Flask 3.1.1→3.1.3, pandas 2.2.3→3.0.3, click 8.1.7→8.3.3, removes XlsxWriter, etc.
+- **Local-personal config**: `.claude/settings.json` (agent permission list overhauled, MCP servers disabled). Owner decides whether to keep this local-only (revert before committing anything else, or split out via `.claude/settings.local.json`) or commit it.
+- **Project config decision**: `.mcp.json` deletion (was the project-level context7 + puppeteer MCP). Owner decides whether to commit the deletion.
+- **Do not commit**: `data/database.db` (runtime; agents-must-not list in CLAUDE.md).
 
-### Step 2 — visual baseline pass (deferred)
+### Step 2 — Sync local `main` to `origin/main`
 
-PLANNING §4.6 calls for desktop / tablet / mobile + light / dark + simple / advanced snapshots. Fold into the next dedicated visual snapshot session — not blocking PR.
+Once the working tree is resolved (committed, stashed, or reverted), fast-forward local `main` from `7a77315` to `8b348a5`. Do not force-push; do not reset hard while there are uncommitted local changes.
 
-### Step 3 — apply the curated mappings on the merged main
+### Step 3 — Visual baseline pass (deferred from §4.6)
 
-After PR merge, run `scripts/apply_free_exercise_db_mapping.py` against whichever environment carries the canonical DB. The committed CSV is reproducible and idempotent; the apply step populates `exercises.media_path` for the 108 confirmed/manual rows.
+PLANNING §4.6 calls for desktop / tablet / mobile × light / dark × simple / advanced snapshots, plus the workout-log embed of `safe_media_path`. Run as a dedicated visual snapshot session against the merged `main`.
+
+### Step 4 — Apply the curated mappings on `main`
+
+Run `scripts/apply_free_exercise_db_mapping.py` against whichever environment carries the canonical DB. The committed CSV is reproducible and idempotent; the apply step populates `exercises.media_path` for the 108 confirmed/manual rows. Verify with targeted tests around workout plan/log thumbnails (`e2e/workout-plan.spec.ts`, `e2e/workout-log.spec.ts`) and `tests/test_free_exercise_db_mapping.py`.
+
+### Fatigue meter — DO NOT REOPEN
+
+Fatigue is parked per `docs/fatigue_meter/STAGE4_PARKED_HANDOFF.md` (owner Option 1, 2026-05-13). No Phase 2 work, no `/fatigue` page, no API endpoints, no `utils/fatigue.py` edits. Reopen only if `workout_log` accumulates ≥4 labeled real weeks, or the owner explicitly overrides the parked state.
 
 ## Agent Authority
 
 Agents may, without asking the owner:
 
-- Update docs that are stale relative to committed branch state.
-- Curate high-confidence CSV rows.
-- Mark obvious mismatches as `rejected`.
-- Add focused tests for the current checkpoint.
+- Update docs that are stale relative to committed `origin/main` state.
 - Run targeted pytest / Playwright checks.
 - Continue from one listed task to the next after tests pass.
 
 Agents must not:
 
-- Redo checkpoint 2 vendoring.
-- Regenerate checkpoint 3 mapping proposals unless the mapper itself changes.
-- Mutate committed `data/database.db` as source of truth.
+- Reset, force-push, or otherwise discard the dirty working tree without owner approval.
+- Fast-forward local `main` while the working tree carries uncommitted code changes (the merge would surface confusing conflicts or silently shadow the local fix).
+- Mutate committed `data/database.db` as source of truth (the Step 4 apply-mapping run against the canonical DB is the only sanctioned write, and it must be against the chosen canonical environment).
 - Start fatigue-meter work.
 - Start Phase 2 fatigue planning.
 - Edit `utils/fatigue.py`.
