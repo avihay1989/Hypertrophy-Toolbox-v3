@@ -52,6 +52,7 @@ test-results/
 playwright-report/
 debug/
 /artifacts/
+e2e/artifacts/
 /baseline*.txt
 /phase*.txt
 /cleanup*.txt
