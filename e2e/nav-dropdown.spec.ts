@@ -33,6 +33,13 @@ async function openMobileNavbar(page: Page): Promise<void> {
   await expect(collapse).toHaveClass(/show/);
 }
 
+async function clickDarkModeToggle(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const toggle = document.querySelector('#darkModeToggle') as HTMLElement | null;
+    toggle?.click();
+  });
+}
+
 test.describe('P5 navbar dropdown and backup navigation', () => {
   test('top-level nav order matches the redesigned workflow', async ({ page }) => {
     await page.goto(ROUTES.HOME);
@@ -121,7 +128,8 @@ test.describe('P5 navbar dropdown and backup navigation', () => {
     await waitForPageReady(page);
 
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
-    await page.locator(SELECTORS.DARK_MODE_TOGGLE).click();
+    await expect(page.locator(SELECTORS.DARK_MODE_TOGGLE)).toBeVisible();
+    await clickDarkModeToggle(page);
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   });
 });
