@@ -4,17 +4,20 @@ This file is the execution source of truth for autonomous development sessions. 
 
 ## Current Objective
 
-§4 free-exercise-db thumbnails is **shipped on `origin/main`** as squash-merge `8b348a5` (PR #20, 2026-05-15). Remaining work is post-merge housekeeping: classify the dirty working tree, sync local `main`, run the deferred visual baseline pass, then apply the curated mapping to the canonical DB.
+§4 free-exercise-db thumbnails is **shipped on `origin/main`** as squash-merge `8b348a5` (PR #20, 2026-05-15). Remaining work is post-merge housekeeping: dispose of the three remaining dirty files, sync local `main`, decide whether to keep the two local follow-up commits, run the deferred visual baseline pass, then apply the curated mapping to the canonical DB.
 
 ## Current Branch
 
-`feat/workout-cool-section-4-checkpoint-3`. **Upstream `[gone]`** — remote branch was deleted post-merge. `git diff origin/main..HEAD` is empty: no code remains unique to this branch. Local `main` is one commit behind `origin/main` (missing `8b348a5`).
+`feat/workout-cool-section-4-checkpoint-3`. **Upstream `[gone]`** — remote branch was deleted post-merge. There is **no unmerged workout.cool feature code**: the seven historical §4 commits have empty net diff vs `origin/main` (they were squashed into `8b348a5`). The branch now carries two local follow-up commits on top of that empty diff. Local `main` is one commit behind `origin/main` (missing `8b348a5`).
 
 Known history:
 
 - `origin/main` at `8b348a5` (2026-05-15): **workout.cool §4 squash-merge — PR #20**. Bundles checkpoints 3–6 (mapping proposal + curation, `media_path` route contracts, DB whitespace repair, thumbnail UI + helpers, `safe_media_path` Jinja filter).
 - `origin/main` at `7a77315` (prior): workout.cool §4 checkpoint 2, free-exercise-db assets vendored (PR #19).
 - Branch commits `1ff57ff`, `e3ebd43`, `df27c8d`, `553d52a`, `d00eae6`, `966a338`, `8fd6ffe` were the per-checkpoint development trail; all collapsed into `8b348a5` and no longer differ from `origin/main`.
+- Local follow-ups on top of the squashed feature work:
+  - `3919d82 docs: update handoff for workout.cool §4 squash merge` — first post-squash refresh of `docs/MASTER_HANDOVER.md` + `docs/ACTIVE_DEVELOPMENT.md`.
+  - `e135ff5 test: stabilize nav dropdown e2e and refresh dependency pins` — `e2e/nav-dropdown.spec.ts` `evaluate(() => toggle.click())` fix for the off-viewport dark-mode toggle (PLANNING §2.7 / Issue #8) plus Playwright 1.58.1→1.60.0, sass 1.69→1.94, typescript 5.3→5.9, `@types/node` 20.10→20.19.32, node engine `>=16`→`>=18`, Flask 3.1.1→3.1.3, pandas 2.2.3→3.0.3, click 8.1.7→8.3.3 (XlsxWriter removed).
 
 ## Already Done
 
@@ -30,27 +33,29 @@ Known history:
 
 §4 is **shipped on `origin/main`**. PR creation is not part of the remaining work. The next safe sequence is:
 
-### Step 1 — Classify and dispose of dirty working-tree files (owner decision)
+### Step 1 — Owner decision on the three remaining dirty files
 
-`git status` carries seven dirty entries left over from the pre-merge worktree. Code on `HEAD` is byte-identical to `origin/main`, so none of these are unmerged feature code — they are local follow-ups. Categories:
+The previously-listed `e2e/nav-dropdown.spec.ts`, `package.json`, `package-lock.json`, and `requirements.txt` are now committed in `e135ff5` and are no longer in the dirty set. Three entries remain:
 
-- **Candidate for a small follow-up commit** (real code/config not yet on `origin/main`):
-  - `e2e/nav-dropdown.spec.ts` — adds `clickDarkModeToggle` helper that fires `evaluate(() => toggle.click())` to bypass the off-viewport bounding-box red tracked in fatigue PLANNING §2.7 and Issue #8. This is a genuine test-stability fix.
-  - `package.json` + `package-lock.json` — pins Playwright 1.58.1→1.60.0, sass 1.69→1.94, typescript 5.3→5.9, `@types/node` 20.10→20.19.32, node engine `>=16`→`>=18`.
-  - `requirements.txt` — Flask 3.1.1→3.1.3, pandas 2.2.3→3.0.3, click 8.1.7→8.3.3, removes XlsxWriter, etc.
-- **Local-personal config**: `.claude/settings.json` (agent permission list overhauled, MCP servers disabled). Owner decides whether to keep this local-only (revert before committing anything else, or split out via `.claude/settings.local.json`) or commit it.
+- **Local-personal config**: `.claude/settings.json` (agent permission list overhauled, MCP servers disabled). Owner decides whether to keep this local-only (revert, or split out via `.claude/settings.local.json`) or commit it.
 - **Project config decision**: `.mcp.json` deletion (was the project-level context7 + puppeteer MCP). Owner decides whether to commit the deletion.
 - **Do not commit**: `data/database.db` (runtime; agents-must-not list in CLAUDE.md).
 
+Resolve each via stash, revert, or commit before moving on. Agents must not reset, force-push, or otherwise discard these without owner approval.
+
 ### Step 2 — Sync local `main` to `origin/main`
 
-Once the working tree is resolved (committed, stashed, or reverted), fast-forward local `main` from `7a77315` to `8b348a5`. Do not force-push; do not reset hard while there are uncommitted local changes.
+Once the dirty set is resolved (committed, stashed, or reverted), fast-forward local `main` from `7a77315` to `8b348a5`. Do not force-push; do not reset hard while there are uncommitted local changes.
 
-### Step 3 — Visual baseline pass (deferred from §4.6)
+### Step 3 — Decide whether to keep the two local follow-up commits
+
+After local `main` reaches `8b348a5`, owner decides whether `3919d82` (handoff docs refresh) and `e135ff5` (nav e2e + dependency pins) should land on local `main`. Options: cherry-pick one or both onto `main`, open a small follow-up PR carrying them, or drop them entirely. Neither is required for §4 shipped state.
+
+### Step 4 — Visual baseline pass (deferred from §4.6)
 
 PLANNING §4.6 calls for desktop / tablet / mobile × light / dark × simple / advanced snapshots, plus the workout-log embed of `safe_media_path`. Run as a dedicated visual snapshot session against the merged `main`.
 
-### Step 4 — Apply the curated mappings on `main`
+### Step 5 — Apply the curated mappings on `main`
 
 Run `scripts/apply_free_exercise_db_mapping.py` against whichever environment carries the canonical DB. The committed CSV is reproducible and idempotent; the apply step populates `exercises.media_path` for the 108 confirmed/manual rows. Verify with targeted tests around workout plan/log thumbnails (`e2e/workout-plan.spec.ts`, `e2e/workout-log.spec.ts`) and `tests/test_free_exercise_db_mapping.py`.
 
