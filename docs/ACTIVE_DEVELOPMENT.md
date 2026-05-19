@@ -6,19 +6,22 @@ This file is the execution source of truth for autonomous development sessions. 
 
 workout.cool §4 (free-exercise-db thumbnails) is **fully shipped on `origin/main`**. PR #20 (squash `8b348a5`) landed the feature; PR #23 (`bfd9087`) landed the post-merge handoff refresh + nav-dropdown e2e stabilization + dependency pin bumps; PR #22 (`631b5f8`) landed the §4.6 visual-baseline spec + seed. No outstanding workout.cool work remains.
 
-As of 2026-05-19, **no workstream is in-flight on `origin/main`**. The two queued options from the prior handover are both closed:
+As of 2026-05-20, **no workstream is in-flight on `origin/main`**. The two queued options from the prior handover are both closed; fatigue meter's 2026-05-20 synthetic-override is also shipped docs-only without reopening Stage 4:
 
-- **Redesign post-P8 triage** — closed (10 of 11 shipped, #1 deferred by owner choice; verified 2026-05-19).
-- **phase5_3i_plan** — closed (accepted-as-shipped 2026-05-19; planning doc shipped `c0da18e` and deleted `635fa3e`, 5A–5H validation never ran but `12c90ac` refactors have held 5+ weeks under the 1160-test baseline).
+- **Redesign post-P8 triage** — closed (10 of 11 shipped, #1 deferred by owner choice; verified 2026-05-19, PR #25).
+- **phase5_3i_plan** — closed (accepted-as-shipped 2026-05-19; planning doc shipped `c0da18e` and deleted `635fa3e`, 5A–5H validation never ran but `12c90ac` refactors have held 5+ weeks under the 1160-test baseline; PR #25).
+- **Fatigue meter** — Phase 1 done; Stage 4 still parked. PR #26 (2026-05-20) shipped a docs-only owner-approved synthetic-override / coherence pass section; no thresholds tuned, no scenario script changed, no real-data calibration claimed.
 
 Pick a new workstream from owner direction.
 
 ## Current Branch
 
-`main`, in sync with `origin/main` at `631b5f8`. Working tree dirty only on `data/database.db` (runtime; owner-approved kept dirty per `CLAUDE.md` agents-must-not list).
+`main`, in sync with `origin/main` at `2b34b50`. Working tree dirty only on `data/database.db` (runtime; owner-approved kept dirty per `CLAUDE.md` agents-must-not list).
 
 Recent history on `origin/main` (newest first):
 
+- `2b34b50` (2026-05-20) — **PR #26** `docs(fatigue): record synthetic calibration override`. Docs-only — 1 file changed, 101 insertions(+), 0 deletions(-) in `docs/fatigue_meter/calibration-notes.md`. Reframes the existing 2026-05-11 generated calibration report as an owner-approved synthetic-override / coherence pass; flags `hard_4d` mismatch (intended `heavy`, computed `moderate` at 161.9 weekly); records hypothesis A (threshold drift) and B (scenario miscal, preferred) as proposals only. No `utils/fatigue.py`, no scenario script, no DB writes. CI 6/6 green.
+- `1eebe54` (2026-05-19) — **PR #25** `docs: close stale handoff workstreams`. Docs-only — closes the redesign post-P8 triage and phase5_3i_plan rows after verifying both were already complete on `origin/main`. CI 6/6 green.
 - `631b5f8` (2026-05-18) — **PR #22** `test(workout-cool §4.6): add visual-baseline thumbnail spec + seed`. Adds `e2e/visual-baseline-thumbnails.spec.ts` (18 tests) and `scripts/seed_visual_baseline.py`. `.gitignore` now ignores `e2e/artifacts/`. Screenshots are inspection artifacts only — no `toHaveScreenshot()` pixel baselines committed.
 - `bfd9087` (2026-05-18) — **PR #23** `chore: post-section-4 handoff refresh + nav e2e + dependency pins`. Replaces closed PR #21. Rebased onto `origin/main` to drop the seven pre-squash §4 commits that had made the original branch `CONFLICTING`. Carries the nav-dropdown off-viewport fix and the Playwright/sass/TS/Node/Flask/pandas/click bumps.
 - `8b348a5` (2026-05-15) — **PR #20** `feat(workout-cool §4): free-exercise-db exercise thumbnails`. Squash bundles checkpoints 3–6.
@@ -37,10 +40,11 @@ Recent history on `origin/main` (newest first):
 - §4.6 visual-baseline (`631b5f8`) on 2026-05-18: 18-test spec + seed.
 - Apply-mapping: `exercises.media_path` populated for 108 rows (98 confirmed + 10 manual) in the main-checkout DB and the visual-baseline worktree DB.
 - Fatigue meter Phase 1 / Stage 4 entry parked by owner choice (Option 1 confirmed 2026-05-13).
+- Fatigue meter bounded synthetic-override / coherence pass (2026-05-20) — docs-only via PR #26 (`2b34b50`). Reuses 2026-05-11 generated report; `hard_4d` mismatch flagged; two hypotheses recorded as proposals only; no thresholds or scripts touched; Stage 4 still parked.
 
 ## Next Task
 
-No active workstream is currently in-flight on `origin/main`. As of 2026-05-19, no queued workstream remains — pick a new one from owner direction.
+No active workstream is currently in-flight on `origin/main`. As of 2026-05-20, no queued workstream remains — pick a new one from owner direction.
 
 ### Closed workstreams (do not reopen as "next task")
 
@@ -57,7 +61,9 @@ None are blocking. Available if the owner wants final polish:
 
 ### Fatigue meter — DO NOT REOPEN
 
-Fatigue is parked per `docs/fatigue_meter/STAGE4_PARKED_HANDOFF.md` (owner Option 1, 2026-05-13). No Phase 2 work, no `/fatigue` page, no API endpoints, no `utils/fatigue.py` edits. Reopen only if `workout_log` accumulates ≥4 labeled real weeks, or the owner explicitly overrides the parked state.
+Fatigue is parked per `docs/fatigue_meter/STAGE4_PARKED_HANDOFF.md` (owner Option 1, 2026-05-13). No Phase 2 work, no `/fatigue` page, no API endpoints, no `utils/fatigue.py` edits, no `scripts/fatigue_calibration_report.py` scenario tuning. Reopen only if `workout_log` accumulates ≥4 labeled real weeks, or the owner explicitly overrides the parked state.
+
+**2026-05-20 bounded override note.** The owner explicitly authorized **one** docs-only synthetic-override / coherence pass (PR #26 `2b34b50`). It produced no code, threshold, or script changes — only documentation in [calibration-notes.md](fatigue_meter/calibration-notes.md). That single override did not lift the parked state; the agent guidance above still applies. Hypothesis B (`scripts/fatigue_calibration_report.py::SCENARIOS["hard_4d"]` retune) is the preferred future follow-up if synthetic calibration is deepened later, but is NOT to be picked up without explicit owner go-ahead.
 
 ## Agent Authority
 
