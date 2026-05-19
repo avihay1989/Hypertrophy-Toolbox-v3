@@ -6,7 +6,12 @@ This file is the execution source of truth for autonomous development sessions. 
 
 workout.cool §4 (free-exercise-db thumbnails) is **fully shipped on `origin/main`**. PR #20 (squash `8b348a5`) landed the feature; PR #23 (`bfd9087`) landed the post-merge handoff refresh + nav-dropdown e2e stabilization + dependency pin bumps; PR #22 (`631b5f8`) landed the §4.6 visual-baseline spec + seed. No outstanding workout.cool work remains.
 
-The default next workstream is the **redesign post-P8 triage** (#7 + #8 next, per `debug/redesign_post_p8_issues_SESSION_STATE.md`) unless the owner redirects.
+As of 2026-05-19, **no workstream is in-flight on `origin/main`**. The two queued options from the prior handover are both closed:
+
+- **Redesign post-P8 triage** — closed (10 of 11 shipped, #1 deferred by owner choice; verified 2026-05-19).
+- **phase5_3i_plan** — closed (accepted-as-shipped 2026-05-19; planning doc shipped `c0da18e` and deleted `635fa3e`, 5A–5H validation never ran but `12c90ac` refactors have held 5+ weeks under the 1160-test baseline).
+
+Pick a new workstream from owner direction.
 
 ## Current Branch
 
@@ -35,15 +40,12 @@ Recent history on `origin/main` (newest first):
 
 ## Next Task
 
-No active workstream is currently in-flight on `origin/main`. The natural next picks, in order of priority:
+No active workstream is currently in-flight on `origin/main`. As of 2026-05-19, no queued workstream remains — pick a new one from owner direction.
 
-### Option A — Redesign post-P8 triage (#7 + #8)
+### Closed workstreams (do not reopen as "next task")
 
-Per the workstream table in `docs/MASTER_HANDOVER.md`. Owner state: 5 issues remaining; #6 done; #7 + #8 are next. See `debug/redesign_post_p8_issues_SESSION_STATE.md` for the full queue and where each issue stands.
-
-### Option B — phase5_3i_plan resume
-
-Paused mid-draft. Resume from `debug/phase5_3i_plan_SESSION_STATE.md` if the owner prefers planning work over execution.
+- **Redesign post-P8 triage** — closed 2026-05-19 after verification against `origin/main`. 10 of 11 issues shipped (#2 `9052337`, #3+#4 `0a41725`, #5 `7880618`, #6 `38b1f59`, #7+#8 `9b0c71b`, #9 `a95b067`, #10 `f6e39d6`, #11 `f7d9f12`); #1 (nav Backup link) deferred by owner choice. `debug/redesign_post_p8_issues_SESSION_STATE.md` is historical only.
+- **phase5_3i_plan** — closed 2026-05-19 as accepted-as-shipped. Planning doc `docs/phase5_3i_plan.md` was authored 2026-04-15 (`c0da18e`) and deleted 2026-04-24 (`635fa3e`) with the rest of the spring-cleanup planning suite. The 5A–5H retroactive confidence-recovery validation gates never ran, but the underlying `12c90ac` refactors (3i-a..3i-h decompositions) have held under the test baseline for 5+ weeks (1160 passed; baseline rose from 934 at session-state writing) with no regression traced back to them. `debug/phase5_3i_plan_SESSION_STATE.md` is historical only. Re-open only if a concrete regression appears in one of the decomposed functions.
 
 ### Optional — workout.cool §4 follow-ups
 
