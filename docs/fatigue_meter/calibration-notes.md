@@ -5,6 +5,10 @@
 **Pending:** 4 representative logged weeks, owner felt-experience labels, or
 explicit Phase 2 planning.
 **Parking decision:** owner chose Option 1, stay parked, on 2026-05-13.
+**2026-05-20 update:** owner-approved bounded **synthetic-override** /
+coherence analysis pass — see section below. Still **not real-data
+calibration**; parked state and `utils/fatigue.py` threshold values
+remain unchanged.
 
 ---
 
@@ -199,6 +203,103 @@ without new signal. The operational handoff is
 
 Proceed with other repo work unless one of the reopen criteria in that handoff
 is met.
+
+---
+
+## 2026-05-20 — owner-approved synthetic-override / coherence pass
+
+**Framing.** Owner explicitly overrode the parked state for a bounded
+synthetic-data coherence check via the existing
+`scripts/fatigue_calibration_report.py`. Pass labeled
+**owner-approved synthetic-data override, NOT real workout-log calibration.**
+Stage 4 of `PLANNING.md` remains open; this pass does not satisfy §4.1's
+"4 representative recent weeks" requirement, and
+[STAGE4_PARKED_HANDOFF.md](STAGE4_PARKED_HANDOFF.md) remains the parked-state
+authority.
+
+**Source artifact (unchanged — no re-run performed).** The 2026-05-11 report at
+[generated-calibration-report.md](generated-calibration-report.md) (shipped in
+commit `fa8c326`, default seed 42, `persist=False`) is the source of record.
+No DB rows were written by this pass; no synthetic `workout_log` rows exist;
+`data/database.db` was not modified.
+
+### Coherence result: 3 of 4 scenarios land in the intended band
+
+| Scenario | Intended anchor | Computed weekly | Computed band | Coherence |
+|---|---|---:|---|---|
+| Generated deload / easy 2-day | `light` | 28.1 | light | ✓ matches |
+| Generated normal 3-day hypertrophy | `moderate` | 88.5 | moderate | ✓ matches |
+| Generated hard 4-day accumulation | `heavy` | **161.9** | **moderate** | ✗ one band low |
+| Generated overreach 5-day strength | `very_heavy` | 419.6 | very_heavy | ✓ matches |
+
+The "2026-05-10 — full generated calibration report" entry above already
+recorded the `hard_4d` mismatch but deferred a tuning decision because the
+prior bar required an owner felt label. Under the 2026-05-20 owner-approved
+override bar — *"propose threshold changes only if generated scenarios
+clearly contradict their intended labels"* — the `hard_4d`
+intended-vs-computed contradiction qualifies for a **proposal**. It does
+not qualify for an apply. **No edits to `utils/fatigue.py` have been made.**
+
+### Two proposal hypotheses (neither applied)
+
+**Hypothesis A — threshold drift.** Current weekly band cutoffs from
+`utils/fatigue.py:WEEKLY_FATIGUE_BANDS` (per the 2026-05-10 entry above):
+`light < 80, moderate 80-200, heavy 200-320, very_heavy > 320`. To make
+`hard_4d` (161.9) land in `heavy`, the moderate→heavy boundary would need to
+drop from 200 → ≤161, a ~19% compression of the moderate band.
+
+- *Cost:* the currently planned program scores 165 weekly. Lowering the
+  cutoff to ≤161 would flip the live `/weekly_summary` badge from
+  `moderate` to `heavy` — a user-facing UX change driven by one synthetic
+  data point. This is exactly the "shipped-tweak-from-one-noise-sample"
+  risk that the 2026-05-10 "felt label required" gate existed to prevent.
+- *Scope:* one-line edit in `utils/fatigue.py:WEEKLY_FATIGUE_BANDS`.
+- *Reach:* every fatigue badge render is affected immediately.
+
+**Hypothesis B — scenario miscalibration.** The `hard_4d` scenario's
+generator parameters (`volume_scale=1.35, rir_delta=-1, 86 sets across 4
+sessions`) may not actually produce absolute-heavy effort. The
+hand-fabricated synthetic week from the 2026-05-10 assistant-generated
+pass above (96 sets, RIR 1 throughout → 217 weekly → `heavy`) carried more
+per-session work and landed in the heavy band as designed. The mismatch
+therefore may live in the scenario definition, not in the band cutoffs.
+
+- *Cost:* changes to a script file with no live UX effect.
+- *Scope:* edit `scripts/fatigue_calibration_report.py::SCENARIOS["hard_4d"]`
+  — raise `volume_scale` (e.g. 1.35 → 1.6), lower `rir_delta` further
+  (e.g. -1 → -2), and/or add a heavier `priority_muscles` weighting, then
+  re-run with the same default seed.
+- *Reach:* only the synthetic coherence report; the production fatigue
+  badge does not change.
+
+### Recommended lower-risk interpretation
+
+**Hypothesis B.** The synthetic pass probes whether the math + bands behave
+coherently against an *intended* anchor that the script author defined;
+if the scenario builder under-shoots its own intended anchor, the
+appropriate first response is to tighten the scenario rather than retune
+live thresholds against the running program. Hypothesis A becomes the
+right move only when felt experience confirms the engine consistently
+under-reports heavy weeks — i.e., the original §4.2 felt-label loop in
+`PLANNING.md` runs against real `workout_log` data and the same direction
+of bias appears there.
+
+**Neither hypothesis has been applied here.** Picking and acting on one
+requires a separate owner decision.
+
+### Invariants honored by this pass
+
+- No DB writes (script uses `persist=False`); not re-run in this pass.
+- No `data/database.db` modification beyond the pre-existing runtime dirt.
+- No edits to `utils/fatigue.py` (thresholds unchanged).
+- No edits to `scripts/fatigue_calibration_report.py`
+  (Hypothesis B is a proposal, not an applied edit).
+- No Phase 2 work, no `/fatigue` page, no API endpoints, no SFR.
+- Stage 4 real-data calibration is **NOT** claimed complete; §4.1 remains
+  blocked by 0 rows in `workout_log`.
+- [STAGE4_PARKED_HANDOFF.md](STAGE4_PARKED_HANDOFF.md) remains the
+  parked-state authority; this override is bounded to this single
+  coherence-analysis docs update.
 
 ---
 
