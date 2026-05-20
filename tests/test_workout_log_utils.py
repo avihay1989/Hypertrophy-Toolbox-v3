@@ -7,7 +7,12 @@ Covers workout log data fetching and progression checking with focus on:
 - NULL value handling in comparisons
 """
 import pytest
-from utils.workout_log import get_workout_logs, check_progression
+from utils.workout_log import (
+    check_progression,
+    get_weight_progression_indicator,
+    get_workout_logs,
+    is_assisted_bodyweight_exercise,
+)
 
 
 class TestGetWorkoutLogs:
@@ -171,6 +176,40 @@ class TestCheckProgression:
         }
         assert check_progression(log_entry) is True
 
+    def test_progression_assisted_bodyweight_weight_decreased(self):
+        """Progress achieved when machine assistance decreases."""
+        log_entry = {
+            'exercise': 'Machine Assisted Chin Up',
+            'scored_rir': None,
+            'planned_rir': None,
+            'scored_rpe': None,
+            'planned_rpe': None,
+            'scored_min_reps': None,
+            'planned_min_reps': None,
+            'scored_max_reps': None,
+            'planned_max_reps': None,
+            'scored_weight': 60.0,
+            'planned_weight': 65.0
+        }
+        assert check_progression(log_entry) is True
+
+    def test_no_progression_assisted_bodyweight_weight_increased(self):
+        """More machine assistance is below target, not progress."""
+        log_entry = {
+            'exercise': 'Machine Assisted Parallel Bar Dips',
+            'scored_rir': None,
+            'planned_rir': None,
+            'scored_rpe': None,
+            'planned_rpe': None,
+            'scored_min_reps': None,
+            'planned_min_reps': None,
+            'scored_max_reps': None,
+            'planned_max_reps': None,
+            'scored_weight': 70.0,
+            'planned_weight': 65.0
+        }
+        assert check_progression(log_entry) is False
+
     def test_no_progression_weight_same(self):
         """No progress when weight unchanged."""
         log_entry = {
@@ -268,6 +307,53 @@ class TestCheckProgression:
             'planned_weight': None
         }
         assert check_progression(log_entry) is True
+
+
+class TestAssistedBodyweightHelpers:
+    """Tests for assisted-machine weight semantics."""
+
+    @pytest.mark.parametrize("exercise_name", [
+        "Machine Assisted Chin Up",
+        "Machine Assisted Narrow Pull Up",
+        "Machine Assisted Neutral Chin Up",
+        "Machine Assisted Parallel Bar Dips",
+        "Machine Assisted Pull Up",
+        "Smith Machine Assisted Pullup",
+    ])
+    def test_detects_assisted_bodyweight_exercises(self, exercise_name):
+        assert is_assisted_bodyweight_exercise(exercise_name) is True
+
+    def test_regular_machine_weight_is_not_assistance(self):
+        assert is_assisted_bodyweight_exercise("Machine Chest Press") is False
+
+    def test_assisted_indicator_treats_lower_weight_as_improved(self):
+        indicator = get_weight_progression_indicator(
+            "Machine Assisted Chin Up",
+            planned_weight=65.0,
+            scored_weight=60.0,
+        )
+        assert indicator["icon"] == "fa-arrow-up"
+        assert indicator["class"] == "text-success"
+        assert "Assistance decreased" in indicator["title"]
+
+    def test_assisted_indicator_treats_zero_assistance_as_improved(self):
+        indicator = get_weight_progression_indicator(
+            "Machine Assisted Pull Up",
+            planned_weight=5.0,
+            scored_weight=0.0,
+        )
+        assert indicator["icon"] == "fa-arrow-up"
+        assert indicator["class"] == "text-success"
+
+    def test_assisted_indicator_treats_higher_weight_as_below_target(self):
+        indicator = get_weight_progression_indicator(
+            "Machine Assisted Chin Up",
+            planned_weight=65.0,
+            scored_weight=70.0,
+        )
+        assert indicator["icon"] == "fa-arrow-down"
+        assert indicator["class"] == "text-danger"
+        assert "Assistance increased" in indicator["title"]
 
 
 # Fixtures for workout_log utils tests

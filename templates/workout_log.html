@@ -89,7 +89,7 @@
                 <tbody>
                     {% for log in workout_logs %}
                     {% set routine_parts = log.routine.split(' - ') if log.routine else ['', '', ''] %}
-                    <tr data-log-id="{{ log.id }}">
+                    <tr data-log-id="{{ log.id }}" data-assisted-bodyweight="{{ 'true' if is_assisted_bodyweight_exercise(log.exercise) else 'false' }}">
                         <td data-label="#">{{ loop.index }}</td>
                         <td data-label="Routine" class="routine-cell"><span class="routine-env">{{ routine_parts[0] if routine_parts|length > 0 else '' }}</span><span class="routine-program">{{ routine_parts[1] if routine_parts|length > 1 else '' }}</span><span class="routine-workout">{{ routine_parts[2] if routine_parts|length > 2 else '' }}</span></td>
                         <td data-label="Exercise" class="exercise-cell">
@@ -209,19 +209,16 @@
                             <div class="scored-value-container">
                                 <input type="number" 
                                        class="editable-input number-input form-control input-calm-inset"
-                                       value="{{ log.scored_weight if log.scored_weight and log.scored_weight != 'None' else '' }}"
+                                       value="{{ log.scored_weight if log.scored_weight is not none and log.scored_weight != 'None' else '' }}"
                                        step="0.5"
                                        min="0"
                                        onchange="updateScoredValue('{{ log.id }}', 'scored_weight', this.value)"
                                        style="display: none;">
-                                <span class="editable-text">{{ log.scored_weight if log.scored_weight and log.scored_weight != 'None' else '--' }}</span>
-                                {% if log.scored_weight and log.scored_weight != 'None' and log.planned_weight %}
-                                    {% if log.scored_weight|float > log.planned_weight|float %}
-                                        <i class="fas fa-arrow-up progression-indicator text-success" title="Weight increased! (+{{ (log.scored_weight|float - log.planned_weight|float)|round(1) }}kg)"></i>
-                                    {% elif log.scored_weight|float == log.planned_weight|float %}
-                                        <i class="fas fa-equals progression-indicator text-warning" title="Same weight"></i>
-                                    {% else %}
-                                        <i class="fas fa-arrow-down progression-indicator text-danger" title="Weight decreased ({{ (log.scored_weight|float - log.planned_weight|float)|round(1) }}kg)"></i>
+                                <span class="editable-text">{{ log.scored_weight if log.scored_weight is not none and log.scored_weight != 'None' else '--' }}</span>
+                                {% if log.scored_weight is not none and log.scored_weight != 'None' and log.planned_weight is not none %}
+                                    {% set weight_indicator = get_weight_progression_indicator(log.exercise, log.planned_weight, log.scored_weight) %}
+                                    {% if weight_indicator %}
+                                        <i class="fas {{ weight_indicator.icon }} progression-indicator {{ weight_indicator.class }}" title="{{ weight_indicator.title }}"></i>
                                     {% endif %}
                                 {% endif %}
                             </div>
@@ -241,13 +238,7 @@
                             </span>
                         </td>
                         <td data-label="Progressive Overload">
-                            {% set is_progressive = 
-                                (log.scored_rir is not none and log.planned_rir is not none and log.scored_rir < log.planned_rir) or
-                                (log.scored_rpe is not none and log.planned_rpe is not none and log.scored_rpe > log.planned_rpe) or
-                                (log.scored_min_reps is not none and log.planned_min_reps is not none and log.scored_min_reps > log.planned_min_reps) or
-                                (log.scored_max_reps is not none and log.planned_max_reps is not none and log.scored_max_reps > log.planned_max_reps) or
-                                (log.scored_weight is not none and log.planned_weight is not none and log.scored_weight > log.planned_weight)
-                            %}
+                            {% set is_progressive = check_progression(log) %}
                             <span class="badge {{ 'bg-success' if is_progressive else 'bg-warning' }}">
                                 {{ 'Achieved' if is_progressive else 'Pending' }}
                             </span>
