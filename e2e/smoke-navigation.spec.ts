@@ -42,6 +42,8 @@ test.describe('Global Smoke and Navigation', () => {
     await expect(page.locator(SELECTORS.NAV_WORKOUT_PLAN)).toBeVisible();
     await expect(page.locator(SELECTORS.NAV_WORKOUT_LOG)).toBeVisible();
     await expect(page.locator(SELECTORS.NAV_PROGRESSION_PLAN)).toBeVisible();
+    await expect(page.locator(SELECTORS.NAV_USER_PROFILE)).toBeVisible();
+    await expect(page.locator(SELECTORS.NAV_BODY_COMPOSITION)).toBeVisible();
     await expect(page.locator(SELECTORS.NAV_VOLUME_SPLITTER)).toBeVisible();
     await expect(page.locator(SELECTORS.NAV_BACKUP)).toBeVisible();
 
@@ -171,6 +173,8 @@ test.describe('Global Smoke and Navigation', () => {
       { url: ROUTES.SESSION_SUMMARY, selector: SELECTORS.PAGE_SESSION_SUMMARY },
       { url: ROUTES.WORKOUT_LOG, selector: SELECTORS.PAGE_WORKOUT_LOG },
       { url: ROUTES.PROGRESSION, selector: SELECTORS.PAGE_PROGRESSION },
+      { url: ROUTES.USER_PROFILE, selector: SELECTORS.PAGE_USER_PROFILE },
+      { url: ROUTES.BODY_COMPOSITION, selector: SELECTORS.PAGE_BODY_COMPOSITION },
       { url: ROUTES.VOLUME_SPLITTER, selector: SELECTORS.PAGE_VOLUME_SPLITTER },
     ];
 

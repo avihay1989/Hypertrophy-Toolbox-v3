@@ -7,6 +7,7 @@ from pathlib import Path
 from flask import Flask, jsonify
 from utils.database import (
     DatabaseHandler,
+    add_body_composition_snapshots_table,
     add_progression_goals_table,
     add_user_profile_tables,
     add_volume_tracking_tables,
@@ -21,6 +22,7 @@ from routes.exports import exports_bp
 from routes.main import main_bp
 from routes.progression_plan import progression_plan_bp
 from routes.user_profile import user_profile_bp
+from routes.body_composition import body_composition_bp
 from routes.volume_splitter import volume_splitter_bp
 from routes.program_backup import program_backup_bp
 from utils.program_backup import initialize_backup_tables
@@ -39,6 +41,7 @@ def _initialize_test_database() -> None:
     add_progression_goals_table()
     add_volume_tracking_tables()
     add_user_profile_tables()
+    add_body_composition_snapshots_table()
     initialize_exercise_order()
     initialize_backup_tables()
 
@@ -87,6 +90,7 @@ def app(test_db_path):
     app.register_blueprint(workout_plan_bp)
     app.register_blueprint(progression_plan_bp)
     app.register_blueprint(user_profile_bp)
+    app.register_blueprint(body_composition_bp)
     app.register_blueprint(volume_splitter_bp)
     app.register_blueprint(program_backup_bp)
 
@@ -107,6 +111,7 @@ def app(test_db_path):
                     'user_profile_preferences',
                     'user_profile_lifts',
                     'user_profile',
+                    'body_composition_snapshots',
                     'user_selection',
                     'progression_goals',
                     'muscle_volumes',
@@ -167,6 +172,7 @@ def clean_db(db_handler):
             'user_profile_preferences',
             'user_profile_lifts',
             'user_profile',
+            'body_composition_snapshots',
             'exercise_isolated_muscles',
             'workout_log',
             'user_selection',

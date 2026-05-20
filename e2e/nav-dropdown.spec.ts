@@ -14,6 +14,7 @@ const ROUTE_LIST = [
   ROUTES.WEEKLY_SUMMARY,
   ROUTES.SESSION_SUMMARY,
   ROUTES.PROGRESSION,
+  ROUTES.BODY_COMPOSITION,
   ROUTES.VOLUME_SPLITTER,
 ] as const;
 
@@ -52,7 +53,23 @@ test.describe('P5 navbar dropdown and backup navigation', () => {
       })
     );
 
-    expect(labels).toEqual(['Plan', 'Log', 'Analyze', 'Progress', 'Distribute', 'Backup']);
+    expect(labels).toEqual([
+      'Plan',
+      'Log',
+      'Analyze',
+      'Progress',
+      'Profile',
+      'Body Composition',
+      'Distribute',
+      'Backup',
+    ]);
+
+    const overflowingLabels = await page.locator('#navbarNav > ul.navbar-nav').first().evaluate((navList) =>
+      Array.from(navList.querySelectorAll(':scope > .nav-item > .nav-link'))
+        .filter((link) => link.scrollWidth > link.clientWidth + 1)
+        .map((link) => (link.textContent || '').trim().replace(/\s+/g, ' '))
+    );
+    expect(overflowingLabels).toEqual([]);
   });
 
   test('Analyze dropdown opens and contains Weekly and Session links', async ({ page }) => {

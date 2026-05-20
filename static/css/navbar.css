@@ -1178,6 +1178,10 @@ body:not(:has(#navbar)) .navbar {
     padding-inline: 6px !important;
   }
 
+  #navbar nav.navbar-collapse > .navbar-nav:first-child > .nav-item > #nav-body-composition {
+    inline-size: 192px;
+  }
+
   #navbar nav.navbar-collapse > .navbar-nav:first-child > .nav-item > .nav-link > span {
     min-width: 0;
   }
