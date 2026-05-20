@@ -1,0 +1,324 @@
+.body-composition-page {
+    --bc-accent: #2d6cdf;
+    --bc-accent-soft: #e3edff;
+    --bc-accent-deep: #163d80;
+    --bc-border: rgba(45, 108, 223, 0.16);
+    --bc-shadow: 0 24px 50px rgba(20, 40, 80, 0.10);
+    --bc-band-essential: #6c8cff;
+    --bc-band-athletes: #36b37e;
+    --bc-band-fitness: #f3c143;
+    --bc-band-average: #ef8b3b;
+    --bc-band-obese: #d04d4d;
+    padding: 1.25rem;
+}
+
+.body-composition-header {
+    margin-bottom: 1.25rem;
+}
+
+.body-composition-header h1 {
+    color: var(--bc-accent-deep);
+    margin-bottom: 0.4rem;
+}
+
+.body-composition-warning {
+    border: 1px solid rgba(208, 77, 77, 0.35);
+    padding: 1rem 1.25rem;
+    margin: 0 auto 1.25rem;
+    max-width: 56rem;
+}
+
+.bc-warning-body {
+    align-items: center;
+    color: #6a3a3a;
+    display: flex;
+    gap: 0.75rem;
+}
+
+.bc-warning-body i {
+    color: #c0392b;
+    font-size: 1.2rem;
+}
+
+.bc-warning-body a {
+    color: var(--bc-accent-deep);
+    font-weight: 600;
+}
+
+.body-composition-grid {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 1100px) {
+    .body-composition-grid {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+}
+
+.body-composition-panel {
+    border: 1px solid var(--bc-border);
+    box-shadow: var(--bc-shadow);
+    padding: 1.25rem;
+}
+
+.bc-form-help {
+    color: #5c6870;
+    margin-bottom: 0.75rem;
+}
+
+.bc-form-grid {
+    display: grid;
+    gap: 0.85rem;
+    grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+    margin-bottom: 0.75rem;
+}
+
+.bc-form-field label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.bc-form-field-notes {
+    grid-column: 1 / -1;
+}
+
+.bc-form-guide {
+    background: var(--bc-accent-soft);
+    border-radius: 12px;
+    color: #283b5a;
+    margin-bottom: 0.75rem;
+    padding: 0.6rem 0.9rem;
+}
+
+.bc-form-guide summary {
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.bc-guide-list {
+    margin: 0.6rem 0 0;
+    padding-left: 1.1rem;
+}
+
+.bc-guide-list li {
+    margin-bottom: 0.25rem;
+}
+
+.bc-form-error {
+    background: rgba(208, 77, 77, 0.1);
+    border-radius: 10px;
+    color: #8a2c2c;
+    margin-bottom: 0.75rem;
+    padding: 0.5rem 0.75rem;
+}
+
+.bc-form-actions {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+.bc-results {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.7), rgba(227, 237, 255, 0.6));
+    border: 1px solid var(--bc-border);
+    border-radius: 14px;
+    margin-top: 1rem;
+    padding: 1rem 1.1rem;
+}
+
+.bc-results-headline {
+    align-items: baseline;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.bc-results-eyebrow {
+    color: var(--bc-accent);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.bc-results-bfp {
+    color: var(--bc-accent-deep);
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.bc-results-bfp-unit {
+    color: #56626a;
+    font-size: 0.95rem;
+}
+
+.bc-results-derived {
+    display: grid;
+    gap: 0.6rem;
+    grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+    margin: 0.75rem 0 1rem;
+}
+
+.bc-results-derived > div {
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 10px;
+    padding: 0.5rem 0.75rem;
+}
+
+.bc-results-label {
+    color: #56626a;
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.bc-results-value {
+    color: var(--bc-accent-deep);
+    font-size: 1.15rem;
+    font-weight: 600;
+}
+
+.bc-band {
+    margin-bottom: 0.75rem;
+}
+
+.bc-band-title {
+    color: #56626a;
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.3rem;
+    text-transform: uppercase;
+}
+
+.bc-band-track {
+    border-radius: 8px;
+    height: 14px;
+    overflow: hidden;
+    position: relative;
+}
+
+.bc-band-segments {
+    display: flex;
+    height: 100%;
+    width: 100%;
+}
+
+.bc-band-segment {
+    height: 100%;
+}
+
+.bc-band-segment[data-band-label='Essential fat'] { background: var(--bc-band-essential); }
+.bc-band-segment[data-band-label='Athletes']       { background: var(--bc-band-athletes); }
+.bc-band-segment[data-band-label='Fitness']        { background: var(--bc-band-fitness); }
+.bc-band-segment[data-band-label='Average']        { background: var(--bc-band-average); }
+.bc-band-segment[data-band-label='Obese']          { background: var(--bc-band-obese); }
+
+.bc-band-tick {
+    background: #111;
+    border-left: 2px solid #fff;
+    border-right: 2px solid #fff;
+    height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0;
+    transform: translateX(-2px);
+    transition: left 0.25s ease;
+    width: 4px;
+}
+
+.bc-band-current {
+    color: var(--bc-accent-deep);
+    font-weight: 600;
+    margin-top: 0.3rem;
+    display: inline-block;
+}
+
+.bc-jp-line {
+    color: #283b5a;
+    margin: 0;
+}
+
+.bc-citations {
+    color: #6c757d;
+    margin-top: 1rem;
+}
+
+.bc-trend {
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px dashed var(--bc-border);
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    position: relative;
+}
+
+.bc-trend-svg {
+    color: var(--bc-accent);
+    display: block;
+    height: 120px;
+    width: 100%;
+}
+
+.bc-trend-empty {
+    color: #56626a;
+    margin: 0;
+    text-align: center;
+}
+
+.bc-table-wrap {
+    overflow-x: auto;
+}
+
+.bc-table {
+    margin-bottom: 0;
+    width: 100%;
+}
+
+.bc-empty {
+    color: #56626a;
+    margin: 0.75rem 0 0;
+    text-align: center;
+}
+
+[data-theme='dark'] .body-composition-page {
+    --bc-accent-soft: rgba(45, 108, 223, 0.18);
+    --bc-border: rgba(120, 160, 220, 0.22);
+    --bc-shadow: 0 24px 50px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme='dark'] .body-composition-header h1,
+[data-theme='dark'] .bc-results-bfp,
+[data-theme='dark'] .bc-results-value,
+[data-theme='dark'] .bc-band-current {
+    color: #d9e8ff;
+}
+
+[data-theme='dark'] .bc-results,
+[data-theme='dark'] .body-composition-panel {
+    background: linear-gradient(135deg, rgba(28, 40, 60, 0.85), rgba(20, 30, 48, 0.95));
+}
+
+[data-theme='dark'] .bc-results-derived > div {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme='dark'] .bc-form-guide {
+    background: rgba(45, 108, 223, 0.12);
+    color: #cbdaf5;
+}
+
+[data-theme='dark'] .bc-band-tick {
+    background: #f5f5f5;
+    border-color: #111;
+}

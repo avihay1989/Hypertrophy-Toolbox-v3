@@ -18,6 +18,7 @@ from routes.workout_plan import workout_plan_bp, initialize_exercise_order
 from routes.main import main_bp
 from routes.progression_plan import progression_plan_bp
 from routes.user_profile import user_profile_bp
+from routes.body_composition import body_composition_bp
 from routes.volume_splitter import volume_splitter_bp
 from routes.program_backup import program_backup_bp, init_backup_tables
 from datetime import datetime
@@ -84,6 +85,7 @@ app.register_blueprint(filters_bp)
 app.register_blueprint(workout_plan_bp)
 app.register_blueprint(progression_plan_bp)
 app.register_blueprint(user_profile_bp)
+app.register_blueprint(body_composition_bp)
 app.register_blueprint(volume_splitter_bp)
 app.register_blueprint(program_backup_bp)
 

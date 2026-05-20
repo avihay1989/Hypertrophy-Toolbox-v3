@@ -22,6 +22,7 @@ from routes.exports import exports_bp
 from routes.main import main_bp
 from routes.progression_plan import progression_plan_bp
 from routes.user_profile import user_profile_bp
+from routes.body_composition import body_composition_bp
 from routes.volume_splitter import volume_splitter_bp
 from routes.program_backup import program_backup_bp
 from utils.program_backup import initialize_backup_tables
@@ -89,6 +90,7 @@ def app(test_db_path):
     app.register_blueprint(workout_plan_bp)
     app.register_blueprint(progression_plan_bp)
     app.register_blueprint(user_profile_bp)
+    app.register_blueprint(body_composition_bp)
     app.register_blueprint(volume_splitter_bp)
     app.register_blueprint(program_backup_bp)
 

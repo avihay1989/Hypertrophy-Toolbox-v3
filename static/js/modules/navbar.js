@@ -22,7 +22,8 @@ export function initializeNavHighlighting() {
         '/progression': 'nav-progression-plan',
         '/volume_splitter': 'nav-volume-splitter',
         '/backup': 'nav-backup',
-        '/user_profile': 'nav-user-profile'
+        '/user_profile': 'nav-user-profile',
+        '/body_composition': 'nav-body-composition'
     };
     
     // Add active class to current page's nav item

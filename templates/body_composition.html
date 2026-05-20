@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}Body Composition - Hypertrophy Toolbox{% endblock %}
+
+{% block page_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages-body-composition.css') }}">
+{% endblock %}
+
+{% block content %}
+<main id="body-composition" class="body-composition-page" data-page="body-composition" data-testid="body-composition-page" role="main"
+      data-bc-app="true"
+      data-profile-gender="{{ profile.get('gender') or '' }}"
+      data-profile-age="{{ profile.get('age') or '' }}"
+      data-profile-height-cm="{{ profile.get('height_cm') or '' }}"
+      data-profile-weight-kg="{{ profile.get('weight_kg') or '' }}">
+    <div class="container-fluid">
+        <header class="page-header text-center body-composition-header">
+            <h1>Body Composition</h1>
+            <div class="header-underline" aria-hidden="true"></div>
+            <p class="lead">
+                Tape-measurement BFP via the U.S. Navy method (primary) and BMI method (fallback),
+                with longitudinal snapshot tracking.
+            </p>
+        </header>
+
+        {% set demographics_complete = profile and profile.get('gender') and profile.get('age') and profile.get('height_cm') and profile.get('weight_kg') %}
+        {% if not demographics_complete %}
+        <section class="frame-calm-glass body-composition-warning" data-section="missing-demographics" role="alert">
+            <div class="bc-warning-body">
+                <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+                <div>
+                    <strong>Profile incomplete.</strong>
+                    Body Composition reads gender, age, height, and bodyweight from your
+                    <a href="{{ url_for('user_profile.user_profile') }}">User Profile</a>.
+                    Save those fields first to enable the calculator.
+                </div>
+            </div>
+        </section>
+        {% endif %}
+
+        <div class="body-composition-grid">
+            <section class="frame-calm-glass body-composition-panel"
+                     data-section="body fat calculator"
+                     aria-labelledby="bc-calculator-title">
+                <div class="frame-header frame-header-2025">
+                    <div class="frame-header-left">
+                        <span class="frame-title" id="bc-calculator-title">
+                            <i class="fas fa-ruler" aria-hidden="true"></i>
+                            Body Fat Calculator
+                        </span>
+                    </div>
+                </div>
+                <div class="frame-content">
+                    <form id="bc-form" class="bc-form" novalidate aria-describedby="bc-form-help">
+                        <p id="bc-form-help" class="bc-form-help">
+                            Enter tape measurements in centimeters. Leave all three blank to fall back to the BMI method.
+                        </p>
+
+                        <div class="bc-form-grid">
+                            <div class="bc-form-field">
+                                <label for="bc-neck">Neck (cm)</label>
+                                <input id="bc-neck" name="neck_cm" type="number" inputmode="decimal" step="0.1" min="20" max="250"
+                                       class="form-control input-calm-inset" autocomplete="off">
+                            </div>
+                            <div class="bc-form-field">
+                                <label for="bc-waist">Waist (cm)</label>
+                                <input id="bc-waist" name="waist_cm" type="number" inputmode="decimal" step="0.1" min="20" max="250"
+                                       class="form-control input-calm-inset" autocomplete="off">
+                            </div>
+                            <div class="bc-form-field bc-form-field-hip" data-bc-hip-field>
+                                <label for="bc-hip">Hip (cm)</label>
+                                <input id="bc-hip" name="hip_cm" type="number" inputmode="decimal" step="0.1" min="20" max="250"
+                                       class="form-control input-calm-inset" autocomplete="off">
+                            </div>
+                            <div class="bc-form-field bc-form-field-notes">
+                                <label for="bc-notes">Notes (optional)</label>
+                                <input id="bc-notes" name="notes" type="text" maxlength="200"
+                                       class="form-control input-calm-inset" autocomplete="off"
+                                       placeholder="e.g. morning, post-cut">
+                            </div>
+                        </div>
+
+                        <details class="bc-form-guide">
+                            <summary>How to measure</summary>
+                            <ul class="bc-guide-list">
+                                <li><strong>Neck:</strong> below the larynx, tape sloping downward to the front; do not flare neck outward.</li>
+                                <li><strong>Waist (men):</strong> horizontal at the navel; do not pull the stomach inward.</li>
+                                <li><strong>Waist (women):</strong> at the smallest natural width.</li>
+                                <li><strong>Hip (women only):</strong> largest horizontal hip circumference.</li>
+                            </ul>
+                        </details>
+
+                        <div id="bc-form-error" class="bc-form-error" role="alert" hidden></div>
+
+                        <div class="bc-form-actions">
+                            <button type="submit" id="bc-save" class="btn btn-primary btn-calm-primary">
+                                <i class="fas fa-floppy-disk" aria-hidden="true"></i> Save snapshot
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="bc-results" data-bc-results aria-live="polite">
+                        <div class="bc-results-headline">
+                            <span class="bc-results-eyebrow" data-bc-method-label>BMI method</span>
+                            <span class="bc-results-bfp" data-bc-bfp>—</span>
+                            <span class="bc-results-bfp-unit">% body fat</span>
+                        </div>
+                        <div class="bc-results-derived">
+                            <div>
+                                <span class="bc-results-label">Fat mass</span>
+                                <span class="bc-results-value" data-bc-fat-mass>—</span>
+                            </div>
+                            <div>
+                                <span class="bc-results-label">Lean mass</span>
+                                <span class="bc-results-value" data-bc-lean-mass>—</span>
+                            </div>
+                            <div>
+                                <span class="bc-results-label">BMI</span>
+                                <span class="bc-results-value" data-bc-bmi>—</span>
+                            </div>
+                        </div>
+
+                        <div class="bc-band" aria-label="ACE body fat category band">
+                            <span class="bc-band-title">ACE Body Fat Categorization</span>
+                            <div class="bc-band-track" data-bc-band-track>
+                                <div class="bc-band-segments" data-bc-band-segments></div>
+                                <span class="bc-band-tick" data-bc-band-tick hidden></span>
+                            </div>
+                            <span class="bc-band-current" data-bc-band-label>—</span>
+                        </div>
+
+                        <p class="bc-jp-line" data-bc-jp-line>
+                            Jackson &amp; Pollock ideal for your age: <strong data-bc-jp-ideal>—</strong>.
+                            Your current estimate: <strong data-bc-jp-current>—</strong>.
+                        </p>
+                    </div>
+
+                    <footer class="bc-citations">
+                        <small>
+                            U.S. Navy circumference method (Hodgdon &amp; Beckett, 1984).
+                            ACE band: American Council on Exercise &mdash; Body Fat Categorization.
+                            Jackson &amp; Pollock ideal: Jackson, A.S. &amp; Pollock, M.L. &mdash; Ideal Body Fat Percentages by Age.
+                        </small>
+                    </footer>
+                </div>
+            </section>
+
+            <section class="frame-calm-glass body-composition-panel"
+                     data-section="snapshot history"
+                     aria-labelledby="bc-history-title">
+                <div class="frame-header frame-header-2025">
+                    <div class="frame-header-left">
+                        <span class="frame-title" id="bc-history-title">
+                            <i class="fas fa-clock-rotate-left" aria-hidden="true"></i>
+                            Snapshot History
+                        </span>
+                    </div>
+                </div>
+                <div class="frame-content">
+                    <div class="bc-trend" data-bc-trend>
+                        <svg class="bc-trend-svg" data-bc-trend-svg viewBox="0 0 320 120" preserveAspectRatio="none" role="img" aria-label="Body fat percentage trend over time">
+                            <polyline class="bc-trend-line" data-bc-trend-line fill="none" stroke="currentColor" stroke-width="2" points=""></polyline>
+                        </svg>
+                        <p class="bc-trend-empty" data-bc-trend-empty>
+                            Save a snapshot to start tracking progress.
+                        </p>
+                    </div>
+
+                    <div class="bc-table-wrap tbl-wrap tbl-wrap--full" role="region" aria-label="Snapshot history">
+                        <table class="table table-striped table-calm tbl tbl--responsive bc-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col" data-label="Date">Date</th>
+                                    <th scope="col" class="is-num" data-label="BFP (Navy)">BFP (Navy)</th>
+                                    <th scope="col" class="is-num" data-label="BFP (BMI)">BFP (BMI)</th>
+                                    <th scope="col" class="is-num" data-label="Lean Mass">Lean Mass</th>
+                                    <th scope="col" class="is-num" data-label="Fat Mass">Fat Mass</th>
+                                    <th scope="col" data-label="Actions">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody data-bc-history-body>
+                                {% for snap in snapshots %}
+                                <tr data-bc-snapshot-id="{{ snap.id }}">
+                                    <td data-label="Date">{{ snap.captured_at }}</td>
+                                    <td class="is-num" data-label="BFP (Navy)">
+                                        {% if snap.bfp_navy is not none %}{{ '%.1f'|format(snap.bfp_navy) }} %{% else %}—{% endif %}
+                                    </td>
+                                    <td class="is-num" data-label="BFP (BMI)">{{ '%.1f'|format(snap.bfp_bmi) }} %</td>
+                                    <td class="is-num" data-label="Lean Mass">
+                                        {% if snap.lean_mass_kg is not none %}{{ '%.1f'|format(snap.lean_mass_kg) }} kg{% else %}—{% endif %}
+                                    </td>
+                                    <td class="is-num" data-label="Fat Mass">
+                                        {% if snap.fat_mass_kg is not none %}{{ '%.1f'|format(snap.fat_mass_kg) }} kg{% else %}—{% endif %}
+                                    </td>
+                                    <td data-label="Actions">
+                                        <button type="button" class="btn btn-sm btn-outline-danger btn-calm-ghost"
+                                                data-bc-delete="{{ snap.id }}"
+                                                aria-label="Delete snapshot from {{ snap.captured_at }}">
+                                            <i class="fas fa-trash" aria-hidden="true"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <p class="bc-empty" data-bc-empty {% if snapshots %}hidden{% endif %}>
+                        No snapshots saved yet.
+                    </p>
+                </div>
+            </section>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+{% block page_js %}
+    <script type="module" src="{{ url_for('static', filename='js/modules/body-composition.js') }}?v={{ range(1, 1000000) | random }}"></script>
+{% endblock %}
