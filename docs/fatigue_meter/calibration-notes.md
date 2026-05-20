@@ -1,14 +1,17 @@
 # Fatigue Meter — Calibration Notes
 
-**Status:** placeholder / sanity baseline only — **no real calibration performed.**
+**Status:** **Stage 4 closed by owner-approved felt-label review, 2026-05-20 — no
+threshold changes.** Owner reviewed 5 anchors (1 real logged week + 4 generated
+scenarios), 4 of 5 felt labels agreed with the computed band, the lone
+disagreement was on the `hard_4d` synthetic scenario (a single data point on a
+generator scenario, not on the real production case). Per PLANNING.md §4.2's
+"at least 2 disagreements" gate, no threshold tuning is justified. See
+"2026-05-20 — owner-approved felt-label calibration review" section below.
+**`utils/fatigue.py` thresholds remain the §24.B defaults — unchanged.**
 **Created:** 2026-05-04
-**Pending:** 4 representative logged weeks, owner felt-experience labels, or
-explicit Phase 2 planning.
-**Parking decision:** owner chose Option 1, stay parked, on 2026-05-13.
-**2026-05-20 update:** owner-approved bounded **synthetic-override** /
-coherence analysis pass — see section below. Still **not real-data
-calibration**; parked state and `utils/fatigue.py` threshold values
-remain unchanged.
+**Stage 4 closeout:** 2026-05-20 (owner-approved override of parked state).
+**Earlier history:** 2026-05-13 parked-status (Option 1) and 2026-05-20 bounded
+synthetic-override / coherence analysis pass are preserved below for context.
 
 ---
 
@@ -303,6 +306,149 @@ requires a separate owner decision.
 
 ---
 
+## 2026-05-20 — workout_log first-data audit (partial unblock)
+
+`workout_log` is no longer empty: **21 rows, 3 routines (A/B/C), 1 distinct
+date (2026-05-20), 1 candidate ISO week (W20)**. All scored fields are
+populated for all 21 rows, so the actual-logged-fatigue read uses scored RIR /
+reps directly with no planned-field fallback required.
+
+Computed actual-logged fatigue for the one week available (via
+`utils.fatigue.aggregate_session_fatigue` /
+`aggregate_weekly_fatigue` on the join
+`workout_log LEFT JOIN exercises ON e.exercise_name = wl.exercise`, taking
+`COALESCE(scored_*, planned_*)` for reps/RIR and `planned_sets` for sets —
+the table has no `scored_sets` column):
+
+| Routine | Score | Band | Sets | Scored RIR distribution |
+|---|---:|---|---:|---|
+| A | 38.47 | moderate | 24 | `[3,2,2,2,2,2,2]` |
+| B | 39.66 | moderate | 24 | `[3,3,1,2,3,2,1]` |
+| C | 40.44 | moderate | 24 | `[2,2,3,2,2,2,1]` |
+| **Week W20 total** | **118.57** | **moderate** | 72 | 3 sessions in 1 day |
+
+Sanity cross-check — same 21 rows scored against the **planned** fields
+only: weekly **117.60 / moderate** (Δ +0.97 vs scored). The badge would
+render the same band either way; the scored-vs-planned drift is negligible
+because scored RIR moved by ≤1 in either direction across rows. Pattern
+coverage is clean: 21/21 rows resolve a non-NULL `movement_pattern` via the
+exercises catalog join (no neutral-fallback warnings would have been
+emitted).
+
+**Stage 4 status as of this audit alone — partially unblocked, still
+insufficient.** §4.1 requires 4 representative recent weeks with varied
+stress shapes; only 1 week exists. The lone week sits mid-band moderate and
+is coherent with the engine's existing call. STAGE4_PARKED_HANDOFF.md was
+the parked-state authority up to this point; this audit alone does **not**
+satisfy §4.1's quad-week diversity requirement.
+
+**What additional data would unblock §4.1 via the logged-week path:** 3 more
+distinct calendar weeks of logged training spanning varied stress shapes
+(e.g. one intentionally heavy week, one intentionally lighter week), then a
+felt-experience label per week (`light` / `moderate` / `heavy` /
+`very_heavy`). The owner-label path described below was taken in lieu of
+waiting for those 3 weeks.
+
+---
+
+## 2026-05-20 — owner-approved felt-label calibration review (Stage 4 close)
+
+**Framing.** Owner explicitly overrode the parked state to walk PLANNING.md
+§4.1 / §4.2 to a decision today. Five anchors were labeled: the one real
+logged week now in `workout_log` (W20, captured in the audit section above)
+plus the four generator scenarios from
+[generated-calibration-report.md](generated-calibration-report.md). Owner felt
+labels were collected via the `light` / `moderate` / `heavy` / `very_heavy`
+vocabulary that the band cutoffs use.
+
+### Anchors, computed bands, and owner labels
+
+| # | Anchor | Source | Weekly score | Computed band | Owner felt label | Agreement? |
+|---|---|---|---:|---|---|---|
+| 1 | Real W20 | `workout_log` 2026-05-20 (scored fields, 21 rows, 3 routines, 72 sets) | 118.57 | moderate | **moderate** | ✓ agree |
+| 2 | deload / easy 2-day | generated, `intended_anchor='light'` | 28.1 | light | **light** | ✓ agree |
+| 3 | normal 3-day hypertrophy | generated, `intended_anchor='moderate'` | 88.5 | moderate | **moderate** | ✓ agree |
+| 4 | hard 4-day accumulation | generated, `intended_anchor='heavy'` | 161.9 | moderate | **heavy** | ✗ disagree (1 band low) |
+| 5 | overreach 5-day strength | generated, `intended_anchor='very_heavy'` | 419.6 | very_heavy | **very_heavy** | ✓ agree |
+
+**Result: 4 / 5 felt labels agree with computed band. 1 disagreement
+(`hard_4d`, the same case already flagged in the 2026-05-20 synthetic-override
+section above).**
+
+### Decision: no threshold changes
+
+PLANNING.md §4.2 requires "at least 2 weeks land in a band that disagrees with
+felt experience" before threshold tuning is justified. With **1** disagreement,
+that bar is not met. Additional reasoning:
+
+- **The real production anchor agreed.** The single most consequential data
+  point — the real logged W20 — landed in the engine's `moderate` band and the
+  owner labeled it `moderate`. The live `/weekly_summary` and `/session_summary`
+  badges are not mis-reporting against the program currently in use.
+- **The lone disagreement is on a synthetic generator scenario, not on real
+  training.** Per the 2026-05-20 synthetic-override section above, the safer
+  reading of an `intended_anchor`-vs-computed mismatch is Hypothesis B
+  (scenario builder under-shoots its own anchor), not Hypothesis A (live
+  threshold drift). Lowering `WEEKLY_FATIGUE_BANDS[moderate→heavy]` from 200
+  to ≤161 to satisfy `hard_4d` would also flip the user's current planned
+  program (165 weekly) from `moderate` to `heavy` — a user-facing UX change
+  driven by one synthetic data point. The cost-benefit is wrong: real data
+  agrees with the engine.
+- **No "same calibration bias" pattern exists.** A directional bias requires
+  ≥2 disagreements pointing the same way. The single disagreement is in
+  isolation — it cannot be a pattern by definition.
+
+**Therefore `utils/fatigue.py` thresholds are NOT changed.**
+`SESSION_FATIGUE_BANDS` (20 / 50 / 80) and `WEEKLY_FATIGUE_BANDS`
+(80 / 200 / 320) remain at §24.B defaults. No edits to
+`tests/test_fatigue.py` boundary-classification tests. No new PR for
+threshold tweaks.
+
+### Disposition of the `hard_4d` mismatch
+
+Recorded as a known limitation in the synthetic generator, not in the
+production engine. Hypothesis B's specific follow-up (retune
+`scripts/fatigue_calibration_report.py::SCENARIOS["hard_4d"]` to raise
+`volume_scale`, lower `rir_delta` further, and/or add heavier
+`priority_muscles` weighting so the scenario's computed band matches its
+own `intended_anchor`) remains a **deferred** option. It is **not** picked
+up as part of this Stage 4 close because:
+
+- it does not change live UX,
+- it is a scenario-builder polish, not calibration work,
+- the owner did not pre-authorize a scenario-script edit in this override.
+
+The deferred follow-up can be picked up later as a small isolated PR if a
+future synthetic pass surfaces the same mismatch again.
+
+### What this closes vs what remains open
+
+- **Closed:** PLANNING.md §4.1 (validate threshold bands), §4.2 (tune if
+  needed), §4.3 (Stage 4 exit). Stage 4 status: **complete, owner-reviewed,
+  no-change.**
+- **Closed:** the "parked" status from STAGE4_PARKED_HANDOFF.md. The handoff
+  document is preserved for historical context but is no longer the
+  authoritative status — this calibration-notes.md is now authoritative.
+- **Open (unchanged):** Phase 2 work remains explicitly NOT started. No
+  `/fatigue` page, no API endpoints, no SFR, no multi-channel fatigue, no
+  user-calibrated thresholds. Phase 2 entry still requires a separate
+  owner decision per PLANNING.md Stage 5.
+
+### Invariants honored by this close
+
+- No edits to `utils/fatigue.py` (thresholds unchanged).
+- No edits to `scripts/fatigue_calibration_report.py` (Hypothesis B retune
+  remains a documented-not-applied deferred follow-up).
+- No edits to `tests/test_fatigue.py` (no boundary changes to lock).
+- No new routes, no new endpoints, no new templates, no SCSS changes, no
+  new tables.
+- `data/database.db` not committed; `workout_log` row count read but not
+  mutated by this review.
+- Other dirty working-tree files (workout_log routes/CSS/JS,
+  workout_cool_integration docs, etc.) left untouched.
+
+---
+
 ## Browser smoke status
 
 Stage 3 §3.5 owner-required smoke items 4 and 5 are complete as of 2026-05-10:
@@ -313,5 +459,6 @@ real calibration data or Phase 2 planning exists.
 
 ---
 
-*End of calibration-notes.md. Update this file in place when real calibration
-data arrives.*
+*End of calibration-notes.md. Stage 4 is closed (owner-approved no-change,
+2026-05-20). Update this file in place if future logged-week data prompts
+a re-review.*

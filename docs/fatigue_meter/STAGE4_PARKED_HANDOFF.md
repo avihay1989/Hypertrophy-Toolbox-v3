@@ -1,8 +1,19 @@
 # Fatigue Meter - Stage 4 Parked Handoff
 
-**Date:** 2026-05-13
-**Decision:** owner chose Option 1: stay parked.
-**Status:** ready-to-proceed elsewhere; fatigue calibration remains blocked by missing signal.
+> **⚠️ SUPERSEDED 2026-05-20.** Owner explicitly overrode the parked state and
+> walked Stage 4 to a close on 2026-05-20. **Stage 4 is now closed as
+> owner-reviewed / no-change** — no threshold edits to `utils/fatigue.py`.
+> See `docs/fatigue_meter/calibration-notes.md` "2026-05-20 — owner-approved
+> felt-label calibration review (Stage 4 close)" section for the authoritative
+> status. This file is preserved for historical context only; the "Reopen
+> criteria" / "Do not do" / "Next agent instruction" sections below are stale
+> and should not be acted on.
+
+**Date:** 2026-05-13 (parked) → 2026-05-20 (closed; this file superseded)
+**Decision (original):** owner chose Option 1: stay parked.
+**Decision (current):** owner-approved Stage 4 close, no threshold changes.
+**Status:** Stage 4 closed; Phase 1 is the working state. Phase 2 entry remains
+a separate owner decision.
 
 ---
 
