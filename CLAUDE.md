@@ -167,17 +167,14 @@ npx playwright test --project=chromium --reporter=line
 
 ## 5. Current State & Risks
 
-### Verified test counts (2026-05-03 — `feat/fatigue-meter-phase-1-rebased`, post-drop)
-- **pytest**: 1160 passed (~2m 25s) on 2026-05-03 from the rebased fatigue branch — 1080 origin/main baseline (2026-04-28) + 80 new across `tests/test_fatigue.py` (55), `tests/test_priority0_filters.py` extensions in `6246854`, and a handful of rebased prerequisite tests. Lower than the 1345 figure once produced from the original feat-branch tree because origin/main lacks workout-cool §3+§4+§5 + body composition.
-- **Last full E2E Playwright (Chromium)**: **408 passed, 2 failed** in 10.6m on 2026-05-03 from a clean DB. The single repeatable red is `nav-dropdown.spec.ts:117 dark mode toggle still works after navbar restructure` — a pre-existing failure on `origin/main` itself (the toggle's bounding box renders off-viewport at 1440 width; this is what dropped commit `a0a0a18` had attempted to mask via `dispatchEvent('click')`), out of fatigue meter scope. The second failure (`program-backup.spec.ts:79 can create a backup from the dedicated page`) is a DB-state-pollution flake from sequential test execution; passes in isolation. **Effective state: 409 / 1.** See `docs/fatigue_meter/PLANNING.md §2.7` post-drop addendum.
+### Verified test counts (2026-05-21 — `main`, post-Body-Composition hygiene)
+- **pytest**: 1374 passed (~2m 53s) on `main` after Body Composition hygiene PR — 1372 post-PR-#31 baseline + 2 new `captured_at` ISO validation cases.
+- **Body Composition Playwright (Chromium)**: 5 passed (~8s; `e2e/body-composition.spec.ts`) — adds the JS↔Python BFP parity case on top of the 4 PR #31 specs.
+- **Last full E2E Playwright (Chromium)**: not re-run in this hygiene pass. Prior baseline of record is the 2026-05-20 PR #31 verification (20 passed across `body-composition.spec.ts` + `smoke-navigation.spec.ts` + `nav-dropdown.spec.ts`); the wider 408 / 2 baseline is from 2026-05-03 — see Prior counts below.
 
-### Prior verified test counts (2026-04-28, pre-rebase reference)
-- **pytest**: 1080 passed (~2m 22s) — 1054 pre-Issue-#20 + 26 new (Issue #20 reference-lift expansion).
-- **Relevant E2E Playwright**: 41 passed (~58s, Chromium; `user-profile.spec.ts` + `workout-plan.spec.ts`) — adds the Issue #20 questionnaire-grouping case.
-- **Adjacent E2E Playwright (Issue #20 sweep)**: 55 passed (~1m 18s, Chromium; `exercise-interactions.spec.ts` + `accessibility.spec.ts` + `smoke-navigation.spec.ts`).
-- **Last full E2E Playwright baseline**: 314 passed (~7.2m, Chromium; 2026-04-18).
-- **Summary-page Playwright**: 20 passed (~25s; 2026-04-18).
-- **User Profile bodymap (Issue #19) verification (2026-04-28)**: included in the refreshed pytest and Chromium E2E counts above.
+### Prior verified test counts
+- **2026-05-03, `feat/fatigue-meter-phase-1-rebased`**: pytest 1160 passed (~2m 25s); Playwright Chromium 408 passed, 2 failed (effective 409 / 1 — `nav-dropdown.spec.ts:117` dark-mode-toggle off-viewport is a pre-existing red on `origin/main`; `program-backup.spec.ts:79` is a sequential-DB flake that passes in isolation). See `docs/fatigue_meter/PLANNING.md §2.7`.
+- **2026-04-28, pre-rebase**: pytest 1080 passed (~2m 22s); relevant E2E 41 passed (`user-profile.spec.ts` + `workout-plan.spec.ts`); adjacent E2E 55 passed (`exercise-interactions.spec.ts` + `accessibility.spec.ts` + `smoke-navigation.spec.ts`); last full E2E baseline 314 passed (~7.2m, 2026-04-18); summary-page Playwright 20 passed (~25s, 2026-04-18).
 
 Re-verify after significant changes and update counts above.
 
