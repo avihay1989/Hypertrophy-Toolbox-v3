@@ -10,7 +10,8 @@
 
 ## Active feature plans
 - [Fatigue meter](../fatigue_meter/PLANNING.md) — parked; Phase 1 + Stage 4 entry shipped
-- [workout.cool integration](../workout_cool_integration/PLANNING.md) — §3 + §5 done; §4 next
+- [workout.cool integration](../workout_cool_integration/PLANNING.md) - §3 + §4 + §5 infrastructure shipped; §5 curated YouTube video IDs are a content follow-up
+- [YouTube reference videos](../workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md) - current fallback behavior and curation checklist
 - [User profile](../user_profile/PLANNING.md) — questionnaire + bodymap shipped
 
 ## History & decisions

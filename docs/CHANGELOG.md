@@ -13,6 +13,7 @@ All notable changes to Hypertrophy Toolbox v3.
 
 - Added nullable `youtube_video_id TEXT` support for `exercises`, route contracts for `/get_workout_plan` and `/get_workout_logs`, and a strict header-only curated CSV/apply script path for future manual video IDs.
 - Added a shared Bootstrap reference-video modal and per-row play buttons on `/workout_plan` and `/workout_log`. NULL or malformed IDs open a YouTube search fallback; valid IDs use official `https://www.youtube.com/embed/<id>` embeds and clear the iframe on close.
+- Content note: curated video IDs are not populated by this ship. Until `data/youtube_curated_top_n.csv` is filled and `scripts/apply_youtube_curated.py` is run, every exercise uses the search fallback. See `docs/workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md`.
 - Verification: `tests/test_youtube_video_id.py` 40/40 passed; Chromium Playwright `e2e/workout-plan.spec.ts` + `e2e/workout-log.spec.ts` 52/52 passed.
 
 ## Unreleased - May 2, 2026

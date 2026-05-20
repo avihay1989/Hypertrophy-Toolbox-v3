@@ -431,6 +431,14 @@ free-exercise-db does not include YouTube IDs. Three options:
 
 **Decision: option 3 (hybrid)** — solves coverage without committing to populating all ~1,897 rows.
 
+**Current shipped content state:** §5 shipped with the modal, schema, route
+contracts, importer, and tests in place, but the curated video CSV is still a
+header-only scaffold. Until `data/youtube_curated_top_n.csv` is populated and
+`scripts/apply_youtube_curated.py` is run, every exercise will use the intended
+YouTube search fallback. See
+[YOUTUBE_REFERENCE_VIDEOS.md](YOUTUBE_REFERENCE_VIDEOS.md) for the curation
+checklist and UX follow-up options.
+
 ### 5.5 Frontend — `/workout_log` is in scope
 
 The play-icon button appears on **both** `/workout_plan` and `/workout_log`. Reviewing past sessions is a primary use case where a quick form-check video is valuable; making the button plan-only would create asymmetric behavior across two pages that share the same exercise dataset.
@@ -450,7 +458,7 @@ The play-icon button appears on **both** `/workout_plan` and `/workout_log`. Rev
 **Add:**
 - `static/js/modules/exercise-video-modal.js`.
 - `templates/partials/exercise_video_modal.html`.
-- `data/youtube_curated_top_n.csv` — committed manual mapping `exercise_name, youtube_video_id` for the curated top-N (target ~50 most-used exercises).
+- `data/youtube_curated_top_n.csv` — committed manual mapping scaffold `exercise_name, youtube_video_id` for the curated top-N (target ~50 most-used exercises). This currently ships header-only; populating it is content curation, not missing modal infrastructure. See [YOUTUBE_REFERENCE_VIDEOS.md](YOUTUBE_REFERENCE_VIDEOS.md).
 - `scripts/apply_youtube_curated.py` — one-shot importer reading the CSV and writing `youtube_video_id` into `exercises` (idempotent, all-or-nothing). Validates: every `exercise_name` exists in `exercises` (case-insensitive); every `youtube_video_id` matches `^[A-Za-z0-9_-]{11}$`; no duplicate names; no blank IDs. Fails loudly on any violation.
 - `tests/test_youtube_video_id.py` — see §5.8.
 
