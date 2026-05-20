@@ -306,10 +306,10 @@ class TestPatternCoverageEndpoint:
         """Endpoint should return valid JSON."""
         response = client.get("/api/pattern_coverage")
         data = response.get_json()
-        
+
         assert data is not None
-        assert "success" in data
-        assert data["success"] is True
+        assert data["ok"] is True
+        assert data["status"] == "success"
     
     def test_pattern_coverage_endpoint_structure(self, client):
         """Endpoint should return expected structure."""

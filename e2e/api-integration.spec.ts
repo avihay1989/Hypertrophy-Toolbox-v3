@@ -121,9 +121,10 @@ test.describe('Workout Plan API', () => {
     expect(response.ok()).toBeTruthy();
     
     const data = await response.json();
-    expect(data.success).toBe(true);
+    expect(data.ok).toBe(true);
+    expect(data.status).toBe('success');
     expect(data).toHaveProperty('data');
-    
+
     // Verify pattern coverage structure
     const coverage = data.data;
     expect(coverage).toHaveProperty('per_routine');

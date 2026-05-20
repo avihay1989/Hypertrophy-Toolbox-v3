@@ -289,9 +289,10 @@ test.describe('Pattern Coverage Analysis (v1.5.0)', () => {
   test('pattern coverage API returns valid structure', async ({ request }) => {
     const response = await request.get('http://127.0.0.1:5000/api/pattern_coverage');
     expect(response.ok()).toBeTruthy();
-    
+
     const data = await response.json();
-    expect(data.success).toBe(true);
+    expect(data.ok).toBe(true);
+    expect(data.status).toBe('success');
     expect(data.data).toHaveProperty('per_routine');
     expect(data.data).toHaveProperty('total');
     expect(data.data).toHaveProperty('warnings');

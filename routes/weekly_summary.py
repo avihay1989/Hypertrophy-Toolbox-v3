@@ -149,13 +149,11 @@ def get_pattern_coverage():
     """
     try:
         coverage = calculate_pattern_coverage()
-        return jsonify({
-            "success": True,
-            "data": coverage
-        })
-    except Exception as e:
-        logger.exception("Error in pattern_coverage: %s", e)
-        return jsonify({
-            "success": False,
-            "error": "Unable to calculate pattern coverage"
-        }), 500
+        return jsonify(success_response(data=coverage))
+    except Exception:
+        logger.exception("Error in pattern_coverage")
+        return error_response(
+            "INTERNAL_ERROR",
+            "Unable to calculate pattern coverage",
+            500,
+        )

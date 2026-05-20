@@ -12,9 +12,9 @@ paths:
 ```
 XHR detection (`utils/errors.py:47-64`): checks `X-Requested-With`, `Accept: application/json`, or `/api/` prefix.
 
-**All JSON routes must use `success_response()` / `error_response()`.** Known exceptions (verified 2026-04-18):
-- `routes/weekly_summary.py:133,139` — pattern coverage still returns legacy `success`/`error` JSON
-- `routes/workout_plan.py:1079,1093,1114,1125` — replace-exercise fallback paths return legacy ad-hoc JSON with 200 error payloads
+**All JSON routes must use `success_response()` / `error_response()`** (legacy `success`/`error` exceptions cleaned up 2026-05-21).
+
+The replace-exercise "no result" cases (`NO_CANDIDATES`, `DUPLICATE`, `SELECTION_FAILED` in `routes/workout_plan.py`) intentionally pass `status_code=200` to `error_response()` so the response is `200 + {"ok": false, "error": {"code": "...", "reason": "..."}}` — the JS swap handler in `static/js/modules/workout-plan.js` keys off `error.reason` rather than HTTP status, and the E2E spec `e2e/replace-exercise-errors.spec.ts` mocks the same shape. If you add a new "couldn't be processed" outcome, follow the same pattern: `error_response("CODE", "message", 200, reason="...")`.
 
 ## Endpoint template
 ```python

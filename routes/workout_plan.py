@@ -1089,30 +1089,22 @@ def replace_exercise():
             valid_candidates = _build_replacement_candidates(db, routine, muscle, equipment, current_exercise)
             
             if not valid_candidates:
-                return jsonify({
-                    "ok": False,
-                    "status": "error",
-                    "message": f"No alternative exercises found for {muscle} with {equipment}",
-                    "error": {
-                        "code": "NO_CANDIDATES",
-                        "reason": "no_candidates",
-                        "message": f"No alternative exercises found for {muscle} with {equipment}"
-                    }
-                }), 200
-            
+                return error_response(
+                    "NO_CANDIDATES",
+                    f"No alternative exercises found for {muscle} with {equipment}",
+                    200,
+                    reason="no_candidates",
+                )
+
             new_exercise = suggest_replacement_exercise(current_exercise, muscle, equipment, valid_candidates, strategy)
-            
+
             if not new_exercise:
-                return jsonify({
-                    "ok": False,
-                    "status": "error",
-                    "message": "Failed to select replacement exercise",
-                    "error": {
-                        "code": "SELECTION_FAILED",
-                        "reason": "selection_failed",
-                        "message": "Failed to select replacement exercise"
-                    }
-                }), 200
+                return error_response(
+                    "SELECTION_FAILED",
+                    "Failed to select replacement exercise",
+                    200,
+                    reason="selection_failed",
+                )
             
             duplicate_check = db.fetch_one(
                 "SELECT id FROM user_selection WHERE routine = ? AND LOWER(exercise) = LOWER(?)",
@@ -1124,27 +1116,19 @@ def replace_exercise():
                 if remaining_candidates:
                     new_exercise = suggest_replacement_exercise(current_exercise, muscle, equipment, remaining_candidates, "fallback")
                     if not new_exercise:
-                        return jsonify({
-                            "ok": False,
-                            "status": "error",
-                            "message": "Failed to select replacement exercise",
-                            "error": {
-                                "code": "SELECTION_FAILED",
-                                "reason": "selection_failed",
-                                "message": "Failed to select replacement exercise"
-                            }
-                        }), 200
+                        return error_response(
+                            "SELECTION_FAILED",
+                            "Failed to select replacement exercise",
+                            200,
+                            reason="selection_failed",
+                        )
                 else:
-                    return jsonify({
-                        "ok": False,
-                        "status": "error",
-                        "message": "All candidate exercises are already in this routine",
-                        "error": {
-                            "code": "DUPLICATE",
-                            "reason": "duplicate",
-                            "message": "All candidate exercises are already in this routine"
-                        }
-                    }), 200
+                    return error_response(
+                        "DUPLICATE",
+                        "All candidate exercises are already in this routine",
+                        200,
+                        reason="duplicate",
+                    )
             
             updated_row = _perform_exercise_swap(db, exercise_id, new_exercise)
             

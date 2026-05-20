@@ -178,9 +178,8 @@ npx playwright test --project=chromium --reporter=line
 
 Re-verify after significant changes and update counts above.
 
-### Known response-contract exceptions (2026-05-11)
-- `routes/weekly_summary.py:152,158` — pattern coverage still returns legacy `success`/`error` JSON.
-- `routes/workout_plan.py:1090,1104,1125,1136` — replace-exercise fallback paths return legacy ad-hoc JSON with 200 error payloads.
+### Known response-contract exceptions (2026-05-21)
+None. The pattern-coverage and replace-exercise fallback paths were migrated to `success_response()` / `error_response()` (2026-05-21). The replace-exercise "no result" cases (`NO_CANDIDATES`, `DUPLICATE`, `SELECTION_FAILED`) keep HTTP 200 by passing `status_code=200` to `error_response()` — they're user-facing "couldn't be processed" outcomes that pytest + the JS swap handler treat as 200 + `ok:false`.
 
 ### Filter cache: TTL-only invalidation
 `utils/filter_cache.py:13` — TTL 3600s. `invalidate_cache()` exists but is never called from any route. Stale filter options may persist up to 1 hour after exercise data changes.
