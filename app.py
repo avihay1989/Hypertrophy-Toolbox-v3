@@ -3,6 +3,7 @@ from flask import Flask, render_template, url_for, jsonify, request, make_respon
 from utils.db_initializer import initialize_database
 from utils.database import (
     DatabaseHandler,
+    add_body_composition_snapshots_table,
     add_progression_goals_table,
     add_user_profile_tables,
     add_volume_tracking_tables,
@@ -60,6 +61,8 @@ logger.info("Adding volume tracking tables...")
 add_volume_tracking_tables()
 logger.info("Adding user profile tables...")
 add_user_profile_tables()
+logger.info("Adding body composition snapshots table...")
+add_body_composition_snapshots_table()
 logger.info("Initializing exercise order...")
 initialize_exercise_order()
 logger.info("Initializing backup tables...")
@@ -169,16 +172,17 @@ def erase_data():
                 'user_profile_preferences',
                 'user_profile_lifts',
                 'user_profile',
+                'body_composition_snapshots',
                 'user_selection',
                 'progression_goals',
                 'muscle_volumes',
                 'volume_plans',
                 'workout_log'
             ]
-            
+
             for table in tables:
                 db.execute_query(f"DROP TABLE IF EXISTS {table}")
-        
+
         # Reinitialize database - force=True to bypass the initialization guard
         # since we just dropped the tables
         logger.info("Reinitializing database...")
@@ -189,6 +193,8 @@ def erase_data():
         add_volume_tracking_tables()
         logger.info("Adding user profile tables...")
         add_user_profile_tables()
+        logger.info("Adding body composition snapshots table...")
+        add_body_composition_snapshots_table()
         logger.info("Initializing exercise order...")
         initialize_exercise_order()
         logger.info("Reinitializing backup tables...")
