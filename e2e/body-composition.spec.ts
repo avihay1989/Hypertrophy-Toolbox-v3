@@ -95,4 +95,32 @@ test.describe('Body Composition page', () => {
     await expect(page.locator('[data-bc-method-label]')).toHaveText('BMI method (fallback)');
     await expect(page.locator('[data-bc-bfp]')).not.toHaveText('—');
   });
+
+  test('JS preview matches Python persisted Navy BFP within rounding', async ({ page }) => {
+    await page.goto(ROUTE);
+    await waitForPageReady(page);
+
+    await page.locator('#bc-neck').fill('38');
+    await page.locator('#bc-waist').fill('85');
+
+    const previewText = await page.locator('[data-bc-bfp]').textContent();
+    const previewMatch = previewText?.match(/([\d.]+)\s*%/);
+    expect(previewMatch, `expected BFP preview text, got "${previewText}"`).not.toBeNull();
+    const previewValue = Number(previewMatch![1]);
+
+    await page.locator('#bc-save').click();
+    await expect(page.locator('[data-bc-history-body] tr')).toHaveCount(1, { timeout: 5000 });
+
+    const listResp = await page.request.get('/api/body_composition/snapshots');
+    expect(listResp.ok()).toBeTruthy();
+    const payload = await listResp.json();
+    const snap = payload?.data?.[0];
+    expect(snap, 'snapshot list should not be empty').toBeTruthy();
+    expect(snap.bfp_navy, 'Navy BFP should be persisted').not.toBeNull();
+
+    // JS displays bfp.toFixed(1); server stores the raw float. They must
+    // round-trip to within ±0.05 % BFP — anything larger means the JS and
+    // Python formulas have drifted.
+    expect(Math.abs(previewValue - Number(snap.bfp_navy.toFixed(1)))).toBeLessThanOrEqual(0.05);
+  });
 });

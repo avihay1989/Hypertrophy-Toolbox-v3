@@ -276,6 +276,43 @@ def test_post_snapshot_uses_provided_captured_at(client, clean_db):
     assert response.get_json()["data"]["captured_at"] == timestamp
 
 
+def test_post_snapshot_accepts_iso_offset_captured_at(client, clean_db):
+    _seed_profile(clean_db)
+    timestamp = "2026-05-21T08:00:00+02:00"
+    response = client.post(
+        "/api/body_composition/snapshot",
+        json={
+            "gender": "M",
+            "age_years": 34,
+            "height_cm": 180.0,
+            "bodyweight_kg": 80.0,
+            "captured_at": timestamp,
+        },
+        headers=XHR_HEADERS,
+    )
+    assert response.status_code == 200
+    assert response.get_json()["data"]["captured_at"] == timestamp
+
+
+def test_post_snapshot_rejects_malformed_captured_at(client, clean_db):
+    _seed_profile(clean_db)
+    response = client.post(
+        "/api/body_composition/snapshot",
+        json={
+            "gender": "M",
+            "age_years": 34,
+            "height_cm": 180.0,
+            "bodyweight_kg": 80.0,
+            "captured_at": "yesterday",
+        },
+        headers=XHR_HEADERS,
+    )
+    assert response.status_code == 400
+    payload = response.get_json()
+    assert_error(payload, "VALIDATION_ERROR")
+    assert "captured_at" in payload["error"]["message"]
+
+
 def test_list_snapshots_returns_descending(client, clean_db):
     _seed_profile(clean_db)
     earlier = {

@@ -97,6 +97,28 @@ def _utcnow_iso() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+def _parse_captured_at(value: Any) -> Optional[str]:
+    """Parse a client-supplied ISO 8601 timestamp; return None if blank.
+
+    Accepts trailing `Z` as UTC. Echoes the caller's string back unchanged
+    when parseable so the saved row preserves the original offset / precision
+    the client sent.
+    """
+    if value in (None, ""):
+        return None
+    if not isinstance(value, str):
+        raise ValueError("captured_at must be an ISO 8601 timestamp string")
+    normalized = value.strip()
+    if not normalized:
+        return None
+    parse_input = normalized[:-1] + "+00:00" if normalized.endswith("Z") else normalized
+    try:
+        datetime.fromisoformat(parse_input)
+    except ValueError as exc:
+        raise ValueError("captured_at must be an ISO 8601 timestamp") from exc
+    return normalized
+
+
 def _row_to_snapshot(row: Any) -> dict[str, Any]:
     return {
         "id": row["id"],
@@ -225,7 +247,7 @@ def create_snapshot():
         fat_mass_kg = (effective_bfp / 100.0) * bodyweight_kg
         lean_mass_kg = bodyweight_kg - fat_mass_kg
 
-        captured_at = _nullable_text(data.get("captured_at")) or _utcnow_iso()
+        captured_at = _parse_captured_at(data.get("captured_at")) or _utcnow_iso()
 
         with DatabaseHandler() as db:
             db.execute_query(
