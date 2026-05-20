@@ -4,7 +4,7 @@ This file is the execution source of truth for autonomous development sessions. 
 
 ## Current Objective
 
-**Active workstream (2026-05-20, later session): Body Composition Issue #21 — first slice committed (`f4496f7`); second slice (page + API + UI) in working tree, uncommitted.** Backend formula module + migration + tests are committed. The second slice adds the `routes/body_composition.py` blueprint with four endpoints, the `templates/body_composition.html` page (live calculator + ACE band + Jackson & Pollock comparison + trend SVG + snapshot history table), a JS mirror of the four formulas at `static/js/modules/body-composition.js`, a `static/css/pages-body-composition.css` route bundle, a full-label `Body Composition` nav link in the main left flow between `Profile` and `Distribute`, and route + Playwright coverage. Source of truth: [`docs/body_composition/development_issues.md`](body_composition/development_issues.md). Detail block in *Next Task → Body Composition Issue #21*.
+**As of 2026-05-20 (latest session): Body Composition Issue #21 is fully shipped via PR #31 (squash commit `20b4b24`) on `origin/main`.** Both slices — backend formula module + migration + tests, and page + API + UI + Playwright — are now on `main`. CI 6/6 green at merge; Opus review verdict was ready-to-merge. Source of truth: [`docs/body_composition/development_issues.md`](body_composition/development_issues.md). No active workstream remains in-flight; pick the next from owner direction.
 
 workout.cool §4 (free-exercise-db thumbnails) is **fully shipped on `origin/main`**. PR #20 (squash `8b348a5`) landed the feature; PR #23 (`bfd9087`) landed the post-merge handoff refresh + nav-dropdown e2e stabilization + dependency pin bumps; PR #22 (`631b5f8`) landed the §4.6 visual-baseline spec + seed. No outstanding workout.cool infrastructure work remains. One optional content follow-up remains for §5 reference videos: curated YouTube IDs have not been populated, so every exercise uses the search fallback until `data/youtube_curated_top_n.csv` is filled and `scripts/apply_youtube_curated.py` is run. See [docs/workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md](workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md).
 
@@ -47,10 +47,11 @@ state before choosing what to do next.
 
 ## Current Branch
 
-`main`, in sync with `origin/main` at `63c745d`, then locally ahead by `f4496f7` (Body Composition Issue #21 first slice, backend-only). Working tree has the uncommitted Issue #21 second-slice diff described below (page + API + UI), plus `data/database.db` runtime dirt (owner-approved kept dirty per `CLAUDE.md` agents-must-not list; do not commit).
+`main`, in sync with `origin/main` at `20b4b24` (PR #31 squash). Working tree has only `data/database.db` runtime dirt (owner-approved kept dirty per `CLAUDE.md` agents-must-not list; do not commit). Feature branch `feat/body-composition-issue-21` was deleted locally and on the remote at merge time.
 
 Recent history on `origin/main` (newest first):
 
+- `20b4b24` (2026-05-20) — **PR #31** `feat(body-composition): add page, API, and nav slot`. Squash bundles the two pre-squash Body Composition Issue #21 commits (backend formula + migration + tests; page + API + UI + Playwright). CI 6/6 green. Opus review verdict: ready to merge. Non-blocking follow-ups recorded for later: (1) add `captured_at` ISO format validation, (2) add JS↔Python numeric parity Playwright assertion, (3) minor docs test-count drift refresh.
 - `63c745d` (2026-05-20) — **PR #28** `fix(fatigue-badge): compact, intentional widget on summary pages`. Presentation-only — 16 files changed, 184 insertions(+), 88 deletions(-). Restructures `templates/_fatigue_badge.html` (drops the `.card`/`.card-body` scaffold, switches to a `<section>` grid; promotes score + band to a readout row with eyebrow + info icon above; period label moves to the right column on desktop and stacks below on mobile). Rewrites `scss/_fatigue.scss` for a translucent surface harmonized with `.summary-frame` glass styling (score 2.1rem/700 tabular-nums; band rendered as a pill chip; empty-state pill is dashed-outline; tighter padding drops desktop badge height ~162px → ~86px). Rebuilds `static/css/bootstrap.custom.min.css` + source map. Refreshes 12 visual snapshots for weekly/session × {desktop,tablet,mobile} × {light,dark}. **No `utils/fatigue.py`, no thresholds, no APIs, no calibration, no scenario-script changes.** Existing Playwright selectors (`.fatigue-badge`, `.fatigue-badge__info-btn`, `.fatigue-badge__band`) preserved. Verification recorded in PR: pytest fatigue+summary 150 passed; `e2e/fatigue-stage4-smokes.spec.ts` 5 passed; `e2e/summary-pages.spec.ts` 20 passed; `e2e/visual.spec.ts` 42 passed (after intentional re-baseline).
 - `330b2a9` (2026-05-20) — **PR #27** `docs: refresh handoff after fatigue synthetic override`. Docs-only — refreshed `ACTIVE_DEVELOPMENT.md` + `MASTER_HANDOVER.md` to reflect PR #25 + PR #26 on `origin/main` (current-SHA bump, recent-merges list, CI rows, fatigue-meter workstream-row update, 2026-05-20 override note in the "DO NOT REOPEN" block). No code, script, test, template, route, or runtime files touched.
 - `2b34b50` (2026-05-20) — **PR #26** `docs(fatigue): record synthetic calibration override`. Docs-only — 1 file changed, 101 insertions(+), 0 deletions(-) in `docs/fatigue_meter/calibration-notes.md`. Reframes the existing 2026-05-11 generated calibration report as an owner-approved synthetic-override / coherence pass; flags `hard_4d` mismatch (intended `heavy`, computed `moderate` at 161.9 weekly); records hypothesis A (threshold drift) and B (scenario miscal, preferred) as proposals only. No `utils/fatigue.py`, no scenario script, no DB writes. CI 6/6 green.
@@ -75,12 +76,13 @@ Recent history on `origin/main` (newest first):
 - Fatigue meter Phase 1 / Stage 4 entry parked by owner choice (Option 1 confirmed 2026-05-13).
 - Fatigue meter bounded synthetic-override / coherence pass (2026-05-20) — docs-only via PR #26 (`2b34b50`). Reuses 2026-05-11 generated report; `hard_4d` mismatch flagged; two hypotheses recorded as proposals only; no thresholds or scripts touched; Stage 4 still parked.
 - Fatigue badge presentation polish (2026-05-20) — PR #28 (`63c745d`). Template + SCSS + built CSS + 12 refreshed visual snapshots. No `utils/fatigue.py`, no thresholds, no APIs, no calibration, no scenario-script changes; Stage 4 still parked.
+- Body Composition Issue #21 (2026-05-20) — PR #31 (`20b4b24`). Both slices shipped as one squash commit: `utils/body_fat.py` (4 pure formulas with "MUST MATCH JS MIRROR" comment), `add_body_composition_snapshots_table()` migration in `utils/database.py`, `routes/body_composition.py` blueprint (4 endpoints), `templates/body_composition.html` page (calculator + ACE band + Jackson & Pollock + trend SVG + history), `static/js/modules/body-composition.js` (formula mirror + page wiring), `static/css/pages-body-composition.css` route bundle, navbar slot, `app.py` + `tests/conftest.py` blueprint registration, 67 route + formula + migration tests, 4 Playwright specs, smoke/nav-dropdown updates.
 
 ## Next Task
 
-### In-flight (uncommitted) — Body Composition Issue #21, second slice
+### Shipped 2026-05-20 via PR #31 — Body Composition Issue #21
 
-Second slice landed in the working tree on local `main`, 2026-05-20 (later). The first slice is now committed as `f4496f7` (backend formula + migration + tests). The new second-slice files / edits:
+Both slices landed as squash commit `20b4b24` on `origin/main`. Files included:
 
 - **New** `routes/body_composition.py` — `body_composition_bp` blueprint with `GET /body_composition`, `POST /api/body_composition/snapshot`, `GET /api/body_composition/snapshots`, `DELETE /api/body_composition/snapshots/<id>`. All four routes use `success_response()` / `error_response()`, `DatabaseHandler`, and the shared logger pattern. Snapshot creation reads gender / age / height / bodyweight from the server-side `user_profile` row (the browser posts tape + notes only), then validates profile demographics and circumferences via the range constants exported from `utils.body_fat`. Tape data is all-or-nothing: provide all required tape values for the Navy method or leave blank to fall through to the BMI fallback.
 - **New** `templates/body_composition.html` — `body-composition.html` page. Reads gender / age / height / bodyweight from the existing `user_profile` row (shown via `data-profile-*` attributes on the page wrapper), renders an "Profile incomplete" warning when demographics are missing, hosts the calculator form (tape inputs + collapsible "How to measure" guide), the live results panel (BFP / fat mass / lean mass / BMI / ACE segmented band with tick / Jackson & Pollock comparison line / citations footer), the trend SVG, and the snapshot history table with per-row delete.
@@ -95,7 +97,7 @@ Second slice landed in the working tree on local `main`, 2026-05-20 (later). The
 - **Edit** `e2e/fixtures.ts`, `e2e/smoke-navigation.spec.ts`, `e2e/nav-dropdown.spec.ts` — adds body-composition route/selectors, smoke-cycles `/body_composition`, and asserts the top-level nav order `['Plan', 'Log', 'Analyze', 'Progress', 'Profile', 'Body Composition', 'Distribute', 'Backup']` plus a no-clipped-label check.
 - **Edit** `docs/ACTIVE_DEVELOPMENT.md` + `docs/MASTER_HANDOVER.md` — this update.
 
-Files committed in `f4496f7` (first slice, for reference):
+First-slice files (now part of PR #31 squash, originally landed on the branch as `f4496f7`):
 
 - **New** `utils/body_fat.py` — pure-function module with `compute_navy(...)`, `compute_bmi(...)`, `ace_category(bfp, gender)`, `jackson_pollock_ideal(age, gender)`. Carries the **"must match JS mirror"** module-level comment from the Issue #17 contract. Server-side validation (range checks + log-domain rejection) raises `ValueError`; route layer (not built here) will translate into structured 4xx responses.
 - **New** `tests/test_body_fat.py` — 42 cases. Coverage: Navy male + female typical lifters, Navy log-domain rejection (both sexes), male-rejects-hip, female-requires-hip, out-of-range height, invalid gender; BMI adult male / adult female / boy <18 / girl <18 + age-18 boundary; ACE male + female boundary rows (parametrized 20 rows) + low-value clamp; Jackson & Pollock anchor rows + interpolation male/female + age clamp below 20 / above 55 + invalid gender.
@@ -105,14 +107,7 @@ Files committed in `f4496f7` (first slice, for reference):
 - **New** `tests/test_db_migration.py` — 7 cases. Coverage: expected columns (incl. NOT NULL set), index existence + indexed column, idempotent re-run, accepts Navy-style insert, accepts BMI-only (tape-blank) insert, rejects missing NOT NULL, `/erase-data` recreates table + index.
 - **New** `docs/body_composition/OPUS_START_PROMPT.md` — reusable prompt that scoped this workstream to the backend-first slice and preserved the fatigue / profile-hook / YouTube-curation guardrails.
 
-- `utils/body_fat.py` (new — `compute_navy`/`compute_bmi`/`ace_category`/`jackson_pollock_ideal` with "must match JS mirror" comment).
-- `utils/database.py` (added `add_body_composition_snapshots_table()` with 14 columns / 6 NOT NULL / descending index, idempotent).
-- `app.py` + `tests/conftest.py` (registered migration in startup + `/erase-data` paths).
-- `tests/test_body_fat.py` (42 formula cases).
-- `tests/test_db_migration.py` (7 schema/migration cases).
-- `docs/body_composition/OPUS_START_PROMPT.md` (reusable prompt for the slice scope).
-
-**Verification (2026-05-20, second slice):**
+**Verification (2026-05-20, second slice — pre-merge):**
 
 - Original Opus targeted pytest: `.venv/Scripts/python.exe -m pytest tests/test_body_composition_routes.py tests/test_body_fat.py tests/test_db_migration.py -q` → **66 passed in 7.25s** (17 route tests on top of the 49 first-slice tests).
 - Original Opus startup-touching subset: `.venv/Scripts/python.exe -m pytest tests/test_body_composition_routes.py tests/test_body_fat.py tests/test_db_migration.py tests/test_database_user_profile.py tests/test_harness_isolation.py tests/test_user_profile_routes.py tests/test_program_backup.py -q` → **132 passed in 21.06s**.
@@ -129,11 +124,11 @@ Files committed in `f4496f7` (first slice, for reference):
 - Profile-page display hooks (Issue #17 / #18 sub-lines: bodyweight-tile *Lean mass* + transparency-card *"Body fat: X % · {ACE band}"*) — owner-deferred follow-up after `/body_composition` ships and snapshots are routinely captured.
 - Visual-baseline screenshots for `/body_composition` — out of scope for this slice; can be added later if owner wants pixel diffs.
 
-Working tree is dirty only on the files listed above plus `data/database.db` (runtime, kept dirty by owner policy). `utils/fatigue.py`, `tests/test_fatigue.py`, and `scripts/fatigue_calibration_report.py` were **not touched**.
+Working tree post-merge: clean except for `data/database.db` (runtime, kept dirty by owner policy). `utils/fatigue.py`, `tests/test_fatigue.py`, and `scripts/fatigue_calibration_report.py` were **not touched**.
 
-### Workstream queue (post first-slice)
+### Workstream queue (post Body Composition Issue #21)
 
-No other active workstream is currently in-flight on `origin/main`. Body Composition Issue #21 second slice (UI / blueprint / JS / chart / E2E) is the natural next step once the first slice ships.
+No active workstream is currently in-flight on `origin/main`. Owner-approved queue (from the section above) still applies: Profile-page hooks (Issues #17 / #18) are the natural next step now that `/body_composition` ships and snapshots can accumulate, but owner has explicitly held them — do not start without a fresh go-ahead. YouTube curation is similarly held. Wait for owner direction.
 
 ### Closed workstreams (do not reopen as "next task")
 
