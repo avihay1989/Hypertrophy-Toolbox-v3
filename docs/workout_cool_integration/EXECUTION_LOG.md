@@ -520,6 +520,17 @@ Run on 2026-05-11 against this slice (post-polish):
 and `/workout_plan` and `/workout_log` wiring). This was adapted from historical
 off-main §5 commits and landed on current `main` after the AI workflow refit.
 Curated CSV ships header-only, so every uncurated row uses the search fallback.
+For the explicit curation checklist and user-facing status, see
+[YOUTUBE_REFERENCE_VIDEOS.md](YOUTUBE_REFERENCE_VIDEOS.md).
+
+### Content status
+
+The shipped §5 work is complete as infrastructure: schema, route contracts,
+shared modal, page wiring, importer, and tests are present. The curated-video
+content is not populated yet. Until `data/youtube_curated_top_n.csv` contains
+valid `exercise_name,youtube_video_id` rows and
+`scripts/apply_youtube_curated.py` is run, all exercises will show the search
+fallback variant.
 
 ### Commits on `main`
 
@@ -553,6 +564,10 @@ Run on 2026-05-11 against current `main`:
 
 ### Outstanding / next sessions
 
+- Optional §5 content curation: populate `data/youtube_curated_top_n.csv` for a
+  starter batch of common exercises, run `scripts/apply_youtube_curated.py`, and
+  verify with `tests/test_youtube_video_id.py`. See
+  [YOUTUBE_REFERENCE_VIDEOS.md](YOUTUBE_REFERENCE_VIDEOS.md).
 - §4 (free-exercise-db media + path validation + thumbnail rendering) is next.
 - §3.6 (Profile coverage body map) remains deferred.
 
