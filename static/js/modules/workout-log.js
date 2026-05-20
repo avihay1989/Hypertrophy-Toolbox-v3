@@ -2,6 +2,40 @@ import { showToast } from './toast.js';
 import { api, isHandledApiError, logApiError } from './fetch-wrapper.js';
 import { openExerciseVideoModal } from './exercise-video-modal.js';
 
+const ASSISTED_BODYWEIGHT_EXERCISES = new Set([
+    'machine assisted chin up',
+    'machine assisted narrow pull up',
+    'machine assisted neutral chin up',
+    'machine assisted parallel bar dips',
+    'machine assisted pull up',
+    'smith machine assisted pullup'
+]);
+
+function normalizeExerciseName(exerciseName) {
+    return String(exerciseName || '').trim().toLowerCase().replace(/-/g, ' ').replace(/\s+/g, ' ');
+}
+
+function isAssistedBodyweightRow(row) {
+    if (row?.dataset?.assistedBodyweight) {
+        return row.dataset.assistedBodyweight === 'true';
+    }
+
+    const exerciseName = row?.querySelector('.exercise-name')?.textContent;
+    return ASSISTED_BODYWEIGHT_EXERCISES.has(normalizeExerciseName(exerciseName));
+}
+
+function isWeightProgression(row, plannedWeight, scoredWeight) {
+    if (!Number.isFinite(scoredWeight) || !Number.isFinite(plannedWeight)) return false;
+    return isAssistedBodyweightRow(row)
+        ? scoredWeight < plannedWeight
+        : scoredWeight > plannedWeight;
+}
+
+function parseOptionalNumber(text) {
+    const parsed = parseFloat(text);
+    return Number.isFinite(parsed) ? parsed : null;
+}
+
 export function initializeWorkoutLog() {
     console.log('Initializing workout log');
 
@@ -344,20 +378,20 @@ export async function updateScoredValue(logId, field, value) {
             const planned_rpe = parseFloat(row.querySelector('[data-field="planned_rpe"]')?.textContent) || 0;
             const planned_min_reps = parseFloat(row.querySelector('[data-field="planned_min_reps"]')?.textContent) || 0;
             const planned_max_reps = parseFloat(row.querySelector('[data-field="planned_max_reps"]')?.textContent) || 0;
-            const planned_weight = parseFloat(row.querySelector('[data-field="planned_weight"]')?.textContent) || 0;
+            const planned_weight = parseOptionalNumber(row.querySelector('[data-field="planned_weight"]')?.textContent);
 
             const scored_rir = parseFloat(row.querySelector('[data-field="scored_rir"] .editable-text')?.textContent) || 0;
             const scored_rpe = parseFloat(row.querySelector('[data-field="scored_rpe"] .editable-text')?.textContent) || 0;
             const scored_min_reps = parseFloat(row.querySelector('[data-field="scored_min_reps"] .editable-text')?.textContent) || 0;
             const scored_max_reps = parseFloat(row.querySelector('[data-field="scored_max_reps"] .editable-text')?.textContent) || 0;
-            const scored_weight = parseFloat(row.querySelector('[data-field="scored_weight"] .editable-text')?.textContent) || 0;
+            const scored_weight = parseOptionalNumber(row.querySelector('[data-field="scored_weight"] .editable-text')?.textContent);
 
             const isProgressive = (
                 (scored_rir && planned_rir && scored_rir < planned_rir) ||
                 (scored_rpe && planned_rpe && scored_rpe > planned_rpe) ||
                 (scored_min_reps && planned_min_reps && scored_min_reps > planned_min_reps) ||
                 (scored_max_reps && planned_max_reps && scored_max_reps > planned_max_reps) ||
-                (scored_weight && planned_weight && scored_weight > planned_weight)
+                isWeightProgression(row, planned_weight, scored_weight)
             );
 
             badge.className = `badge ${isProgressive ? 'bg-success' : 'bg-warning'}`;
@@ -392,7 +426,7 @@ function updateProgressionIndicator(row, field, scoredValue) {
     }
     
     // Don't add indicator if no scored value
-    if (!scoredValue || isNaN(scored) || isNaN(plannedValue)) return;
+    if (scoredValue === '' || scoredValue === null || scoredValue === undefined || isNaN(scored) || isNaN(plannedValue)) return;
     
     // Create new indicator
     const indicator = document.createElement('i');
@@ -434,20 +468,25 @@ function updateProgressionIndicator(row, field, scoredValue) {
             indicator.title = `Lower effort (${diff})`;
         }
     } else if (field === 'scored_weight') {
-        // For weight, HIGHER is BETTER
-        isImproved = scored > plannedValue;
+        const isAssistedBodyweight = isAssistedBodyweightRow(row);
+        isImproved = isAssistedBodyweight ? scored < plannedValue : scored > plannedValue;
         isSame = scored === plannedValue;
         diff = (scored - plannedValue).toFixed(1);
+        const absDiff = Math.abs(scored - plannedValue).toFixed(1);
         
         if (isImproved) {
             indicator.classList.add('fa-arrow-up', 'text-success');
-            indicator.title = `Weight increased! (+${diff}kg)`;
+            indicator.title = isAssistedBodyweight
+                ? `Assistance decreased! (-${absDiff}kg assistance)`
+                : `Weight increased! (+${diff}kg)`;
         } else if (isSame) {
             indicator.classList.add('fa-equals', 'text-warning');
-            indicator.title = 'Same weight';
+            indicator.title = isAssistedBodyweight ? 'Same assistance' : 'Same weight';
         } else {
             indicator.classList.add('fa-arrow-down', 'text-danger');
-            indicator.title = `Weight decreased (${diff}kg)`;
+            indicator.title = isAssistedBodyweight
+                ? `Assistance increased (+${absDiff}kg assistance)`
+                : `Weight decreased (${diff}kg)`;
         }
     } else {
         // For reps (min/max), HIGHER is BETTER
@@ -508,21 +547,21 @@ export function checkProgressiveOverload(logId) {
     const planned_rpe = parseFloat(row.querySelector('[data-field="planned_rpe"]')?.textContent) || 0;
     const planned_min_reps = parseFloat(row.querySelector('[data-field="planned_min_reps"]')?.textContent) || 0;
     const planned_max_reps = parseFloat(row.querySelector('[data-field="planned_max_reps"]')?.textContent) || 0;
-    const planned_weight = parseFloat(row.querySelector('[data-field="planned_weight"]')?.textContent) || 0;
+    const planned_weight = parseOptionalNumber(row.querySelector('[data-field="planned_weight"]')?.textContent);
 
     // Get scored values
     const scored_rir = parseFloat(row.querySelector('[data-field="scored_rir"] .editable-text')?.textContent) || 0;
     const scored_rpe = parseFloat(row.querySelector('[data-field="scored_rpe"] .editable-text')?.textContent) || 0;
     const scored_min_reps = parseFloat(row.querySelector('[data-field="scored_min_reps"] .editable-text')?.textContent) || 0;
     const scored_max_reps = parseFloat(row.querySelector('[data-field="scored_max_reps"] .editable-text')?.textContent) || 0;
-    const scored_weight = parseFloat(row.querySelector('[data-field="scored_weight"] .editable-text')?.textContent) || 0;
+    const scored_weight = parseOptionalNumber(row.querySelector('[data-field="scored_weight"] .editable-text')?.textContent);
 
     const isProgressive = (
         (scored_rir && planned_rir && scored_rir < planned_rir) ||
         (scored_rpe && planned_rpe && scored_rpe > planned_rpe) ||
         (scored_min_reps && planned_min_reps && scored_min_reps > planned_min_reps) ||
         (scored_max_reps && planned_max_reps && scored_max_reps > planned_max_reps) ||
-        (scored_weight && planned_weight && scored_weight > planned_weight)
+        isWeightProgression(row, planned_weight, scored_weight)
     );
 
     const badge = row.querySelector('.badge');

@@ -4,13 +4,14 @@ This file is the execution source of truth for autonomous development sessions. 
 
 ## Current Objective
 
-workout.cool §4 (free-exercise-db thumbnails) is **fully shipped on `origin/main`**. PR #20 (squash `8b348a5`) landed the feature; PR #23 (`bfd9087`) landed the post-merge handoff refresh + nav-dropdown e2e stabilization + dependency pin bumps; PR #22 (`631b5f8`) landed the §4.6 visual-baseline spec + seed. No outstanding workout.cool work remains.
+workout.cool §4 (free-exercise-db thumbnails) is **fully shipped on `origin/main`**. PR #20 (squash `8b348a5`) landed the feature; PR #23 (`bfd9087`) landed the post-merge handoff refresh + nav-dropdown e2e stabilization + dependency pin bumps; PR #22 (`631b5f8`) landed the §4.6 visual-baseline spec + seed. No outstanding workout.cool infrastructure work remains. One optional content follow-up remains for §5 reference videos: curated YouTube IDs have not been populated, so every exercise uses the search fallback until `data/youtube_curated_top_n.csv` is filled and `scripts/apply_youtube_curated.py` is run. See [docs/workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md](workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md).
 
-As of 2026-05-20, **no workstream is in-flight on `origin/main`**. All previously queued options are closed; the fatigue badge presentation polish (PR #28 `63c745d`) shipped on the same day as a small UI fix and did not reopen Stage 4:
+As of 2026-05-20 (later in the day), the fatigue meter workstream has been **closed via an owner-approved Stage 4 calibration review** that walked PLANNING.md §4.1 → §4.3 to a no-change decision. This is a docs-only close — `utils/fatigue.py`, `tests/test_fatigue.py`, and `scripts/fatigue_calibration_report.py` were **not touched**. After this close, no workstream remains in-flight.
 
 - **Redesign post-P8 triage** — closed (10 of 11 shipped, #1 deferred by owner choice; verified 2026-05-19, PR #25).
 - **phase5_3i_plan** — closed (accepted-as-shipped 2026-05-19; planning doc shipped `c0da18e` and deleted `635fa3e`, 5A–5H validation never ran but `12c90ac` refactors have held 5+ weeks under the 1160-test baseline; PR #25).
-- **Fatigue meter** — Phase 1 done; Stage 4 still parked. PR #26 (2026-05-20) shipped a docs-only owner-approved synthetic-override / coherence pass section; PR #28 (2026-05-20) shipped a presentation-only badge restyle (template + SCSS + refreshed visual snapshots). Neither touched `utils/fatigue.py`, thresholds, scenario script, or real-data calibration.
+- **Fatigue meter** — Phase 1 done; **Stage 4 closed 2026-05-20 by owner-approved felt-label calibration review with no threshold changes**. Owner labeled 5 anchors (1 real logged week W20 from the now-populated `workout_log` + 4 generator scenarios from `generated-calibration-report.md`); 4 of 5 felt labels agreed with the computed bands; the lone disagreement was on the `hard_4d` synthetic generator scenario only, so PLANNING.md §4.2's "≥2 disagreements" bar was not met. `utils/fatigue.py` thresholds remain the §24.B defaults. STAGE4_PARKED_HANDOFF.md is now superseded; the authoritative status lives in `calibration-notes.md` "2026-05-20 — owner-approved felt-label calibration review (Stage 4 close)". Phase 2 entry remains a separate owner decision.
+  - Earlier in the same day: PR #26 (2026-05-20) shipped a docs-only owner-approved synthetic-override / coherence pass section; PR #28 (2026-05-20) shipped a presentation-only badge restyle (template + SCSS + refreshed visual snapshots). Both are preserved.
 
 Pick a new workstream from owner direction.
 
@@ -62,18 +63,39 @@ None are blocking. Available if the owner wants final polish:
 - Clean up the `D:/development/Hypertrophy-Toolbox-v3-visual-baseline-s4` worktree. The remote branch is gone; local branch `test/visual-baseline-thumbnails` is unmerged-locally because the worktree holds it. Worktree still carries untracked `.venv` + `node_modules`. **Do not delete without owner approval.**
 - Lock in `toHaveScreenshot()` pixel baselines once layout has settled (currently the spec captures PNGs for inspection only).
 
+### Optional — workout.cool §5 reference-video content
+
+- Curate a starter batch of YouTube IDs in `data/youtube_curated_top_n.csv` and
+  apply with `scripts/apply_youtube_curated.py`. Until this is done, the §5 modal
+  is expected to show the search fallback for every exercise. Source of truth:
+  [docs/workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md](workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md).
+- Consider a small UX polish if the fallback feels misleading: clearer tooltip
+  text for uncurated rows, a distinct search icon for uncurated rows, or hiding
+  the play button unless a curated ID exists.
+
 ### Worktree disposition (open, awaiting owner decision)
 
 - **`D:/development/Hypertrophy-Toolbox-v3-visual-baseline-s4`** — branch `test/visual-baseline-thumbnails` at `99910a4`. Holds untracked `.venv` + `node_modules` + the §4.6 inspection screenshots. Remote branch was deleted at PR #22 merge. Keep for faster re-runs vs remove to free disk. Owner has not decided. **Do not delete without explicit approval.**
 - **`D:/development/Hypertrophy-Toolbox-v3-redesign-calm-glass`** — branch `redesign/calm-glass-2026` at `ba519df`, clean but behind `main`. No active workstream tied to it on the current handoff trail. Owner has not decided whether to revive, archive, or remove. **Do not delete without explicit approval.**
 
-### Fatigue meter — DO NOT REOPEN
+### Fatigue meter — DO NOT REOPEN (status updated 2026-05-20)
 
-Fatigue is parked per `docs/fatigue_meter/STAGE4_PARKED_HANDOFF.md` (owner Option 1, 2026-05-13). No Phase 2 work, no `/fatigue` page, no API endpoints, no `utils/fatigue.py` edits, no `scripts/fatigue_calibration_report.py` scenario tuning. Reopen only if `workout_log` accumulates ≥4 labeled real weeks, or the owner explicitly overrides the parked state.
+Phase 1 is the working state. **Stage 4 was closed by owner-approved felt-label calibration review on 2026-05-20 with no threshold changes.** STAGE4_PARKED_HANDOFF.md is superseded; `calibration-notes.md` is authoritative.
 
-**2026-05-20 bounded override note.** The owner explicitly authorized **one** docs-only synthetic-override / coherence pass (PR #26 `2b34b50`). It produced no code, threshold, or script changes — only documentation in [calibration-notes.md](fatigue_meter/calibration-notes.md). That single override did not lift the parked state; the agent guidance above still applies. Hypothesis B (`scripts/fatigue_calibration_report.py::SCENARIOS["hard_4d"]` retune) is the preferred future follow-up if synthetic calibration is deepened later, but is NOT to be picked up without explicit owner go-ahead.
+Do not, without an explicit new owner override:
 
-**2026-05-20 badge restyle note.** PR #28 (`63c745d`) shipped a **presentation-only** badge polish — `templates/_fatigue_badge.html` + `scss/_fatigue.scss` + built CSS + 12 refreshed visual snapshots. **No `utils/fatigue.py`, no thresholds, no APIs, no scenario script, no calibration.** Existing fatigue-stage4 Playwright selectors are preserved. Stage 4 remains parked; the parked-state guidance is unchanged.
+- Edit `utils/fatigue.py` (thresholds remain §24.B defaults).
+- Edit `tests/test_fatigue.py` boundary-classification tests.
+- Tune `scripts/fatigue_calibration_report.py::SCENARIOS` (Hypothesis B retune of `hard_4d` is a documented-not-applied deferred follow-up).
+- Start Phase 2 work, add a `/fatigue` page, or add new API endpoints.
+
+Re-open Stage 4 review only if `workout_log` accumulates ≥4 representative real weeks with varied stress shapes and the owner requests a re-walk, or the owner explicitly overrides this status.
+
+**Earlier 2026-05-20 history (preserved):**
+
+- **Bounded synthetic-override / coherence pass** (PR #26 `2b34b50`) — docs-only addition to `calibration-notes.md`. No code or script changes.
+- **Badge restyle** (PR #28 `63c745d`) — presentation-only `templates/_fatigue_badge.html` + `scss/_fatigue.scss` + built CSS + 12 refreshed visual snapshots. No fatigue math / threshold / API changes.
+- **Stage 4 close** (this doc-only walk, later on 2026-05-20) — owner labeled 5 anchors (1 real W20 + 4 generated); 4/5 agreed; 1 isolated disagreement on `hard_4d` generated scenario was treated as scenario under-shoot per Hypothesis B, not as threshold drift. No `utils/fatigue.py` change.
 
 ## Agent Authority
 

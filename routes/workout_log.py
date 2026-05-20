@@ -1,6 +1,11 @@
 from flask import Blueprint, render_template, request, jsonify, send_file
 from utils.database import DatabaseHandler
-from utils.workout_log import get_workout_logs
+from utils.workout_log import (
+    check_progression,
+    get_weight_progression_indicator,
+    get_workout_logs,
+    is_assisted_bodyweight_exercise,
+)
 from utils.errors import success_response, error_response
 from utils.logger import get_logger
 from io import BytesIO
@@ -19,6 +24,9 @@ def workout_log():
             page_title="Workout Log",
             workout_logs=workout_logs,
             enumerate=enumerate,
+            check_progression=check_progression,
+            get_weight_progression_indicator=get_weight_progression_indicator,
+            is_assisted_bodyweight_exercise=is_assisted_bodyweight_exercise,
         )
     except Exception as e:
         logger.exception("Error loading workout log page")
@@ -123,7 +131,7 @@ def check_progression_route(log_id):
     try:
         query = """
         SELECT 
-            planned_min_reps, planned_max_reps, planned_weight,
+            exercise, planned_min_reps, planned_max_reps, planned_weight,
             scored_min_reps, scored_max_reps, scored_weight,
             planned_rir, scored_rir,
             planned_rpe, scored_rpe
@@ -135,27 +143,7 @@ def check_progression_route(log_id):
             if not log:
                 return error_response("NOT_FOUND", "Log entry not found", 404)
 
-            is_progressive = (
-                (log['scored_rir'] is not None and 
-                 log['planned_rir'] is not None and 
-                 log['scored_rir'] < log['planned_rir']) or
-                
-                (log['scored_rpe'] is not None and 
-                 log['planned_rpe'] is not None and 
-                 log['scored_rpe'] > log['planned_rpe']) or
-                
-                (log['scored_min_reps'] is not None and 
-                 log['planned_min_reps'] is not None and 
-                 log['scored_min_reps'] > log['planned_min_reps']) or
-                
-                (log['scored_max_reps'] is not None and 
-                 log['planned_max_reps'] is not None and 
-                 log['scored_max_reps'] > log['planned_max_reps']) or
-                
-                (log['scored_weight'] is not None and 
-                 log['planned_weight'] is not None and 
-                 log['scored_weight'] > log['planned_weight'])
-            )
+            is_progressive = check_progression(log)
 
             return jsonify(success_response(data={
                 "is_progressive": is_progressive,
@@ -270,4 +258,4 @@ def clear_workout_log():
             
     except Exception as e:
         logger.exception("Error clearing workout log")
-        return error_response("INTERNAL_ERROR", "Failed to clear workout log", 500) 
+        return error_response("INTERNAL_ERROR", "Failed to clear workout log", 500)

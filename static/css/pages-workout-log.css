@@ -340,6 +340,54 @@ table.workout-log-table td {
     text-align: left;
 }
 
+/* Exercise cell — the 7.5%-wide column can't fit the default inline-flex
+   layout (thumbnail + name + 24px play button) on one row, so the play
+   button used to overlap the name. Solution: flow the play button inline
+   with the name text via inline-block so a long name wraps naturally and
+   the button trails the last word, with no wasted row below the name.
+
+   !important + repeated class selector is needed because the cell-level
+   rules at the top of this file use a higher-specificity chain
+   (`.workout-log-frame .tbl--responsive.workout-log-table td`) that
+   forces `white-space: nowrap`, which then inherits into the name span. */
+.workout-log-table .exercise-cell .exercise-cell-content {
+    display: block !important;
+    width: 100%;
+    line-height: 1.25;
+}
+
+.workout-log-table .exercise-cell .exercise-cell-content .exercise-thumbnail {
+    float: left;
+    margin-right: 6px;
+}
+
+.workout-log-table .exercise-cell .exercise-cell-content .exercise-name {
+    display: inline;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+/* Compact inline play button. `btn-calm-ghost` defaults to 40px min-height
+   and 8px/24px padding (both !important), so this override needs !important
+   on the same properties to win the cascade. */
+.workout-log-table .exercise-cell .exercise-cell-content .log-play-video-btn {
+    display: inline-flex;
+    width: 18px !important;
+    height: 18px !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin-left: 4px;
+    vertical-align: middle;
+    font-size: 0.6rem !important;
+}
+
+.workout-log-table .exercise-cell .exercise-cell-content .log-play-video-btn > i {
+    font-size: 0.6rem;
+    line-height: 1;
+}
+
 /* Dark mode styles for table cells - Glass Style */
 [data-theme='dark'] .workout-log-table td,
 [data-theme='dark'] .workout-log-frame .workout-log-table td,

@@ -27,6 +27,69 @@ class TestWorkoutLogPageRender:
         # Returns 500 in test env (no templates) or 200 in full env
         assert resp.status_code in (200, 500)
 
+    def test_workout_log_page_renders_assisted_weight_indicator(
+        self, client, clean_db, workout_plan_entry
+    ):
+        """Server-rendered weight indicator treats lower assistance as progress."""
+        from utils.database import DatabaseHandler
+
+        with DatabaseHandler() as db:
+            db.execute_query("""
+                INSERT INTO workout_log (
+                    routine, exercise, planned_sets, planned_min_reps, planned_max_reps,
+                    planned_weight, scored_weight, workout_plan_id, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                "Pull",
+                "Machine Assisted Chin Up",
+                4,
+                6,
+                10,
+                65.0,
+                60.0,
+                workout_plan_entry["id"],
+                datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            ))
+
+        resp = client.get("/workout_log")
+        assert resp.status_code == 200
+        html = resp.get_data(as_text=True)
+        assert 'data-assisted-bodyweight="true"' in html
+        assert "Assistance decreased!" in html
+        assert "fa-arrow-up" in html
+
+    def test_workout_log_page_renders_zero_assistance_as_entered_value(
+        self, client, clean_db, workout_plan_entry
+    ):
+        """0kg assistance should render as a real scored weight, not as empty."""
+        from utils.database import DatabaseHandler
+
+        with DatabaseHandler() as db:
+            db.execute_query("""
+                INSERT INTO workout_log (
+                    routine, exercise, planned_sets, planned_min_reps, planned_max_reps,
+                    planned_weight, scored_weight, workout_plan_id, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                "Pull",
+                "Machine Assisted Pull Up",
+                4,
+                6,
+                10,
+                65.0,
+                0.0,
+                workout_plan_entry["id"],
+                datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            ))
+
+        resp = client.get("/workout_log")
+        assert resp.status_code == 200
+        html = resp.get_data(as_text=True)
+        assert 'data-field="scored_weight"' in html
+        assert 'value="0.0"' in html
+        assert '<span class="editable-text">0.0</span>' in html
+        assert "Assistance decreased!" in html
+
 
 class TestUpdateWorkoutLog:
     """Tests for POST /update_workout_log endpoint."""
@@ -186,6 +249,28 @@ class TestCheckProgression:
         data = resp.get_json()
         assert data["data"]["is_progressive"] is True
         assert data["data"]["status"] == "Achieved"
+
+    def test_check_progression_achieved_by_assisted_weight_decrease(
+        self, client, clean_db, workout_log_with_progression
+    ):
+        """Should detect progression when machine assistance decreases."""
+        entry = workout_log_with_progression["assisted_weight_decrease"]
+        resp = client.get(f"/check_progression/{entry['id']}")
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data["data"]["is_progressive"] is True
+        assert data["data"]["status"] == "Achieved"
+
+    def test_check_progression_not_achieved_by_assisted_weight_increase(
+        self, client, clean_db, workout_log_with_progression
+    ):
+        """Should not treat increased machine assistance as progression."""
+        entry = workout_log_with_progression["assisted_weight_increase"]
+        resp = client.get(f"/check_progression/{entry['id']}")
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data["data"]["is_progressive"] is False
+        assert data["data"]["status"] == "Pending"
 
     def test_check_progression_achieved_by_reps(self, client, clean_db, workout_log_with_progression):
         """Should detect progression when scored_max_reps > planned_max_reps."""
@@ -355,6 +440,30 @@ def workout_log_with_progression(clean_db, workout_plan_entry):
         result = db.fetch_one("SELECT id FROM workout_log ORDER BY id DESC LIMIT 1")
         assert result is not None
         entries["weight_increase"] = {"id": result["id"]}
+
+        # Assisted-machine progression (lower assistance = stronger)
+        db.execute_query("""
+            INSERT INTO workout_log (
+                routine, exercise, planned_sets, planned_min_reps, planned_max_reps,
+                planned_weight, scored_weight, workout_plan_id, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, ("Pull", "Machine Assisted Chin Up", 3, 6, 10, 65.0, 60.0, workout_plan_entry["id"],
+              datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+        result = db.fetch_one("SELECT id FROM workout_log ORDER BY id DESC LIMIT 1")
+        assert result is not None
+        entries["assisted_weight_decrease"] = {"id": result["id"]}
+
+        # Assisted-machine regression (more assistance = easier)
+        db.execute_query("""
+            INSERT INTO workout_log (
+                routine, exercise, planned_sets, planned_min_reps, planned_max_reps,
+                planned_weight, scored_weight, workout_plan_id, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, ("Pull", "Machine Assisted Parallel Bar Dips", 3, 6, 10, 65.0, 70.0, workout_plan_entry["id"],
+              datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+        result = db.fetch_one("SELECT id FROM workout_log ORDER BY id DESC LIMIT 1")
+        assert result is not None
+        entries["assisted_weight_increase"] = {"id": result["id"]}
 
         # Reps increase progression
         db.execute_query("""

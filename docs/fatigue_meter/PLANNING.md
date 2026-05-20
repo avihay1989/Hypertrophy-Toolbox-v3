@@ -497,20 +497,34 @@ Phase 1 ships with §24.B threshold bands marked "starting points, not science".
 - [x] Stage 3 exit criteria all checked. *2026-05-04: §3.7 both ticked. Two browser-only items (375px viewport, dark-mode contrast) remain open from the smoke checklist but do not block calibration; they get walked together with the calibration browser session.*
 - [x] At least 7 days of post-merge use have elapsed. *Ticked 2026-05-10 ~01:00 +03:00 at owner direction, ~19h ahead of the strict wall-clock 7-day mark (PR-7 squash 2026-05-03 17:35Z + 7d = 2026-05-10 20:35 +03:00). The early tick is acceptable because no calibration walk could happen in that 19h gap regardless: `workout_log` is empty (0 rows), so the §4.1 prerequisite (4 representative recent weeks) cannot be satisfied. The substantive gate — no threshold tweaks in `utils/fatigue.py` without real calibration data — is preserved by §4.1 below, which remains **explicitly blocked**.*
 
+> **2026-05-20 owner-approved override — Stage 4 walked to a decision.** Owner
+> explicitly overrode the parked state and asked for a Stage 4 close today.
+> Audit: `workout_log` now has 21 rows on a single date (W20, 3 routines, 72
+> sets, all scored fields populated), giving one real logged week. Owner
+> labeled 5 anchors (1 real + 4 generated) and 4 of 5 felt labels agreed with
+> computed bands. The lone disagreement was on the `hard_4d` generated scenario
+> (same case already flagged in the 2026-05-20 synthetic-override section of
+> `calibration-notes.md`). §4.2's "≥2 disagreements" bar was not met. Decision:
+> **no threshold changes; Stage 4 closed as owner-reviewed / no-change.** Full
+> evidence in [calibration-notes.md §"2026-05-20 — owner-approved felt-label
+> calibration review (Stage 4 close)"](calibration-notes.md). `utils/fatigue.py`,
+> `tests/test_fatigue.py`, and `scripts/fatigue_calibration_report.py` are
+> **unchanged** by this close.
+
 ### 4.1 Validate threshold bands
-- [ ] Pick 4 representative recent weeks (one heavy, one normal, two anything). *Blocked. `workout_log` is empty (0 rows) as of 2026-05-04, so no logged-week history exists. Owner chose path (b) for now: planned-state sanity check only, recorded in `docs/fatigue_meter/calibration-notes.md`. This is **not** a real calibration of the §24.B bands. **2026-05-10 update:** owner viewed the rendered badges on `/weekly_summary` and `/session_summary`, confirmed the Phase 1 UI (no regression), and declined the felt-label fast path (option iii) — both data points fall mid-band moderate, so a single felt label cannot validate or move the bands. **Synthetic pass:** assistant-generated four hypothetical weeks (light/moderate/heavy/very_heavy) and all landed in the intended bands; useful coherence check, but still not recent logged weeks. Path forward for real calibration: log workouts, accumulate ≥4 weeks, then walk this box. See Stage 4 callout above for full reasoning.*
-- [ ] For each, record the computed fatigue score and the resulting band. *Blocked on logged weeks. Synthetic generated scores were recorded in `docs/fatigue_meter/calibration-notes.md` on 2026-05-10 but do not satisfy this real-data box.*
-- [ ] Cross-check: does the band match how the user *felt* about that week? Document agreements and disagreements. *Blocked on owner felt-experience data. The 2026-05-10 synthetic pass used assistant-generated intended stress labels, not lived felt experience.*
+- [x] Pick 4 representative recent weeks (one heavy, one normal, two anything). *Walked 2026-05-20 with an owner-approved substitution to the strict "4 logged weeks" requirement: 1 real logged week (W20, 118.57 moderate) + 4 generator scenarios from `generated-calibration-report.md` (deload 28.1 light, normal 88.5 moderate, hard 161.9 moderate intended heavy, overreach 419.6 very_heavy) for 5 total anchors. The substitution was authorized by the owner override; logged-week diversity remains a single-week observation, so a future re-walk with ≥4 real logged weeks would be the stronger evidence path. See `calibration-notes.md` "2026-05-20 — owner-approved felt-label calibration review (Stage 4 close)".*
+- [x] For each, record the computed fatigue score and the resulting band. *Recorded in `calibration-notes.md` 2026-05-20 review section, full anchors table with score / computed band / owner felt label / agreement column.*
+- [x] Cross-check: does the band match how the user *felt* about that week? Document agreements and disagreements. *Cross-checked 2026-05-20. **4 of 5 agree (W20 moderate=moderate, deload light=light, normal moderate=moderate, overreach very_heavy=very_heavy).** **1 disagreement (hard_4d, engine moderate vs owner heavy).** Documented in `calibration-notes.md` 2026-05-20 review section.*
 
 ### 4.2 Tune if needed
-- [ ] If ≥2 weeks landed in a band that disagrees with felt experience, propose threshold adjustments.
-- [ ] Propose changes to `SESSION_FATIGUE_BANDS` / `WEEKLY_FATIGUE_BANDS` in `utils/fatigue.py`.
-- [ ] Open a small PR with just the threshold tweaks. Same chapter-1.5 gate (regression sweep + manual smoke).
+- [x] If ≥2 weeks landed in a band that disagrees with felt experience, propose threshold adjustments. *Bar not met (1 disagreement < 2). Walked 2026-05-20.*
+- [x] Propose changes to `SESSION_FATIGUE_BANDS` / `WEEKLY_FATIGUE_BANDS` in `utils/fatigue.py`. *No proposal generated. The single disagreement (`hard_4d`) is on a synthetic generator scenario, not a real training week; the real W20 anchor agreed with the engine. Per owner instruction "if only the hard_4d generated case disagrees, prefer documenting scenario under-shoot or retuning the scenario script, not changing live thresholds", treated as scenario under-shoot (Hypothesis B from the 2026-05-20 synthetic-override note). Scenario-script retune is a documented-not-applied deferred follow-up.*
+- [x] Open a small PR with just the threshold tweaks. Same chapter-1.5 gate (regression sweep + manual smoke). *No PR needed — no threshold changes.*
 
 ### 4.3 Stage 4 exit criteria
-- [ ] Calibration documented in `docs/fatigue_meter/calibration-notes.md` (created here, not before).
-- [ ] If tuning happened: tweak PR merged.
-- [ ] Decision: proceed to Phase 2 planning, or stay on Phase 1 indefinitely.
+- [x] Calibration documented in `docs/fatigue_meter/calibration-notes.md` (created here, not before). *2026-05-20 review section appended; status banner at top of file updated to "Stage 4 closed by owner-approved felt-label review".*
+- [x] If tuning happened: tweak PR merged. *N/A — no tuning.*
+- [x] Decision: proceed to Phase 2 planning, or stay on Phase 1 indefinitely. *Owner decision 2026-05-20: **stay on Phase 1** (Stage 5 Phase 2 NOT started). The fatigue badge as shipped in PR #7 (server-rendered, single global score, descriptive only) is the working state. Phase 2 entry remains gated on a separate owner decision per Stage 5 entry criteria.*
 
 ---
 
@@ -546,8 +560,8 @@ Update this as you progress. Reviewers can scan it to see where the work stands.
 | 1 | Pre-development prerequisites | ✅ Complete | 2026-05-01 |
 | 2 | Phase 1 implementation | ✅ Complete | 2026-05-02 |
 | 3 | Phase 1 verification & merge | ✅ Closeout pass complete; 6/7 smoke items PASS, 1 documented-not-walked (smokes 4 + 5 walked 2026-05-10 via PR #12) | 2026-05-04 |
-| 4 | Post-merge calibration | 🟡 Parked by owner choice (Option 1 confirmed 2026-05-13); entry complete, calibration proper still gated by accumulating ≥4 weeks in `workout_log` or owner labels | 2026-05-13 |
-| 5 | Phase 2 preview | ⬜ Not started | — |
+| 4 | Post-merge calibration | ✅ Closed by owner-approved felt-label review 2026-05-20 — 5 anchors (1 real W20 + 4 generated), 4/5 felt labels agreed with computed bands, lone disagreement was on `hard_4d` synthetic scenario only; §4.2 "≥2 disagreements" bar not met; **no threshold changes**; `utils/fatigue.py` thresholds remain §24.B defaults | 2026-05-20 |
+| 5 | Phase 2 preview | ⬜ Not started — Phase 1 is the working state; Phase 2 entry remains a separate owner decision | — |
 | 6 | Phase 3 preview | ⬜ Not started | — |
 
 Status legend: ⬜ Not started · 🟡 In progress · ✅ Complete · ❌ Blocked
@@ -560,8 +574,8 @@ Status legend: ⬜ Not started · 🟡 In progress · ✅ Complete · ❌ Blocke
 |---|---|---|
 | `docs/fatigue_meter/baseline-{date}.txt` | Stage 1.1 | Locked test baseline output. |
 | `docs/fatigue_meter/data-audit.md` | Stage 1.2 | Data integrity findings. |
-| `docs/fatigue_meter/calibration-notes.md` | Stage 4 | Real-data threshold validation. *Created 2026-05-04 as placeholder/sanity baseline only — no real calibration performed; awaiting `workout_log` data or owner felt-experience input.* |
-| `docs/fatigue_meter/STAGE4_PARKED_HANDOFF.md` | Stage 4 | Operational parked-state handoff for future agents. *Created 2026-05-13 after owner chose Option 1; tells agents to proceed elsewhere unless real data, owner labels, or explicit override arrive.* |
+| `docs/fatigue_meter/calibration-notes.md` | Stage 4 | Real-data threshold validation. *Stage 4 closed by owner-approved felt-label review 2026-05-20; status banner at top of file is now authoritative. 4 of 5 anchors agreed with computed bands; no threshold changes applied; §24.B defaults retained in `utils/fatigue.py`.* |
+| `docs/fatigue_meter/STAGE4_PARKED_HANDOFF.md` | Stage 4 | Operational parked-state handoff for future agents. *Created 2026-05-13 after owner chose Option 1; superseded 2026-05-20 by the owner-approved Stage 4 close. Preserved for historical context; `calibration-notes.md` is the current authoritative status.* |
 
 ---
 

@@ -3640,15 +3640,15 @@ select.filter-dropdown:focus {
   border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 26%, transparent) !important;
   border-radius: 999px !important;
   color: var(--ink-2, #4a5170) !important;
-  font-size: 0.72rem !important;
+  font-size: 0.65rem !important;
   font-weight: 600 !important;
-  gap: 6px !important;
-  height: 30px !important;
+  gap: 4px !important;
+  height: 22px !important;
   line-height: 1 !important;
-  min-height: 30px !important;
+  min-height: 22px !important;
   min-width: auto !important;
-  padding: 0 10px !important;
-  vertical-align: top;
+  padding: 0 8px !important;
+  vertical-align: middle;
   width: auto !important;
   white-space: nowrap !important;
 }
@@ -3656,10 +3656,10 @@ select.filter-dropdown:focus {
 #workout[data-page="workout-plan"] .workout-plan-table .btn.btn-swap .btn-swap-icon {
   align-items: center !important;
   display: inline-flex !important;
-  flex: 0 0 12px;
+  flex: 0 0 10px;
   justify-content: center !important;
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
 }
 
 #workout[data-page="workout-plan"] .workout-plan-table .btn.btn-swap .btn-swap-icon svg {
@@ -3670,7 +3670,25 @@ select.filter-dropdown:focus {
 
 #workout[data-page="workout-plan"] .workout-plan-table .btn.btn-swap .btn-swap-label {
   display: block;
-  font-size: 0.72rem;
+  font-size: 0.65rem;
+  line-height: 1;
+}
+
+/* Reference-video play button — without this it inherits btn-calm-ghost's
+   40px min-height + 8px/24px padding, which dwarfs the exercise text. Size
+   it to match the Swap pill so the action cluster stays visually balanced. */
+#workout[data-page="workout-plan"] .workout-plan-table .btn.btn-video {
+  width: 22px !important;
+  height: 22px !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  font-size: 0.65rem !important;
+  vertical-align: middle;
+}
+
+#workout[data-page="workout-plan"] .workout-plan-table .btn.btn-video > i {
+  font-size: 0.7rem !important;
   line-height: 1;
 }
 
