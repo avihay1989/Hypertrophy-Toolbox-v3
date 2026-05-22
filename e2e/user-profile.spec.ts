@@ -738,6 +738,77 @@ test.describe('User Profile', () => {
     await expect(card.locator('[data-bodymap-side="back"]')).toHaveClass(/is-active/);
   });
 
+  test('coverage map renders workout-cool art and back region aggregates Upper+Lower Back worst-state (§3.6)', async ({ page }) => {
+    await page.request.post('/api/user_profile/lifts', {
+      data: [
+        'barbell_bench_press', 'barbell_back_squat', 'romanian_deadlift',
+        'weighted_pullups', 'military_press', 'barbell_bicep_curl',
+        'triceps_extension', 'preacher_curl', 'barbell_row',
+      ].map(lift_key => ({ lift_key, weight_kg: null, reps: null })),
+    });
+    await page.reload();
+    await waitForPageReady(page);
+
+    const card = page.locator('[data-section="muscle coverage"]');
+    await expect(card).toBeVisible();
+
+    // (a) Workout-cool SVG art is the one mounted, not react-body-highlighter.
+    //     The vendored SVG carries a unique root id we can probe.
+    await expect(card.locator('svg#body-anterior-workoutcool')).toHaveCount(1);
+    await expect(card.locator('svg#body-posterior-workoutcool')).toHaveCount(1);
+
+    // (b) Multi-key BACK region annotates BOTH `data-bodymap-muscles` (plural,
+    //     comma-joined) AND a representative singular muscle. Workout-cool's
+    //     posterior ships 10 BACK paths (lats,upper-back,lowerback); all must
+    //     carry the plural attribute. Toggle to the back pane so the polygons
+    //     are visible (the default side is 'front').
+    await card.locator('[data-bodymap-side="back"]').click();
+    const backPane = card.locator('[data-bodymap-pane="back"]');
+    await expect(backPane).toBeVisible();
+    const backRegions = backPane.locator('.muscle-region[data-bodymap-muscles="Upper Back,Lower Back"]');
+    await expect(backRegions.first()).toBeVisible();
+    expect(await backRegions.count()).toBeGreaterThan(0);
+    await expect(backRegions.first()).toHaveAttribute('data-bodymap-muscle', 'Upper Back');
+
+    // (c) Worst-state aggregation. With no lifts filled, all chains are
+    //     cold_start_only — the back region renders cold_start_only.
+    await expect(backRegions.first()).toHaveClass(/state-cold_start_only/);
+
+    // (d) Filling barbell_row → Upper Back becomes 'measured', Lower Back
+    //     stays cold_start_only (deadlifts not entered). Worst state wins:
+    //     the back polygon stays cold_start_only, NOT measured.
+    const rowInput = page.locator('.reference-lift-row[data-lift-key="barbell_row"]');
+    await rowInput.locator('[name="weight_kg"]').fill('80');
+    await rowInput.locator('[name="reps"]').fill('5');
+    await expect(backRegions.first()).toHaveClass(/state-cold_start_only/);
+
+    // SR summary mirrors per-muscle states (Upper Back flipped, Lower Back
+    // did not). The plural data-bodymap-muscles attribute carries both
+    // names so the polygon advertises its multi-muscle scope.
+    await expect(card.locator('[data-sr-muscle="Upper Back"]')).toHaveAttribute(
+      'data-sr-state',
+      'measured',
+    );
+    await expect(card.locator('[data-sr-muscle="Lower Back"]')).toHaveAttribute(
+      'data-sr-state',
+      'cold_start_only',
+    );
+
+    // (e) Filling the deadlift family promotes Lower Back to measured too;
+    //     now both back muscles are measured → the polygon flips to measured.
+    const deadliftInput = page.locator('.reference-lift-row[data-lift-key="romanian_deadlift"]');
+    await deadliftInput.locator('[name="weight_kg"]').fill('120');
+    await deadliftInput.locator('[name="reps"]').fill('5');
+    await expect(backRegions.first()).toHaveClass(/state-measured/);
+
+    // (f) Forearms regions have no backend coverage chain → state-not_assessed
+    //     and no `data-bodymap-muscle` attribute (a known §3.6 limitation
+    //     called out by the workout-cool simple art).
+    const forearmRegion = backPane.locator('.muscle-region[data-canonical-muscles="forearms"]').first();
+    await expect(forearmRegion).toHaveClass(/state-not_assessed/);
+    await expect(forearmRegion).not.toHaveAttribute('data-bodymap-muscle', /.+/);
+  });
+
   test('"How the system sees you" card surfaces stats tiles, cohort bar, and donut after demographics + lift (Issue #18)', async ({ page }) => {
     await page.request.post('/api/user_profile/lifts', {
       data: [

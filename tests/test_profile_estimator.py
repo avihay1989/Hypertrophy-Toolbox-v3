@@ -1425,3 +1425,102 @@ def test_bodymap_coverage_lift_labels_cover_every_chain_slug():
     assert not missing_labels, (
         f"COVERAGE_LIFT_LABELS missing entries for: {sorted(missing_labels)}"
     )
+
+
+# ---------------------------------------------------------------------------
+# §3.6 — Profile coverage bodymap on workout-cool SVG art.
+# ---------------------------------------------------------------------------
+
+def _parse_canonical_simple_to_coverage_muscles(js_text: str) -> dict:
+    """Parse `CANONICAL_SIMPLE_TO_COVERAGE_MUSCLES` from bodymap-svg.js into
+    {simple-key: [backend muscle, ...]}. Tolerant of empty arrays."""
+    import re
+
+    match = re.search(
+        r"CANONICAL_SIMPLE_TO_COVERAGE_MUSCLES\s*=\s*\{(.+?)\};",
+        js_text,
+        re.DOTALL,
+    )
+    assert match, "CANONICAL_SIMPLE_TO_COVERAGE_MUSCLES block not found"
+    body = match.group(1)
+    out: dict = {}
+    for line in body.splitlines():
+        kv = re.match(r"\s*'([^']+)'\s*:\s*\[([^\]]*)\]", line)
+        if not kv:
+            continue
+        key = kv.group(1)
+        values = re.findall(r"'([^']+)'", kv.group(2))
+        out[key] = values
+    return out
+
+
+def test_workout_cool_canonical_keys_map_to_bodymap_muscles():
+    """Every distinct `data-canonical-muscles` simple key in the workout-cool
+    SVGs (Profile bodymap art, §3.6) must appear as a key in
+    `CANONICAL_SIMPLE_TO_COVERAGE_MUSCLES`, and every backend muscle name on
+    its right-hand side must be in `BODYMAP_MUSCLE_KEYS` so the JS coverage
+    applier can resolve it."""
+    from pathlib import Path
+    import re
+
+    from utils.profile_estimator import BODYMAP_MUSCLE_KEYS
+
+    repo = Path(__file__).resolve().parents[1]
+    js_text = (repo / "static" / "js" / "modules" / "bodymap-svg.js").read_text(
+        encoding="utf-8"
+    )
+    mapping = _parse_canonical_simple_to_coverage_muscles(js_text)
+    assert mapping, "CANONICAL_SIMPLE_TO_COVERAGE_MUSCLES is empty"
+
+    svg_keys: set[str] = set()
+    for name in ("body_anterior.svg", "body_posterior.svg"):
+        svg_text = (repo / "static" / "vendor" / "workout-cool" / name).read_text(
+            encoding="utf-8"
+        )
+        for value in re.findall(r'data-canonical-muscles="([^"]+)"', svg_text):
+            for key in value.split(","):
+                key = key.strip()
+                if key:
+                    svg_keys.add(key)
+
+    missing = svg_keys - set(mapping)
+    assert not missing, (
+        f"workout-cool SVG uses canonical key(s) not in "
+        f"CANONICAL_SIMPLE_TO_COVERAGE_MUSCLES: {sorted(missing)}"
+    )
+
+    py_keys = set(BODYMAP_MUSCLE_KEYS)
+    for simple_key, backend_muscles in mapping.items():
+        for muscle in backend_muscles:
+            assert muscle in py_keys, (
+                f"CANONICAL_SIMPLE_TO_COVERAGE_MUSCLES['{simple_key}'] "
+                f"references {muscle!r} which is not in BODYMAP_MUSCLE_KEYS"
+            )
+
+
+def test_workout_cool_back_region_expands_to_upper_and_lower_back():
+    """The workout-cool posterior SVG ships a multi-key BACK region
+    (`data-canonical-muscles="lats,upper-back,lowerback"`). When flattened
+    through `CANONICAL_SIMPLE_TO_COVERAGE_MUSCLES`, that region must
+    represent both `Upper Back` and `Lower Back`; `lats` has no backend
+    chain so it contributes nothing. Profile worst-state aggregation
+    depends on this — losing either muscle means the polygon stops
+    visualizing partial coverage of the back."""
+    from pathlib import Path
+
+    repo = Path(__file__).resolve().parents[1]
+    js_text = (repo / "static" / "js" / "modules" / "bodymap-svg.js").read_text(
+        encoding="utf-8"
+    )
+    mapping = _parse_canonical_simple_to_coverage_muscles(js_text)
+
+    flattened: list[str] = []
+    for key in ("lats", "upper-back", "lowerback"):
+        flattened.extend(mapping[key])
+
+    assert mapping["lats"] == [], "lats has no backend coverage chain"
+    assert "Upper Back" in flattened
+    assert "Lower Back" in flattened
+    # Order matters for popover "muscles[0]" rep — Upper Back comes first
+    # because that's the simple-key order in the SVG attribute.
+    assert flattened == ["Upper Back", "Lower Back"]

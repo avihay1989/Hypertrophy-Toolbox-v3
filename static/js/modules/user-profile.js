@@ -1,11 +1,10 @@
 import { api } from './fetch-wrapper.js';
 import { showToast } from './toast.js';
 import {
-    annotateBodymapPolygons,
-    BODYMAP_COVERAGE_MUSCLES,
+    annotateWorkoutCoolBodymapPolygons,
     COVERAGE_LIFT_LABELS,
     COVERAGE_MUSCLE_CHAIN,
-    loadBodymapSvg,
+    loadWorkoutCoolBodymapSvg,
 } from './bodymap-svg.js';
 
 // Issue #17 — JS port of the cold-start + accuracy-band logic that lives
@@ -786,7 +785,7 @@ function computeMuscleCoverage(filledByKey) {
 async function mountBodymapForSide(stage, side) {
     if (BODYMAP_STATE.svgMounted[side]) return;
     try {
-        const svgText = await loadBodymapSvg(side);
+        const svgText = await loadWorkoutCoolBodymapSvg(side);
         const wrap = document.createElement('div');
         wrap.className = 'profile-bodymap-svg-pane';
         wrap.dataset.bodymapPane = side;
@@ -794,7 +793,7 @@ async function mountBodymapForSide(stage, side) {
         wrap.innerHTML = svgText;
         const svgEl = wrap.querySelector('svg');
         if (svgEl) {
-            annotateBodymapPolygons(svgEl, side);
+            annotateWorkoutCoolBodymapPolygons(svgEl, side);
         }
         const loading = stage.querySelector('[data-bodymap-loading]');
         if (loading) loading.remove();
@@ -808,27 +807,63 @@ async function mountBodymapForSide(stage, side) {
     }
 }
 
+// Workout-cool back regions can map to multiple backend muscles (BACK →
+// Upper Back + Lower Back). The worst state wins so the polygon's fill
+// reflects the least-confident muscle in the set — selecting one filled
+// lift in a multi-muscle region shouldn't visually claim full coverage of
+// the others.
+const COVERAGE_STATE_RANK = {
+    measured: 3,
+    cross_muscle: 2,
+    cold_start_only: 1,
+    not_assessed: 0,
+};
+
+function regionMuscles(region) {
+    const plural = region.dataset.bodymapMuscles;
+    if (plural) {
+        return plural.split(',').map(m => m.trim()).filter(Boolean);
+    }
+    if (region.dataset.bodymapMuscle) {
+        return [region.dataset.bodymapMuscle];
+    }
+    return [];
+}
+
+function aggregateCoverageForRegion(region, coverage) {
+    const muscles = regionMuscles(region);
+    if (muscles.length === 0) return null;
+    let worst = null;
+    for (const muscle of muscles) {
+        const entry = coverage[muscle];
+        if (!entry) continue;
+        if (worst === null || COVERAGE_STATE_RANK[entry.state] < COVERAGE_STATE_RANK[worst.state]) {
+            worst = entry;
+        }
+    }
+    return worst;
+}
+
 function applyCoverageStateToPolygons(stage, coverage) {
     const panes = stage.querySelectorAll('[data-bodymap-pane]');
     panes.forEach(pane => {
         const regions = pane.querySelectorAll('.muscle-region');
         regions.forEach(region => {
-            const muscle = region.dataset.bodymapMuscle;
             for (const cls of ['state-measured', 'state-cross_muscle', 'state-cold_start_only', 'state-not_assessed']) {
                 region.classList.remove(cls);
             }
-            if (!muscle || !coverage[muscle]) {
+            const entry = aggregateCoverageForRegion(region, coverage);
+            if (!entry) {
                 region.classList.add('state-not_assessed');
                 region.dataset.coverageState = 'not_assessed';
                 region.setAttribute('role', 'img');
                 region.setAttribute('aria-label', `${region.dataset.bodymapLabel || 'Region'} — Not assessed`);
                 return;
             }
-            const entry = coverage[muscle];
             region.classList.add(`state-${entry.state}`);
             region.dataset.coverageState = entry.state;
             region.setAttribute('role', 'img');
-            region.setAttribute('aria-label', `${region.dataset.bodymapLabel || muscle} — ${STATE_LABELS[entry.state]}`);
+            region.setAttribute('aria-label', `${region.dataset.bodymapLabel || entry.muscle} — ${STATE_LABELS[entry.state]}`);
             region.dataset.bodymapImprovement = entry.improvement_lift_key || '';
         });
     });
@@ -868,9 +903,9 @@ function popoverBodyForState(entry) {
 function showPopover(card, region, coverage) {
     const popover = card.querySelector('[data-bodymap-popover]');
     if (!popover) return;
-    const muscle = region.dataset.bodymapMuscle;
-    const label = region.dataset.bodymapLabel || muscle || 'Region';
-    if (!muscle || !coverage[muscle]) {
+    const label = region.dataset.bodymapLabel || region.dataset.bodymapMuscle || 'Region';
+    const entry = aggregateCoverageForRegion(region, coverage);
+    if (!entry) {
         popover.querySelector('[data-popover-title]').textContent = label;
         popover.querySelector('[data-popover-state]').textContent = 'Not assessed';
         popover.querySelector('[data-popover-state]').dataset.state = 'not_assessed';
@@ -878,7 +913,6 @@ function showPopover(card, region, coverage) {
         popover.hidden = false;
         return;
     }
-    const entry = coverage[muscle];
     popover.querySelector('[data-popover-title]').textContent = label;
     const stateNode = popover.querySelector('[data-popover-state]');
     stateNode.textContent = STATE_LABELS[entry.state];
@@ -899,19 +933,20 @@ function attachPolygonInteractivity(card, stage, getCoverage) {
         regions.forEach(region => {
             if (region.dataset.bodymapBound === '1') return;
             region.dataset.bodymapBound = '1';
-            const muscle = region.dataset.bodymapMuscle;
-            if (!muscle) return;
+            if (regionMuscles(region).length === 0) return;
 
             region.addEventListener('mouseenter', () => showPopover(card, region, getCoverage()));
             region.addEventListener('mouseleave', () => hidePopover(card));
             region.addEventListener('focus', () => showPopover(card, region, getCoverage()));
             region.addEventListener('blur', () => hidePopover(card));
 
-            // Click → scroll to the matching reference-lift row.
+            // Click → scroll to the matching reference-lift row. For
+            // multi-muscle regions (e.g. workout-cool's BACK), the
+            // worst-state aggregator picks which muscle's improvement
+            // lift gets focused — same rule the polygon's fill follows.
             region.addEventListener('click', event => {
                 event.preventDefault();
-                const cov = getCoverage();
-                const entry = cov[muscle];
+                const entry = aggregateCoverageForRegion(region, getCoverage());
                 if (!entry) return;
                 const target = entry.improvement_lift_key || entry.primary_lift_key;
                 if (!target) return;
