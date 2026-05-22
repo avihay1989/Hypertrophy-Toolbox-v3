@@ -18,10 +18,14 @@ const ROUTE_LIST = [
   ROUTES.VOLUME_SPLITTER,
 ] as const;
 
-async function openAnalyzeDropdown(page: Page): Promise<void> {
+async function openAnalyzeDropdown(page: Page, mode: 'hover' | 'click' = 'hover'): Promise<void> {
   const analyzeToggle = page.locator(ANALYZE_TOGGLE);
   await expect(analyzeToggle).toBeVisible();
-  await analyzeToggle.click();
+  if (mode === 'hover') {
+    await analyzeToggle.hover();
+  } else {
+    await analyzeToggle.click();
+  }
   await expect(page.locator('#navbar .dropdown-menu.show')).toBeVisible();
 }
 
@@ -72,7 +76,7 @@ test.describe('P5 navbar dropdown and backup navigation', () => {
     expect(overflowingLabels).toEqual([]);
   });
 
-  test('Analyze dropdown opens and contains Weekly and Session links', async ({ page }) => {
+  test('Analyze dropdown opens on hover and contains Weekly and Session links', async ({ page }) => {
     await page.goto(ROUTES.HOME);
     await waitForPageReady(page);
 
@@ -113,7 +117,7 @@ test.describe('P5 navbar dropdown and backup navigation', () => {
     await waitForPageReady(page);
 
     await openMobileNavbar(page);
-    await openAnalyzeDropdown(page);
+    await openAnalyzeDropdown(page, 'click');
 
     const analyzeToggle = page.locator(ANALYZE_TOGGLE);
     const dropdownMenu = page.locator('#navbar .dropdown-menu.show');
@@ -132,7 +136,7 @@ test.describe('P5 navbar dropdown and backup navigation', () => {
     await page.goto(ROUTES.HOME);
     await waitForPageReady(page);
     await openMobileNavbar(page);
-    await openAnalyzeDropdown(page);
+    await openAnalyzeDropdown(page, 'click');
     await page.locator(SELECTORS.NAV_SESSION_SUMMARY).click();
     await waitForPageReady(page);
     await expect(page).toHaveURL(/\/session_summary/);
