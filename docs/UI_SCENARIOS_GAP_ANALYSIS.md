@@ -76,14 +76,36 @@ Latest completed work (February 28, 2026):
 6. Re-ran targeted verification: summary unit/route tests and summary-page E2E spec all passing.
 
 The highest-value remaining work is now (non-blocking):
-1. Add a concise "Known Issues / Reported Bugs" map to keep risk ranking anchored to real reports.
-2. Harden medium-risk smoke assertions (toast stacking, form-state persistence, modal keyboard/focus behavior).
+1. ✅ **Done (2026-05-21)** — Added concise "Known Issues / Reported Bugs" map in [§0](#0-known-issues--reported-bugs).
+2. ✅ **Done (2026-05-21)** — Hardened medium-risk smoke assertions (toast stacking, form-state persistence, modal keyboard/focus) in `e2e/ui-hardening.spec.ts`.
 3. Keep multi-tab conflict handling out of current release scope (backlog only).
 
 Document corrections made in this revision:
 1. Removed stale "must do" items that are already implemented.
 2. Corrected outdated matrix rows that claimed missing E2E suites now present.
 3. Resolved `weight = 0` contradiction: current logic allows `0` (bodyweight use case), while still rejecting negative values.
+
+---
+
+## 0. KNOWN ISSUES / REPORTED BUGS
+
+> **Purpose**: Real, locally reproduced or owner-reported issues — separated from theoretical risk in §1–§4. Each row is something a future change must not silently regress. Empty cells in the *Status* column mean the issue is open; *Mitigated* means we have an assertion guarding against further drift.
+
+| ID | Surface | Symptom (reproduce) | Severity | Status | Notes |
+|---|---|---|---|---|---|
+| KI-001 | Filter cache (`utils/filter_cache.py:13`) | TTL-only invalidation: stale filter options may persist up to 1 hour after exercise data changes. `invalidate_cache()` exists but is never called. | 🟡 Medium | Open — backlog | Documented in [CLAUDE.md §5](../CLAUDE.md). Not user-blocking in single-user local mode. |
+| KI-002 | `e2e/nav-dropdown.spec.ts:117` (1440×900) | Dark-mode toggle off-viewport at default desktop width — fixed via `evaluate(() => toggle.click())` workaround in spec. | 🟢 Low | Mitigated | Existing red on `origin/main`. Do not "fix" without explicit task. |
+| KI-003 | `e2e/program-backup.spec.ts:79` | Sequential-DB-pollution flake during full Playwright runs; passes in isolation. | 🟢 Low | Mitigated | Re-runs typically clear it. Investigated 2026-05-10 baseline. |
+| KI-004 | Toast (`templates/base.html:228`, `static/js/modules/toast.js:88-109`) | Single `#liveToast` element re-used on rapid successive `showToast()` calls — last message wins, prior message can be lost mid-fade. | 🟡 Medium | Mitigated | Module disposes the prior Bootstrap instance to prevent animation conflicts. `e2e/ui-hardening.spec.ts` asserts: only one toast element exists, last message wins, stale `bg-*` classes are cleared. |
+| KI-005 | Workout Plan controls (`static/js/modules/exercises.js:171,229`) | Page refresh mid-entry loses unsaved Workout Controls values (sets/RIR/weight/min/max-rep). Form fields reset to template defaults on reload. | 🟢 Low | Mitigated | Documented as expected (server-rendered defaults). `e2e/ui-hardening.spec.ts` asserts current contract so future changes do not silently shift it. |
+| KI-006 | Modal focus (Bootstrap 5.1.3 modals across `workout_plan.html` + `workout_log.html`) | Escape close + full focus trap depend on Bootstrap 5.1.3 defaults; behavior is partial in this codebase (Tab can leak after several presses, Escape may not fire reliably with focus outside the modal). | 🟡 Medium | Mitigated | `e2e/ui-hardening.spec.ts` locks the close-button path: modal opens with `aria-modal=true`, `aria-labelledby` resolves to a visible heading, focus moves inside on open, first Tab keeps focus inside, close-button click removes `show` + backdrop + `body.modal-open`. |
+| KI-007 | Isolated muscles table (DB table `exercise_isolated_muscles`) | Table is empty in current local DB; sections that depend on it now conditionally hide (`{% if isolated_muscles %}`). | 🟢 Low | Mitigated | Root cause (intentional vs. seeding gap) is tracked separately, not assumed here. |
+| KI-008 | Multi-tab editing of same routine | Out of scope under single-user / single-tab operating model. | — | Deferred (backlog only) | Documented in §1.2 and §5.3. Not a release blocker. |
+
+> **How to use this table**:
+> 1. When a new bug is reported, add a row (assign next `KI-NNN`) and link to the regression test that locks the fix.
+> 2. When closing a row, change *Status* to `Mitigated` + link the test that guards against re-introduction.
+> 3. Do not delete rows — they are historical references for future triage.
 
 ---
 
@@ -175,19 +197,19 @@ Document corrections made in this revision:
 
 ### 3.1 Toast Notification Issues
 **File**: `toast.js`
-| Scenario | Risk |
-|----------|------|
-| Multiple toasts at once | 🟡 Message loss risk |
-| Long error message overflow | 🟡 Truncation risk |
-| Legacy vs new `showToast` signatures | 🟡 Inconsistent style risk |
+| Scenario | Risk | Status |
+|----------|------|--------|
+| Multiple toasts at once | 🟡 Message loss risk | ✅ Mitigated — `e2e/ui-hardening.spec.ts` asserts single `#liveToast` instance, last message wins, stale `bg-*` classes cleared |
+| Long error message overflow | 🟡 Truncation risk | Open — visual concern only |
+| Legacy vs new `showToast` signatures | 🟡 Inconsistent style risk | Open — both signatures still supported (`toast.js:14-31`) |
 
 ### 3.2 Form State Persistence
 **File**: `exercises.js`
-| Scenario | Risk |
-|----------|------|
-| Page refresh mid-entry | 🟡 User input loss |
-| Tab away and return | 🟡 Stale values |
-| Add exercise, then change routine | 🟡 Context mismatch |
+| Scenario | Risk | Status |
+|----------|------|--------|
+| Page refresh mid-entry | 🟡 User input loss | ✅ Contract locked — `e2e/ui-hardening.spec.ts` asserts reload resets to template defaults |
+| Tab away and return | 🟡 Stale values | ✅ Contract locked — `e2e/ui-hardening.spec.ts` asserts values retained after visibility-change cycle |
+| Add exercise, then change routine | 🟡 Context mismatch | ✅ Contract locked — `e2e/ui-hardening.spec.ts` asserts Workout Controls retained across routine cascade changes |
 
 ### 3.3 Table Sorting/Filtering Issues
 **File**: `workout-log.js`, `filters.js`
@@ -198,12 +220,13 @@ Document corrections made in this revision:
 | Clear filters resets sort | 🟡 State surprise |
 
 ### 3.4 Modal Focus/Accessibility
-**File**: `workout-log.js`
-| Scenario | Risk |
-|----------|------|
-| Modal layering/z-index behavior | 🟡 Interaction inconsistency |
-| Escape key close behavior | 🟡 Accessibility gap |
-| Focus trap in modal | 🟡 Keyboard nav gap |
+**File**: `workout-log.js`, `workout_plan.html`
+| Scenario | Risk | Status |
+|----------|------|--------|
+| Modal layering/z-index behavior | 🟡 Interaction inconsistency | Open — no observed regression |
+| Escape key close behavior | 🟡 Accessibility gap | Partially open — Bootstrap 5.1.3 default Escape close is unreliable when focus is outside the modal. Tracked in [KI-006](#0-known-issues--reported-bugs). `e2e/ui-hardening.spec.ts` instead locks the close-button path + backdrop cleanup. |
+| Focus trap in modal | 🟡 Keyboard nav gap | Partially open — focus does move inside on open (`e2e/ui-hardening.spec.ts` asserts this), and the first Tab keeps focus inside. Full trap (many Tabs) is not currently provided by Bootstrap defaults here. Tracked in [KI-006](#0-known-issues--reported-bugs). |
+| Modal ARIA attributes | 🟡 SR navigation gap | ✅ Hardened — `e2e/ui-hardening.spec.ts` asserts `aria-modal="true"` + `aria-labelledby` resolves to a visible heading. |
 
 ---
 
