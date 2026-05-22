@@ -391,6 +391,51 @@ class TestExportWorkoutLog:
         assert resp.status_code == 200
         assert "spreadsheetml" in resp.content_type or resp.status_code == 200
 
+    def test_export_workout_log_response_is_valid_xlsx(self, client, clean_db, workout_log_entry):
+        """Response body must be a valid xlsx (ZIP archive — starts with PK magic bytes)."""
+        resp = client.get("/export_workout_log")
+        assert resp.status_code == 200
+        assert resp.data[:2] == b"PK"
+
+    def test_export_workout_log_workbook_has_workout_log_sheet(self, client, clean_db, workout_log_entry):
+        """Generated workbook must contain a sheet named 'Workout Log'."""
+        from io import BytesIO
+        from openpyxl import load_workbook
+
+        resp = client.get("/export_workout_log")
+        assert resp.status_code == 200
+        wb = load_workbook(BytesIO(resp.data), read_only=True)
+        try:
+            assert "Workout Log" in wb.sheetnames
+        finally:
+            wb.close()
+
+    def test_export_workout_log_workbook_header_row_matches_keys(self, client, clean_db, workout_log_entry):
+        """First row of the 'Workout Log' sheet must be the column keys from get_workout_logs()."""
+        from io import BytesIO
+        from openpyxl import load_workbook
+
+        from utils.workout_log import get_workout_logs
+
+        logs = get_workout_logs()
+        assert logs, "fixture should have produced at least one log row"
+        expected_headers = list(logs[0].keys())
+
+        resp = client.get("/export_workout_log")
+        assert resp.status_code == 200
+
+        wb = load_workbook(BytesIO(resp.data), read_only=True)
+        try:
+            ws = wb["Workout Log"]
+            header_row = [cell.value for cell in next(ws.iter_rows(min_row=1, max_row=1))]
+        finally:
+            wb.close()
+
+        # Trim trailing None cells the reader may pad with
+        while header_row and header_row[-1] is None:
+            header_row.pop()
+        assert header_row == expected_headers
+
 
 # Fixtures for workout_log tests
 @pytest.fixture

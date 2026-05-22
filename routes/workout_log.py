@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify, send_file
+from flask import Blueprint, render_template, request, jsonify
 from utils.database import DatabaseHandler
 from utils.workout_log import (
     check_progression,
@@ -7,9 +7,8 @@ from utils.workout_log import (
     is_assisted_bodyweight_exercise,
 )
 from utils.errors import success_response, error_response
+from utils.export_utils import create_excel_workbook, generate_timestamped_filename
 from utils.logger import get_logger
-from io import BytesIO
-from datetime import datetime
 
 workout_log_bp = Blueprint('workout_log', __name__)
 logger = get_logger()
@@ -180,56 +179,14 @@ def get_logs():
 @workout_log_bp.route('/export_workout_log')
 def export_workout_log():
     try:
-        # Lazy load pandas - only imported when export is requested
-        import pandas as pd
-        
-        # Get workout log data
         logs = get_workout_logs()
-        
         if not logs:
             return error_response("NOT_FOUND", "No workout logs found to export", 404)
-        
-        # Convert to DataFrame
-        df = pd.DataFrame(logs)
-        
-        # Create Excel file in memory
-        output = BytesIO()
-        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-            df.to_excel(writer, sheet_name='Workout Log', index=False)
-            
-            # Get the workbook and worksheet objects
-            workbook = writer.book
-            worksheet = writer.sheets['Workout Log']
-            
-            # Add some formatting
-            header_format = workbook.add_format({
-                'bold': True,
-                'bg_color': '#f8f9fa',
-                'border': 1
-            })
-            
-            # Format the header row
-            for col_num, value in enumerate(df.columns.values):
-                worksheet.write(0, col_num, value, header_format)
-                
-            # Adjust column widths
-            for idx, col in enumerate(df.columns):
-                worksheet.set_column(idx, idx, max(len(str(col)), df[col].astype(str).str.len().max()) + 2)
-        
-        # Seek to the beginning of the stream
-        output.seek(0)
-        
-        # Generate filename with timestamp
-        filename = f'workout_log_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
-        
-        logger.info(f"Exported workout log to {filename}")
-        return send_file(
-            output,
-            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            as_attachment=True,
-            download_name=filename
-        )
-        
+
+        filename = generate_timestamped_filename('workout_log')
+        logger.info(f"Exporting {len(logs)} workout log rows to {filename}")
+        return create_excel_workbook({'Workout Log': logs}, filename)
+
     except Exception as e:
         logger.exception("Error exporting workout log")
         return error_response("INTERNAL_ERROR", "Failed to export workout log", 500)
