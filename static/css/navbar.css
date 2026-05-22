@@ -1368,6 +1368,97 @@ body:not(:has(#navbar)) .navbar {
   background: var(--nav-pill-active);
 }
 
+#navbar .dropdown.is-hover-open > .dropdown-toggle {
+  background: var(--nav-pill-hover);
+  border-color: var(--nav-pill-border-hover) !important;
+  box-shadow: var(--nav-pill-shadow);
+  color: var(--nav-pill-ink-strong) !important;
+}
+
+#navbar #nav-user-profile .nav-fa-icon {
+  color: #6d5dfc !important;
+  filter: drop-shadow(0 2px 4px rgba(109, 93, 252, 0.24));
+}
+
+#navbar #nav-body-composition .nav-fa-icon {
+  color: #0f9f8f !important;
+  filter: drop-shadow(0 2px 4px rgba(15, 159, 143, 0.24));
+}
+
+#navbar #nav-backup .nav-fa-icon {
+  color: #d97706 !important;
+  filter: drop-shadow(0 2px 4px rgba(217, 119, 6, 0.24));
+}
+
+[data-theme="dark"] #navbar #nav-user-profile .nav-fa-icon {
+  color: #a78bfa !important;
+  filter: drop-shadow(0 2px 6px rgba(167, 139, 250, 0.3));
+}
+
+[data-theme="dark"] #navbar #nav-body-composition .nav-fa-icon {
+  color: #2dd4bf !important;
+  filter: drop-shadow(0 2px 6px rgba(45, 212, 191, 0.28));
+}
+
+[data-theme="dark"] #navbar #nav-backup .nav-fa-icon {
+  color: #fbbf24 !important;
+  filter: drop-shadow(0 2px 6px rgba(251, 191, 36, 0.28));
+}
+
+#navbar #nav-user-profile .nav-fa-icon,
+#navbar #nav-body-composition .nav-fa-icon,
+#navbar #nav-backup .nav-fa-icon {
+  transform-origin: center;
+  transition:
+    color var(--dur-fast, 150ms) var(--ease-out, ease),
+    filter var(--dur-fast, 150ms) var(--ease-out, ease),
+    transform var(--dur-fast, 150ms) var(--ease-out, ease);
+  will-change: transform;
+}
+
+#navbar #nav-user-profile:hover .nav-fa-icon,
+#navbar #nav-user-profile:focus-visible .nav-fa-icon,
+#navbar #nav-user-profile.active .nav-fa-icon {
+  filter: drop-shadow(0 3px 6px rgba(109, 93, 252, 0.32));
+  transform: none;
+}
+
+#navbar #nav-body-composition:hover .nav-fa-icon,
+#navbar #nav-body-composition:focus-visible .nav-fa-icon,
+#navbar #nav-body-composition.active .nav-fa-icon,
+#navbar #nav-backup:hover .nav-fa-icon,
+#navbar #nav-backup:focus-visible .nav-fa-icon,
+#navbar #nav-backup.active .nav-fa-icon {
+  animation: nav-fa-icon-pop 360ms var(--ease-out, ease);
+  transform: translateY(-1px) scale(1.12) rotate(-4deg);
+}
+
+#navbar #nav-body-composition:hover .nav-fa-icon,
+#navbar #nav-body-composition:focus-visible .nav-fa-icon,
+#navbar #nav-body-composition.active .nav-fa-icon {
+  transform: translateY(-1px) scale(1.12) rotate(5deg);
+}
+
+#navbar #nav-backup:hover .nav-fa-icon,
+#navbar #nav-backup:focus-visible .nav-fa-icon,
+#navbar #nav-backup.active .nav-fa-icon {
+  transform: translateY(-1px) scale(1.12) rotate(3deg);
+}
+
+@keyframes nav-fa-icon-pop {
+  0% {
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+
+  55% {
+    transform: translateY(-2px) scale(1.18) rotate(-6deg);
+  }
+
+  100% {
+    transform: translateY(-1px) scale(1.12) rotate(-4deg);
+  }
+}
+
 :where(#navbar) .scale-control-compact {
   background: color-mix(in srgb, var(--nav-pill-bg) 90%, transparent);
   border: 1px solid var(--nav-glass-border-soft);
@@ -1429,5 +1520,18 @@ body:not(:has(#navbar)) .navbar {
 @media (prefers-reduced-motion: reduce) {
   :where(#navbar) .nav-link {
     transition: none;
+  }
+
+  #navbar #nav-user-profile:hover .nav-fa-icon,
+  #navbar #nav-user-profile:focus-visible .nav-fa-icon,
+  #navbar #nav-user-profile.active .nav-fa-icon,
+  #navbar #nav-body-composition:hover .nav-fa-icon,
+  #navbar #nav-body-composition:focus-visible .nav-fa-icon,
+  #navbar #nav-body-composition.active .nav-fa-icon,
+  #navbar #nav-backup:hover .nav-fa-icon,
+  #navbar #nav-backup:focus-visible .nav-fa-icon,
+  #navbar #nav-backup.active .nav-fa-icon {
+    animation: none;
+    transform: none;
   }
 }

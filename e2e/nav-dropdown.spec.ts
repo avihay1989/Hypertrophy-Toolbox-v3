@@ -90,6 +90,25 @@ test.describe('P5 navbar dropdown and backup navigation', () => {
     await expect(session).toContainText('Session');
   });
 
+  test('static Font Awesome nav icons have accent color and hover motion', async ({ page }) => {
+    await page.goto(ROUTES.HOME);
+    await waitForPageReady(page);
+
+    const profileIcon = page.locator('#nav-user-profile .nav-fa-icon');
+    const bodyCompositionIcon = page.locator('#nav-body-composition .nav-fa-icon');
+    const backupIcon = page.locator('#nav-backup .nav-fa-icon');
+
+    await expect(profileIcon).toHaveCSS('color', 'rgb(109, 93, 252)');
+    await expect(bodyCompositionIcon).toHaveCSS('color', 'rgb(15, 159, 143)');
+    await expect(backupIcon).toHaveCSS('color', 'rgb(217, 119, 6)');
+
+    await page.locator('#nav-user-profile').hover();
+    await expect(profileIcon).toHaveCSS('transform', 'none');
+
+    await page.locator('#nav-backup').hover();
+    await expect(backupIcon).not.toHaveCSS('transform', 'none');
+  });
+
   test('Backup nav points to the dedicated backup page', async ({ page }) => {
     await page.goto(ROUTES.HOME);
     await waitForPageReady(page);
