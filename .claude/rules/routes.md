@@ -57,8 +57,6 @@ To add a filterable column:
 - [ ] If partial match: add to `PARTIAL_MATCH_FIELDS` (line 34)
 - [ ] If muscle-type: add mapping in `SIMPLE_TO_DB_MUSCLE` / `SIMPLE_TO_ADVANCED_ISOLATED` (`routes/filters.py:17-69`)
 
-**Latent risk**: `utils/filter_cache.py:85` has `f"SELECT DISTINCT {column} FROM {table}"` — column/table NOT parameterized there. Only caller is `warm_cache()` (line 113) with hardcoded names. Any new caller must pre-validate.
-
 ## Input validation
 Routes validate bounds before calling utils. Example pattern in `routes/workout_plan.py`: sets 1-20, reps 1-100, weight ≥ 0, RIR 0-10.
 

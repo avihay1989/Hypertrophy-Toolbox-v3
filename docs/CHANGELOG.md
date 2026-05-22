@@ -4,6 +4,11 @@ All notable changes to Hypertrophy Toolbox v3.
 
 ## Unreleased - May 23, 2026
 
+### KI-001 — Filter Cache Removed as Dormant Code
+
+- Triage of the long-standing KI-001 "filter cache TTL-only invalidation" risk found the module was dormant: zero `from utils.filter_cache` imports in `routes/`, `utils/`, or `app.py`; `get_cached_unique_values()` only called by `warm_cache()`, which itself was never wired into startup; the route that *would* consume it (`routes/filters.py::get_unique_values`) hit `DatabaseHandler` directly.
+- Resolved by deletion. `utils/filter_cache.py` and `tests/test_filter_cache.py` removed. The latent SQLi exposure on `f"SELECT DISTINCT {column} FROM {table}"` (line 85) goes away with the module. Mentions purged from `CLAUDE.md §5`, `routes/CLAUDE.md`, `utils/CLAUDE.md`, `.claude/rules/routes.md`, `.claude/agents/code-reviewer.md`, `.claude/agents/architecture-reviewer.md`, and `docs/UI_SCENARIOS_GAP_ANALYSIS.md` (KI-001 row flipped to ✅ Resolved).
+
 ### Profile Page — Body Composition Display Hooks (Issues #17 + #18)
 
 - Added a "Body fat: X% · {ACE band}" line and a "Lean mass: Y kg" sub-line on the Profile insights card. Both read the most recent `body_composition_snapshots` row (Navy BFP when present, else BMI) and only render when a snapshot exists. Display-only — never alters estimator output. Local commit `de3e4d0`.

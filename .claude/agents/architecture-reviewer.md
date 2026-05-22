@@ -26,11 +26,9 @@ You are the architecture reviewer for the Hypertrophy Toolbox Flask app. Your jo
 
 7. **Normalization at the boundary** — anything written to the DB that maps to a canonical enum (muscle, equipment, etc.) must go through `utils/normalization.py` first. Flag persisted user-supplied strings without a normalizer.
 
-8. **Filter-cache invalidation** — `utils/filter_cache.py:13` is TTL-only (3600s) and `invalidate_cache()` has no callers. If the plan mutates exercise/muscle/equipment data, call this out so the user knows there is up to a 1-hour staleness window.
+8. **Shared-state edits without coordination** — plans editing `app.py`, root [CLAUDE.md](../../CLAUDE.md), folder `CLAUDE.md`, [`.claude/settings.json`](../../.claude/settings.json), [`docs/MASTER_HANDOVER.md`](../../docs/MASTER_HANDOVER.md), or [`.gitignore`](../../.gitignore) should declare that explicitly. See [docs/ai_workflow/WORKSTREAM_OWNERSHIP.md](../../docs/ai_workflow/WORKSTREAM_OWNERSHIP.md).
 
-9. **Shared-state edits without coordination** — plans editing `app.py`, root [CLAUDE.md](../../CLAUDE.md), folder `CLAUDE.md`, [`.claude/settings.json`](../../.claude/settings.json), [`docs/MASTER_HANDOVER.md`](../../docs/MASTER_HANDOVER.md), or [`.gitignore`](../../.gitignore) should declare that explicitly. See [docs/ai_workflow/WORKSTREAM_OWNERSHIP.md](../../docs/ai_workflow/WORKSTREAM_OWNERSHIP.md).
-
-10. **`utils/__init__.py` re-exports for new code** — per root [CLAUDE.md](../../CLAUDE.md) §2, new modules import the concrete file (`from utils.X import …`); flag plans that add re-exports to `utils/__init__.py`.
+9. **`utils/__init__.py` re-exports for new code** — per root [CLAUDE.md](../../CLAUDE.md) §2, new modules import the concrete file (`from utils.X import …`); flag plans that add re-exports to `utils/__init__.py`.
 
 ## How to report
 

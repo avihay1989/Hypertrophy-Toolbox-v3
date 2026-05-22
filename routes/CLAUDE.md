@@ -27,7 +27,6 @@ HTTP layer. Each file is one Flask blueprint that validates input, calls `utils/
 - Dynamic column names must pass `validate_column_name()` in `filters.py:147` before SQL interpolation.
 
 ## Gotchas
-- **Latent SQLi risk**: `utils/filter_cache.py:85` interpolates column/table names. Only `warm_cache()` calls it today; any new caller must pre-validate.
 - **Response contract**: All JSON routes now use `success_response()` / `error_response()` (legacy `success`/`error` JSON cleaned up 2026-05-21). The replace-exercise "no result" cases (`NO_CANDIDATES`, `DUPLICATE`, `SELECTION_FAILED`) intentionally keep HTTP 200 via `status_code=200` — the JS swap handler keys off `error.reason` rather than HTTP status.
 - No auth — single-user local. Do not expose to untrusted networks.
 

@@ -181,9 +181,6 @@ Re-verify after significant changes and update counts above.
 ### Known response-contract exceptions (2026-05-21)
 None. The pattern-coverage and replace-exercise fallback paths were migrated to `success_response()` / `error_response()` (2026-05-21). The replace-exercise "no result" cases (`NO_CANDIDATES`, `DUPLICATE`, `SELECTION_FAILED`) keep HTTP 200 by passing `status_code=200` to `error_response()` — they're user-facing "couldn't be processed" outcomes that pytest + the JS swap handler treat as 200 + `ok:false`.
 
-### Filter cache: TTL-only invalidation
-`utils/filter_cache.py:13` — TTL 3600s. `invalidate_cache()` exists but is never called from any route. Stale filter options may persist up to 1 hour after exercise data changes.
-
 ### exercise_order column
 Added at startup by `initialize_exercise_order()` (`routes/workout_plan.py:614`) via `ALTER TABLE`. Route handler `get_workout_plan` (lines 231-234) defensively checks `column_exists()` for pre-migration DBs.
 

@@ -7,9 +7,8 @@
 > - **v2 (Codex review):** flagged that the local tree is not clean — newer commits + large dirty working set overlap several backlog rows.
 > - **v3 (Opus second-pass scan):** identified 6 distinct workstreams mixed in the dirty tree, including 2 unannounced navbar UX features; expanded the P0 docs-hygiene bucket.
 > - **v4 (Codex re-review):** Opus + Codex agree. File rewritten to lead with in-flight work triage, then expanded P0 docs, then remaining backlog.
-> - **v5 (2026-05-23, post-execution):** Owner accepted all six scopes; each landed as its own commit (`de3e4d0`, `18ad223`, `ef475cc`, `89561df`, `40d7dd2`, `0ae5b39`). Section 1 docs hygiene executed in a single doc-only commit on top of the six feature commits. Section 0 is fully resolved.
->
-> **Current branch:** `main`, **9 commits ahead of `origin/main @ 94482d7`** as of v5. Working tree clean except for `data/database.db` (owner-approved runtime dirt). Awaiting `git push`.
+> - **v5 (2026-05-23, post-execution):** Owner accepted all six scopes; each landed as its own commit (`de3e4d0`, `18ad223`, `ef475cc`, `89561df`, `40d7dd2`, `0ae5b39`). Section 1 docs hygiene executed in a single doc-only commit on top of the six feature commits. Pushed to `origin/main`.
+> - **v6 (2026-05-23, KI-001 close):** Triage of Section 2 found the filter cache module was dormant code with zero production callers. Owner approved Path A (delete). `utils/filter_cache.py` + `tests/test_filter_cache.py` removed; agent + rule + CLAUDE.md references purged. Section 2 closed by deletion rather than by adding invalidation hooks.
 
 ---
 
@@ -57,17 +56,15 @@ All ten items below shipped in one docs-only commit on top of A–F. Each links 
 
 ---
 
-## 2. Standalone P1 — Filter Cache Invalidation (after P0 docs)
+## 2. CLOSED — KI-001 Filter Cache (resolved 2026-05-23 by deletion)
 
-| # | Item | Detail | Effort | Risk |
-|---|---|---|---|---|
-| 11 | **KI-001 — Filter cache invalidation** ([`utils/filter_cache.py:13`](../utils/filter_cache.py#L13)) | `invalidate_cache()` exists but is never called. Catalogue mutation paths `utils/exercise_manager.py::save_exercise()` (line 115) and `remove_exercise_by_name()` (line 165) do not call it. Wire it in. | **1–2 hr** | Low — single-user app, mutations are rare |
-
-This is the cleanest standalone P1 in the repo right now. Independent of the dirty-tree triage and the docs refresh.
+| # | Item | Resolution |
+|---|---|---|
+| 11 | **KI-001 — Filter cache invalidation** | Resolved by deleting the module. Triage discovered `utils/filter_cache.py` was dormant code: zero `from utils.filter_cache` imports in `routes/`, `utils/`, or `app.py`; `get_cached_unique_values()` only called by `warm_cache()` which itself was never wired into startup; the route that *would* consume it (`routes/filters.py::get_unique_values`) hit `DatabaseHandler` directly. Catalogue mutations (`save_exercise`, `remove_exercise_by_name`) had no HTTP path. Removing the module eliminated the "1 hour staleness" theoretical risk AND the latent SQLi exposure on the un-validated `f"SELECT DISTINCT {column} FROM {table}"` at line 85. `tests/test_filter_cache.py` (~440 LOC, 30+ tests) removed along with it. |
 
 ---
 
-## 3. Remaining Backlog (still valid; only KI-001 is pending after Sections 0–1)
+## 3. Remaining Backlog (after Sections 0, 1, 2 closed)
 
 | #  | Pri       | Item                                                                                                                                                                       | Notes / status                                                                       | Effort     |
 |----|-----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|------------|
@@ -106,7 +103,7 @@ All four were Section 0 in-flight scopes; they landed as commits `40d7dd2` (#4, 
 | Section 1 #8               | [`CHANGELOG.md`](CHANGELOG.md), `git log --oneline -10`                                                        |
 | Section 1 #9               | [`ai_workflow/INDEX.md`](ai_workflow/INDEX.md), [`fatigue_meter/calibration-notes.md`](fatigue_meter/calibration-notes.md) |
 | Section 1 #10              | [`docs/README.md`](README.md), [`VOLUME_TAXONOMY_AUDIT.md`](VOLUME_TAXONOMY_AUDIT.md)                          |
-| Section 2 (#11)            | [`UI_SCENARIOS_GAP_ANALYSIS.md §0`](UI_SCENARIOS_GAP_ANALYSIS.md) (KI-001), `utils/filter_cache.py`, `utils/exercise_manager.py` |
+| Section 2 (#11, closed)    | [`UI_SCENARIOS_GAP_ANALYSIS.md §0`](UI_SCENARIOS_GAP_ANALYSIS.md) (KI-001 — resolved by deletion); deleted files: `utils/filter_cache.py`, `tests/test_filter_cache.py` |
 | Section 3 #12              | [`workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md`](workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md), `data/youtube_curated_top_n.csv` |
 | Section 3 #13              | [`workout_cool_integration/PLANNING.md §4.6`](workout_cool_integration/PLANNING.md)                            |
 | Section 3 #14              | [`MASTER_HANDOVER.md`](MASTER_HANDOVER.md) Open Decisions, [`ACTIVE_DEVELOPMENT.md:156-159`](ACTIVE_DEVELOPMENT.md#L156-L159) |
@@ -124,4 +121,4 @@ All four were Section 0 in-flight scopes; they landed as commits `40d7dd2` (#4, 
 
 ---
 
-*Last updated: 2026-05-23 (v5 — post-execution). Sections 0 + 1 closed (six feature commits + one docs-only commit on local `main`). Awaiting `git push` and the standalone KI-001 work in Section 2.*
+*Last updated: 2026-05-23 (v6 — KI-001 closed by deletion). Sections 0 + 1 + 2 all closed. Remaining backlog is Section 3 (P2/P3/P4 + parked Phase-2 fatigue).*
