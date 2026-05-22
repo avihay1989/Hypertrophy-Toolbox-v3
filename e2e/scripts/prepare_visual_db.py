@@ -56,6 +56,7 @@ def apply_migrations(database_path: Path) -> None:
 
     from utils.db_initializer import initialize_database
     from utils.database import (
+        add_body_composition_snapshots_table,
         add_progression_goals_table,
         add_user_profile_tables,
         add_volume_tracking_tables,
@@ -67,6 +68,7 @@ def apply_migrations(database_path: Path) -> None:
     add_progression_goals_table()
     add_volume_tracking_tables()
     add_user_profile_tables()
+    add_body_composition_snapshots_table()
     initialize_exercise_order()
     init_backup_tables()
 

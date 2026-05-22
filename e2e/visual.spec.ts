@@ -17,6 +17,7 @@ const pages = [
   { name: 'weekly-summary', route: ROUTES.WEEKLY_SUMMARY },
   { name: 'session-summary', route: ROUTES.SESSION_SUMMARY },
   { name: 'progression', route: ROUTES.PROGRESSION },
+  { name: 'body-composition', route: ROUTES.BODY_COMPOSITION },
   { name: 'volume-splitter', route: ROUTES.VOLUME_SPLITTER },
 ] as const;
 
