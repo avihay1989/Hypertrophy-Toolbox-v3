@@ -804,4 +804,51 @@ test.describe('User Profile', () => {
     await expect(card.locator('[data-band-count]')).toContainText(/^1 \//);
     await expect(card.locator('[data-donut-count]')).toContainText(/^1\b/);
   });
+
+  test('Body Composition snapshot surfaces BFP/ACE line and Lean Mass sub-line on Profile (Issues #17 + #18)', async ({ page }) => {
+    // Seed demographics + save a Body Composition snapshot via the public
+    // API, then reload Profile. The display hooks read the latest snapshot
+    // and only render when one exists — so the snapshot itself drives the
+    // visibility assertions.
+    await page.request.post('/api/user_profile', {
+      data: { gender: 'M', age: 34, height_cm: 180, weight_kg: 80, experience_years: 3 },
+    });
+
+    // Clean any stale snapshots from prior test runs so the pre-condition
+    // assertion (no display hooks) is deterministic.
+    const existing = await page.request.get('/api/body_composition/snapshots');
+    if (existing.ok()) {
+      const body = await existing.json();
+      for (const snap of body.data ?? []) {
+        await page.request.delete(`/api/body_composition/snapshots/${snap.id}`);
+      }
+    }
+
+    const card = page.locator('[data-section="profile insights"]');
+    await page.reload();
+    await waitForPageReady(page);
+    // Pre-condition: no snapshot yet, so neither display hook should render.
+    await expect(card.locator('[data-body-fat-line]')).toHaveCount(0);
+    await expect(card.locator('[data-tile-lean-mass]')).toHaveCount(0);
+
+    // Save a Navy-method snapshot for a male user — BFP ≈ 15.5%, lean mass ≈ 67.6 kg
+    // (waist 85, neck 38, height 180). Validates the live Profile-page surface.
+    const snapResp = await page.request.post('/api/body_composition/snapshot', {
+      data: { neck_cm: 38, waist_cm: 85 },
+    });
+    expect(snapResp.ok()).toBeTruthy();
+
+    await page.reload();
+    await waitForPageReady(page);
+
+    const bfpLine = card.locator('[data-body-fat-line]');
+    await expect(bfpLine).toBeVisible();
+    await expect(bfpLine).toContainText('Body fat:');
+    await expect(bfpLine).toContainText('%');
+    await expect(bfpLine).toContainText('(ACE)');
+
+    const leanSubline = card.locator('[data-insights-tile="bodyweight"] [data-tile-lean-mass]');
+    await expect(leanSubline).toBeVisible();
+    await expect(leanSubline).toContainText(/Lean mass: \d+(\.\d+)? kg/);
+  });
 });

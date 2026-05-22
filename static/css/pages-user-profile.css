@@ -1168,6 +1168,20 @@
     padding-top: 0.6rem;
 }
 
+.profile-insights-tile-subline {
+    color: var(--ink-2, #4a5170);
+    font-size: 0.78rem;
+    line-height: 1.4;
+    margin-top: 0.15rem;
+}
+
+.profile-insights-body-fat {
+    color: var(--ink-1, #22283a);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin: 0.4rem 0 0;
+}
+
 .profile-insights-bar-list {
     display: flex;
     flex-direction: column;

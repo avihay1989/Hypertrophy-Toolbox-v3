@@ -641,3 +641,115 @@ def test_profile_page_context_exposes_anterior_posterior_partition(
     assert posterior_idx < hamstrings_idx, (
         "Hamstrings heading must sit after the posterior card marker"
     )
+
+
+def _seed_body_composition_snapshot(
+    db,
+    *,
+    bfp_navy=18.2,
+    bfp_bmi=20.5,
+    lean_mass_kg=63.4,
+    fat_mass_kg=14.0,
+    gender="M",
+    captured_at="2026-05-01T12:00:00Z",
+):
+    db.execute_query(
+        """
+        INSERT INTO body_composition_snapshots (
+            captured_at, bodyweight_kg, height_cm,
+            neck_cm, waist_cm, hip_cm, age_years, gender,
+            bfp_navy, bfp_bmi, fat_mass_kg, lean_mass_kg, notes
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            captured_at,
+            77.4,
+            180.0,
+            38.0,
+            85.0,
+            None,
+            34,
+            gender,
+            bfp_navy,
+            bfp_bmi,
+            fat_mass_kg,
+            lean_mass_kg,
+            None,
+        ),
+    )
+
+
+def test_profile_page_omits_body_fat_line_without_snapshot(client, clean_db):
+    """Issues #17 / #18: when no Body Composition snapshot exists, the
+    Profile page renders without the BFP/ACE line and without the lean
+    mass sub-line."""
+    response = client.get("/user_profile")
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+    assert "data-body-fat-line" not in html
+    assert "data-tile-lean-mass" not in html
+
+
+def test_profile_page_renders_body_fat_line_and_lean_mass(client, clean_db):
+    """Issues #17 / #18: when a snapshot exists, the BFP + ACE band line
+    and the Lean Mass sub-line on the bodyweight tile both render. 15% male
+    BFP lands in the ACE "Fitness" band (14–18% inclusive of the lower
+    edge)."""
+    _seed_body_composition_snapshot(
+        clean_db, bfp_navy=15.0, lean_mass_kg=63.4, gender="M"
+    )
+
+    response = client.get("/user_profile")
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+    assert "data-body-fat-line" in html
+    assert "15.0%" in html
+    assert "Fitness (ACE)" in html
+    assert "data-tile-lean-mass" in html
+    assert "Lean mass: 63.4 kg" in html
+
+
+def test_profile_page_uses_latest_snapshot_when_multiple_exist(client, clean_db):
+    """The latest snapshot (by captured_at desc, id desc) drives the
+    display — earlier snapshots are ignored."""
+    _seed_body_composition_snapshot(
+        clean_db,
+        bfp_navy=25.0,
+        lean_mass_kg=55.0,
+        captured_at="2026-04-01T12:00:00Z",
+        gender="M",
+    )
+    _seed_body_composition_snapshot(
+        clean_db,
+        bfp_navy=15.0,
+        lean_mass_kg=70.0,
+        captured_at="2026-05-15T12:00:00Z",
+        gender="M",
+    )
+
+    response = client.get("/user_profile")
+    html = response.get_data(as_text=True)
+    assert "15.0%" in html
+    assert "Fitness (ACE)" in html
+    assert "Lean mass: 70.0 kg" in html
+    assert "25.0%" not in html
+    assert "Lean mass: 55.0 kg" not in html
+
+
+def test_profile_page_falls_back_to_bmi_bfp_when_navy_null(client, clean_db):
+    """BMI-only snapshots (no tape measurements) still drive the display
+    via bfp_bmi."""
+    _seed_body_composition_snapshot(
+        clean_db,
+        bfp_navy=None,
+        bfp_bmi=22.0,
+        lean_mass_kg=60.0,
+        gender="F",
+    )
+
+    response = client.get("/user_profile")
+    html = response.get_data(as_text=True)
+    assert "22.0%" in html
+    assert "Fitness (ACE)" in html
+    assert "Lean mass: 60.0 kg" in html

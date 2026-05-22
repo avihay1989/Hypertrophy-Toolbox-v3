@@ -4,6 +4,7 @@ from typing import Any, Optional
 
 from flask import Blueprint, jsonify, render_template, request
 
+from utils.body_fat import ace_category
 from utils.database import (
     DatabaseHandler,
     upsert_user_profile_demographics,
@@ -186,6 +187,45 @@ def _nullable_int(value: Any, field_name: str, minimum: int, maximum: int) -> Op
     return parsed
 
 
+def _load_latest_body_composition(db: DatabaseHandler) -> Optional[dict[str, Any]]:
+    """Return the most recent `body_composition_snapshots` row enriched with
+    the effective BFP (Navy if measured, else BMI), the ACE band label, and
+    the lean mass — or None if no snapshot has been saved.
+
+    Display-only — Profile page surfaces Issues #17 ("Body fat: X% · {ACE
+    band}") and #18 (Lean Mass sub-line on bodyweight tile). All math lives
+    in the snapshot row itself; this helper just picks Navy-over-BMI and
+    looks up the ACE label.
+    """
+    row = db.fetch_one(
+        """
+        SELECT bfp_navy, bfp_bmi, lean_mass_kg, fat_mass_kg, gender
+        FROM body_composition_snapshots
+        ORDER BY captured_at DESC, id DESC
+        LIMIT 1
+        """
+    )
+    if row is None:
+        return None
+    bfp_navy = row["bfp_navy"]
+    bfp_bmi = row["bfp_bmi"]
+    bfp = bfp_navy if bfp_navy is not None else bfp_bmi
+    gender = row["gender"]
+    band: Optional[str] = None
+    if bfp is not None and gender in VALID_GENDERS:
+        try:
+            band = ace_category(bfp, gender)
+        except ValueError:
+            band = None
+    return {
+        "bfp": bfp,
+        "bfp_source": "navy" if bfp_navy is not None else "bmi",
+        "ace_band": band,
+        "lean_mass_kg": row["lean_mass_kg"],
+        "fat_mass_kg": row["fat_mass_kg"],
+    }
+
+
 def _load_profile_context(db: DatabaseHandler) -> dict[str, Any]:
     profile = db.fetch_one("SELECT * FROM user_profile WHERE id = 1")
     lift_rows = db.fetch_all("SELECT lift_key, weight_kg, reps FROM user_profile_lifts")
@@ -226,6 +266,7 @@ def _load_profile_context(db: DatabaseHandler) -> dict[str, Any]:
         lift for group in reference_lift_groups for lift in group["lifts"]
     ]
     insights = _build_profile_insights(profile or {}, lift_rows)
+    latest_body_composition = _load_latest_body_composition(db)
     return {
         "profile": profile or {},
         "reference_lifts": reference_lifts,
@@ -235,6 +276,7 @@ def _load_profile_context(db: DatabaseHandler) -> dict[str, Any]:
         "preferences": preferences,
         "rep_range_presets": REP_RANGE_PRESETS,
         "profile_insights": insights,
+        "latest_body_composition": latest_body_composition,
     }
 
 

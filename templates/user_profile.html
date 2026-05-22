@@ -119,11 +119,31 @@
                         {% endif %}
                         <span class="profile-insights-tile-cohort" data-tile-cohort>{{ tile.cohort_text }}</span>
                         {% endif %}
+                        {# Issue #18 — Lean Mass sub-line surfaces the latest
+                           Body Composition snapshot's lean mass on the
+                           Bodyweight tile. Display-only; never alters
+                           estimator output. #}
+                        {% if tile_key == 'bodyweight' and latest_body_composition and latest_body_composition.lean_mass_kg is not none %}
+                        <span class="profile-insights-tile-subline" data-tile-lean-mass>Lean mass: {{ latest_body_composition.lean_mass_kg | round(1) }} kg</span>
+                        {% endif %}
                     </div>
                     {% endfor %}
                 </div>
 
                 <p class="profile-insights-cohort-summary" data-cohort-summary>{{ cohort.summary }}</p>
+
+                {# Issue #17 — Latest body-fat line. Shown only when a
+                   /body_composition snapshot exists. Display-only — does not
+                   alter any estimator output. #}
+                {% if latest_body_composition and latest_body_composition.bfp is not none %}
+                <p class="profile-insights-body-fat" data-body-fat-line>
+                    <strong>Body fat:</strong>
+                    <span data-body-fat-value>{{ latest_body_composition.bfp | round(1) }}%</span>
+                    {% if latest_body_composition.ace_band %}
+                    &middot; <span data-body-fat-band>{{ latest_body_composition.ace_band }} (ACE)</span>
+                    {% endif %}
+                </p>
+                {% endif %}
 
                 <div class="profile-insights-section" data-insights-bars{% if not profile_insights.cohort_bars %} hidden{% endif %}>
                     <span class="profile-insights-label">Strength vs. cohort (per filled lift)</span>
