@@ -1,6 +1,6 @@
 # CLAUDE.md Audit - Live Architecture Debt
 
-Last validated: 2026-04-24
+Last validated: 2026-05-23
 
 This file tracks only unresolved, repo-verified architecture debt. Historical rollout plans and completed migration trackers were removed from the active docs surface during the April 24 docs cleanup.
 
@@ -19,12 +19,7 @@ Intentional low-level SQLite owners remain:
 
 ## 2. Response Contract Exceptions
 
-Most live JSON routes use `success_response()` / `error_response()`. The remaining intentional exceptions are:
-
-- `routes/weekly_summary.py` `GET /api/pattern_coverage` still returns legacy top-level `success` / `error` JSON.
-- `routes/workout_plan.py` replace-exercise fallback branches return 200 error payloads for UI-handled states such as `no_candidates`, `selection_failed`, and `duplicate`.
-
-These are user-facing contracts and should only change with paired frontend updates and tests.
+None. Every live JSON route uses `success_response()` / `error_response()`. The previously-listed exceptions (`/api/pattern_coverage` and the replace-exercise fallback branches in `routes/workout_plan.py`) were migrated 2026-05-21 in `cbf745a` (`fix(api): migrate remaining response-contract exceptions`). The replace-exercise "no result" cases (`no_candidates`, `duplicate`, `selection_failed`) keep HTTP 200 by passing `status_code=200` to `error_response()` — they're user-facing "couldn't be processed" outcomes that pytest and the JS swap handler treat as 200 + `ok:false`.
 
 ## 3. No Longer Tracked Here
 

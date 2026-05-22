@@ -17,9 +17,10 @@ the Profile-page tracker — Issues #17 / #18 / #19 referenced inside the
 issue body still point to that same parent doc).
 
 Profile-page display hooks (Issue #18 bodyweight-tile *Lean mass* sub-line
-and Issue #17 *"Body fat: X % · {ACE band}"* sub-line) are intentionally
-deferred to a separate cross-page-display follow-up once `/body_composition`
-has shipped and snapshots are routinely captured.
+and Issue #17 *"Body fat: X % · {ACE band}"* sub-line) **shipped 2026-05-23**
+via commit `de3e4d0` (`feat(profile): surface latest body composition
+snapshot (#17 + #18)`). Both hooks are display-only and never alter
+estimator output, consistent with the original scope-change deferral.
 
 ---
 
@@ -325,62 +326,62 @@ the CLAUDE.md non-goals).
 
 ### Acceptance checklist
 
-- [ ] `utils/body_fat.py` exposes `compute_navy(...)`,
+- [x] `utils/body_fat.py` exposes `compute_navy(...)`,
   `compute_bmi(...)`, `ace_category(bfp, gender)`, and
   `jackson_pollock_ideal(age, gender)`. All four are pure functions
-  (no DB access) and have the explicit *"must match JS mirror"*
-  comment from Issue #17.
-- [ ] DB migration `add_body_composition_snapshots_table()` is
-  idempotent and ships with a unit test in `tests/test_db_migration.py`
-  (or the equivalent existing migration test file).
-- [ ] New blueprint `routes/body_composition.py` (registered in
-  `app.py` next to the existing 11 blueprints) adds four endpoints:
-  `GET /body_composition` (page),
+  (no DB access) and carry the explicit *"must match JS mirror"*
+  comment from Issue #17. Shipped via PR #31 (`20b4b24`).
+- [x] DB migration `add_body_composition_snapshots_table()` is
+  idempotent and ships with a unit test in `tests/test_db_migration.py`.
+  Shipped via PR #31 (`20b4b24`).
+- [x] New blueprint `routes/body_composition.py` registered in
+  `app.py` adds the four endpoints (`GET /body_composition`,
   `POST /api/body_composition/snapshot`,
   `GET /api/body_composition/snapshots`,
-  `DELETE /api/body_composition/snapshots/<id>`. All four JSON
+  `DELETE /api/body_composition/snapshots/<id>`); all four JSON
   endpoints use the standard `success_response()` / `error_response()`
-  envelopes per
-  [`.claude/rules/routes.md`](../../.claude/rules/routes.md).
-- [ ] Hip field is hidden + not submitted when `gender == M`; server
-  rejects a hip value with `gender == M` to enforce the contract
-  cleanly.
-- [ ] Validation: out-of-range / log-domain inputs return a structured
-  4xx error with a per-field message; the form surfaces the message
-  inline.
-- [ ] Live result updates on every input event (no save round-trip),
-  matching the Issue #17 / #18 / #19 JS-mirror contract.
-- [ ] ACE band tick + Jackson & Pollock comparison line render with
-  citations.
-- [ ] Trend chart renders empty state with zero snapshots, then a
-  growing line as snapshots are saved.
-- [ ] Snapshot history table sorts by date desc and supports
-  per-row delete.
-- [ ] Pytest: `tests/test_body_fat.py` covers
+  envelopes. Shipped via PR #31 (`20b4b24`).
+- [x] Hip field is hidden + not submitted when `gender == M`; server
+  rejects a hip value with `gender == M`. Shipped via PR #31.
+- [x] Validation: out-of-range / log-domain inputs return a structured
+  4xx error with a per-field message; `captured_at` ISO format
+  validation hardened via PR #32 (`94482d7`).
+- [x] Live result updates on every input event; JS mirror of the
+  Python formulas with JS↔Python parity Playwright assertion
+  (added in PR #32, `94482d7`).
+- [x] ACE band tick + Jackson & Pollock comparison line render with
+  citations. Shipped via PR #31.
+- [x] Trend chart renders empty state with zero snapshots, then a
+  growing line as snapshots are saved. Shipped via PR #31.
+- [x] Snapshot history table sorts by date desc and supports
+  per-row delete. Shipped via PR #31.
+- [x] Pytest: `tests/test_body_fat.py` covers
   `compute_navy()` (male + female + log-domain rejection),
   `compute_bmi()` (adult / boy / girl), `ace_category()` boundary
   rows, `jackson_pollock_ideal()` interpolation including age clamp.
-- [ ] Pytest: new `tests/test_body_composition_routes.py` covers each
-  new endpoint (success + 4xx + delete-not-found) plus a smoke test
-  that the page renders with `gender` / `age` / `height` /
-  `bodyweight` pulled from the existing user-profile row.
-- [ ] Playwright: new spec `e2e/body-composition.spec.ts` fills the
-  tape inputs, asserts the live BFP / FM / LM values match the
-  expected formula output, saves a snapshot, and asserts the new row
-  appears in the history table + on the trend chart.
-- [ ] Navbar: `templates/base.html` renders a *Body Composition* link
+  Shipped via PR #31 (42 cases).
+- [x] Pytest: `tests/test_body_composition_routes.py` covers each
+  endpoint (success + 4xx + delete-not-found) plus the page-render
+  contract. Shipped via PR #31 + PR #32 (now 20 route tests including
+  `captured_at` ISO validation).
+- [x] Playwright: `e2e/body-composition.spec.ts` fills the
+  tape inputs, asserts live BFP / FM / LM values, saves a snapshot,
+  and asserts history + trend updates. PR #32 added the JS↔Python
+  numeric parity assertion (5 specs total).
+- [x] Navbar: `templates/base.html` renders a *Body Composition* link
   between *Profile* and *Volume Splitter*; `static/js/modules/navbar.js`
-  pathMap entry added so the active-state highlight from Issue #12
-  fires on `/body_composition`.
-- [ ] **Deferred to follow-up (NOT in this issue):**
+  pathMap entry added. Shipped via PR #31.
+- [x] **Profile-page display hooks (formerly deferred follow-up):**
   Issue #18 bodyweight tile *"Lean mass"* sub-line and Issue #17
-  *"Body fat: X % · {ACE band}"* line. Both are filed as a separate
-  cross-page-display issue once `/body_composition` is shipped and
-  snapshot data is routinely captured.
-- [ ] Estimator outputs (weight / rep / RIR / RPE / set count) are
+  *"Body fat: X % · {ACE band}"* line. Shipped 2026-05-23 via
+  commit `de3e4d0` (`feat(profile): surface latest body composition
+  snapshot (#17 + #18)`). Both lines are display-only and read the
+  most recent `body_composition_snapshots` row (Navy BFP when
+  present, else BMI). Estimator output unchanged.
+- [x] Estimator outputs (weight / rep / RIR / RPE / set count) are
   byte-identical before and after this issue ships — verified by
-  running the existing pytest baseline (1080 tests as of 2026-04-28)
-  unchanged.
+  the existing pytest baseline (1080 → 1372 → 1374 cases without
+  regression on the estimator paths).
 
 ---
 
@@ -388,10 +389,10 @@ the CLAUDE.md non-goals).
 
 | # | Title | Severity | Area | Status |
 |---|-------|----------|------|--------|
-| 21 | Body Composition tab — BFP / Lean Mass / longitudinal snapshots on a standalone `/body_composition` tab | 🟢 Enhancement | New blueprint + template + `body_fat.py` + DB table | Open — moved here from `docs/user_profile/development_issues.md` on 2026-04-28 |
+| 21 | Body Composition tab — BFP / Lean Mass / longitudinal snapshots on a standalone `/body_composition` tab | 🟢 Enhancement | New blueprint + template + `body_fat.py` + DB table | **Resolved — shipped via PR #31 (`20b4b24`, 2026-05-20) + PR #32 (`94482d7`, 2026-05-21). Profile-page hooks (Issues #17/#18) followed locally 2026-05-23 (commit `de3e4d0`).** |
 
 ---
 
-*Last updated: 2026-04-28 — extracted from the Profile-page tracker
-into its own folder. Issue body unchanged from the 2026-04-28
-scope-change revision.*
+*Last updated: 2026-05-23 — Issue #21 marked Resolved after PR #31 + PR #32 +
+Profile-page display hooks (`de3e4d0`). Acceptance checklist ticked through;
+issue body kept verbatim for historical reference.*

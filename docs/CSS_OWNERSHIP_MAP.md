@@ -1,14 +1,14 @@
 # CSS Ownership Map
 
-Last updated: 2026-04-24
+Last updated: 2026-05-23
 
-This document reflects the active CSS loading model after the Calm Glass redesign cleanup and the Backup Center page addition.
+This document reflects the active CSS loading model after the Calm Glass redesign cleanup, the Backup Center page, the Profile page, and the Body Composition page.
 
 ## Current Loading Architecture
 
 1. `templates/base.html` loads 8 global application bundles directly.
 2. Each page template adds exactly one route bundle through `{% block page_css %}`.
-3. The steady-state app surface is 16 application CSS files: 8 global bundles plus 8 page bundles, excluding Bootstrap.
+3. The steady-state app surface is 18 application CSS files: 8 global bundles plus 10 page bundles, excluding Bootstrap.
 4. Legacy aggregate and per-feature source files from the redesign migration are no longer part of the runtime loading graph.
 
 ## Always-Loaded Core CSS
@@ -39,6 +39,8 @@ The per-page loading strategy is implemented in the templates below.
 | `weekly_summary.html` | `pages-weekly-summary.css` |
 | `session_summary.html` | `pages-session-summary.css` |
 | `progression_plan.html` | `pages-progression.css` |
+| `user_profile.html` | `pages-user-profile.css` |
+| `body_composition.html` | `pages-body-composition.css` |
 | `volume_splitter.html` | `pages-volume-splitter.css` |
 | `backup.html` | `pages-backup.css` |
 
@@ -62,6 +64,8 @@ The runtime CSS surface is organized around the target bundles below.
 | `pages-weekly-summary.css` | Weekly summary route visuals |
 | `pages-session-summary.css` | Session summary route visuals |
 | `pages-progression.css` | Progression route visuals |
+| `pages-user-profile.css` | Profile route visuals (reference lifts, insights, coverage bodymap) |
+| `pages-body-composition.css` | Body Composition calculator, ACE band, trend SVG, history table |
 | `pages-volume-splitter.css` | Volume splitter route visuals |
 | `pages-backup.css` | Backup Center route visuals |
 
@@ -70,4 +74,4 @@ The runtime CSS surface is organized around the target bundles below.
 1. Update this map when template CSS loading changes.
 2. Add shared rules to an existing global bundle unless the behavior is route-specific.
 3. Keep route-specific CSS inside the route bundle; do not reintroduce feature-level runtime files or aggregate `@import` chains.
-4. Keep the runtime target at 16 app CSS files plus Bootstrap unless a reviewer explicitly approves a structural change.
+4. Keep the runtime target at 18 app CSS files plus Bootstrap unless a reviewer explicitly approves a structural change.

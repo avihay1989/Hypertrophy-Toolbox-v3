@@ -4,9 +4,9 @@ This file is the execution source of truth for autonomous development sessions. 
 
 ## Current Objective
 
-**As of 2026-05-20 (latest session): Body Composition Issue #21 is fully shipped via PR #31 (squash commit `20b4b24`) on `origin/main`.** Both slices — backend formula module + migration + tests, and page + API + UI + Playwright — are now on `main`. CI 6/6 green at merge; Opus review verdict was ready-to-merge. Source of truth: [`docs/body_composition/development_issues.md`](body_composition/development_issues.md). No active workstream remains in-flight; pick the next from owner direction.
+**As of 2026-05-23 (latest session): local `main` is 9 commits ahead of `origin/main`.** The lead-up to today's hygiene pass: Body Composition Issue #21 fully shipped via PR #31 (squash `20b4b24`, 2026-05-20) and hardened in PR #32 (`94482d7`, 2026-05-21, `captured_at` ISO validation + JS↔Python parity test); response-contract exceptions migrated 2026-05-21 (`cbf745a`); §5 YouTube curation landed 2026-05-22 (`cf21191`, 36 rows). Today's session triaged a dirty working tree with six in-flight scopes and landed all six as separate commits on local `main` (Profile #17/#18 hooks `de3e4d0`; workout-cool §3.6 Profile bodymap `18ad223`; navbar hover dropdowns `ef475cc`; navbar icon accents + motion `89561df`; Body Composition visual baselines `40d7dd2`; ui-hardening spec + Known Issues table `0ae5b39`), plus a docs-only hygiene commit on top of those. No active workstream remains in-flight; awaiting push of the 9 ahead-of-origin commits.
 
-workout.cool §4 (free-exercise-db thumbnails) is **fully shipped on `origin/main`**. PR #20 (squash `8b348a5`) landed the feature; PR #23 (`bfd9087`) landed the post-merge handoff refresh + nav-dropdown e2e stabilization + dependency pin bumps; PR #22 (`631b5f8`) landed the §4.6 visual-baseline spec + seed. No outstanding workout.cool infrastructure work remains. One optional content follow-up remains for §5 reference videos: curated YouTube IDs have not been populated, so every exercise uses the search fallback until `data/youtube_curated_top_n.csv` is filled and `scripts/apply_youtube_curated.py` is run. See [docs/workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md](workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md).
+workout.cool §4 (free-exercise-db thumbnails) is **fully shipped on `origin/main`**. PR #20 (squash `8b348a5`) landed the feature; PR #23 (`bfd9087`) landed the post-merge handoff refresh + nav-dropdown e2e stabilization + dependency pin bumps; PR #22 (`631b5f8`) landed the §4.6 visual-baseline spec + seed. workout.cool §5 reference-video infrastructure shipped 2026-05-11 and a first curated batch (36 rows) landed 2026-05-22 (`cf21191`); long-tail rows still use the search fallback. workout.cool §3.6 Profile coverage bodymap was previously "deferred indefinitely"; it shipped locally on 2026-05-23 (`18ad223`).
 
 As of 2026-05-20 (later in the day), the fatigue meter workstream has been **closed via an owner-approved Stage 4 calibration review** that walked PLANNING.md §4.1 → §4.3 to a no-change decision. This is a docs-only close — `utils/fatigue.py`, `tests/test_fatigue.py`, and `scripts/fatigue_calibration_report.py` were **not touched**. After this close, no workstream remains in-flight.
 
@@ -22,21 +22,16 @@ Pick a new workstream from owner direction.
 Recorded 2026-05-20 so future agents do not need to re-evaluate the full docs
 state before choosing what to do next.
 
-1. **Start Body Composition (Issue #21)** — recommended next product
-   workstream. It is the only open, fully-specced feature with no blockers:
-   standalone `/body_composition` tab, tape inputs, U.S. Navy + BMI BFP,
-   longitudinal snapshots, new blueprint/template/utils module/DB table/tests.
-   Source of truth:
+1. **Body Composition (Issue #21) — DONE.** Shipped via PR #31 (`20b4b24`) +
+   PR #32 (`94482d7`). Source of truth:
    [`docs/body_composition/development_issues.md`](body_composition/development_issues.md).
-   Start with a conservative backend-first slice: formula module + tests,
-   idempotent DB migration, route skeleton, then UI/JS/E2E.
-2. **Keep Profile-page body-composition hooks deferred** until
-   `/body_composition` ships and snapshots are routinely captured. This covers
-   Issue #18's Lean Mass bodyweight-tile sub-line and Issue #17's
-   `"Body fat: X % · {ACE band}"` line.
-3. **Treat workout.cool §5 YouTube curation as optional content work.** The
-   modal/search-fallback infrastructure is shipped; curated IDs are not
-   populated. Do this only if the current fallback feels too unfinished.
+2. **Profile-page body-composition hooks (Issues #17/#18) — DONE.** Shipped
+   2026-05-23 via local commit `de3e4d0`. Display-only BFP/ACE line + Lean
+   Mass sub-line on the Profile insights card, read from the latest
+   `body_composition_snapshots` row.
+3. **workout.cool §5 YouTube curation — first batch done.** `cf21191`
+   (2026-05-22) populated 36 curated rows; expanding the curation set is
+   optional content work.
 4. **Do not reopen fatigue work.** Phase 1 is closed; Stage 4 is closed with no
    threshold changes. No Phase 2 planning or fatigue edits without fresh owner
    override.
@@ -47,7 +42,20 @@ state before choosing what to do next.
 
 ## Current Branch
 
-`main`, in sync with `origin/main` at `20b4b24` (PR #31 squash). Working tree has only `data/database.db` runtime dirt (owner-approved kept dirty per `CLAUDE.md` agents-must-not list; do not commit). Feature branch `feat/body-composition-issue-21` was deleted locally and on the remote at merge time.
+`main`, **9 commits ahead of `origin/main` at `94482d7`** (PR #32 squash). Working tree has only `data/database.db` runtime dirt (owner-approved kept dirty per `CLAUDE.md` agents-must-not list; do not commit). Awaiting `git push` of the 9 ahead-of-origin commits. Feature branch `feat/body-composition-issue-21` was deleted locally and on the remote at the PR #31 merge.
+
+Local commits ahead of `origin/main` (newest first):
+
+- `<docs commit>` (2026-05-23) — **docs hygiene**. Doc-only refresh after the 2026-05-23 six-scope landing: closes Body Composition Issue #21, marks workout-cool §3.6 as shipped, updates ACTIVE_DEVELOPMENT.md + MASTER_HANDOVER.md + CHANGELOG.md + E2E_TESTING.md + CSS_OWNERSHIP_MAP.md + CLAUDE_MD_AUDIT.md + ai_workflow/INDEX.md + docs/README.md + LEFTOVERS_BY_PRIORITY.md, and adds two new EXECUTION_LOG entries.
+- `0ae5b39` (2026-05-23) — **test+docs: lock down toast/form/modal contracts and add Known Issues table**. New `e2e/ui-hardening.spec.ts` (12 tests) + new `docs/UI_SCENARIOS_GAP_ANALYSIS.md §0` (KI-001..KI-008).
+- `40d7dd2` (2026-05-23) — **test(visual): add Body Composition snapshot baselines**. Adds `/body_composition` to the visual.spec.ts sweep + 6 PNG baselines (desktop/tablet/mobile × light/dark); migration script applies `add_body_composition_snapshots_table()` so the page renders under the visual harness.
+- `89561df` (2026-05-23) — **feat(navbar): accent colors + hover motion on Profile, Body Composition, and Backup icons**. CSS-only color accents + hover/focus motion + reduced-motion opt-out; swaps Profile icon to `fa-user-alt`.
+- `ef475cc` (2026-05-23) — **feat(navbar): hover-to-open desktop dropdowns**. Gates on `(hover: hover) and (pointer: fine) and (min-width: 992px)`; touch + mobile remain click-to-open.
+- `18ad223` (2026-05-23) — **feat(profile): mount workout-cool bodymap with worst-state aggregation (§3.6)**. Lifts the previously deferred §3.6 scope; multi-muscle BACK regions reflect the worst coverage state across the set.
+- `de3e4d0` (2026-05-23) — **feat(profile): surface latest body composition snapshot (#17 + #18)**. Display-only BFP/ACE line + Lean Mass sub-line on the Profile insights card; reads latest snapshot, Navy-over-BMI fallback.
+- `cf21191` (2026-05-22) — **Add curated YouTube references for core exercises** (36 rows; `data/youtube_curated_top_n.csv` populated and `scripts/apply_youtube_curated.py` applied).
+- `cbf745a` (2026-05-21) — **fix(api): migrate remaining response-contract exceptions**. `/api/pattern_coverage` and the replace-exercise fallback branches now use `success_response()` / `error_response()`; "no result" cases pass `status_code=200` to keep the existing UI contract.
+- `94482d7` (2026-05-21) — **chore(body-composition): validate captured_at, add JS↔Python parity test (#32)**. Tightens the snapshot create endpoint's ISO format validation and adds the Playwright JS↔Python numeric parity case.
 
 Recent history on `origin/main` (newest first):
 

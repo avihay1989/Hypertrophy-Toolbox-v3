@@ -2,6 +2,80 @@
 
 All notable changes to Hypertrophy Toolbox v3.
 
+## Unreleased - May 23, 2026
+
+### Profile Page — Body Composition Display Hooks (Issues #17 + #18)
+
+- Added a "Body fat: X% · {ACE band}" line and a "Lean mass: Y kg" sub-line on the Profile insights card. Both read the most recent `body_composition_snapshots` row (Navy BFP when present, else BMI) and only render when a snapshot exists. Display-only — never alters estimator output. Local commit `de3e4d0`.
+
+### Profile Coverage Bodymap — workout-cool Art (§3.6)
+
+- Switched the Profile coverage card from `react-body-highlighter` to the vendored workout-cool SVG art. New `loadWorkoutCoolBodymapSvg()` + `annotateWorkoutCoolBodymapPolygons()` + `CANONICAL_SIMPLE_TO_COVERAGE_MUSCLES` table in `static/js/modules/bodymap-svg.js`; the original react-body-highlighter exports remain in place for `muscle-selector.js`'s Advanced view. Local commit `18ad223`.
+- Multi-muscle BACK regions (workout-cool ships `lats,upper-back,lowerback`) now carry both `data-bodymap-muscle` (representative singular) and `data-bodymap-muscles` (plural, comma-joined). `aggregateCoverageForRegion()` returns the worst coverage state across the set so the polygon fill reflects the least-confident muscle. Locked by `tests/test_profile_estimator.py::test_workout_cool_*` and `e2e/user-profile.spec.ts` (§3.6 case).
+
+### Navbar — Hover Dropdowns + Icon Polish
+
+- Desktop pointer-hover users now open Bootstrap dropdowns on `mouseenter` / `focusin`. Gated on `(hover: hover) and (pointer: fine) and (min-width: 992px)` so touch and mobile remain click-to-open. Keyboard handling (ArrowDown / Enter / Space / Escape) routes through the same open/close timers. Local commit `ef475cc`.
+- Added saturated brand-color accents (violet / teal / amber) and a hover/focus pop-and-rotate keyframe to the static nav icons (`#nav-user-profile`, `#nav-body-composition`, `#nav-backup`). Dark-theme overrides and `prefers-reduced-motion` opt-out included. Swapped the Profile icon from `fa-user-circle` to `fa-user-alt`. Local commit `89561df`.
+
+### Visual + Hardening
+
+- Added Body Composition page baselines to `e2e/visual.spec.ts` (6 PNGs: desktop / tablet / mobile × light / dark). The visual-DB seed script now applies `add_body_composition_snapshots_table()` so the page renders without 500ing under the harness. Local commit `40d7dd2`.
+- New `e2e/ui-hardening.spec.ts` (12 tests) locks medium-risk smoke contracts: toast stacking (single `#liveToast`, last-message-wins, stale `bg-*` cleared), form-state persistence (reload resets, routine cascade preserves, visibility-change preserves), modal keyboard/focus (open with `aria-modal=true`, `aria-labelledby` resolves, focus moves inside on shown, first Tab stays inside, close removes show + backdrop + `body.modal-open`). `docs/UI_SCENARIOS_GAP_ANALYSIS.md` gains a §0 Known Issues table (KI-001..KI-008). Local commit `0ae5b39`.
+
+## Unreleased - May 22, 2026
+
+### workout.cool §5 — Curated YouTube IDs (First Batch)
+
+- `data/youtube_curated_top_n.csv` populated from header-only to **36 curated rows + header**; `scripts/apply_youtube_curated.py` applied so matching `exercises.youtube_video_id` cells are populated. Matched rows now open the embedded iframe; everything else still uses the YouTube search fallback (designed hybrid behavior). Commit `cf21191`.
+
+## Unreleased - May 21, 2026
+
+### Body Composition Issue #21 Hardening (PR #32)
+
+- `captured_at` ISO format validation added to the snapshot create endpoint with two new pytest cases (one accept, one reject).
+- New Playwright JS↔Python numeric parity case in `e2e/body-composition.spec.ts` walks the four formulas (`compute_navy` male + female, `compute_bmi` adult M / F) end-to-end against the JS mirror and asserts byte-identical rounded outputs.
+- pytest baseline: 1374 passed (~2m 53s) on `main` post-merge.
+
+### Response Contract Migration
+
+- `/api/pattern_coverage` and the `routes/workout_plan.py` replace-exercise fallback branches (`no_candidates`, `selection_failed`, `duplicate`) now use `success_response()` / `error_response()`. The "no result" cases keep HTTP 200 by passing `status_code=200` to `error_response()` — they're user-facing "couldn't be processed" outcomes that pytest and the JS swap handler treat as 200 + `ok:false`. Commit `cbf745a`. CLAUDE_MD_AUDIT.md §2 exception list is now empty.
+
+## Unreleased - May 20, 2026
+
+### Body Composition Issue #21 (PR #31)
+
+- New `/body_composition` page (standalone tab between Profile and Distribute) with tape-measurement inputs, U.S. Navy + BMI methods, ACE band tick + Jackson & Pollock comparison, trend SVG, and snapshot history table with per-row delete.
+- New blueprint `routes/body_composition.py` (`GET /body_composition`, `POST/GET /api/body_composition/snapshot[s]`, `DELETE /api/body_composition/snapshots/<id>`); all four endpoints use the standard `success_response()` / `error_response()` envelopes.
+- New pure-math module `utils/body_fat.py` with the four formulas (`compute_navy`, `compute_bmi`, `ace_category`, `jackson_pollock_ideal`) carrying the "must match JS mirror" comment from Issue #17. New JS mirror in `static/js/modules/body-composition.js`.
+- New migration `add_body_composition_snapshots_table()` (14 columns; 6 NOT NULL; descending captured_at index) registered in the startup sequence and in `tests/conftest.py`.
+- New tests: `tests/test_body_fat.py` (42 cases), `tests/test_body_composition_routes.py` (18 cases), `tests/test_db_migration.py` (7 cases), `e2e/body-composition.spec.ts` (4 Chromium specs).
+- Source of truth: `docs/body_composition/development_issues.md` (Issue #21, now Resolved).
+
+### Fatigue Badge Polish (PR #28)
+
+- Presentation-only restructure of `templates/_fatigue_badge.html` (drops `.card`/`.card-body`, switches to a `<section>` grid; eyebrow + info-icon header row, score + band readout row, period label right column on desktop / stacked on mobile). Rewrites `scss/_fatigue.scss` for a translucent surface harmonized with `.summary-frame` glass; score 2.1rem/700 tabular-nums; band pill chip; dashed-outline empty-state pill. Refreshes 12 visual snapshots. No `utils/fatigue.py`, no thresholds, no APIs, no calibration changes.
+
+### Fatigue Stage 4 Close (Docs Only)
+
+- Owner-approved felt-label calibration review walked PLANNING.md §4.1 → §4.3 to a no-change decision. 4 of 5 anchors agreed with computed bands; the lone disagreement on the `hard_4d` synthetic generator scenario only is treated as scenario under-shoot (Hypothesis B), not threshold drift. `utils/fatigue.py` thresholds remain the §24.B defaults. STAGE4_PARKED_HANDOFF.md is superseded; authoritative status lives in `docs/fatigue_meter/calibration-notes.md`. Phase 2 entry remains a separate owner decision.
+
+## Unreleased - May 18, 2026
+
+### workout.cool §4.6 + Post-§4 Housekeeping (PR #22 + PR #23)
+
+- `e2e/visual-baseline-thumbnails.spec.ts` (18 tests) + `scripts/seed_visual_baseline.py` cover the §4.6 matrix: `/workout_plan` desktop / tablet / mobile × light / dark × simple / advanced (12) + `/workout_log` desktop / tablet / mobile × light / dark (6). Behavioural assertions only — screenshot PNGs are inspection artifacts, not committed pixel baselines.
+- Nav-dropdown e2e off-viewport dark-mode-toggle stabilization, dependency pin bumps (Flask 3.1.1→3.1.3, pandas 2.2.3→3.0.3, click 8.1.7→8.3.3, Playwright 1.58.1→1.60.0, sass 1.69→1.94, TypeScript 5.3→5.9, node engine ≥18, XlsxWriter removed).
+
+## Unreleased - May 15, 2026
+
+### workout.cool §4 — free-exercise-db Exercise Thumbnails (PR #20)
+
+- Vendored `static/vendor/free-exercise-db/` (873 `0.jpg` images, `exercises.json`, LICENSE, NOTICE.md, VERSION).
+- New mapping pipeline (`scripts/map_free_exercise_db.py`, `scripts/curate_free_exercise_db_mapping.py`, `data/free_exercise_db_mapping.csv` — 1784 auto / 98 confirmed / 10 manual / 5 rejected = 113 reviewed). Apply via `scripts/apply_free_exercise_db_mapping.py`.
+- Surfaces `media_path` in `/get_workout_plan` and `/get_workout_logs` JSON. `static/js/modules/exercise-helpers.js` adds `escapeHtml()` + `resolveExerciseMediaSrc()`. Workout-log template uses a new `safe_media_path` Jinja filter for server-side defense in depth.
+- Renders 32×32 rounded thumbnails on `/workout_plan` (JS row renderer) and `/workout_log` (server-rendered). `static/css/components.css` adds `.exercise-cell .exercise-thumbnail`.
+
 ## Unreleased - May 11, 2026
 
 ### AI Workflow Refit

@@ -2,6 +2,35 @@
 
 Tracks concrete work against `PLANNING.md`. Newest entry on top.
 
+## 2026-05-23 — §3.6 Profile coverage bodymap shipped (commit `18ad223`)
+
+**Scope**: PLANNING.md §3.6 — previously labelled "deferred indefinitely; future separate plan." Local commit lifts the deferral with a worst-state aggregation contract.
+
+### What landed
+
+| Commit | What landed |
+|---|---|
+| `18ad223` | `feat(profile): mount workout-cool bodymap with worst-state aggregation (§3.6)`. New `loadWorkoutCoolBodymapSvg()` + `annotateWorkoutCoolBodymapPolygons()` + `CANONICAL_SIMPLE_TO_COVERAGE_MUSCLES` table in `static/js/modules/bodymap-svg.js` (keeps the existing `loadBodymapSvg()` + `annotateBodymapPolygons()` exports alive for `muscle-selector.js` Advanced view). `static/js/modules/user-profile.js` switches the Profile coverage card to the workout-cool art; multi-key BACK regions carry both `data-bodymap-muscle` (singular) and `data-bodymap-muscles` (plural, comma-joined); `aggregateCoverageForRegion()` returns the worst state across the set so the fill never overstates coverage. Two new pytest cases in `tests/test_profile_estimator.py` lock the SVG ↔ JS-table ↔ Python `BODYMAP_MUSCLE_KEYS` parity and the BACK region flatten contract. One new Playwright case in `e2e/user-profile.spec.ts` exercises the full state cascade end-to-end. |
+
+### Verification
+
+- Targeted pytest: `.venv/Scripts/python.exe -m pytest tests/test_profile_estimator.py -q` → **91 passed in 6.56s**.
+- Targeted Playwright: `npx playwright test e2e/user-profile.spec.ts -g "coverage map renders workout-cool" --project=chromium` → 1 passed in 9.4s (run alongside the §A BFP/ACE test, 2 passed combined).
+
+## 2026-05-22 — §5 curated YouTube IDs populated (commit `cf21191`)
+
+**Scope**: PLANNING.md §5.4 — the manual top-N curation step that the modal/search-fallback infrastructure was designed to feed.
+
+### What landed
+
+| Commit | What landed |
+|---|---|
+| `cf21191` | `Add curated YouTube references for core exercises`. `data/youtube_curated_top_n.csv` populated from header-only to **36 rows + header**; ran `scripts/apply_youtube_curated.py` so the matching `exercises.youtube_video_id` cells are now populated. The play button opens the embedded `https://www.youtube.com/embed/<id>` iframe for matched rows and falls back to YouTube search for everything else (designed hybrid behavior). |
+
+### Verification
+
+- The importer is idempotent and validated by `tests/test_youtube_video_id.py` (covers schema, validation, route-contract behavior). No re-run in this session.
+
 ## 2026-05-18 — §4.6 visual-baseline + post-§4 housekeeping (PR #22 + #23 shipped)
 
 **Scope**: PLANNING.md §4.6 (visual baseline matrix) and the deferred post-merge follow-ups for §4 (dependency pins, nav-dropdown e2e off-viewport fix, handoff doc refresh). Both landed cleanly on `origin/main` after CI; `data/database.db` left dirty per CLAUDE.md.

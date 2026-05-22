@@ -5,16 +5,19 @@ This directory keeps the current project docs. Completed execution plans and mig
 ## Active Docs
 
 ### Project State
+- **[MASTER_HANDOVER.md](MASTER_HANDOVER.md)** - Canonical current state; the file new agents read first
+- **[ACTIVE_DEVELOPMENT.md](ACTIVE_DEVELOPMENT.md)** - Execution source of truth for autonomous sessions
 - **[CHANGELOG.md](CHANGELOG.md)** - Version history and recent work
 - **[DECISIONS.md](DECISIONS.md)** - Durable project decisions and lightweight ADRs
 - **[CLAUDE_MD_AUDIT.md](CLAUDE_MD_AUDIT.md)** - Current architecture debt snapshot
+- **[LEFTOVERS_BY_PRIORITY.md](LEFTOVERS_BY_PRIORITY.md)** - Prioritized punch list of unfinished / parked / deferred items
 - **[ai_workflow/INDEX.md](ai_workflow/INDEX.md)** - AI workflow navigation spine
 - **[ai_workflow/DOC_RETENTION.md](ai_workflow/DOC_RETENTION.md)** - Rules for keeping, archiving, or deleting docs
 
 ### Runtime, UI, And Testing
 - **[CSS_OWNERSHIP_MAP.md](CSS_OWNERSHIP_MAP.md)** - Current CSS loading and ownership map
 - **[E2E_TESTING.md](E2E_TESTING.md)** - Current Playwright inventory and run commands
-- **[UI_SCENARIOS_GAP_ANALYSIS.md](UI_SCENARIOS_GAP_ANALYSIS.md)** - UI risk status and deferred quality items
+- **[UI_SCENARIOS_GAP_ANALYSIS.md](UI_SCENARIOS_GAP_ANALYSIS.md)** - UI risk status, deferred quality items, and Known Issues table (KI-001..)
 
 ### Feature Docs
 - **[FILTER_VIEW_MODE.md](FILTER_VIEW_MODE.md)** - Simple vs scientific muscle naming mode
@@ -32,9 +35,10 @@ These files are historical reference only. They should not be treated as active 
 - **[archive/SUPERSET_FEATURE.md](archive/SUPERSET_FEATURE.md)** - Completed superset feature implementation notes
 - **[archive/PLAN_GENERATOR_IMPLEMENTATION.md](archive/PLAN_GENERATOR_IMPLEMENTATION.md)** - Completed starter-plan implementation tracker
 - **[archive/DOCS_AUDIT_PLAN.md](archive/DOCS_AUDIT_PLAN.md)** - Archived docs/code audit rollout record
+- **[VOLUME_TAXONOMY_AUDIT.md](VOLUME_TAXONOMY_AUDIT.md)** - Phase 0 live database audit (2026-04-25). Completed audit; kept at top level for cross-reference but no longer active backlog.
 
 ## Removed From Active Docs
 
 The old Backup Center hardening plan, Calm Glass redesign plan/audit/mockup, seed-fix plan, and spring-cleanup Phase 4/5 execution plans were completed and superseded by the current source, changelog, CSS map, and Backup Center docs.
 
-Last updated: 2026-05-11
+Last updated: 2026-05-23

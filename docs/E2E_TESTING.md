@@ -1,6 +1,6 @@
 # E2E Testing
 
-Last updated: 2026-04-24
+Last updated: 2026-05-23
 
 This document tracks the current Playwright setup and spec inventory. Treat counts as an inventory snapshot, not a promise that every suite was rerun during this docs refresh.
 
@@ -26,7 +26,7 @@ pip install -r requirements.txt
 
 ## Current Runner Configuration
 
-Validated from `package.json`, `playwright.config.ts`, and `scripts/run-playwright.ps1` on 2026-04-24:
+Validated from `package.json`, `playwright.config.ts`, and `scripts/run-playwright.ps1` on 2026-05-23:
 
 - Test directory: `e2e/`
 - Active browser project: `chromium`
@@ -42,26 +42,32 @@ Validated from `package.json`, `playwright.config.ts`, and `scripts/run-playwrig
 
 ## Current Playwright Spec Inventory
 
-There are currently **19** Playwright spec files in `e2e/`:
+There are currently **25** Playwright spec files in `e2e/`:
 
 | Spec file | Primary coverage |
 |-----------|------------------|
 | `accessibility.spec.ts` | Keyboard nav, ARIA, focus behavior, touch targets |
 | `api-integration.spec.ts` | Direct endpoint and response-shape checks |
+| `body-composition.spec.ts` | `/body_composition` page, snapshot save/delete flow, BMI fallback, JS↔Python parity |
 | `browser-navigation-state.spec.ts` | Stateless routine-cascade behavior |
 | `dark-mode.spec.ts` | Theme toggle and persistence |
 | `empty-states.spec.ts` | Empty plan/log/export flows |
 | `error-handling.spec.ts` | Server/network failure handling |
 | `exercise-interactions.spec.ts` | Delete, replace, superset, inline interactions |
-| `nav-dropdown.spec.ts` | Navbar dropdown and Backup Center route navigation |
+| `fatigue-stage4-smokes.spec.ts` | Fatigue badge presence, band states, calm-glass styling |
+| `nav-dropdown.spec.ts` | Navbar hover-dropdown, Backup Center, icon accent colors and motion |
 | `program-backup.spec.ts` | Backup Center and program snapshot flows |
 | `progression.spec.ts` | Progression page flows and goal interactions |
 | `replace-exercise-errors.spec.ts` | Replace-exercise failure toasts |
 | `smoke-navigation.spec.ts` | Core page loads and navigation smoke checks |
 | `summary-pages.spec.ts` | Weekly/session summary rendering and controls |
 | `superset-edge-cases.spec.ts` | Superset link/unlink/delete/replace edge cases |
+| `ui-hardening.spec.ts` | Toast stacking, form-state persistence, modal keyboard/focus contracts |
+| `user-profile.spec.ts` | Profile questionnaire, insights card, coverage bodymap (workout-cool art), Body Composition snapshot display hooks |
 | `validation-boundary.spec.ts` | Invalid form and boundary-value behavior |
+| `visual-baseline-thumbnails.spec.ts` | §4.6 thumbnail inspection matrix (plan + log × viewport × theme × mode) |
 | `visual.spec.ts` | Deterministic visual snapshots across routes, themes, and viewports |
+| `volume-progress.spec.ts` | Plan-page volume progress badge and weekly trend |
 | `volume-splitter.spec.ts` | Volume splitter inputs, modes, and results |
 | `workout-log.spec.ts` | Workout log table, editing, filters, import/clear flows |
 | `workout-plan.spec.ts` | Workout plan CRUD and routine-building flows |

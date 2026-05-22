@@ -2,8 +2,8 @@
 
 ## Current State
 
-The reference-video feature has shipped as application infrastructure, but its
-curated video data has not been populated yet.
+The reference-video feature has shipped as application infrastructure, and a
+first curated batch landed 2026-05-22 (`cf21191`, 36 rows).
 
 What is complete:
 
@@ -16,15 +16,17 @@ What is complete:
   all-or-nothing.
 - `tests/test_youtube_video_id.py` covers schema, validation, importer, and
   route-contract behavior.
+- `data/youtube_curated_top_n.csv` ships with **36 curated rows + header** as
+  of `cf21191`. The matching exercise rows now open the embedded iframe; all
+  other rows still use the YouTube search fallback.
 
 What is not complete:
 
-- `data/youtube_curated_top_n.csv` currently ships as a header-only scaffold.
-- No exercise rows are expected to have curated `youtube_video_id` values until
-  that CSV is populated and the apply script is run.
-- Because IDs are absent, users see the "Search YouTube" fallback for every
-  exercise. That is expected behavior for uncurated rows, but it can feel like an
-  unfinished feature because the useful curated-video content is missing.
+- Coverage is partial — only ~36 of the 1,897 catalogue exercises have curated
+  IDs. Long-tail rows still fall through to the search fallback (this is the
+  designed hybrid behavior, not a bug).
+- Expanding curation beyond 36 rows is content work; no infrastructure changes
+  are required.
 
 ## User-Facing Behavior
 

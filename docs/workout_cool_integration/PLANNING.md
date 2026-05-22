@@ -1,6 +1,6 @@
 # workout.cool Integration — Planning
 
-**Status:** §3 (Simple-mode body-map hybrid swap, workout-plan only) shipped 2026-04-29. §5 (YouTube reference video modal, both `/workout_plan` and `/workout_log`) shipped on `main` 2026-05-11. §4 checkpoint 1 (schema + validator + apply script, no assets/UI) shipped on `main` 2026-05-11; the remaining §4 checkpoints (asset vendoring, mapping curation, route-contract updates, thumbnail rendering + `escapeHtml()` rollout) are still pending. §3.6 Profile coverage body map remains deferred. See [`EXECUTION_LOG.md`](EXECUTION_LOG.md) for the audit trail.
+**Status:** §3 (Simple-mode body-map hybrid swap, workout-plan only) shipped 2026-04-29. §5 (YouTube reference video modal, both `/workout_plan` and `/workout_log`) shipped on `main` 2026-05-11; curated YouTube IDs landed 2026-05-22 (`cf21191`, 36 rows). §4 (asset vendoring, mapping curation, route contracts, thumbnail rendering + `escapeHtml()` rollout, §4.6 visual baselines) fully shipped on `main` 2026-05-15 / 2026-05-18 (PR #20 + PR #22 + PR #23). §3.6 Profile coverage body map shipped locally 2026-05-23 (commit `18ad223`); see "§3.6 Profile coverage bodymap" below for the post-ship contract. See [`EXECUTION_LOG.md`](EXECUTION_LOG.md) for the audit trail.
 **Owner:** Yaakov Avihai Shai
 **Source project:** [Snouzy/workout-cool](https://github.com/Snouzy/workout-cool) — MIT-licensed (Mathias Bradiceanu, 2023).
 **Plan revision:** 2026-04-29 r4 — folds codex 5.5 third-review precision fixes. Key r4 changes: §3.4.1 pseudocode flattens simple keys through `SIMPLE_TO_ADVANCED_MAP` because `selectedMuscles` stores advanced child keys, not simple keys; function names corrected to `toggleMuscle()` and `updateAllRegionStates()` (the actual symbols at [muscle-selector.js:554,617](../../static/js/modules/muscle-selector.js#L554)); §3.5 `muscle-selector.js` bullet describes a local `SVG_PATHS` / `getSvgPathForMode()` change with absolute `/static/vendor/...` URLs and drops the `VENDOR_SLUG_TO_CANONICAL` mention (new SVGs ship pre-canonicalized `data-canonical-muscles`); §3.7 multi-key state-derivation test enumerates expanded advanced children (`lats, rhomboids, teres-major, teres-minor, erector-spinae`) and adds rhomboids-only / erector-spinae-only `partial` regression cases; column renamed `media_id` → `media_path` to reflect actual content (full relative path) with strict path-shape validation; §4.6 `escapeHtml()` unit test uses synthetic name `Coach's <Test> Press` so the input actually exercises quote and angle-bracket escaping (`Bulgarian Split Squat` has neither).
@@ -209,14 +209,16 @@ The cascade matches the existing parent-key behavior at [muscle-selector.js:561-
 
 ***claude r4*** Codex flagged that r3's bullet implied a `VENDOR_SLUG_TO_CANONICAL` update was needed and was vague about whether `muscle-selector.js` shared `loadBodymapSvg()` with Profile. r4 commits to the local `SVG_PATHS` / `getSvgPathForMode()` design with a code stub so the implementer doesn't have to invent the shape, and explicitly removes the `VENDOR_SLUG_TO_CANONICAL` mention since the new SVGs are pre-canonicalized. The `bodymap-svg.js` "avoid touching" rule is reinforced with the supporting fact that `muscle-selector.js` does not currently import `loadBodymapSvg()` (so there is no shared-loader pressure here).
 
-### 3.6 Profile coverage bodymap — deferred
+### 3.6 Profile coverage bodymap — shipped 2026-05-23
 
-The `/user_profile` page bodymap is a **coverage estimator**, not a Simple/Advanced selector. Its current implementation imports `BODYMAP_COVERAGE_MUSCLES` and `annotateBodymapPolygons()` ([static/js/modules/user-profile.js:1-5,797](../../static/js/modules/user-profile.js#L1-L5)) and renders state classes (`measured`, `cross-muscle`, `cold-start`, `not-assessed`) styled by `static/css/pages-user-profile.css`. There is no view-mode toggle.
+The `/user_profile` page bodymap is a **coverage estimator**, not a Simple/Advanced selector. Originally deferred under Phase 1 because the Profile bodymap renders state classes (`measured`, `cross-muscle`, `cold-start`, `not-assessed`) and not selection state. Phase 2 landed locally as commit `18ad223` (`feat(profile): mount workout-cool bodymap with worst-state aggregation (§3.6)`):
 
-For this integration:
+- New `loadWorkoutCoolBodymapSvg()` + `annotateWorkoutCoolBodymapPolygons()` + `CANONICAL_SIMPLE_TO_COVERAGE_MUSCLES` table in `static/js/modules/bodymap-svg.js` keep the original `loadBodymapSvg()` + `annotateBodymapPolygons()` exports intact (still used by `muscle-selector.js`'s Advanced view).
+- `static/js/modules/user-profile.js` now consumes the workout-cool loader/annotator. Multi-key BACK regions carry both `data-bodymap-muscle` (representative singular) and `data-bodymap-muscles` (plural, comma-joined); `aggregateCoverageForRegion()` walks the plural set and picks the **worst** state so the polygon fill reflects the least-confident muscle.
+- Coverage assertions in `tests/test_profile_estimator.py`: `test_workout_cool_canonical_keys_map_to_bodymap_muscles` enforces SVG ↔ JS table ↔ Python `BODYMAP_MUSCLE_KEYS` parity; `test_workout_cool_back_region_expands_to_upper_and_lower_back` locks the BACK region's flatten contract (Upper Back + Lower Back; Lats has no chain).
+- End-to-end coverage in `e2e/user-profile.spec.ts` (`coverage map renders workout-cool art and back region aggregates Upper+Lower Back worst-state (§3.6)`): asserts the workout-cool SVG ids are mounted, the BACK polygon flips through `cold_start_only → measured` only when both Upper Back and Lower Back chains fill, and that Forearms (no backend chain) render `state-not_assessed`.
 
-- **Phase 1 (this plan)**: Profile bodymap stays on `react-body-highlighter`. No changes.
-- **Phase 2 (future, separate plan)**: If Profile coverage should also adopt workout.cool art, write a dedicated mapping for the four coverage states, add tests for `state-measured` / `state-cross-muscle` / `state-cold-start` / `state-not-assessed` rendering, and verify click-to-lift popover behavior end-to-end. Do **not** reuse the workout-plan selector mapping there without proving these flows.
+`muscle-selector.js` still uses `react-body-highlighter` for Advanced view (no change there).
 
 ### 3.7 Test impact
 
@@ -458,7 +460,7 @@ The play-icon button appears on **both** `/workout_plan` and `/workout_log`. Rev
 **Add:**
 - `static/js/modules/exercise-video-modal.js`.
 - `templates/partials/exercise_video_modal.html`.
-- `data/youtube_curated_top_n.csv` — committed manual mapping scaffold `exercise_name, youtube_video_id` for the curated top-N (target ~50 most-used exercises). This currently ships header-only; populating it is content curation, not missing modal infrastructure. See [YOUTUBE_REFERENCE_VIDEOS.md](YOUTUBE_REFERENCE_VIDEOS.md).
+- `data/youtube_curated_top_n.csv` — committed manual mapping `exercise_name, youtube_video_id` for the curated top-N (target ~50 most-used exercises). As of `cf21191` (2026-05-22) the CSV ships with **36 curated rows + header**; populating further rows is content curation, not missing modal infrastructure. See [YOUTUBE_REFERENCE_VIDEOS.md](YOUTUBE_REFERENCE_VIDEOS.md).
 - `scripts/apply_youtube_curated.py` — one-shot importer reading the CSV and writing `youtube_video_id` into `exercises` (idempotent, all-or-nothing). Validates: every `exercise_name` exists in `exercises` (case-insensitive); every `youtube_video_id` matches `^[A-Za-z0-9_-]{11}$`; no duplicate names; no blank IDs. Fails loudly on any violation.
 - `tests/test_youtube_video_id.py` — see §5.8.
 
