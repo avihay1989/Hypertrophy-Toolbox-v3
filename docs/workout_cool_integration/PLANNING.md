@@ -370,7 +370,7 @@ Either way, the new `alt`/`src` work must not be the only escape-safe spot in an
   - An exercise row with mapped media renders an `<img>` whose `src` matches `/static/vendor/free-exercise-db/...`.
   - An exercise row with NULL `media_path` renders without an `<img>` and without console errors.
   - An exercise whose name contains HTML-special characters renders without raw markup leaking into the cell.
-- Visual / accessibility regression: add baselines or snapshot comparisons for desktop / tablet / mobile, light / dark, simple / advanced table modes, and rows containing long exercise names plus thumbnail + superset badge + Swap button.
+- ~~Visual / accessibility regression: add baselines or snapshot comparisons for desktop / tablet / mobile, light / dark, simple / advanced table modes, and rows containing long exercise names plus thumbnail + superset badge + Swap button.~~ **Shipped 2026-05-23.** [`e2e/visual-baseline-thumbnails.spec.ts`](../../e2e/visual-baseline-thumbnails.spec.ts) was promoted from inspection-only to committed `toHaveScreenshot()` baselines (18 PNGs under [`e2e/__screenshots__/visual-baseline-thumbnails.spec.ts-snapshots/`](../../e2e/__screenshots__/visual-baseline-thumbnails.spec.ts-snapshots/)) covering the full matrix at `maxDiffPixelRatio: 0.01`. Verified 18 passed in 14.3s against the isolated visual DB.
 - Verification gate (run before marking done):
   ```bash
   powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-pytest.ps1

@@ -2,6 +2,38 @@
 
 Tracks concrete work against `PLANNING.md`. Newest entry on top.
 
+## 2026-05-23 — §4.6 visual-baseline thumbnails locked as `toHaveScreenshot()` baselines
+
+**Scope**: `PLANNING.md §4.6` — the final "Visual / accessibility regression: add baselines or snapshot comparisons" bullet. The 2026-05-18 PR #22 landed the spec with behavioural assertions only and inspection-only PNGs (`e2e/artifacts/visual-baseline/`). The 2026-05-23 closeout converts those into a real regression guard. Also resolves `LEFTOVERS_BY_PRIORITY.md` row #13 (P3).
+
+### What landed
+
+| What | Where |
+|---|---|
+| `e2e/visual-baseline-thumbnails.spec.ts` rewrite — replaced `target.screenshot({ path })` with `await expect(target).toHaveScreenshot('<label>.png', { maxDiffPixelRatio: 0.01 })` in both `workout_plan` and `workout_log` `describe` blocks. Dropped the now-unused `ARTIFACT_DIR`, `ensureArtifactDir()`, `fs`, and `path` imports plus the `beforeAll` hooks. Header comment switched from "NOT committed as `toHaveScreenshot()` baselines yet" to the locked-baseline language. Behavioural assertions (row count, thumbnail src prefix, `data-theme`) kept intact. | [`e2e/visual-baseline-thumbnails.spec.ts`](../../e2e/visual-baseline-thumbnails.spec.ts) |
+| 18 committed baseline PNGs — `plan-{desktop,tablet,mobile}-{light,dark}-{simple,advanced}.png` (12) + `log-{desktop,tablet,mobile}-{light,dark}.png` (6). | [`e2e/__screenshots__/visual-baseline-thumbnails.spec.ts-snapshots/`](../../e2e/__screenshots__/visual-baseline-thumbnails.spec.ts-snapshots/) |
+| PLANNING §4.6 — Visual / accessibility regression bullet flipped from "add baselines" to ~~struck-through~~ + "**Shipped 2026-05-23**" with links. | [`docs/workout_cool_integration/PLANNING.md`](PLANNING.md) §4.6 |
+| LEFTOVERS row #13 — flipped to closed in a new "Section 4 CLOSED" entry. | [`docs/LEFTOVERS_BY_PRIORITY.md`](../LEFTOVERS_BY_PRIORITY.md) §4 |
+| CHANGELOG entry under "Unreleased - May 23, 2026". | [`docs/CHANGELOG.md`](../CHANGELOG.md) |
+
+### Verification
+
+Owner-eyes-on approval for the 18 generated PNGs was granted before the closeout run. The closeout itself used the canonical isolated-DB harness:
+
+```bash
+.venv/Scripts/python.exe e2e/scripts/prepare_visual_db.py \
+  --output artifacts/visual/database.visual-thumbnails.db
+DB_FILE="$(pwd)/artifacts/visual/database.visual-thumbnails.db" \
+  .venv/Scripts/python.exe scripts/apply_free_exercise_db_mapping.py    # OK: applied 108 row(s)
+PYTHONPATH="$(pwd)" DB_FILE="$(pwd)/artifacts/visual/database.visual-thumbnails.db" \
+  .venv/Scripts/python.exe scripts/seed_visual_baseline.py              # Seeded 6 plan rows, 6 log rows, 4 with media_path
+DB_FILE="$(pwd)/artifacts/visual/database.visual-thumbnails.db" \
+  npx playwright test e2e/visual-baseline-thumbnails.spec.ts \
+  --project=chromium --reporter=line                                    # 18 passed (14.3s)
+```
+
+The `prepare_visual_db.py` step is required because the committed seed at `e2e/fixtures/database.visual.seed.db` predates the §4 `media_path` column and contains a stale `'Dumbbell Shoulder Internal Rotation '` row (trailing space) — the migration chain (`initialize_database()`) trims the whitespace and adds the column, so the apply step can match the CSV row and write `media_path`.
+
 ## 2026-05-23 — §3.6 Profile coverage bodymap shipped (commit `18ad223`)
 
 **Scope**: PLANNING.md §3.6 — previously labelled "deferred indefinitely; future separate plan." Local commit lifts the deferral with a worst-state aggregation contract.

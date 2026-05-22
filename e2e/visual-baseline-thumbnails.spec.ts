@@ -7,9 +7,8 @@
  *   - themes: light, dark
  *   - view modes: simple, advanced (workout_plan only)
  *
- * Screenshots saved under e2e/artifacts/visual-baseline/ for inspection;
- * NOT committed as `toHaveScreenshot()` baselines yet -- first-run
- * baseline commit is owner-eyes-on.
+ * Screenshots are locked via `toHaveScreenshot()` baselines under
+ * e2e/__screenshots__/visual-baseline-thumbnails.spec.ts-snapshots/.
  *
  * Requires the worktree DB to be seeded by
  *   scripts/seed_visual_baseline.py
@@ -18,10 +17,6 @@
  */
 import { test, expect, Page } from '@playwright/test';
 import { ROUTES } from './fixtures';
-import { promises as fs } from 'fs';
-import * as path from 'path';
-
-const ARTIFACT_DIR = path.join(__dirname, 'artifacts', 'visual-baseline');
 
 const VIEWPORTS = [
   { name: 'desktop', width: 1440, height: 900 },
@@ -44,17 +39,9 @@ async function applyPlanViewMode(page: Page, mode: 'simple' | 'advanced'): Promi
   }, mode);
 }
 
-async function ensureArtifactDir(): Promise<void> {
-  await fs.mkdir(ARTIFACT_DIR, { recursive: true });
-}
-
 test.describe.configure({ mode: 'serial' });
 
 test.describe('§4 visual baseline — workout_plan thumbnails', () => {
-  test.beforeAll(async () => {
-    await ensureArtifactDir();
-  });
-
   for (const viewport of VIEWPORTS) {
     for (const theme of THEMES) {
       for (const mode of PLAN_VIEW_MODES) {
@@ -89,7 +76,7 @@ test.describe('§4 visual baseline — workout_plan thumbnails', () => {
 
           // Save screenshot artifact (full table only — keeps diff size sane).
           const target = page.locator('.workout-plan-table, #workout_plan_table_body').first();
-          await target.screenshot({ path: path.join(ARTIFACT_DIR, `${label}.png`) });
+          await expect(target).toHaveScreenshot(`${label}.png`, { maxDiffPixelRatio: 0.01 });
 
           await context.close();
         });
@@ -99,10 +86,6 @@ test.describe('§4 visual baseline — workout_plan thumbnails', () => {
 });
 
 test.describe('§4 visual baseline — workout_log thumbnails', () => {
-  test.beforeAll(async () => {
-    await ensureArtifactDir();
-  });
-
   for (const viewport of VIEWPORTS) {
     for (const theme of THEMES) {
       const label = `log-${viewport.name}-${theme}`;
@@ -134,7 +117,7 @@ test.describe('§4 visual baseline — workout_log thumbnails', () => {
         expect(htmlTheme).toBe(theme);
 
         const target = page.locator('.workout-log-table, #workout-log-table').first();
-        await target.screenshot({ path: path.join(ARTIFACT_DIR, `${label}.png`) });
+        await expect(target).toHaveScreenshot(`${label}.png`, { maxDiffPixelRatio: 0.01 });
 
         await context.close();
       });

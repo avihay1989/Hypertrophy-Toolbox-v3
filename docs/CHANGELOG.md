@@ -4,6 +4,11 @@ All notable changes to Hypertrophy Toolbox v3.
 
 ## Unreleased - May 23, 2026
 
+### §4.6 Visual Baseline Thumbnails — Locked via `toHaveScreenshot()`
+
+- `e2e/visual-baseline-thumbnails.spec.ts` converted from inspection-only PNGs (saved to `e2e/artifacts/visual-baseline/`) to committed `toHaveScreenshot()` baselines under `e2e/__screenshots__/visual-baseline-thumbnails.spec.ts-snapshots/`. 18 PNGs cover the full §4.6 matrix (`/workout_plan` desktop / tablet / mobile × light / dark × simple / advanced = 12 + `/workout_log` desktop / tablet / mobile × light / dark = 6). Tolerance set at `maxDiffPixelRatio: 0.01` to absorb minor sub-pixel jitter without masking real regressions.
+- Verification: snapshot+migrate the seed via `e2e/scripts/prepare_visual_db.py --output artifacts/visual/database.visual-thumbnails.db`, apply `data/free_exercise_db_mapping.csv` (108 rows), run `scripts/seed_visual_baseline.py` (6 plan rows, 4 with `media_path`), then `DB_FILE=artifacts/visual/database.visual-thumbnails.db npx playwright test e2e/visual-baseline-thumbnails.spec.ts --project=chromium --reporter=line` → **18 passed in 14.3s**. Closes `LEFTOVERS_BY_PRIORITY.md` row #13.
+
 ### KI-001 — Filter Cache Removed as Dormant Code
 
 - Triage of the long-standing KI-001 "filter cache TTL-only invalidation" risk found the module was dormant: zero `from utils.filter_cache` imports in `routes/`, `utils/`, or `app.py`; `get_cached_unique_values()` only called by `warm_cache()`, which itself was never wired into startup; the route that *would* consume it (`routes/filters.py::get_unique_values`) hit `DatabaseHandler` directly.

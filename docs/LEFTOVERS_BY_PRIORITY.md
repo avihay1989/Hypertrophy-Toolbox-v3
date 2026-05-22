@@ -9,6 +9,7 @@
 > - **v4 (Codex re-review):** Opus + Codex agree. File rewritten to lead with in-flight work triage, then expanded P0 docs, then remaining backlog.
 > - **v5 (2026-05-23, post-execution):** Owner accepted all six scopes; each landed as its own commit (`de3e4d0`, `18ad223`, `ef475cc`, `89561df`, `40d7dd2`, `0ae5b39`). Section 1 docs hygiene executed in a single doc-only commit on top of the six feature commits. Pushed to `origin/main`.
 > - **v6 (2026-05-23, KI-001 close):** Triage of Section 2 found the filter cache module was dormant code with zero production callers. Owner approved Path A (delete). `utils/filter_cache.py` + `tests/test_filter_cache.py` removed; agent + rule + CLAUDE.md references purged. Section 2 closed by deletion rather than by adding invalidation hooks.
+> - **v7 (2026-05-23, §4.6 baselines + KI-009 close):** Two more rows closed. (a) Workout-log Excel export `ImportError: pandas` blocker (KI-009) resolved by replacing the pandas-based exporter with `xlsxwriter` direct writer; pandas/numpy/python-dateutil dropped from `requirements.txt`. (b) Row #13 §4.6 pixel baselines locked — `e2e/visual-baseline-thumbnails.spec.ts` promoted from inspection-only PNGs to committed `toHaveScreenshot()` baselines (18 PNGs at `maxDiffPixelRatio: 0.01`), 18 passed in 14.3s against the isolated visual DB harness. Section 3 row #13 closed, Section 4 added.
 
 ---
 
@@ -64,22 +65,29 @@ All ten items below shipped in one docs-only commit on top of A–F. Each links 
 
 ---
 
-## 3. Remaining Backlog (after Sections 0, 1, 2 closed)
+## 3. Remaining Backlog (after Sections 0, 1, 2, 4 closed)
 
 | #  | Pri       | Item                                                                                                                                                                       | Notes / status                                                                       | Effort     |
 |----|-----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|------------|
 | 12 | **P2**    | **workout.cool §5 curation — optional expansion beyond 36 rows**                                                                                                            | First batch shipped 2026-05-22 (`cf21191`, 36 rows). Long-tail rows still use search fallback. Content work only; no infrastructure changes needed. | +4–8 hr if expanding |
-| 13 | **P3**    | **§4.6 pixel baselines** — lock in `toHaveScreenshot()` on the 18 visual-baseline thumbnails                                                                                | Layout has settled; turns inspection-only spec into a real regression guard.          | **2–3 hr** |
 | 14 | **P4**    | **Worktree disposition** — `D:/development/Hypertrophy-Toolbox-v3-visual-baseline-s4` (`test/visual-baseline-thumbnails @ 99910a4`) + `D:/development/Hypertrophy-Toolbox-v3-redesign-calm-glass` (`ba519df`) | Disk hygiene only. Owner decision; do not delete without explicit approval.           | 15 min after decision |
 | 15 | **Don't** | **Fatigue meter Phase 2** — decay, technique modifier, `/fatigue` page, multi-channel SFR, API endpoints                                                                    | Explicitly parked; Stage 4 closed 2026-05-20 with no threshold changes. Do not edit `utils/fatigue.py`, `tests/test_fatigue.py`, or `scripts/fatigue_calibration_report.py::SCENARIOS` without fresh owner override. | — |
 
-### Rows #4, #5, #8, #9 — closed
+### Rows #4, #5, #8, #9, #13 — closed
 
-All four were Section 0 in-flight scopes; they landed as commits `40d7dd2` (#4, scope E), `de3e4d0` (#5, scope A), `0ae5b39` (#8, scope F), and `18ad223` (#9, scope B) on 2026-05-23.
+Rows #4, #5, #8, #9 were Section 0 in-flight scopes; they landed as commits `40d7dd2` (#4, scope E), `de3e4d0` (#5, scope A), `0ae5b39` (#8, scope F), and `18ad223` (#9, scope B) on 2026-05-23. Row #13 (§4.6 pixel baselines) landed 2026-05-23 — see Section 4 below.
 
 ---
 
-## 4. Low-Priority Code TODOs (for completeness; don't let these distract)
+## 4. CLOSED — Row #13 §4.6 Pixel Baselines (resolved 2026-05-23 by `toHaveScreenshot()` lock-in)
+
+| # | Item | Resolution |
+|---|---|---|
+| 13 | **§4.6 pixel baselines** | Resolved. [`e2e/visual-baseline-thumbnails.spec.ts`](../e2e/visual-baseline-thumbnails.spec.ts) was promoted from inspection-only PNGs (saved to `e2e/artifacts/visual-baseline/`) to committed `toHaveScreenshot()` baselines under [`e2e/__screenshots__/visual-baseline-thumbnails.spec.ts-snapshots/`](../e2e/__screenshots__/visual-baseline-thumbnails.spec.ts-snapshots/). 18 PNGs cover the full §4.6 matrix (`/workout_plan` desktop / tablet / mobile × light / dark × simple / advanced = 12 + `/workout_log` desktop / tablet / mobile × light / dark = 6) at `maxDiffPixelRatio: 0.01`. The spec is now a real regression guard. Owner reviewed the 18 generated PNGs before commit (per the spec's "first-run baseline commit is owner-eyes-on" gate). Verified via the canonical isolated-DB harness (`e2e/scripts/prepare_visual_db.py` → apply mapping → seed → `DB_FILE=… npx playwright test`) → **18 passed in 14.3s**. See [`docs/workout_cool_integration/EXECUTION_LOG.md`](workout_cool_integration/EXECUTION_LOG.md) (top entry) for the full command sequence. |
+
+---
+
+## 5. Low-Priority Code TODOs (for completeness; don't let these distract)
 
 | Location                           | TODO                                                                                  | Disposition                                                  |
 |------------------------------------|---------------------------------------------------------------------------------------|--------------------------------------------------------------|
@@ -108,7 +116,8 @@ All four were Section 0 in-flight scopes; they landed as commits `40d7dd2` (#4, 
 | Section 3 #13              | [`workout_cool_integration/PLANNING.md §4.6`](workout_cool_integration/PLANNING.md)                            |
 | Section 3 #14              | [`MASTER_HANDOVER.md`](MASTER_HANDOVER.md) Open Decisions, [`ACTIVE_DEVELOPMENT.md:156-159`](ACTIVE_DEVELOPMENT.md#L156-L159) |
 | Section 3 #15              | [`fatigue_meter/PLANNING.md`](fatigue_meter/PLANNING.md), [`fatigue_meter/STAGE4_PARKED_HANDOFF.md`](fatigue_meter/STAGE4_PARKED_HANDOFF.md) (superseded), [`fatigue_meter/calibration-notes.md`](fatigue_meter/calibration-notes.md) |
-| Section 4                  | grep `TODO|FIXME` across `utils/`, `routes/`, `static/js/`                                                    |
+| Section 4 (#13, closed)    | [`workout_cool_integration/PLANNING.md §4.6`](workout_cool_integration/PLANNING.md), [`workout_cool_integration/EXECUTION_LOG.md`](workout_cool_integration/EXECUTION_LOG.md) (top entry); committed files: [`e2e/visual-baseline-thumbnails.spec.ts`](../e2e/visual-baseline-thumbnails.spec.ts), [`e2e/__screenshots__/visual-baseline-thumbnails.spec.ts-snapshots/`](../e2e/__screenshots__/visual-baseline-thumbnails.spec.ts-snapshots/) (18 PNGs) |
+| Section 5                  | grep `TODO|FIXME` across `utils/`, `routes/`, `static/js/`                                                    |
 
 ---
 
@@ -121,4 +130,4 @@ All four were Section 0 in-flight scopes; they landed as commits `40d7dd2` (#4, 
 
 ---
 
-*Last updated: 2026-05-23 (v6 — KI-001 closed by deletion). Sections 0 + 1 + 2 all closed. Remaining backlog is Section 3 (P2/P3/P4 + parked Phase-2 fatigue).*
+*Last updated: 2026-05-23 (v7 — §4.6 pixel baselines + KI-009 closed). Sections 0 + 1 + 2 + 4 all closed. Remaining backlog is Section 3 (P2 #12 / P4 #14 / parked Phase-2 fatigue #15).*
