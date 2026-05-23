@@ -11,6 +11,7 @@
 > - **v6 (2026-05-23, KI-001 close):** Triage of Section 2 found the filter cache module was dormant code with zero production callers. Owner approved Path A (delete). `utils/filter_cache.py` + `tests/test_filter_cache.py` removed; agent + rule + CLAUDE.md references purged. Section 2 closed by deletion rather than by adding invalidation hooks.
 > - **v7 (2026-05-23, §4.6 baselines + KI-009 close):** Two more rows closed. (a) Workout-log Excel export `ImportError: pandas` blocker (KI-009) resolved by replacing the pandas-based exporter with `xlsxwriter` direct writer; pandas/numpy/python-dateutil dropped from `requirements.txt`. (b) Row #13 §4.6 pixel baselines locked — `e2e/visual-baseline-thumbnails.spec.ts` promoted from inspection-only PNGs to committed `toHaveScreenshot()` baselines (18 PNGs at `maxDiffPixelRatio: 0.01`), 18 passed in 14.3s against the isolated visual DB harness. Section 3 row #13 closed, Section 4 added.
 > - **v8 (2026-05-23, §5 curation closed):** Row #12 closed by diminishing returns. Owner-approved `ff244aa` (`content(workout-cool): expand curated YouTube references`) added 20 more rows on top of `cf21191`, bringing `data/youtube_curated_top_n.csv` to **56 curated rows + header**. Usage triage of the remaining ~1,841 uncurated catalogue exercises against `user_selection` + `workout_log` found only one (`Barbell Close Grip Bench Press`, 2 uses) above the 0–1-use floor — the 56-row set already covers every exercise with meaningful usage signal. Further expansion would require fabricating unvalidated YouTube IDs, which is worse UX than the search fallback. Section 5 added; Section 3 row #12 closed.
+> - **v9 (2026-05-23, worktree disposition closed):** Row #14 closed by inspection. Both worktree paths (`Hypertrophy-Toolbox-v3-visual-baseline-s4`, `Hypertrophy-Toolbox-v3-redesign-calm-glass`) are absent from `D:/development/` and neither is registered in `git worktree list` — the row's "still checked out locally" claim was stale. Two dangling branch refs (`test/visual-baseline-thumbnails @ 99910a4` local + remote; `origin/redesign/calm-glass-2026 @ ba519df` remote) verified redundant — the first shipped via PR #22 squash (`631b5f8`) plus later refactor `b5b8c7a`, the second is a strict ancestor of `origin/main`. Owner-approved deletions ran: `git branch -D test/visual-baseline-thumbnails`, `git push origin --delete test/visual-baseline-thumbnails`, `git push origin --delete redesign/calm-glass-2026`. Section 6 added; Section 3 row #14 closed.
 
 ---
 
@@ -66,16 +67,15 @@ All ten items below shipped in one docs-only commit on top of A–F. Each links 
 
 ---
 
-## 3. Remaining Backlog (after Sections 0, 1, 2, 4, 5 closed)
+## 3. Remaining Backlog (after Sections 0, 1, 2, 4, 5, 6 closed)
 
 | #  | Pri       | Item                                                                                                                                                                       | Notes / status                                                                       | Effort     |
 |----|-----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|------------|
-| 14 | **P4**    | **Worktree disposition** — `D:/development/Hypertrophy-Toolbox-v3-visual-baseline-s4` (`test/visual-baseline-thumbnails @ 99910a4`) + `D:/development/Hypertrophy-Toolbox-v3-redesign-calm-glass` (`ba519df`) | Disk hygiene only. Owner decision; do not delete without explicit approval.           | 15 min after decision |
 | 15 | **Don't** | **Fatigue meter Phase 2** — decay, technique modifier, `/fatigue` page, multi-channel SFR, API endpoints                                                                    | Explicitly parked; Stage 4 closed 2026-05-20 with no threshold changes. Do not edit `utils/fatigue.py`, `tests/test_fatigue.py`, or `scripts/fatigue_calibration_report.py::SCENARIOS` without fresh owner override. | — |
 
-### Rows #4, #5, #8, #9, #12, #13 — closed
+### Rows #4, #5, #8, #9, #12, #13, #14 — closed
 
-Rows #4, #5, #8, #9 were Section 0 in-flight scopes; they landed as commits `40d7dd2` (#4, scope E), `de3e4d0` (#5, scope A), `0ae5b39` (#8, scope F), and `18ad223` (#9, scope B) on 2026-05-23. Row #12 (§5 curation) closed by diminishing returns 2026-05-23 — see Section 5 below. Row #13 (§4.6 pixel baselines) landed 2026-05-23 — see Section 4 below.
+Rows #4, #5, #8, #9 were Section 0 in-flight scopes; they landed as commits `40d7dd2` (#4, scope E), `de3e4d0` (#5, scope A), `0ae5b39` (#8, scope F), and `18ad223` (#9, scope B) on 2026-05-23. Row #12 (§5 curation) closed by diminishing returns 2026-05-23 — see Section 5 below. Row #13 (§4.6 pixel baselines) landed 2026-05-23 — see Section 4 below. Row #14 (worktree disposition) closed by inspection 2026-05-23 — see Section 6 below.
 
 ---
 
@@ -95,7 +95,15 @@ Rows #4, #5, #8, #9 were Section 0 in-flight scopes; they landed as commits `40d
 
 ---
 
-## 6. Low-Priority Code TODOs (for completeness; don't let these distract)
+## 6. CLOSED — Row #14 Worktree Disposition (resolved 2026-05-23 by inspection + branch cleanup)
+
+| # | Item | Resolution |
+|---|---|---|
+| 14 | **Worktree disposition** | Closed. Inspection found both worktree paths (`D:/development/Hypertrophy-Toolbox-v3-visual-baseline-s4` and `D:/development/Hypertrophy-Toolbox-v3-redesign-calm-glass`) already absent from disk; neither was registered in `git worktree list`. The row's "still checked out locally" claim was stale. Two dangling branch refs were found and verified redundant: (a) `test/visual-baseline-thumbnails @ 99910a4` (local + remote) was shipped via PR #22 squash-merge `631b5f8` and later refactored on `main` as `b5b8c7a` (the `toHaveScreenshot()` lock-in); (b) `origin/redesign/calm-glass-2026 @ ba519df` was a strict ancestor of `origin/main` (verified via `git merge-base --is-ancestor`). Owner-approved deletions ran cleanly: `git branch -D test/visual-baseline-thumbnails` (was `99910a4`), `git push origin --delete test/visual-baseline-thumbnails`, `git push origin --delete redesign/calm-glass-2026`. Post-cleanup verification: `git branch --list test/visual-baseline-thumbnails` empty, `git ls-remote --heads origin test/visual-baseline-thumbnails redesign/calm-glass-2026` empty, working tree clean except for `data/database.db` runtime dirt. |
+
+---
+
+## 7. Low-Priority Code TODOs (for completeness; don't let these distract)
 
 | Location                           | TODO                                                                                  | Disposition                                                  |
 |------------------------------------|---------------------------------------------------------------------------------------|--------------------------------------------------------------|
@@ -120,11 +128,11 @@ Rows #4, #5, #8, #9 were Section 0 in-flight scopes; they landed as commits `40d
 | Section 1 #9               | [`ai_workflow/INDEX.md`](ai_workflow/INDEX.md), [`fatigue_meter/calibration-notes.md`](fatigue_meter/calibration-notes.md) |
 | Section 1 #10              | [`docs/README.md`](README.md), [`VOLUME_TAXONOMY_AUDIT.md`](VOLUME_TAXONOMY_AUDIT.md)                          |
 | Section 2 (#11, closed)    | [`UI_SCENARIOS_GAP_ANALYSIS.md §0`](UI_SCENARIOS_GAP_ANALYSIS.md) (KI-001 — resolved by deletion); deleted files: `utils/filter_cache.py`, `tests/test_filter_cache.py` |
-| Section 3 #14              | [`MASTER_HANDOVER.md`](MASTER_HANDOVER.md) Open Decisions, [`ACTIVE_DEVELOPMENT.md:156-159`](ACTIVE_DEVELOPMENT.md#L156-L159) |
 | Section 3 #15              | [`fatigue_meter/PLANNING.md`](fatigue_meter/PLANNING.md), [`fatigue_meter/STAGE4_PARKED_HANDOFF.md`](fatigue_meter/STAGE4_PARKED_HANDOFF.md) (superseded), [`fatigue_meter/calibration-notes.md`](fatigue_meter/calibration-notes.md) |
 | Section 4 (#13, closed)    | [`workout_cool_integration/PLANNING.md §4.6`](workout_cool_integration/PLANNING.md), [`workout_cool_integration/EXECUTION_LOG.md`](workout_cool_integration/EXECUTION_LOG.md) (top entry); committed files: [`e2e/visual-baseline-thumbnails.spec.ts`](../e2e/visual-baseline-thumbnails.spec.ts), [`e2e/__screenshots__/visual-baseline-thumbnails.spec.ts-snapshots/`](../e2e/__screenshots__/visual-baseline-thumbnails.spec.ts-snapshots/) (18 PNGs) |
 | Section 5 (#12, closed)    | [`workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md`](workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md) "Curation Closed", [`workout_cool_integration/PLANNING.md §5.4`](workout_cool_integration/PLANNING.md), [`workout_cool_integration/EXECUTION_LOG.md`](workout_cool_integration/EXECUTION_LOG.md); committed source of truth: [`data/youtube_curated_top_n.csv`](../data/youtube_curated_top_n.csv) (56 rows + header) + `scripts/apply_youtube_curated.py`; commits `cf21191` + `ff244aa` |
-| Section 6                  | grep `TODO|FIXME` across `utils/`, `routes/`, `static/js/`                                                    |
+| Section 6 (#14, closed)    | `git worktree list` (no worktrees other than `Hypertrophy-Toolbox-v3-main`), `git ls-remote --heads origin` (no `test/visual-baseline-thumbnails` or `redesign/calm-glass-2026` remaining); related squash-merge commits: `631b5f8` (PR #22) + `b5b8c7a` (later `toHaveScreenshot()` refactor) |
+| Section 7                  | grep `TODO|FIXME` across `utils/`, `routes/`, `static/js/`                                                    |
 
 ---
 
@@ -137,4 +145,4 @@ Rows #4, #5, #8, #9 were Section 0 in-flight scopes; they landed as commits `40d
 
 ---
 
-*Last updated: 2026-05-23 (v8 — §5 curation closed by diminishing returns). Sections 0 + 1 + 2 + 4 + 5 all closed. Remaining backlog is Section 3 (P4 #14 worktree disposition / parked Phase-2 fatigue #15).*
+*Last updated: 2026-05-23 (v9 — worktree disposition closed by inspection + branch cleanup). Sections 0 + 1 + 2 + 4 + 5 + 6 all closed. Remaining backlog is Section 3 (only the parked Phase-2 fatigue row #15).*
