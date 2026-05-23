@@ -1,12 +1,13 @@
 # Fatigue Meter — Phase 2 PLANNING
 
-**Status:** **Stage 0 CLOSED 2026-05-23** — scope locked **Path 1** (planned + logged side-by-side + period selector on day one). **Implementation greenlight is a SEPARATE explicit owner action — do not start Stage 2 until owner says "start."**
+**Status:** **Stage 0 + Stage 1 CLOSED 2026-05-23** — scope locked **Path 1** (planned + logged side-by-side + period selector on day one); Stage 1 prerequisites complete on local branch `feat/fatigue-meter-phase-2` (not yet pushed). **Implementation greenlight is a SEPARATE explicit owner action — do not start Stage 2 until owner says "start Stage 2."**
 **Date extracted:** 2026-05-23
 **Stage 0 closed:** 2026-05-23
+**Stage 1 closed:** 2026-05-23
 **Source:** split out of [`PLANNING.md`](PLANNING.md) Stage 5/6 and [`BRAINSTORM.md`](BRAINSTORM.md) (§4–§9, §11, §13, §20 Phase 2 matrix).
 **Predecessor state:** Phase 1 shipped 2026-05-03 (PR #7, single global server-rendered badge). [Stage 4 closed 2026-05-20](calibration-notes.md) by owner-approved felt-label review (4 of 5 anchors agreed; no threshold changes). `utils/fatigue.py`, `tests/test_fatigue.py`, and `scripts/fatigue_calibration_report.py::SCENARIOS` are the locked Phase 1 working state and must not be edited without a fresh owner override.
 
-This document mirrors the shape of `PLANNING.md` (entry / tasks / exit per stage). Stage 0 (lock D2.x decisions) closed 2026-05-23 via owner decision walk; Stage 1 prerequisites have not started.
+This document mirrors the shape of `PLANNING.md` (entry / tasks / exit per stage). Stage 0 (lock D2.x decisions) closed 2026-05-23 via owner decision walk; Stage 1 prerequisites closed 2026-05-23 on branch `feat/fatigue-meter-phase-2` with pytest 1351 passed, backup id 5 (`pre-fatigue-meter-phase-2-2026-05-23`), and catalog `primary_muscle_group` NULLs eliminated. Stage 2 implementation has not started and remains gated on an explicit owner "start Stage 2" instruction.
 
 ---
 
@@ -60,7 +61,7 @@ Explicitly out of Phase 2 Path 1 scope, kept on file:
 
 ## 4. Decisions — Stage 0 LOCKED 2026-05-23
 
-Same shape as `PLANNING.md §0.1` and `BRAINSTORM.md §13` / §24.A. **All D2 rows locked by owner walk on 2026-05-23.** Sync back to `BRAINSTORM.md §13` as a new Phase-2 block is a Stage 1 prerequisite (do not overwrite Phase 1 D1–D13 rows).
+Same shape as `PLANNING.md §0.1` and `BRAINSTORM.md §13` / §24.A. **All D2 rows locked by owner walk on 2026-05-23.** Sync back to `BRAINSTORM.md §13` shipped with PR #33 as the new `§13.1 Phase 2 Decision Log` block (Phase 1 D1–D13 rows untouched) — no further Stage 1 work required on the sync.
 
 | # | Decision | Locked choice | Notes |
 |---|---|---|---|
@@ -83,6 +84,13 @@ Stretch decisions also locked at Stage 0:
 **New decision surfaced at Stage 0 (not in original draft):**
 - ✅ **Catalog data-quality re-scope** — hybrid approach. Clean only the **633 `primary_muscle_group` NULLs** (Stage 1 prerequisite) since per-muscle math depends on them. Defer cleanup of the 454 `movement_pattern` NULLs since per-muscle math does not use that column. Surfaced by Codex review 2026-05-23.
 
+**Stage 1 cleanup design (locked at execution time 2026-05-23):**
+- Inference rule: tokenize `exercise_name`, match against `utils.constants.MUSCLE_ALIAS` ∪ `MUSCLE_GROUPS` (longest-alias-first, word-boundary regex). 132 of 633 rows resolved to a real muscle this way (Gluteus Maximus 45, Hamstrings 16, Chest 13, Latissimus Dorsi 10, Lower Back 8, Neck 8, Trapezius 6, Biceps 5, Quadriceps 4, Forearms 4, Rectus Abdominis 4, Calves 4, Triceps 3, External Obliques 2).
+- Remaining 501 unmatched rows assigned the sentinel value **`"Unassigned"`**. All 501 are dormant catalog entries (zero appear in `user_selection` at cleanup time — verified by joined-NULL audit).
+- `"Unassigned"` added to `utils/volume_taxonomy.COARSE_TO_BASIC` → `"Abdominals"` and `COARSE_TO_REPRESENTATIVE_ADVANCED` → `"upper-abdominals"` so volume-rollup invariants stay satisfied. Comments inline mark both as Stage 1 placeholders. **Stage 2 fatigue per-muscle math should treat `"Unassigned"` the same as a NULL bucket** (display in its own bar, no rollup into a real muscle's MEV/MAV/MRV).
+- Reproducer script: `scripts/fatigue_stage1_cleanup.py` (idempotent — a second run touches zero rows). Dry-run twin: `scripts/fatigue_stage1_cleanup_dryrun.py`.
+- Regression test: `tests/test_catalog_invariants.py::test_catalog_primary_muscle_group_has_no_nulls`.
+
 ---
 
 ## 5. Proposed staged implementation plan
@@ -91,17 +99,18 @@ Mirrors `PLANNING.md`'s stage shape. No tasks are pre-checked; this is a forecas
 
 ### Stage 0 — Lock D2.x decisions (humans only, no code) — ✅ CLOSED 2026-05-23
 - Walked D2.1–D2.10 + stretch decisions + catalog re-scope. Every row ticked — see §4.
-- **Outstanding Stage 0 → Stage 1 handoff:** sync locked decisions back into `BRAINSTORM.md §13` as a new Phase-2 block (do not overwrite Phase 1 D1–D13 rows). Carry this as a Stage 1 prerequisite.
+- **Stage 0 → Stage 1 handoff complete:** Sync of locked decisions into `BRAINSTORM.md §13.1 Phase 2 Decision Log` shipped with PR #33 (2026-05-23). Phase 1 D1–D13 rows preserved untouched.
 
-### Stage 1 — Pre-development prerequisites (no app code; one DB write for catalog cleanup)
-- **Re-verify post-Phase-1 baseline** (current `CLAUDE.md §5` — 1374 pytest passes — re-verify against working tree at Stage 1 entry).
-- **Data audit refresh** — re-count NULL `primary_muscle_group` and NULL `movement_pattern` rows for catalog and `user_selection`. Stage 0 close recorded 633 / 454 catalog NULLs as of 2026-05-23; confirm those numbers still hold at Stage 1 entry.
-- **Catalog cleanup pass — 633 `primary_muscle_group` NULLs only** (D2-locked hybrid). `movement_pattern` cleanup deferred per §4 catalog row. This is the only Stage 1 step that writes to the DB — take the pre-flight backup FIRST. Add a regression test that asserts post-cleanup NULL count is zero for `primary_muscle_group` in the catalog.
-- **Pre-flight backup** via `POST /api/backups` (label `pre-fatigue-meter-phase-2-2026-05-23`).
-- **Dependency check** — confirm Phase 2 needs no new Python deps (likely true); confirm chart strategy (`BRAINSTORM.md §11 Q6` — match whatever `volume_splitter` already uses; do not introduce Chart.js unless that's already the answer).
-- **Sync Stage 0 decisions into `BRAINSTORM.md §13`** as a new Phase-2 block.
-- **Create feature branch** `feat/fatigue-meter-phase-2`.
-- Exit: baseline file + data-audit refresh + catalog cleanup commit + backup id + BRAINSTORM sync + branch all recorded.
+### Stage 1 — Pre-development prerequisites (no app code; one DB write for catalog cleanup) — ✅ CLOSED 2026-05-23
+All prerequisites complete on local branch `feat/fatigue-meter-phase-2` (Stage 1 close commit not yet pushed). Stage 2 implementation remains gated on an explicit owner "start Stage 2" greenlight.
+- ✅ **Re-verified post-Phase-1 baseline** at Stage 1 entry on `main` @ 24c6f46: pytest 1350 passed (~2m 53s). Delta from the 2026-05-21 1374 baseline is the `tests/test_filter_cache.py` removal in commit 6d87284 (KI-001 dormant code) partially offset by `test_profile_estimator.py` / `test_user_profile_routes.py` / `test_workout_log_routes.py` additions across PR #17/#18 + body-composition follow-ups. See `CLAUDE.md §5`.
+- ✅ **Data audit refresh** — re-count confirmed 633 `primary_muscle_group` NULLs and 454 `movement_pattern` NULLs in the catalog at Stage 1 entry (matches the 2026-05-23 Stage 0 close numbers). `user_selection` join-NULL audit recorded zero overlap with the unmatched 501 sentinel rows.
+- ✅ **Catalog cleanup pass — 633 `primary_muscle_group` NULLs eliminated.** Inference rule (longest-alias-first, word-boundary regex against `utils.constants.MUSCLE_ALIAS` ∪ `MUSCLE_GROUPS`) resolved 132 of 633 rows to real muscles per the §4 distribution table; the remaining 501 dormant catalog rows received the sentinel value `"Unassigned"`. `movement_pattern` cleanup remains deferred per §4 catalog row. **Pre-flight backup was taken first** (see next item). Regression test `tests/test_catalog_invariants.py::test_catalog_primary_muscle_group_has_no_nulls` added and green; post-cleanup pytest 1351 passed (~2m 55s).
+- ✅ **Pre-flight backup** captured via `POST /api/backups` — backup id **5**, label `pre-fatigue-meter-phase-2-2026-05-23`.
+- ✅ **Dependency check** — confirmed Phase 2 needs no new Python deps. Chart strategy: inline SVG bars (matches `volume_splitter` precedent and `BRAINSTORM.md §11 Q6` — no new chart library).
+- ~~**Sync Stage 0 decisions into `BRAINSTORM.md §13`** as a new Phase-2 block.~~ ✅ Already shipped with PR #33 (commit 24c6f46) as `§13.1 Phase 2 Decision Log`. No Stage 1 action required.
+- ✅ **Feature branch** `feat/fatigue-meter-phase-2` created and now holds the Stage 1 close commit.
+- ✅ **Exit recorded:** baseline (1350 → 1351) + data-audit numbers + catalog cleanup commit + backup id 5 + branch `feat/fatigue-meter-phase-2` all on record above. BRAINSTORM sync was already out of scope (PR #33). **Stage 2 implementation must not begin until owner says "start Stage 2."** Stage 2 fatigue per-muscle math must continue to treat `"Unassigned"` as its own bucket — do not fold it into Abdominals MEV/MAV/MRV (see §4 Stage 1 cleanup design note).
 
 ### Stage 2 — Implementation chapters (Path 1 — 8 chapters)
 Each chapter is a single small commit with its own gate, matching Phase 1's pattern. Path 1 expansion of D2.5 (planned+logged) and the period selector push chapter count from the original 6 to 8.
@@ -279,7 +288,7 @@ Tracked here so they don't get lost during Stage 1 / Stage 2:
 - "View per-muscle breakdown →" link copy — must stay descriptive; not `"View MRV breakdown"`.
 - Recovery of the deferred `BRAINSTORM.md §10` partial-week handling for the per-muscle view ("X / N expected for this point in week"). Likely a Phase 3 polish item.
 - Catalog `movement_pattern` cleanup (454 NULLs) — not blocking Phase 2 but worth scheduling as a separate data-quality task before any future feature that depends on movement pattern.
-- BRAINSTORM.md §13 sync — locked Stage 0 decisions must be propagated as a new Phase-2 block (Stage 1 prerequisite per §5).
+- ~~BRAINSTORM.md §13 sync — locked Stage 0 decisions must be propagated as a new Phase-2 block (Stage 1 prerequisite per §5).~~ ✅ Shipped with PR #33 (commit 24c6f46) — see `BRAINSTORM.md §13.1`.
 
 ---
 
@@ -295,4 +304,4 @@ Tracked here so they don't get lost during Stage 1 / Stage 2:
 
 ---
 
-*End of PHASE2_PLANNING.md. Stage 0 closed 2026-05-23 — scope locked Path 1. Implementation greenlight is a separate explicit owner action; until then, do not edit `utils/fatigue.py`, `routes/`, or `templates/` for Phase 2.*
+*End of PHASE2_PLANNING.md. Stage 0 + Stage 1 closed 2026-05-23 — scope locked Path 1, catalog `primary_muscle_group` NULLs eliminated, backup id 5 captured, pytest 1351 passed on branch `feat/fatigue-meter-phase-2`. Stage 2 implementation greenlight is a separate explicit owner action ("start Stage 2"); until then, do not edit `utils/fatigue.py`, `routes/`, `templates/`, `static/`, or any other app code for Phase 2.*
