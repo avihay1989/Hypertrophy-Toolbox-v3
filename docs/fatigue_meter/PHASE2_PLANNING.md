@@ -1,14 +1,16 @@
 # Fatigue Meter — Phase 2 PLANNING
 
-**Status:** **Stage 2 IMPLEMENTED 2026-05-23 on `feat/fatigue-meter-phase-2-stage-2`** (Path 1 — 8 chapters: per-muscle accumulator, period selector, dedicated `/fatigue` route, dual planned + logged bars, two SFR cards, nav link, badge → page link). pytest 1351 → 1442 (+91 new Stage-2 cases); `e2e/fatigue.spec.ts` 8/8 Chromium green. **Stage 3 (verify-suite + final merge gate) and Stage 4 (calibration window) still pending.**
+**Status:** **Stage 2 SHIPPED 2026-05-23 to `main` via PR #35 (squash d5b80bf); Stage 3 verify-suite gate CLOSED 2026-05-24; Stage 4 calibration window OPEN 2026-05-24.** (Path 1 — 8 chapters: per-muscle accumulator, period selector, dedicated `/fatigue` route, dual planned + logged bars, two SFR cards, nav link, badge → page link). pytest 1351 → 1442 (+91 new Stage-2 cases); `e2e/fatigue.spec.ts` 8/8 Chromium green. Stage 3 verify-suite on `main`: pytest 1442 passed, full Playwright Chromium 449 passed / 13 failed / 17 did-not-run — the 13 + 17 reds match the CLAUDE.md §5 documented pre-existing baseline exactly with zero new Stage-2 reds.
 **Date extracted:** 2026-05-23
 **Stage 0 closed:** 2026-05-23
 **Stage 1 closed:** 2026-05-23
-**Stage 2 implementation completed:** 2026-05-23 (pending Stage 3 gate + owner-approved merge)
+**Stage 2 implementation completed:** 2026-05-23 (merged to `main` 2026-05-23 via PR #35, squash d5b80bf)
+**Stage 3 closed:** 2026-05-24 (verify-suite gate green on `main`; pre-merge restore point: backup id 5, label `pre-fatigue-meter-phase-2-stage-2-merge-2026-05-23`)
+**Stage 4 opened:** 2026-05-24 (≥2 weeks of real use before any per-muscle threshold tweaks)
 **Source:** split out of [`PLANNING.md`](PLANNING.md) Stage 5/6 and [`BRAINSTORM.md`](BRAINSTORM.md) (§4–§9, §11, §13, §20 Phase 2 matrix).
 **Predecessor state:** Phase 1 shipped 2026-05-03 (PR #7, single global server-rendered badge). [Stage 4 closed 2026-05-20](calibration-notes.md) by owner-approved felt-label review (4 of 5 anchors agreed; no threshold changes). The Phase 1 surface (`calculate_set_fatigue`, `aggregate_session_fatigue`, `aggregate_weekly_fatigue`, `classify_*`, `*_FATIGUE_BANDS`, `PATTERN_WEIGHTS`, `LOAD_MULTIPLIER_BUCKETS`, `INTENSITY_MULTIPLIER_BUCKETS` in `utils/fatigue.py`, plus `tests/test_fatigue.py` Phase-1 classes, plus `scripts/fatigue_calibration_report.py::SCENARIOS`) was preserved byte-identical across Stage 2.
 
-This document mirrors the shape of `PLANNING.md` (entry / tasks / exit per stage). Stage 0 (lock D2.x decisions) closed 2026-05-23 via owner decision walk; Stage 1 prerequisites closed 2026-05-23 on branch `feat/fatigue-meter-phase-2` with pytest 1351 passed, backup id 5 (`pre-fatigue-meter-phase-2-2026-05-23`), and catalog `primary_muscle_group` NULLs eliminated. Stage 2 implementation has not started and remains gated on an explicit owner "start Stage 2" instruction.
+This document mirrors the shape of `PLANNING.md` (entry / tasks / exit per stage). Stage 0 (lock D2.x decisions) closed 2026-05-23 via owner decision walk; Stage 1 prerequisites closed 2026-05-23 on branch `feat/fatigue-meter-phase-2` with pytest 1351 passed, backup id 5 (`pre-fatigue-meter-phase-2-2026-05-23`), and catalog `primary_muscle_group` NULLs eliminated. Stage 2 shipped to `main` 2026-05-23 via PR #35 (squash commit `d5b80bf`); Stage 3 verify-suite gate closed 2026-05-24 on `main`; Stage 4 calibration window opened 2026-05-24.
 
 ---
 
@@ -129,13 +131,19 @@ Each chapter is a single small commit with its own gate, matching Phase 1's patt
 
 Per-chapter gates follow Phase 1 §2.X exactly: pytest delta documented, targeted E2E spec green, no test-count regression in unrelated files, code-reviewer pass on diff before merge.
 
-### Stage 3 — Verification & merge gate (95% confidence checkpoint)
+### Stage 3 — Verification & merge gate (95% confidence checkpoint) — ✅ CLOSED 2026-05-24
 Same shape as `PLANNING.md §3`. Adds two Phase-2-specific items:
-- **Per-muscle data-fidelity sanity check.** Per-muscle scores for a known routine match a hand-calculated value across at least 3 muscles.
-- **Link reciprocity.** Badge → `/fatigue` and `/fatigue` → summary pages both load without console errors.
+- **Per-muscle data-fidelity sanity check.** Per-muscle scores for a known routine match a hand-calculated value across at least 3 muscles. ✅ Verified during Stage 2 implementation (`tests/test_fatigue.py` + `tests/test_fatigue_routes.py`, 91 new cases).
+- **Link reciprocity.** Badge → `/fatigue` and `/fatigue` → summary pages both load without console errors. ✅ Verified by `e2e/fatigue.spec.ts` (8/8 Chromium green).
 
-### Stage 4 — Post-merge calibration window
-≥2 weeks of real use before any per-muscle threshold tweaks. Same "no tuning without ≥2 disagreements" bar as Phase 1 §4.2.
+**Verify-suite result on `main` @ d5b80bf:**
+- **pytest**: 1442 passed (~2m 55s) — full suite green, matches Stage 2 baseline.
+- **Playwright Chromium full suite**: 449 passed / 13 failed / 17 did-not-run (~12.5m). The 13 + 17 reds match the `CLAUDE.md §5` documented pre-existing baseline exactly (2 `workout-plan.spec.ts` `#muscleModeToggle` off-viewport at 1280; 10 sub-pixel `visual.spec.ts` desktop drifts on welcome/workout-plan/workout-log/progression/volume-splitter with zero Stage-2 surface; 1 `visual-baseline-thumbnails.spec.ts` plan thumbnail; 17 `visual-baseline-thumbnails.spec.ts` cases needing the seed-DB preflight from `e2e/scripts/prepare_visual_db.py`). **Zero new Stage-2 reds.** The 12 weekly-summary + session-summary visual baselines re-snapshotted during Stage 2 implementation are now passing (`449 = 437 + 12`).
+
+Pre-merge restore point retained: backup id 5, label `pre-fatigue-meter-phase-2-stage-2-merge-2026-05-23`, created 2026-05-23T23:39:09.502079.
+
+### Stage 4 — Post-merge calibration window — ⏳ OPEN 2026-05-24
+≥2 weeks of real use before any per-muscle threshold tweaks. Same "no tuning without ≥2 disagreements" bar as Phase 1 §4.2. Earliest close date: **2026-06-07**.
 
 ---
 
@@ -306,4 +314,4 @@ Tracked here so they don't get lost during Stage 1 / Stage 2 / Stage 3:
 
 ---
 
-*End of PHASE2_PLANNING.md. Stage 0 + Stage 1 closed 2026-05-23. Stage 2 implementation completed 2026-05-23 on branch `feat/fatigue-meter-phase-2-stage-2` — Path 1 ships dedicated `/fatigue` route, dual planned + logged per-muscle bars sorted by % MRV, two SFR cards with `fatigue == 0 → "—"` sentinel, period selector (`this session` / `this week` / `last 4 weeks`), nav link in Analyze dropdown, badge "View per-muscle breakdown →" link. Phase 1 surface preserved byte-identical. pytest 1351 → 1442 (+91 cases), `e2e/fatigue.spec.ts` 8/8 green. **Stage 3 (verify-suite + final merge gate) still pending owner approval.** Phase-3 follow-up: vetted MEV / MAV / MRV defaults for the six unranked labels (Front-Shoulder, Rear-Shoulder, Lower Back, Hip-Adductors, Middle-Traps, Neck) — see §10.*
+*End of PHASE2_PLANNING.md. Stage 0 + Stage 1 closed 2026-05-23. Stage 2 implementation completed 2026-05-23 on branch `feat/fatigue-meter-phase-2-stage-2`, merged to `main` 2026-05-23 via PR #35 (squash commit `d5b80bf`). Stage 3 verify-suite gate closed 2026-05-24 on `main` (pytest 1442 passed; Playwright Chromium 449 passed / 13 failed / 17 did-not-run — reds match documented pre-existing baseline exactly, zero new Stage-2 reds). Stage 4 calibration window opened 2026-05-24; earliest close 2026-06-07. Path 1 ships dedicated `/fatigue` route, dual planned + logged per-muscle bars sorted by % MRV, two SFR cards with `fatigue == 0 → "—"` sentinel, period selector (`this session` / `this week` / `last 4 weeks`), nav link in Analyze dropdown, badge "View per-muscle breakdown →" link. Phase 1 surface preserved byte-identical. Phase-3 follow-up: vetted MEV / MAV / MRV defaults for the six unranked labels (Front-Shoulder, Rear-Shoulder, Lower Back, Hip-Adductors, Middle-Traps, Neck) — see §10.*
