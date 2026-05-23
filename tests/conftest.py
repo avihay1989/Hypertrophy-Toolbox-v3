@@ -25,6 +25,7 @@ from routes.user_profile import user_profile_bp
 from routes.body_composition import body_composition_bp
 from routes.volume_splitter import volume_splitter_bp
 from routes.program_backup import program_backup_bp
+from routes.fatigue import fatigue_bp
 from utils.program_backup import initialize_backup_tables
 from utils.errors import success_response, error_response
 import utils.config
@@ -93,6 +94,7 @@ def app(test_db_path):
     app.register_blueprint(body_composition_bp)
     app.register_blueprint(volume_splitter_bp)
     app.register_blueprint(program_backup_bp)
+    app.register_blueprint(fatigue_bp)
 
     from utils.media_path import is_valid_media_path_shape
 

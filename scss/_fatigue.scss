@@ -14,7 +14,8 @@
   grid-template-columns: 1fr auto;
   grid-template-areas:
     "head head"
-    "readout period";
+    "readout period"
+    "link link";
   align-items: center;
   gap: 0.25rem 1rem;
   padding: 0.85rem 1.1rem;
@@ -129,6 +130,29 @@
   line-height: 1.25;
 }
 
+.fatigue-badge__breakdown-link {
+  grid-area: link;
+  margin-top: 0.4rem;
+  padding-top: 0.4rem;
+  border-top: 1px dashed var(--fatigue-accent-border);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--fatigue-heading);
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--fatigue-accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
 .fatigue-light {
   --fatigue-accent: #198754;
   --fatigue-accent-soft: rgba(25, 135, 84, 0.14);
@@ -217,7 +241,8 @@
     grid-template-areas:
       "head"
       "readout"
-      "period";
+      "period"
+      "link";
     padding: 0.75rem 0.85rem;
     border-left-width: 0.25rem;
     gap: 0.4rem 0;
@@ -233,5 +258,271 @@
 
   .fatigue-badge__score {
     font-size: 1.85rem;
+  }
+}
+
+
+// =============================================================================
+// Phase 2 Stage 2 — /fatigue page per-muscle bars
+// =============================================================================
+// Bars re-use the existing .fatigue-{band} color tokens (light / moderate /
+// heavy / very-heavy). New .fatigue-unranked carries a neutral grey for
+// muscles that have no §5 thresholds yet (Front-Shoulder, Rear-Shoulder,
+// Lower Back, Hip-Adductors, Middle-Traps, Neck) and the Unassigned sentinel.
+
+.fatigue-page {
+  --fatigue-track-bg: rgba(15, 23, 42, 0.06);
+  --fatigue-track-border: rgba(15, 23, 42, 0.10);
+  --fatigue-row-border: rgba(15, 23, 42, 0.08);
+}
+
+.fatigue-page__bar-list {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.fatigue-bar {
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid var(--fatigue-row-border);
+  border-radius: 12px;
+  padding: 0.65rem 0.9rem 0.75rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.fatigue-bar__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
+.fatigue-bar__name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+
+.fatigue-bar__percent {
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: rgba(15, 23, 42, 0.72);
+}
+
+.fatigue-bar__percent--missing {
+  color: rgba(15, 23, 42, 0.45);
+  font-weight: 500;
+}
+
+.fatigue-bar__row {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr 3.5rem;
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 0.78rem;
+}
+
+.fatigue-bar__legend {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: rgba(15, 23, 42, 0.65);
+  text-transform: uppercase;
+  font-size: 0.7rem;
+}
+
+.fatigue-bar__track {
+  position: relative;
+  height: 0.65rem;
+  background: var(--fatigue-track-bg);
+  border: 1px solid var(--fatigue-track-border);
+  border-radius: 999px;
+  overflow: hidden;
+
+  // 100%-of-MRV reference marker (only meaningful when has-landmarks).
+  &::after {
+    content: "";
+    position: absolute;
+    top: -2px;
+    bottom: -2px;
+    // The fill is clamped to 150% visually, so the 100% marker sits at 2/3.
+    left: 66.66%;
+    width: 1px;
+    background: rgba(15, 23, 42, 0.22);
+  }
+}
+
+.fatigue-bar--unranked .fatigue-bar__track::after {
+  // No MRV reference for these muscles — hide the marker.
+  display: none;
+}
+
+.fatigue-bar__fill {
+  height: 100%;
+  background-color: var(--fatigue-accent-strong, rgba(99, 102, 241, 0.7));
+  transition: width 0.25s ease;
+}
+
+.fatigue-bar__score {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: rgba(15, 23, 42, 0.78);
+}
+
+.fatigue-bar__score--empty {
+  color: rgba(15, 23, 42, 0.4);
+  font-weight: 500;
+}
+
+// Neutral fill for muscles without §5 thresholds.
+.fatigue-unranked {
+  --fatigue-accent: #6c757d;
+  --fatigue-accent-soft: rgba(108, 117, 125, 0.12);
+  --fatigue-accent-strong: rgba(108, 117, 125, 0.55);
+  --fatigue-accent-border: rgba(108, 117, 125, 0.28);
+}
+
+[data-theme='dark'] .fatigue-page {
+  --fatigue-track-bg: rgba(255, 255, 255, 0.06);
+  --fatigue-track-border: rgba(255, 255, 255, 0.12);
+  --fatigue-row-border: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme='dark'] .fatigue-bar {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+[data-theme='dark'] .fatigue-bar__name {
+  color: rgba(248, 250, 252, 0.92);
+}
+
+[data-theme='dark'] .fatigue-bar__percent {
+  color: rgba(248, 250, 252, 0.78);
+}
+
+[data-theme='dark'] .fatigue-bar__percent--missing,
+[data-theme='dark'] .fatigue-bar__score--empty {
+  color: rgba(248, 250, 252, 0.45);
+}
+
+[data-theme='dark'] .fatigue-bar__legend {
+  color: rgba(248, 250, 252, 0.6);
+}
+
+[data-theme='dark'] .fatigue-bar__score {
+  color: rgba(248, 250, 252, 0.85);
+}
+
+[data-theme='dark'] .fatigue-bar__track::after {
+  background: rgba(255, 255, 255, 0.32);
+}
+
+[data-theme='dark'] .fatigue-unranked {
+  --fatigue-accent: #adb5bd;
+  --fatigue-accent-soft: rgba(173, 181, 189, 0.18);
+  --fatigue-accent-strong: rgba(173, 181, 189, 0.62);
+  --fatigue-accent-border: rgba(173, 181, 189, 0.34);
+}
+
+@media (max-width: 575.98px) {
+  .fatigue-bar__row {
+    grid-template-columns: 3.5rem 1fr 2.75rem;
+    gap: 0.45rem;
+  }
+}
+
+
+// =============================================================================
+// Phase 2 Stage 2 — Stimulus-to-Fatigue Ratio (SFR) cards
+// =============================================================================
+// Two cards (planned + logged) sit at the top of /fatigue. They re-use the
+// .fatigue-{band} color tokens via the same CSS-custom-property pipeline as
+// .fatigue-badge so band coloring stays consistent across the page.
+
+.fatigue-page__sfr-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.85rem;
+}
+
+.fatigue-sfr-card {
+  --fatigue-accent: #198754;
+  --fatigue-accent-soft: rgba(25, 135, 84, 0.14);
+  --fatigue-accent-strong: rgba(25, 135, 84, 0.82);
+  --fatigue-accent-border: rgba(25, 135, 84, 0.32);
+  --fatigue-heading: #0f5132;
+  --fatigue-body: rgba(15, 81, 50, 0.82);
+  --fatigue-surface: rgba(255, 255, 255, 0.72);
+  --fatigue-surface-border: rgba(255, 255, 255, 0.55);
+
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.85rem 1.05rem 0.9rem;
+  border: 1px solid var(--fatigue-accent-border);
+  border-left: 0.3rem solid var(--fatigue-accent);
+  border-radius: 12px;
+  background:
+    linear-gradient(135deg, var(--fatigue-accent-soft), rgba(255, 255, 255, 0) 65%),
+    var(--fatigue-surface);
+  box-shadow:
+    0 0.4rem 1.1rem rgba(33, 37, 41, 0.08),
+    inset 0 1px 0 var(--fatigue-surface-border);
+}
+
+.fatigue-sfr-card__eyebrow {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fatigue-heading);
+}
+
+.fatigue-sfr-card__body {
+  display: flex;
+  align-items: baseline;
+  gap: 0.65rem;
+}
+
+.fatigue-sfr-card__value {
+  font-size: 1.85rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--fatigue-heading);
+}
+
+.fatigue-sfr-card__caption {
+  font-size: 0.78rem;
+  color: var(--fatigue-body);
+}
+
+.fatigue-sfr-card__note {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--fatigue-body);
+}
+
+[data-theme='dark'] .fatigue-sfr-card {
+  --fatigue-surface: rgba(30, 32, 40, 0.62);
+  --fatigue-surface-border: rgba(255, 255, 255, 0.08);
+  --fatigue-body: rgba(255, 255, 255, 0.78);
+  box-shadow:
+    0 0.5rem 1.25rem rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 var(--fatigue-surface-border);
+}
+
+@media (max-width: 575.98px) {
+  .fatigue-page__sfr-row {
+    grid-template-columns: 1fr;
+  }
+
+  .fatigue-sfr-card {
+    padding: 0.75rem 0.85rem;
+    border-left-width: 0.22rem;
+  }
+
+  .fatigue-sfr-card__value {
+    font-size: 1.6rem;
   }
 }

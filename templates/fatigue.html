@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Fatigue · Hypertrophy Toolbox{% endblock %}
+
+{% block content %}
+<section class="container fatigue-page py-4" data-testid="fatigue-page">
+    <header class="fatigue-page__header mb-4">
+        <h1 class="fatigue-page__title h3 mb-1">Fatigue meter</h1>
+        <p class="fatigue-page__subtitle text-muted mb-3">
+            Per-muscle breakdown for your planned program and recent logs.
+            Descriptive only — nothing here blocks a session.
+        </p>
+
+        <form method="get" action="{{ url_for('fatigue.fatigue_page') }}"
+              class="fatigue-page__period-form"
+              data-testid="fatigue-period-form">
+            <label for="fatigue-period" class="form-label me-2 mb-0">
+                Period:
+            </label>
+            <select id="fatigue-period"
+                    name="period"
+                    class="form-select form-select-sm d-inline-block w-auto"
+                    onchange="this.form.submit()"
+                    data-testid="fatigue-period-select">
+                {% for key in valid_periods %}
+                    <option value="{{ key }}"
+                            {% if key == period %}selected{% endif %}>
+                        {{ period_labels[key] }}
+                    </option>
+                {% endfor %}
+            </select>
+            <noscript>
+                <button type="submit" class="btn btn-sm btn-primary ms-2">
+                    Update
+                </button>
+            </noscript>
+        </form>
+    </header>
+
+    <div class="fatigue-page__sfr-row mb-4" data-testid="fatigue-sfr-row">
+        {% for side, sfr, stimulus, fatigue, fatigue_band, has_data in [
+            ('Planned', sfr_planned, planned_stimulus, planned_fatigue_score, planned_fatigue_band, planned_has_data),
+            ('Logged',  sfr_logged,  logged_stimulus,  logged_fatigue_score,  logged_fatigue_band,  logged_has_data),
+        ] %}
+            <article class="fatigue-sfr-card fatigue-{{ (fatigue_band or 'light') | replace('_','-') }}"
+                     data-testid="fatigue-sfr-{{ side | lower }}">
+                <header class="fatigue-sfr-card__head">
+                    <span class="fatigue-sfr-card__eyebrow">{{ side }} SFR</span>
+                </header>
+                <div class="fatigue-sfr-card__body">
+                    <span class="fatigue-sfr-card__value" data-testid="fatigue-sfr-{{ side | lower }}-value">
+                        {%- if sfr is none -%}
+                            —
+                        {%- else -%}
+                            {{ '%.2f' | format(sfr) }}
+                        {%- endif -%}
+                    </span>
+                    <span class="fatigue-sfr-card__caption">
+                        Stimulus {{ '%.1f' | format(stimulus) }}
+                        ÷ Fatigue {{ '%.1f' | format(fatigue) }}
+                    </span>
+                </div>
+                <p class="fatigue-sfr-card__note">
+                    {%- if not has_data -%}
+                        No {{ side | lower }} data in this window yet.
+                    {%- elif sfr is none -%}
+                        Not enough fatigue to compute a ratio.
+                    {%- else -%}
+                        Higher means more stimulus per unit of fatigue.
+                    {%- endif -%}
+                </p>
+            </article>
+        {% endfor %}
+    </div>
+
+    <div class="fatigue-page__bars" data-testid="fatigue-bars">
+        {% if not planned_has_data and not logged_has_data %}
+            <p class="text-muted" data-testid="fatigue-empty-state">
+                No planned exercises and no logged sessions yet.
+                Add a routine in <a href="{{ url_for('workout_plan.workout_plan') }}">Plan</a>
+                to see per-muscle fatigue here.
+            </p>
+        {% else %}
+            <div class="fatigue-page__legend small text-muted mb-2">
+                Sorted by % of typical recoverable range (highest first).
+                Muscles without a typical range yet appear at the bottom
+                with “—”.
+            </div>
+            <div class="fatigue-page__bar-list" data-testid="fatigue-bar-list">
+                {% for row in muscle_rows %}
+                    {% include '_fatigue_muscle_bar.html' with context %}
+                {% endfor %}
+            </div>
+            {% if not logged_has_data and planned_has_data %}
+                <p class="text-muted small mt-3" data-testid="fatigue-no-logged">
+                    No logged sessions in this window — logged sub-bars show “—”.
+                </p>
+            {% endif %}
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

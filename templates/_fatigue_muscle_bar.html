@@ -1,0 +1,56 @@
+{#
+  Per-muscle fatigue bar (Phase 2 Stage 2).
+
+  Inputs (passed via {% include with context %}):
+    row: dict with shape produced by utils.fatigue_data._merge_muscle_rows:
+      - muscle               : str
+      - planned              : dict | None  ({score, band, percent_of_mrv, has_landmarks})
+      - logged               : dict | None  (same shape)
+      - has_landmarks        : bool
+      - max_percent_of_mrv   : float | None  — used for the headline % readout
+      - max_score            : float
+#}
+{% set planned = row.planned %}
+{% set logged = row.logged %}
+{% set has_landmarks = row.has_landmarks %}
+<article class="fatigue-bar{% if not has_landmarks %} fatigue-bar--unranked{% endif %}"
+         data-muscle="{{ row.muscle }}"
+         data-has-landmarks="{{ 'true' if has_landmarks else 'false' }}"
+         data-testid="fatigue-muscle-bar">
+    <header class="fatigue-bar__head">
+        <h3 class="fatigue-bar__name h6 mb-0">{{ row.muscle }}</h3>
+        <span class="fatigue-bar__percent" data-testid="fatigue-percent">
+            {%- if has_landmarks and row.max_percent_of_mrv is not none -%}
+                {{ '%.0f%%' | format(row.max_percent_of_mrv) }}
+            {%- else -%}
+                <span class="fatigue-bar__percent--missing" aria-label="No typical range defined yet">—</span>
+            {%- endif -%}
+        </span>
+    </header>
+
+    {% for side, data in [('Planned', planned), ('Logged', logged)] %}
+        {% set band_class = (data.band | replace('_','-')) if (data and data.band) else 'unranked' %}
+        <div class="fatigue-bar__row fatigue-{{ band_class }}"
+             data-testid="fatigue-bar-{{ side | lower }}">
+            <span class="fatigue-bar__legend">{{ side }}</span>
+            <div class="fatigue-bar__track"
+                 role="meter"
+                 aria-label="{{ side }} fatigue for {{ row.muscle }}"
+                 aria-valuenow="{{ '%.1f' | format(data.score) if data else '0' }}">
+                {% if data %}
+                    {% set pct = (data.percent_of_mrv if data.percent_of_mrv is not none else 0) %}
+                    {% set width = pct if has_landmarks else 8 %}
+                    <div class="fatigue-bar__fill"
+                         style="width: {{ [width, 150] | min }}%"></div>
+                {% endif %}
+            </div>
+            <span class="fatigue-bar__score">
+                {%- if data -%}
+                    {{ '%.1f' | format(data.score) }}
+                {%- else -%}
+                    <span class="fatigue-bar__score--empty">—</span>
+                {%- endif -%}
+            </span>
+        </div>
+    {% endfor %}
+</article>
