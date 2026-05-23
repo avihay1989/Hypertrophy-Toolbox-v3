@@ -49,6 +49,32 @@ The `prepare_visual_db.py` step is required because the committed seed at `e2e/f
 - Targeted pytest: `.venv/Scripts/python.exe -m pytest tests/test_profile_estimator.py -q` → **91 passed in 6.56s**.
 - Targeted Playwright: `npx playwright test e2e/user-profile.spec.ts -g "coverage map renders workout-cool" --project=chromium` → 1 passed in 9.4s (run alongside the §A BFP/ACE test, 2 passed combined).
 
+## 2026-05-23 — §5 curated YouTube IDs expanded + curation closed (commit `ff244aa`)
+
+**Scope**: PLANNING.md §5.4 — the manual top-N curation step that the modal/search-fallback infrastructure was designed to feed. Second pass on top of `cf21191`; also closes `LEFTOVERS_BY_PRIORITY.md` row #12 by diminishing returns.
+
+### What landed
+
+| Commit | What landed |
+|---|---|
+| `ff244aa` | `content(workout-cool): expand curated YouTube references`. Adds 20 owner-vetted exercise → YouTube ID mappings to `data/youtube_curated_top_n.csv`, taking the file from 36 to **56 curated rows + header**. Validated with `scripts/apply_youtube_curated.py --dry-run` then applied without `--dry-run`. `tests/test_youtube_video_id.py` exercised. |
+
+### Curation closed by diminishing returns
+
+Triage of the remaining ~1,841 uncurated catalogue rows against actual usage in `user_selection` + `workout_log` shows all but one sit at 0–1 combined uses; the lone exception is `Barbell Close Grip Bench Press` (2 uses). The 56-row set already covers every common/core lift with meaningful usage signal — squats, deadlifts, presses, rows, pulldowns, dips, curls, extensions, hip thrusts, calves, plus the long-tail variants the starter plans use. Further expansion would require fabricating unvalidated YouTube IDs, which is strictly worse than the search fallback (which always produces a working `<exercise name> exercise form` query). The hybrid behavior in `PLANNING.md §5.4` was always the design intent.
+
+Reopen flow (if owner ever supplies more vetted IDs):
+
+1. Append rows to `data/youtube_curated_top_n.csv`.
+2. `.venv\Scripts\python.exe scripts\apply_youtube_curated.py --dry-run` then without `--dry-run`. The importer is idempotent + all-or-nothing.
+3. `.venv\Scripts\python.exe -m pytest tests/test_youtube_video_id.py -q`.
+
+`data/database.db` is runtime-only and not committed; the CSV + apply script are the committed source of truth.
+
+### Verification
+
+- `scripts/apply_youtube_curated.py` is idempotent and validated by `tests/test_youtube_video_id.py` (covers schema, validation, route-contract behavior).
+
 ## 2026-05-22 — §5 curated YouTube IDs populated (commit `cf21191`)
 
 **Scope**: PLANNING.md §5.4 — the manual top-N curation step that the modal/search-fallback infrastructure was designed to feed.

@@ -4,9 +4,9 @@ This file is the execution source of truth for autonomous development sessions. 
 
 ## Current Objective
 
-**As of 2026-05-23 (latest session): local `main` is 9 commits ahead of `origin/main`.** The lead-up to today's hygiene pass: Body Composition Issue #21 fully shipped via PR #31 (squash `20b4b24`, 2026-05-20) and hardened in PR #32 (`94482d7`, 2026-05-21, `captured_at` ISO validation + JS↔Python parity test); response-contract exceptions migrated 2026-05-21 (`cbf745a`); §5 YouTube curation landed 2026-05-22 (`cf21191`, 36 rows). Today's session triaged a dirty working tree with six in-flight scopes and landed all six as separate commits on local `main` (Profile #17/#18 hooks `de3e4d0`; workout-cool §3.6 Profile bodymap `18ad223`; navbar hover dropdowns `ef475cc`; navbar icon accents + motion `89561df`; Body Composition visual baselines `40d7dd2`; ui-hardening spec + Known Issues table `0ae5b39`), plus a docs-only hygiene commit on top of those. No active workstream remains in-flight; awaiting push of the 9 ahead-of-origin commits.
+**As of 2026-05-23 (latest session): local `main` is fully up to date with `origin/main` at `ff244aa` (0 commits ahead).** The 2026-05-23 hygiene session, the six in-flight scope commits, the KI-001 / KI-009 / §4.6 baseline / §5 expansion follow-ups, and the YouTube curation closure have all landed. The lead-up: Body Composition Issue #21 fully shipped via PR #31 (squash `20b4b24`, 2026-05-20) and hardened in PR #32 (`94482d7`, 2026-05-21, `captured_at` ISO validation + JS↔Python parity test); response-contract exceptions migrated 2026-05-21 (`cbf745a`); §5 YouTube curation landed in two passes — `cf21191` (2026-05-22, 36 rows) + `ff244aa` (2026-05-23, +20 rows → **56 cumulative**, curation closed by diminishing returns). 2026-05-23 also landed the six in-flight scopes as separate commits (Profile #17/#18 hooks `de3e4d0`; workout-cool §3.6 Profile bodymap `18ad223`; navbar hover dropdowns `ef475cc`; navbar icon accents + motion `89561df`; Body Composition visual baselines `40d7dd2`; ui-hardening spec + Known Issues table `0ae5b39`), the docs-only hygiene commit, the KI-001 filter-cache deletion (`6d87284`), the KI-009 xlsxwriter exporter (`4bbe06b`) + docs (`f944366`), and the §4.6 visual-baseline `toHaveScreenshot()` lock-in (`b5b8c7a`). No active workstream remains in-flight.
 
-workout.cool §4 (free-exercise-db thumbnails) is **fully shipped on `origin/main`**. PR #20 (squash `8b348a5`) landed the feature; PR #23 (`bfd9087`) landed the post-merge handoff refresh + nav-dropdown e2e stabilization + dependency pin bumps; PR #22 (`631b5f8`) landed the §4.6 visual-baseline spec + seed. workout.cool §5 reference-video infrastructure shipped 2026-05-11 and a first curated batch (36 rows) landed 2026-05-22 (`cf21191`); long-tail rows still use the search fallback. workout.cool §3.6 Profile coverage bodymap was previously "deferred indefinitely"; it shipped locally on 2026-05-23 (`18ad223`).
+workout.cool §4 (free-exercise-db thumbnails) is **fully shipped on `origin/main`**. PR #20 (squash `8b348a5`) landed the feature; PR #23 (`bfd9087`) landed the post-merge handoff refresh + nav-dropdown e2e stabilization + dependency pin bumps; PR #22 (`631b5f8`) landed the §4.6 visual-baseline spec + seed. workout.cool §5 reference-video infrastructure shipped 2026-05-11; the curated content shipped in two passes — `cf21191` (2026-05-22, 36 rows) + `ff244aa` (2026-05-23, +20 rows → **56 cumulative**). Curation is **closed by diminishing returns** (only 1 of the remaining ~1,841 uncurated rows has >1 actual uses; long-tail uses the search fallback by design). workout.cool §3.6 Profile coverage bodymap was previously "deferred indefinitely"; it shipped locally on 2026-05-23 (`18ad223`).
 
 As of 2026-05-20 (later in the day), the fatigue meter workstream has been **closed via an owner-approved Stage 4 calibration review** that walked PLANNING.md §4.1 → §4.3 to a no-change decision. This is a docs-only close — `utils/fatigue.py`, `tests/test_fatigue.py`, and `scripts/fatigue_calibration_report.py` were **not touched**. After this close, no workstream remains in-flight.
 
@@ -29,9 +29,14 @@ state before choosing what to do next.
    2026-05-23 via local commit `de3e4d0`. Display-only BFP/ACE line + Lean
    Mass sub-line on the Profile insights card, read from the latest
    `body_composition_snapshots` row.
-3. **workout.cool §5 YouTube curation — first batch done.** `cf21191`
-   (2026-05-22) populated 36 curated rows; expanding the curation set is
-   optional content work.
+3. **workout.cool §5 YouTube curation — DONE (closed by diminishing returns
+   2026-05-23).** `cf21191` (2026-05-22) populated 36 curated rows; `ff244aa`
+   (2026-05-23) added 20 more for **56 cumulative**. Usage triage showed all
+   remaining ~1,841 uncurated rows sit at 0–1 actual uses except one edge
+   case, so the search fallback handles the long tail by design. Do not
+   expand further without owner-vetted IDs. See
+   [`docs/workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md`](workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md)
+   "Curation Closed".
 4. **Do not reopen fatigue work.** Phase 1 is closed; Stage 4 is closed with no
    threshold changes. No Phase 2 planning or fatigue edits without fresh owner
    override.
@@ -42,11 +47,16 @@ state before choosing what to do next.
 
 ## Current Branch
 
-`main`, **9 commits ahead of `origin/main` at `94482d7`** (PR #32 squash). Working tree has only `data/database.db` runtime dirt (owner-approved kept dirty per `CLAUDE.md` agents-must-not list; do not commit). Awaiting `git push` of the 9 ahead-of-origin commits. Feature branch `feat/body-composition-issue-21` was deleted locally and on the remote at the PR #31 merge.
+`main`, **fully up to date with `origin/main` at `ff244aa`** (0 commits ahead). Working tree has only `data/database.db` runtime dirt (owner-approved kept dirty per `CLAUDE.md` agents-must-not list; do not commit). Feature branch `feat/body-composition-issue-21` was deleted locally and on the remote at the PR #31 merge.
 
-Local commits ahead of `origin/main` (newest first):
+Recently landed on `origin/main` (newest first):
 
-- `<docs commit>` (2026-05-23) — **docs hygiene**. Doc-only refresh after the 2026-05-23 six-scope landing: closes Body Composition Issue #21, marks workout-cool §3.6 as shipped, updates ACTIVE_DEVELOPMENT.md + MASTER_HANDOVER.md + CHANGELOG.md + E2E_TESTING.md + CSS_OWNERSHIP_MAP.md + CLAUDE_MD_AUDIT.md + ai_workflow/INDEX.md + docs/README.md + LEFTOVERS_BY_PRIORITY.md, and adds two new EXECUTION_LOG entries.
+- `ff244aa` (2026-05-23) — **content(workout-cool): expand curated YouTube references** (+20 owner-vetted rows on top of `cf21191`; `data/youtube_curated_top_n.csv` now 56 rows + header; curation closed by diminishing returns — see [`docs/workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md`](workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md) "Curation Closed").
+- `b5b8c7a` (2026-05-23) — **test(workout-cool §4.6): lock visual-baseline thumbnails via `toHaveScreenshot()`** (18 committed PNG baselines at `maxDiffPixelRatio: 0.01`; closes LEFTOVERS row #13).
+- `f944366` (2026-05-23) — **docs: record KI-009 resolution**.
+- `4bbe06b` (2026-05-23) — **fix(workout-log): replace pandas with xlsxwriter direct writer** (KI-009 fix; drops pandas/numpy/python-dateutil from `requirements.txt`).
+- `6d87284` (2026-05-23) — **chore: remove dormant filter cache (KI-001 resolved by deletion)**.
+- 2026-05-23 docs hygiene commit — refresh after the six-scope landing.
 - `0ae5b39` (2026-05-23) — **test+docs: lock down toast/form/modal contracts and add Known Issues table**. New `e2e/ui-hardening.spec.ts` (12 tests) + new `docs/UI_SCENARIOS_GAP_ANALYSIS.md §0` (KI-001..KI-008).
 - `40d7dd2` (2026-05-23) — **test(visual): add Body Composition snapshot baselines**. Adds `/body_composition` to the visual.spec.ts sweep + 6 PNG baselines (desktop/tablet/mobile × light/dark); migration script applies `add_body_composition_snapshots_table()` so the page renders under the visual harness.
 - `89561df` (2026-05-23) — **feat(navbar): accent colors + hover motion on Profile, Body Composition, and Backup icons**. CSS-only color accents + hover/focus motion + reduced-motion opt-out; swaps Profile icon to `fa-user-alt`.

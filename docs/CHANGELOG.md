@@ -28,6 +28,11 @@ All notable changes to Hypertrophy Toolbox v3.
 - Desktop pointer-hover users now open Bootstrap dropdowns on `mouseenter` / `focusin`. Gated on `(hover: hover) and (pointer: fine) and (min-width: 992px)` so touch and mobile remain click-to-open. Keyboard handling (ArrowDown / Enter / Space / Escape) routes through the same open/close timers. Local commit `ef475cc`.
 - Added saturated brand-color accents (violet / teal / amber) and a hover/focus pop-and-rotate keyframe to the static nav icons (`#nav-user-profile`, `#nav-body-composition`, `#nav-backup`). Dark-theme overrides and `prefers-reduced-motion` opt-out included. Swapped the Profile icon from `fa-user-circle` to `fa-user-alt`. Local commit `89561df`.
 
+### workout.cool §5 — Curated YouTube IDs (Second Batch + Curation Closed)
+
+- `data/youtube_curated_top_n.csv` expanded from 36 to **56 curated rows + header** with 20 owner-vetted additions; `scripts/apply_youtube_curated.py` re-applied so matching `exercises.youtube_video_id` cells are populated. Commit `ff244aa`.
+- Curation closed by diminishing returns. Usage triage against `user_selection` + `workout_log` showed all remaining ~1,841 uncurated catalogue rows sit at 0–1 combined uses except `Barbell Close Grip Bench Press` at 2 uses; the 56-row set already covers every common/core lift with meaningful usage signal. Further expansion would require fabricating unvalidated IDs, which is worse UX than the search fallback. The designed hybrid behavior (curate top-N, search-fallback the long tail) stands. Closes `LEFTOVERS_BY_PRIORITY.md` row #12.
+
 ### Visual + Hardening
 
 - Added Body Composition page baselines to `e2e/visual.spec.ts` (6 PNGs: desktop / tablet / mobile × light / dark). The visual-DB seed script now applies `add_body_composition_snapshots_table()` so the page renders without 500ing under the harness. Local commit `40d7dd2`.

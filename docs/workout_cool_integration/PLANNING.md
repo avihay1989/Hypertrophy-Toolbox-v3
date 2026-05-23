@@ -1,6 +1,6 @@
 # workout.cool Integration — Planning
 
-**Status:** §3 (Simple-mode body-map hybrid swap, workout-plan only) shipped 2026-04-29. §5 (YouTube reference video modal, both `/workout_plan` and `/workout_log`) shipped on `main` 2026-05-11; curated YouTube IDs landed 2026-05-22 (`cf21191`, 36 rows). §4 (asset vendoring, mapping curation, route contracts, thumbnail rendering + `escapeHtml()` rollout, §4.6 visual baselines) fully shipped on `main` 2026-05-15 / 2026-05-18 (PR #20 + PR #22 + PR #23). §3.6 Profile coverage body map shipped locally 2026-05-23 (commit `18ad223`); see "§3.6 Profile coverage bodymap" below for the post-ship contract. See [`EXECUTION_LOG.md`](EXECUTION_LOG.md) for the audit trail.
+**Status:** §3 (Simple-mode body-map hybrid swap, workout-plan only) shipped 2026-04-29. §5 (YouTube reference video modal, both `/workout_plan` and `/workout_log`) shipped on `main` 2026-05-11; curated YouTube IDs landed in two passes — `cf21191` (2026-05-22, 36 rows) + `ff244aa` (2026-05-23, +20 rows → **56 cumulative**, curation closed by diminishing returns). §4 (asset vendoring, mapping curation, route contracts, thumbnail rendering + `escapeHtml()` rollout, §4.6 visual baselines) fully shipped on `main` 2026-05-15 / 2026-05-18 (PR #20 + PR #22 + PR #23). §3.6 Profile coverage body map shipped locally 2026-05-23 (commit `18ad223`); see "§3.6 Profile coverage bodymap" below for the post-ship contract. See [`EXECUTION_LOG.md`](EXECUTION_LOG.md) for the audit trail.
 **Owner:** Yaakov Avihai Shai
 **Source project:** [Snouzy/workout-cool](https://github.com/Snouzy/workout-cool) — MIT-licensed (Mathias Bradiceanu, 2023).
 **Plan revision:** 2026-04-29 r4 — folds codex 5.5 third-review precision fixes. Key r4 changes: §3.4.1 pseudocode flattens simple keys through `SIMPLE_TO_ADVANCED_MAP` because `selectedMuscles` stores advanced child keys, not simple keys; function names corrected to `toggleMuscle()` and `updateAllRegionStates()` (the actual symbols at [muscle-selector.js:554,617](../../static/js/modules/muscle-selector.js#L554)); §3.5 `muscle-selector.js` bullet describes a local `SVG_PATHS` / `getSvgPathForMode()` change with absolute `/static/vendor/...` URLs and drops the `VENDOR_SLUG_TO_CANONICAL` mention (new SVGs ship pre-canonicalized `data-canonical-muscles`); §3.7 multi-key state-derivation test enumerates expanded advanced children (`lats, rhomboids, teres-major, teres-minor, erector-spinae`) and adds rhomboids-only / erector-spinae-only `partial` regression cases; column renamed `media_id` → `media_path` to reflect actual content (full relative path) with strict path-shape validation; §4.6 `escapeHtml()` unit test uses synthetic name `Coach's <Test> Press` so the input actually exercises quote and angle-bracket escaping (`Bulgarian Split Squat` has neither).
@@ -434,12 +434,14 @@ free-exercise-db does not include YouTube IDs. Three options:
 **Decision: option 3 (hybrid)** — solves coverage without committing to populating all ~1,897 rows.
 
 **Current shipped content state:** §5 shipped with the modal, schema, route
-contracts, importer, and tests in place, but the curated video CSV is still a
-header-only scaffold. Until `data/youtube_curated_top_n.csv` is populated and
-`scripts/apply_youtube_curated.py` is run, every exercise will use the intended
-YouTube search fallback. See
-[YOUTUBE_REFERENCE_VIDEOS.md](YOUTUBE_REFERENCE_VIDEOS.md) for the curation
-checklist and UX follow-up options.
+contracts, importer, and tests in place. The curated CSV
+(`data/youtube_curated_top_n.csv`) ships with **56 rows + header** as of
+`ff244aa` (cumulative across `cf21191` 36 rows + `ff244aa` +20 rows). Matched
+rows open the embedded iframe; uncurated rows use the intended YouTube search
+fallback. Curation is **closed by diminishing returns** — see
+[YOUTUBE_REFERENCE_VIDEOS.md](YOUTUBE_REFERENCE_VIDEOS.md) "Curation Closed"
+for the closing rationale, the owner-driven reopen flow, and UX follow-up
+options.
 
 ### 5.5 Frontend — `/workout_log` is in scope
 
@@ -460,7 +462,7 @@ The play-icon button appears on **both** `/workout_plan` and `/workout_log`. Rev
 **Add:**
 - `static/js/modules/exercise-video-modal.js`.
 - `templates/partials/exercise_video_modal.html`.
-- `data/youtube_curated_top_n.csv` — committed manual mapping `exercise_name, youtube_video_id` for the curated top-N (target ~50 most-used exercises). As of `cf21191` (2026-05-22) the CSV ships with **36 curated rows + header**; populating further rows is content curation, not missing modal infrastructure. See [YOUTUBE_REFERENCE_VIDEOS.md](YOUTUBE_REFERENCE_VIDEOS.md).
+- `data/youtube_curated_top_n.csv` — committed manual mapping `exercise_name, youtube_video_id` for the curated top-N (target ~50 most-used exercises). Cumulatively as of `ff244aa` (2026-05-23, +20 rows on top of `cf21191`'s starter 36) the CSV ships with **56 curated rows + header**. Curation is **closed by diminishing returns** — all remaining uncurated catalogue rows sit at 0–1 actual uses except `Barbell Close Grip Bench Press` (2 uses); long-tail rows use the search fallback by design. See [YOUTUBE_REFERENCE_VIDEOS.md](YOUTUBE_REFERENCE_VIDEOS.md) "Curation Closed" for the closing rationale and reopen flow.
 - `scripts/apply_youtube_curated.py` — one-shot importer reading the CSV and writing `youtube_video_id` into `exercises` (idempotent, all-or-nothing). Validates: every `exercise_name` exists in `exercises` (case-insensitive); every `youtube_video_id` matches `^[A-Za-z0-9_-]{11}$`; no duplicate names; no blank IDs. Fails loudly on any violation.
 - `tests/test_youtube_video_id.py` — see §5.8.
 

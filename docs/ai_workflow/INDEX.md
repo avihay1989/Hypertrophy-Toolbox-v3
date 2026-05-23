@@ -11,7 +11,7 @@
 ## Active feature plans
 - [Fatigue meter](../fatigue_meter/PLANNING.md) — closed; Phase 1 + Stage 4 shipped (Stage 4 closed 2026-05-20 with no threshold changes). Phase 2 entry remains a separate owner decision.
 - [workout.cool integration](../workout_cool_integration/PLANNING.md) — §3 + §3.6 + §4 + §4.6 + §5 all shipped (§3.6 Profile bodymap landed 2026-05-23, `18ad223`; §5 first curated batch landed 2026-05-22, `cf21191`)
-- [YouTube reference videos](../workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md) — 36 curated rows shipped 2026-05-22; expanding the set is content work
+- [YouTube reference videos](../workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md) — closed 2026-05-23 (`cf21191` 36 rows + `ff244aa` +20 rows = **56 curated rows**); long tail uses the search fallback by design
 - [User profile](../user_profile/PLANNING.md) — questionnaire + bodymap + insights card + Body Composition display hooks (#17/#18) all shipped
 - [Body Composition Issue #21](../body_composition/development_issues.md) — Resolved 2026-05-23; PR #31 (`20b4b24`) + PR #32 (`94482d7`) + Profile hooks (`de3e4d0`)
 
