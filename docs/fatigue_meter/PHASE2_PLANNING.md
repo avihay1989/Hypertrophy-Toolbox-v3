@@ -1,11 +1,12 @@
 # Fatigue Meter — Phase 2 PLANNING
 
-**Status:** planning extracted / awaiting owner decision. **Phase 2 is NOT approved for implementation.**
+**Status:** **Stage 0 CLOSED 2026-05-23** — scope locked **Path 1** (planned + logged side-by-side + period selector on day one). **Implementation greenlight is a SEPARATE explicit owner action — do not start Stage 2 until owner says "start."**
 **Date extracted:** 2026-05-23
+**Stage 0 closed:** 2026-05-23
 **Source:** split out of [`PLANNING.md`](PLANNING.md) Stage 5/6 and [`BRAINSTORM.md`](BRAINSTORM.md) (§4–§9, §11, §13, §20 Phase 2 matrix).
 **Predecessor state:** Phase 1 shipped 2026-05-03 (PR #7, single global server-rendered badge). [Stage 4 closed 2026-05-20](calibration-notes.md) by owner-approved felt-label review (4 of 5 anchors agreed; no threshold changes). `utils/fatigue.py`, `tests/test_fatigue.py`, and `scripts/fatigue_calibration_report.py::SCENARIOS` are the locked Phase 1 working state and must not be edited without a fresh owner override.
 
-This document mirrors the shape of `PLANNING.md` (entry / tasks / exit per stage) but contains **no Tasks-ready boxes** — Stage 0 of Phase 2 (lock D2.x decisions) has not started.
+This document mirrors the shape of `PLANNING.md` (entry / tasks / exit per stage). Stage 0 (lock D2.x decisions) closed 2026-05-23 via owner decision walk; Stage 1 prerequisites have not started.
 
 ---
 
@@ -23,22 +24,25 @@ Stage 4's calibration close confirmed the §24.B thresholds are sane against one
 
 ---
 
-## 2. Recommended Phase 2 MVP scope
+## 2. Locked Phase 2 scope (Path 1 — Stage 0 close 2026-05-23)
 
-The smallest credible Phase 2 that delivers user-visible value on top of Phase 1:
+Owner-selected scope after Stage 0 walk. Larger than the original "MVP" draft — adds the planned+logged side-by-side view and the period selector on day one. Still purely additive, still no schema, still no API.
 
 - **(a) Local-channel split.** Per-muscle fatigue accumulator (`BRAINSTORM.md §4.2` — Channel A only). Sum `set_fatigue × muscle_contribution_weight` grouped by muscle, surfaced as a per-muscle bar list.
-- **(b) Dedicated `/fatigue` route + page.** New blueprint, new template. Houses the per-muscle breakdown and the SFR card. The existing badge on `/session_summary` and `/weekly_summary` stays as-is and gains a "View per-muscle breakdown →" link (`BRAINSTORM.md §7` Option C).
+- **(b) Dedicated `/fatigue` route + page.** New blueprint, new template. Houses the per-muscle breakdown and the SFR card(s). The existing badge on `/session_summary` and `/weekly_summary` stays as-is and gains a "View per-muscle breakdown →" link (`BRAINSTORM.md §7` Option C).
 - **(c) Per-muscle MEV/MAV/MRV defaults.** Hardcoded constants per `BRAINSTORM.md §5` table. No UI override (carry forward Phase 1's D2 stance: defaults only in V2).
-- **(d) Stimulus-to-Fatigue Ratio (SFR) card.** Reuses `effective_sets` output as the stimulus proxy; divides by the Phase-1 fatigue score. Display with a sentinel for the `fatigue == 0` case (per `BRAINSTORM.md §16.1` SFR test row).
+- **(d) Stimulus-to-Fatigue Ratio (SFR) card(s).** Reuses `effective_sets` output as the stimulus proxy; divides by the Phase-1 fatigue score. Two cards rendered side-by-side (one for planned, one for logged) per (e). Display with a sentinel for the `fatigue == 0` case (per `BRAINSTORM.md §16.1` SFR test row).
+- **(e) Planned + Logged side-by-side rendering (EXPANSION vs original draft).** Every per-muscle bar shows two stacked sub-bars: one from `user_selection` (planned), one from `workout_log` (logged for the selected window). SFR also renders twice. Owner-locked at Stage 0; original doc had this as Phase 3 (D2.5 carry-forward). Doubles Stage 2 UI surface area — see chapter table in §5.
+- **(f) Period selector on day one (EXPANSION vs original draft).** A dropdown at the top of `/fatigue` toggles aggregation window: **this session**, **this week**, **last 4 weeks**. Owner-locked at Stage 0; original doc had this as a §4 stretch decision. Requires new 4-week aggregation code (does not exist anywhere else in the app) — see chapter table in §5.
+- **(g) Bar sort order.** Bars sorted by **% of MRV, highest first** (most stressed muscle floats to the top). Owner-locked at Stage 0; original doc had this as §4 stretch.
 
-That's it. Four concrete additions, all additive, no schema change, no API.
+Seven concrete additions, all additive, no schema change, no API.
 
 ---
 
 ## 3. Deferred to Phase 3 or later
 
-Explicitly out of Phase 2 MVP, kept on file:
+Explicitly out of Phase 2 Path 1 scope, kept on file:
 
 - **Systemic + Joint channels** (`BRAINSTORM.md §4.3` Channel B, §4.4 Channel C). Local-first ships the largest single piece of user value; the other two channels can layer in once the per-muscle UX is validated.
 - **Decay model** (`BRAINSTORM.md §4.5`). Cheap to add later (one function with τ per channel); expensive to debug if shipped wrong. Phase 1's D6 lock applies forward.
@@ -46,32 +50,38 @@ Explicitly out of Phase 2 MVP, kept on file:
 - **Technique modifier** (`BRAINSTORM.md §3.4`). Phase 1's D7 lock applies forward — we still don't capture the data.
 - **Calibration table** (`user_fatigue_thresholds`). **First schema change in the feature** — belongs to Phase 3 and triggers the `BRAINSTORM.md §18` rollback escalation.
 - **`/api/fatigue/*` endpoints.** Phase 1's D9 lock applies forward. Revisit only when a client genuinely needs JSON (e.g. a future mobile companion or an external integration).
-- **Logged-data path.** Phase 1's D10 override picked planned-only (`user_selection`); a future stage may want to surface "planned vs actual" side-by-side. Out of MVP because it doubles the surface area.
-- **Plan-projection mode in a dedicated route** (`BRAINSTORM.md §9` Phase 3). Subsumed by the Phase-1 D10 override (Phase 1 *is* the projection path); a dedicated projection toggle is unnecessary until logged-data ships.
+- **Per-muscle SFR** (D2.6 stretch). Page-level SFR ships in Path 1; per-muscle SFR card-per-muscle stays deferred — feasibility check moves into Stage 1 dependency review.
+- **Catalog cleanup of `movement_pattern` NULLs** (454/1897 rows). Movement pattern is not used by per-muscle math, so Phase 2 ships without these cleaned. Track as a separate data-quality task.
+- **Plan-projection mode in a dedicated route** (`BRAINSTORM.md §9` Phase 3). Subsumed by the Phase-1 D10 override; planned + logged side-by-side (now in Path 1) is the modern equivalent and removes the need for a separate projection toggle.
+
+**Moved INTO Phase 2 Path 1** (were previously deferred in the draft): logged-data path (D2.5), period selector (was §4 stretch).
 
 ---
 
-## 4. Open decisions for the owner
+## 4. Decisions — Stage 0 LOCKED 2026-05-23
 
-Same shape as `PLANNING.md §0.1` and `BRAINSTORM.md §13` / §24.A. **None of these are locked.** A future Stage 0 walk-through will tick approve or write an override on each row before any implementation begins.
+Same shape as `PLANNING.md §0.1` and `BRAINSTORM.md §13` / §24.A. **All D2 rows locked by owner walk on 2026-05-23.** Sync back to `BRAINSTORM.md §13` as a new Phase-2 block is a Stage 1 prerequisite (do not overwrite Phase 1 D1–D13 rows).
 
-| # | Decision | Author recommendation | Notes |
+| # | Decision | Locked choice | Notes |
 |---|---|---|---|
-| **D2.1** | Channel split for Phase 2 | **Local-only (Channel A)** | §2(a) above. Systemic + Joint stay deferred to Phase 3. |
-| **D2.2** | Page placement | **Dedicated `/fatigue` + keep existing badge with a link** (Option C from `BRAINSTORM.md §7`) | Embed-only would crowd the summary cards; dedicated-only would orphan the badge. |
-| **D2.3** | Threshold source | **Hardcoded `BRAINSTORM.md §5` defaults; no UI override in V2** | Carries forward Phase 1's D2 stance. Calibration table is Phase 3. |
-| **D2.4** | Sets basis for per-muscle channel | **Raw sets** (carry forward Phase 1 D3 override) | Per-muscle channel needs to be CountingMode-invariant for the same reason the global badge is — fatigue has its own multipliers and shouldn't double-count effort. |
-| **D2.5** | Data scope | **Planned only (`user_selection`)** — same as Phase 1 D10 override | Adding logged side-by-side doubles UI surface area and Stage 2 chapter count; defer. |
-| **D2.6** | SFR denominator | **Global fatigue (Phase 1 score) for the page-level SFR card; per-muscle SFR is a stretch goal, not MVP** | Per-muscle SFR is more useful but requires per-muscle stimulus, which `effective_sets.py` already exposes — feasibility check moves into Stage 0. |
-| **D2.7** | Ship `/api/fatigue/*` in Phase 2? | **Skip** (carry forward Phase 1 D9) | Page is server-rendered; no client needs JSON. SQL-injection surface stays at zero. |
-| **D2.8** | Any schema touch in Phase 2? | **No** — additive only | First schema change is Phase 3 territory by design. If a Phase 2 chapter wants a table, that chapter does not belong in Phase 2. |
-| **D2.9** | Where does per-muscle data come from? | **Reuse `effective_sets`-style per-muscle aggregation against `user_selection`** — see `utils/effective_sets.py:402` pattern | Avoids forking a parallel pipeline; honors D13 (don't reuse aggregated rows — re-query with the fatigue-relevant columns). |
-| **D2.10** | Copy boundaries | **Same as Phase 1** — descriptive, no "MRV"/"MEV" in user-facing copy; bands stay neutral ("above the typical recoverable range") | `BRAINSTORM.md §11 Q7` + Phase 1 §3.3 verified non-prescriptive copy as a hard gate. |
+| **D2.1** | Channel split for Phase 2 | ✅ **Local-only (Channel A)** | §2(a). Systemic + Joint stay deferred to Phase 3. |
+| **D2.2** | Page placement | ✅ **Dedicated `/fatigue` + keep existing badge with a link** (Option C from `BRAINSTORM.md §7`) | Embed-only would crowd the summary cards; dedicated-only would orphan the badge. |
+| **D2.3** | Threshold source | ✅ **Hardcoded `BRAINSTORM.md §5` defaults; no UI override in V2** | Carries forward Phase 1's D2 stance. Calibration table is Phase 3. |
+| **D2.4** | Sets basis for per-muscle channel | ✅ **Raw sets** (carry forward Phase 1 D3 override) | Per-muscle channel needs to be CountingMode-invariant for the same reason the global badge is — fatigue has its own multipliers and shouldn't double-count effort. |
+| **D2.5** | Data scope | ✅ **Planned + Logged side-by-side** (EXPANSION vs draft recommendation of planned-only) | Owner picked richer view on day one. Doubles UI surface area + Stage 2 chapter count — see §5. |
+| **D2.6** | SFR denominator | ✅ **Global fatigue (Phase 1 score) for the page-level SFR card(s); per-muscle SFR remains deferred** | Two SFR cards (planned + logged) on the page per D2.5. Per-muscle SFR card-per-muscle is Phase 3 unless Stage 1 dependency review surfaces a cheap path. |
+| **D2.7** | Ship `/api/fatigue/*` in Phase 2? | ✅ **Skip** (carry forward Phase 1 D9) | Page is server-rendered; no client needs JSON. SQL-injection surface stays at zero. |
+| **D2.8** | Any schema touch in Phase 2? | ✅ **No** — additive only | First schema change is Phase 3 territory by design. If a Phase 2 chapter wants a table, that chapter does not belong in Phase 2. |
+| **D2.9** | Where does per-muscle data come from? | ✅ **Reuse `effective_sets`-style per-muscle aggregation** — query both `user_selection` (planned) and `workout_log` (logged) with the fatigue-relevant columns | Avoids forking a parallel pipeline; honors D13 (don't reuse aggregated rows — re-query). Two queries now (planned + logged), one per data source. |
+| **D2.10** | Copy boundaries | ✅ **Same as Phase 1** — descriptive, no "MRV"/"MEV" in user-facing copy; bands stay neutral ("above the typical recoverable range") | `BRAINSTORM.md §11 Q7` + Phase 1 §3.3 verified non-prescriptive copy as a hard gate. |
 
-Stretch decisions that may surface during Stage 0:
-- Whether per-muscle bars sort by absolute fatigue, by `% of MRV`, or by the user's choice.
-- Whether the page supports a period selector (this session / this week / 4-week) on day one or ships single-period and adds the selector later.
-- Whether the per-muscle empty-state shows all muscles at zero (visually noisy) or hides them with a "no planned exercises yet" copy block.
+Stretch decisions also locked at Stage 0:
+- ✅ Per-muscle bar sort: **by % of MRV, highest first** (most stressed surfaces first).
+- ✅ Period selector: **ship on day one** — dropdown with this-session / this-week / last-4-weeks (EXPANSION vs draft recommendation of single-period MVP).
+- ⏳ Per-muscle empty-state UX (all-zero bars vs collapsed empty-state copy): deferred to Stage 2.4 implementation choice — non-blocking, owner can decide at template draft time.
+
+**New decision surfaced at Stage 0 (not in original draft):**
+- ✅ **Catalog data-quality re-scope** — hybrid approach. Clean only the **633 `primary_muscle_group` NULLs** (Stage 1 prerequisite) since per-muscle math depends on them. Defer cleanup of the 454 `movement_pattern` NULLs since per-muscle math does not use that column. Surfaced by Codex review 2026-05-23.
 
 ---
 
@@ -79,30 +89,33 @@ Stretch decisions that may surface during Stage 0:
 
 Mirrors `PLANNING.md`'s stage shape. No tasks are pre-checked; this is a forecast, not a commitment.
 
-### Stage 0 — Lock D2.x decisions (humans only, no code)
-- Walk D2.1–D2.10 above (and any stretch decisions surfaced during the walk). Each row gets `approve` or an override + rationale.
-- Sync locked decisions back into `BRAINSTORM.md §13` as a new Phase-2 block (do not overwrite the Phase 1 D1–D13 rows).
-- Exit: every D2 row ticked.
+### Stage 0 — Lock D2.x decisions (humans only, no code) — ✅ CLOSED 2026-05-23
+- Walked D2.1–D2.10 + stretch decisions + catalog re-scope. Every row ticked — see §4.
+- **Outstanding Stage 0 → Stage 1 handoff:** sync locked decisions back into `BRAINSTORM.md §13` as a new Phase-2 block (do not overwrite Phase 1 D1–D13 rows). Carry this as a Stage 1 prerequisite.
 
-### Stage 1 — Pre-development prerequisites
-- Lock the post-Phase-1 baseline (current `CLAUDE.md §5` numbers — re-verify against the working tree at Stage 1 entry).
-- Data audit refresh: re-count NULL `primary_muscle` and NULL `movement_pattern` rows for catalog and `user_selection`. Phase 1 carved both >5% items as Phase-1 limitations; Phase 2 makes per-muscle the load-bearing path, so those carve-outs become Stage-1 blockers — they must be resolved or explicitly re-scoped.
-- Pre-flight backup via `POST /api/backups` (label `pre-fatigue-meter-phase-2-YYYY-MM-DD`).
-- Dependency check: confirm Phase 2 needs no new Python deps (likely true); confirm chart strategy (`BRAINSTORM.md §11 Q6` — match whatever `volume_splitter` already uses; do not introduce Chart.js unless that's already the answer).
-- Create feature branch.
-- Exit: baseline file + data-audit refresh + backup id + branch all recorded.
+### Stage 1 — Pre-development prerequisites (no app code; one DB write for catalog cleanup)
+- **Re-verify post-Phase-1 baseline** (current `CLAUDE.md §5` — 1374 pytest passes — re-verify against working tree at Stage 1 entry).
+- **Data audit refresh** — re-count NULL `primary_muscle_group` and NULL `movement_pattern` rows for catalog and `user_selection`. Stage 0 close recorded 633 / 454 catalog NULLs as of 2026-05-23; confirm those numbers still hold at Stage 1 entry.
+- **Catalog cleanup pass — 633 `primary_muscle_group` NULLs only** (D2-locked hybrid). `movement_pattern` cleanup deferred per §4 catalog row. This is the only Stage 1 step that writes to the DB — take the pre-flight backup FIRST. Add a regression test that asserts post-cleanup NULL count is zero for `primary_muscle_group` in the catalog.
+- **Pre-flight backup** via `POST /api/backups` (label `pre-fatigue-meter-phase-2-2026-05-23`).
+- **Dependency check** — confirm Phase 2 needs no new Python deps (likely true); confirm chart strategy (`BRAINSTORM.md §11 Q6` — match whatever `volume_splitter` already uses; do not introduce Chart.js unless that's already the answer).
+- **Sync Stage 0 decisions into `BRAINSTORM.md §13`** as a new Phase-2 block.
+- **Create feature branch** `feat/fatigue-meter-phase-2`.
+- Exit: baseline file + data-audit refresh + catalog cleanup commit + backup id + BRAINSTORM sync + branch all recorded.
 
-### Stage 2 — Implementation chapters
-Each chapter is a single small commit with its own gate, matching Phase 1's pattern.
+### Stage 2 — Implementation chapters (Path 1 — 8 chapters)
+Each chapter is a single small commit with its own gate, matching Phase 1's pattern. Path 1 expansion of D2.5 (planned+logged) and the period selector push chapter count from the original 6 to 8.
 
 | Chapter | Goal | Net new files | Net edited files |
 |---|---|---|---|
-| 2.1 | Extend `utils/fatigue.py` with per-muscle accumulators (pure functions; no DB). | — | `utils/fatigue.py` |
-| 2.2 | Unit tests for per-muscle math (extend `tests/test_fatigue.py`). | — | `tests/test_fatigue.py` |
-| 2.3 | Add `routes/fatigue.py` blueprint + `templates/fatigue.html` skeleton. Register in `app.py` AND `tests/conftest.py` (the #1 testing pitfall — Phase 1 R1). Use `success_response()` for any JSON the template inlines via a route helper; no `/api/*` route. | `routes/fatigue.py`, `templates/fatigue.html` | `app.py`, `tests/conftest.py` |
-| 2.4 | Per-muscle bar partial + SFR card. SCSS color/state additions for bars. | `templates/_fatigue_muscle_bar.html`, possibly `static/js/modules/fatigue.js` if a real chart lib is in play (otherwise inline SVG) | `scss/_fatigue.scss`, `scss/custom-bootstrap.scss` (extend `@import` block), `templates/fatigue.html` |
-| 2.5 | Nav link + dark-mode parity + copy review + "View per-muscle breakdown →" link from the existing summary badges back to `/fatigue`. | — | `templates/base.html`, `templates/_fatigue_badge.html` (link), run `/build-css` |
-| 2.6 | Docs + CHANGELOG + test counts + flip this `PHASE2_PLANNING.md` status banner. | — | `CLAUDE.md §5`, `docs/CHANGELOG.md`, `docs/fatigue_meter/PHASE2_PLANNING.md` |
+| 2.1 | Extend `utils/fatigue.py` with **per-muscle planned-side accumulator** (pure functions; no DB). | — | `utils/fatigue.py` |
+| 2.2 | Add **logged-side per-muscle accumulator + multi-window aggregation** (this-session / this-week / last-4-weeks) to `utils/fatigue.py`. Pure functions; no DB. The 4-week aggregator is genuinely new — no other module computes it. | — | `utils/fatigue.py` |
+| 2.3 | Unit tests for per-muscle math, logged-side math, and all three period windows (extend `tests/test_fatigue.py`). | — | `tests/test_fatigue.py` |
+| 2.4 | Add `routes/fatigue.py` blueprint + `templates/fatigue.html` skeleton + period-selector query-param handling. Register in `app.py` AND `tests/conftest.py` (the #1 testing pitfall — Phase 1 R1). Use `success_response()` for any JSON the template inlines via a route helper; no `/api/*` route. Route handler queries both `user_selection` (planned) and `workout_log` (logged) per D2.9. | `routes/fatigue.py`, `templates/fatigue.html` | `app.py`, `tests/conftest.py` |
+| 2.5 | Per-muscle bar partial rendering **planned + logged side-by-side sub-bars** (D2.5) sorted by % of MRV (locked stretch). SCSS color/state additions for bars including dual-bar layout. | `templates/_fatigue_muscle_bar.html`, possibly `static/js/modules/fatigue.js` if a real chart lib is in play (otherwise inline SVG) | `scss/_fatigue.scss`, `scss/custom-bootstrap.scss` (extend `@import` block), `templates/fatigue.html` |
+| 2.6 | **Two SFR cards** (planned + logged) at top of page, matching D2.5 dual rendering. Handle `fatigue == 0` sentinel for both. | — | `templates/fatigue.html`, `scss/_fatigue.scss` |
+| 2.7 | **Period selector frontend** — dropdown + state management (query param round-trip). Wire to backend query parameter from 2.4. Empty-state handling per period (e.g. "no logged sessions yet this week"). | — | `templates/fatigue.html`, `static/js/modules/fatigue.js` (if created) |
+| 2.8 | Nav link + dark-mode parity + copy review + "View per-muscle breakdown →" link from the existing summary badges back to `/fatigue`. Docs + CHANGELOG + test counts + flip this `PHASE2_PLANNING.md` status banner to SHIPPED. | — | `templates/base.html`, `templates/_fatigue_badge.html` (link), `CLAUDE.md §5`, `docs/CHANGELOG.md`, `docs/fatigue_meter/PHASE2_PLANNING.md`, run `/build-css` |
 
 Per-chapter gates follow Phase 1 §2.X exactly: pytest delta documented, targeted E2E spec green, no test-count regression in unrelated files, code-reviewer pass on diff before merge.
 
@@ -155,31 +168,48 @@ Phase 2 MVP is **purely additive** — no existing route handler logic changes, 
 Builds on Phase 1's `tests/test_fatigue.py` and Phase 1's E2E baselines (`CLAUDE.md §5`).
 
 ### Unit tests (extend `tests/test_fatigue.py`, pure-math, no DB)
-- Per-muscle accumulator:
+- Per-muscle accumulator (**planned side** — `user_selection`):
   - Single exercise with one primary muscle → that muscle's score = per-set × sets; all other muscles = 0.
   - Two exercises hitting overlapping muscles → per-muscle scores sum correctly.
   - Exercise with NULL `primary_muscle` → contribution falls into `unassigned` bucket; per-muscle total still computed; warning logged.
   - Secondary / tertiary muscle weighting matches `effective_sets.py` contribution constants.
-- SFR:
+- Per-muscle accumulator (**logged side** — `workout_log`, NEW per D2.5):
+  - Single logged session with one exercise → per-muscle scores match the planned-side math for the same rows.
+  - Mixed completed + skipped sets → only scored sets contribute; per-muscle total reflects actual completion.
+  - Empty `workout_log` for selected period → all muscles return 0; route still renders empty-state.
+- Period aggregation (NEW per period selector):
+  - `this_session` window → only rows with the latest session date are counted.
+  - `this_week` window → rows from Mon–Sun of the current ISO week.
+  - `last_4_weeks` window → rolling 28-day count, boundary day inclusive.
+  - Boundary tests: midnight rollovers, week-start day, daylight-saving day if applicable.
+- SFR (×2 cards — planned + logged):
   - `fatigue == 0` → SFR returns sentinel (`None` or documented marker), not crash, not `inf`.
   - `fatigue > 0, stimulus = 0` → SFR returns `0`.
   - Both positive → ratio matches expected to 3 decimal places on a hand-calculated example.
+  - Planned and logged SFR computed independently from each side's accumulator output.
 - Threshold classification (per-muscle bands):
   - Muscle below MEV → `light`.
   - Muscle in MAV → `moderate`.
   - Muscle above MRV → `very_heavy`.
   - Boundary values deterministic per docstring.
+  - Sort assertion: bars returned in descending `% of MRV` order (locked stretch).
 
 ### Integration (route handler returns correct template context)
-- `GET /fatigue` against seeded `user_selection` → 200, template context contains `muscles`, `sfr`, `period_label`, and the canonical `fatigue_*` keys.
-- `GET /fatigue` against empty `user_selection` → 200, empty-state copy rendered, no crash.
+- `GET /fatigue` against seeded `user_selection` + `workout_log` → 200, template context contains `muscles_planned`, `muscles_logged`, `sfr_planned`, `sfr_logged`, `period`, `period_label`, and the canonical `fatigue_*` keys.
+- `GET /fatigue?period=session` / `?period=week` / `?period=4week` → 200 each, aggregation matches the requested window.
+- `GET /fatigue?period=invalid` → 400 via `error_response()` OR silent fallback to `week` (decide at Stage 2.4 — pick whichever matches existing route conventions).
+- `GET /fatigue` against empty `user_selection` AND empty `workout_log` → 200, empty-state copy rendered for both sides, no crash.
+- `GET /fatigue` with planned populated but empty logged → 200, planned bars render, logged side shows "no logged sessions in this window".
 
 ### E2E (`e2e/fatigue.spec.ts`)
 - Page loads with no console errors.
-- Per-muscle bars render and are sorted (D2.10 stretch-decision-pending).
-- SFR card visible with label, ratio, explanation copy.
-- Empty-state path: brand-new DB → page does not crash, bars area shows "No planned exercises yet".
-- Dark-mode parity across all bands.
+- Per-muscle bars render as **side-by-side planned + logged pairs** and are sorted by % of MRV.
+- **Period selector dropdown** changes window; bars re-render; URL query param updates.
+- Two SFR cards visible (planned + logged) with label, ratio, explanation copy.
+- Empty-state paths:
+  - Brand-new DB → page does not crash, bars area shows "No planned exercises yet" + "No logged sessions yet".
+  - Planned-only DB (no logs) → planned side renders, logged side shows empty-state copy.
+- Dark-mode parity across all bands and both sub-bars.
 - Link from `/session_summary` badge → `/fatigue` works (and vice-versa).
 
 ### Targeted regression sweep (Phase 1 §16.4 + new spec)
@@ -231,23 +261,25 @@ Carry-forward from `BRAINSTORM.md §1` and §22, plus Phase-2-specific items:
 - **No notifications / push reminders.**
 - **No sharing / exporting fatigue charts** to external services.
 - **Phase 2 does not retire the Phase 1 badge.** Both coexist — the badge stays on the summary pages and gains a link to the new page.
-- **No schema change in Phase 2 MVP.** First schema change is Phase 3.
+- **No schema change in Phase 2.** First schema change is Phase 3. Path 1's planned+logged side-by-side is achieved by querying existing tables (`user_selection` + `workout_log`), not by adding a new one.
 - **No `/api/fatigue/*` endpoints in Phase 2** (carry forward D9).
 - **No %1RM path in Phase 2** (Phase 3 — requires populated `user_profile` reference lifts).
 - **No decay model in Phase 2** (Phase 3).
 - **No technique modifier in Phase 2** (`BRAINSTORM.md §3.4` Phase 4 / opt-in only).
-- **No logged-data path in Phase 2 MVP.** Phase 1's planned-only D10 carries forward.
+- **No per-muscle SFR cards in Phase 2** (D2.6 — page-level SFR only, two cards per D2.5 dual rendering).
+- **No catalog `movement_pattern` cleanup in Phase 2** — Stage 1 cleans `primary_muscle_group` only.
 - **Per-muscle bars are not a coaching prescription.** They describe distribution; they do not recommend a rebalance.
 
 ---
 
 ## 10. Open follow-ups / parking lot
 
-Tracked here so they don't get lost during Stage 0:
-- Per-muscle SFR (D2.6 stretch) — feasibility hinges on `effective_sets.py` exposing per-muscle stimulus in a shape the SFR card can consume without a parallel pipeline.
-- Period selector (this session / this week / 4-week) — Phase 1 ships single-period; the dedicated page is the natural home for the selector but may ship later.
+Tracked here so they don't get lost during Stage 1 / Stage 2:
+- Per-muscle SFR (D2.6) — feasibility hinges on `effective_sets.py` exposing per-muscle stimulus in a shape the SFR card can consume without a parallel pipeline. Stage 1 dependency check should poke at this; if cheap, can be a Stage 2.6 stretch.
 - "View per-muscle breakdown →" link copy — must stay descriptive; not `"View MRV breakdown"`.
 - Recovery of the deferred `BRAINSTORM.md §10` partial-week handling for the per-muscle view ("X / N expected for this point in week"). Likely a Phase 3 polish item.
+- Catalog `movement_pattern` cleanup (454 NULLs) — not blocking Phase 2 but worth scheduling as a separate data-quality task before any future feature that depends on movement pattern.
+- BRAINSTORM.md §13 sync — locked Stage 0 decisions must be propagated as a new Phase-2 block (Stage 1 prerequisite per §5).
 
 ---
 
@@ -263,4 +295,4 @@ Tracked here so they don't get lost during Stage 0:
 
 ---
 
-*End of PHASE2_PLANNING.md. Status remains "planning extracted / awaiting owner decision" until Stage 0 walks D2.1–D2.10.*
+*End of PHASE2_PLANNING.md. Stage 0 closed 2026-05-23 — scope locked Path 1. Implementation greenlight is a separate explicit owner action; until then, do not edit `utils/fatigue.py`, `routes/`, or `templates/` for Phase 2.*
