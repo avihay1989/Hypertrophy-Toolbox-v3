@@ -112,6 +112,12 @@ COARSE_TO_BASIC: dict[str, str] = {
     "Rectus Abdominis": "Abdominals",
     # Decision (Phase 0 §5.2): rotator cuff rolls to Rear-Shoulder.
     "Rotator Cuff": "Rear-Shoulder",
+    # Fatigue Meter Phase 2 Stage 1 (D2.13) sentinel: populates 501 dormant
+    # catalog rows (stretches/recovery/yoga/cardio/etc.) whose names did not
+    # match any muscle keyword. None of these rows are in user_selection at
+    # cleanup time; routing to Abdominals keeps volume rollups well-defined
+    # if one is ever added to a plan.
+    "Unassigned": "Abdominals",
     # Decision (Phase 0 §5.2): underspecified shoulders roll to Front-Shoulder.
     "Shoulders": "Front-Shoulder",
     "Traps": "Traps",
@@ -153,6 +159,8 @@ COARSE_TO_REPRESENTATIVE_ADVANCED: dict[str, str] = {
     "Rectus Abdominis": "upper-abdominals",
     "Rotator Cuff": "posterior-deltoid",
     "Shoulders": "anterior-deltoid",
+    # Fatigue Meter Phase 2 Stage 1 sentinel; mirrors COARSE_TO_BASIC choice.
+    "Unassigned": "upper-abdominals",
     "Traps": "upper-trapezius",
     "Trapezius": "upper-trapezius",
     "Triceps": "long-head-triceps",

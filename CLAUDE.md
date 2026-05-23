@@ -167,12 +167,14 @@ npx playwright test --project=chromium --reporter=line
 
 ## 5. Current State & Risks
 
-### Verified test counts (2026-05-21 — `main`, post-Body-Composition hygiene)
-- **pytest**: 1374 passed (~2m 53s) on `main` after Body Composition hygiene PR — 1372 post-PR-#31 baseline + 2 new `captured_at` ISO validation cases.
-- **Body Composition Playwright (Chromium)**: 5 passed (~8s; `e2e/body-composition.spec.ts`) — adds the JS↔Python BFP parity case on top of the 4 PR #31 specs.
-- **Last full E2E Playwright (Chromium)**: not re-run in this hygiene pass. Prior baseline of record is the 2026-05-20 PR #31 verification (20 passed across `body-composition.spec.ts` + `smoke-navigation.spec.ts` + `nav-dropdown.spec.ts`); the wider 408 / 2 baseline is from 2026-05-03 — see Prior counts below.
+### Verified test counts (2026-05-23 — Fatigue Meter Phase 2 Stage 1 close, branch `feat/fatigue-meter-phase-2`)
+- **pytest**: 1351 passed (~2m 55s) post-Stage-1 (1350 entry baseline + 1 new `tests/test_catalog_invariants.py::test_catalog_primary_muscle_group_has_no_nulls`).
+- **Stage 1 entry baseline (pre-cleanup, `main` @ 24c6f46)**: pytest 1350 passed (~2m 53s). Net change from the 2026-05-21 baseline (1374): `tests/test_filter_cache.py` removed in commit 6d87284 (dormant filter cache deletion, KI-001) drops the count; `test_profile_estimator.py`, `test_user_profile_routes.py`, `test_workout_log_routes.py` additions across PR #17/#18 + body-composition follow-ups partially offset. Net: −24 (1374 → 1350).
+- **Body Composition Playwright (Chromium)**: 5 passed (~8s; `e2e/body-composition.spec.ts`) — last confirmed 2026-05-21; not re-run in Stage 1 (no body-composition surface touched).
+- **Last full E2E Playwright (Chromium)**: not re-run in Stage 1 (no app code changed; only catalog data hygiene + 1 isolated `utils/volume_taxonomy.py` rollup addition). Prior baseline of record is the 2026-05-20 PR #31 verification (20 passed across `body-composition.spec.ts` + `smoke-navigation.spec.ts` + `nav-dropdown.spec.ts`); the wider 408 / 2 baseline is from 2026-05-03 — see Prior counts below.
 
 ### Prior verified test counts
+- **2026-05-21, `main` post-Body-Composition hygiene**: pytest 1374 passed (~2m 53s) — 1372 post-PR-#31 + 2 new `captured_at` ISO validation cases. Superseded 2026-05-23 by the `test_filter_cache.py` deletion (KI-001 dormant code removal).
 - **2026-05-03, `feat/fatigue-meter-phase-1-rebased`**: pytest 1160 passed (~2m 25s); Playwright Chromium 408 passed, 2 failed (effective 409 / 1 — `nav-dropdown.spec.ts:117` dark-mode-toggle off-viewport is a pre-existing red on `origin/main`; `program-backup.spec.ts:79` is a sequential-DB flake that passes in isolation). See `docs/fatigue_meter/PLANNING.md §2.7`.
 - **2026-04-28, pre-rebase**: pytest 1080 passed (~2m 22s); relevant E2E 41 passed (`user-profile.spec.ts` + `workout-plan.spec.ts`); adjacent E2E 55 passed (`exercise-interactions.spec.ts` + `accessibility.spec.ts` + `smoke-navigation.spec.ts`); last full E2E baseline 314 passed (~7.2m, 2026-04-18); summary-page Playwright 20 passed (~25s, 2026-04-18).
 
