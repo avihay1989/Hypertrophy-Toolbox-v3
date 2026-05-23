@@ -47,4 +47,10 @@
             {{ fatigue_period_label or 'Planned program' }}
         </div>
     </div>
+    <a class="fatigue-badge__breakdown-link"
+       href="{{ url_for('fatigue.fatigue_page') }}"
+       data-testid="fatigue-badge-breakdown-link">
+        View per-muscle breakdown
+        <span aria-hidden="true">→</span>
+    </a>
 </section>

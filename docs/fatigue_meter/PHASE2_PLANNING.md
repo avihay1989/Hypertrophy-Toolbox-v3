@@ -1,11 +1,12 @@
 # Fatigue Meter — Phase 2 PLANNING
 
-**Status:** **Stage 0 + Stage 1 CLOSED 2026-05-23** — scope locked **Path 1** (planned + logged side-by-side + period selector on day one); Stage 1 prerequisites complete on local branch `feat/fatigue-meter-phase-2` (not yet pushed). **Implementation greenlight is a SEPARATE explicit owner action — do not start Stage 2 until owner says "start Stage 2."**
+**Status:** **Stage 2 IMPLEMENTED 2026-05-23 on `feat/fatigue-meter-phase-2-stage-2`** (Path 1 — 8 chapters: per-muscle accumulator, period selector, dedicated `/fatigue` route, dual planned + logged bars, two SFR cards, nav link, badge → page link). pytest 1351 → 1442 (+91 new Stage-2 cases); `e2e/fatigue.spec.ts` 8/8 Chromium green. **Stage 3 (verify-suite + final merge gate) and Stage 4 (calibration window) still pending.**
 **Date extracted:** 2026-05-23
 **Stage 0 closed:** 2026-05-23
 **Stage 1 closed:** 2026-05-23
+**Stage 2 implementation completed:** 2026-05-23 (pending Stage 3 gate + owner-approved merge)
 **Source:** split out of [`PLANNING.md`](PLANNING.md) Stage 5/6 and [`BRAINSTORM.md`](BRAINSTORM.md) (§4–§9, §11, §13, §20 Phase 2 matrix).
-**Predecessor state:** Phase 1 shipped 2026-05-03 (PR #7, single global server-rendered badge). [Stage 4 closed 2026-05-20](calibration-notes.md) by owner-approved felt-label review (4 of 5 anchors agreed; no threshold changes). `utils/fatigue.py`, `tests/test_fatigue.py`, and `scripts/fatigue_calibration_report.py::SCENARIOS` are the locked Phase 1 working state and must not be edited without a fresh owner override.
+**Predecessor state:** Phase 1 shipped 2026-05-03 (PR #7, single global server-rendered badge). [Stage 4 closed 2026-05-20](calibration-notes.md) by owner-approved felt-label review (4 of 5 anchors agreed; no threshold changes). The Phase 1 surface (`calculate_set_fatigue`, `aggregate_session_fatigue`, `aggregate_weekly_fatigue`, `classify_*`, `*_FATIGUE_BANDS`, `PATTERN_WEIGHTS`, `LOAD_MULTIPLIER_BUCKETS`, `INTENSITY_MULTIPLIER_BUCKETS` in `utils/fatigue.py`, plus `tests/test_fatigue.py` Phase-1 classes, plus `scripts/fatigue_calibration_report.py::SCENARIOS`) was preserved byte-identical across Stage 2.
 
 This document mirrors the shape of `PLANNING.md` (entry / tasks / exit per stage). Stage 0 (lock D2.x decisions) closed 2026-05-23 via owner decision walk; Stage 1 prerequisites closed 2026-05-23 on branch `feat/fatigue-meter-phase-2` with pytest 1351 passed, backup id 5 (`pre-fatigue-meter-phase-2-2026-05-23`), and catalog `primary_muscle_group` NULLs eliminated. Stage 2 implementation has not started and remains gated on an explicit owner "start Stage 2" instruction.
 
@@ -283,10 +284,11 @@ Carry-forward from `BRAINSTORM.md §1` and §22, plus Phase-2-specific items:
 
 ## 10. Open follow-ups / parking lot
 
-Tracked here so they don't get lost during Stage 1 / Stage 2:
-- Per-muscle SFR (D2.6) — feasibility hinges on `effective_sets.py` exposing per-muscle stimulus in a shape the SFR card can consume without a parallel pipeline. Stage 1 dependency check should poke at this; if cheap, can be a Stage 2.6 stretch.
-- "View per-muscle breakdown →" link copy — must stay descriptive; not `"View MRV breakdown"`.
-- Recovery of the deferred `BRAINSTORM.md §10` partial-week handling for the per-muscle view ("X / N expected for this point in week"). Likely a Phase 3 polish item.
+Tracked here so they don't get lost during Stage 1 / Stage 2 / Stage 3:
+- **Phase 3 — per-muscle MEV / MAV / MRV defaults for the six unranked labels.** Stage 2 shipped BRAINSTORM §5 verbatim (12 muscles), per owner Stage 0 decision. Six canonical catalog labels still render at the bottom with neutral state and "—" for the % column: **Front-Shoulder, Rear-Shoulder, Lower Back, Hip-Adductors, Middle-Traps, Neck** (plus the `Unassigned` sentinel which is intentional and not a threshold gap). Resolution path: owner supplies vetted MEV / MAV / MRV per muscle, then either (a) extend `MUSCLE_VOLUME_LANDMARKS` in `utils/fatigue.py` directly, or (b) introduce the `user_fatigue_thresholds` Phase-3 calibration table per `BRAINSTORM.md §6 Option 3`. Per Stage 0 policy, do not invent thresholds without a fresh owner override.
+- Per-muscle SFR (D2.6) — page-level SFR shipped in Stage 2; per-muscle SFR card-per-muscle stays deferred. Feasibility hinges on `effective_sets.py` exposing per-muscle stimulus in a shape the SFR card can consume without a parallel pipeline.
+- "View per-muscle breakdown →" link copy — descriptive only, never "View MRV breakdown" (D2.10).
+- Recovery of the deferred `BRAINSTORM.md §10` partial-week handling for the per-muscle view ("X / N expected for this point in week"). Phase 3 polish item.
 - Catalog `movement_pattern` cleanup (454 NULLs) — not blocking Phase 2 but worth scheduling as a separate data-quality task before any future feature that depends on movement pattern.
 - ~~BRAINSTORM.md §13 sync — locked Stage 0 decisions must be propagated as a new Phase-2 block (Stage 1 prerequisite per §5).~~ ✅ Shipped with PR #33 (commit 24c6f46) — see `BRAINSTORM.md §13.1`.
 
@@ -304,4 +306,4 @@ Tracked here so they don't get lost during Stage 1 / Stage 2:
 
 ---
 
-*End of PHASE2_PLANNING.md. Stage 0 + Stage 1 closed 2026-05-23 — scope locked Path 1, catalog `primary_muscle_group` NULLs eliminated, backup id 5 captured, pytest 1351 passed on branch `feat/fatigue-meter-phase-2`. Stage 2 implementation greenlight is a separate explicit owner action ("start Stage 2"); until then, do not edit `utils/fatigue.py`, `routes/`, `templates/`, `static/`, or any other app code for Phase 2.*
+*End of PHASE2_PLANNING.md. Stage 0 + Stage 1 closed 2026-05-23. Stage 2 implementation completed 2026-05-23 on branch `feat/fatigue-meter-phase-2-stage-2` — Path 1 ships dedicated `/fatigue` route, dual planned + logged per-muscle bars sorted by % MRV, two SFR cards with `fatigue == 0 → "—"` sentinel, period selector (`this session` / `this week` / `last 4 weeks`), nav link in Analyze dropdown, badge "View per-muscle breakdown →" link. Phase 1 surface preserved byte-identical. pytest 1351 → 1442 (+91 cases), `e2e/fatigue.spec.ts` 8/8 green. **Stage 3 (verify-suite + final merge gate) still pending owner approval.** Phase-3 follow-up: vetted MEV / MAV / MRV defaults for the six unranked labels (Front-Shoulder, Rear-Shoulder, Lower Back, Hip-Adductors, Middle-Traps, Neck) — see §10.*

@@ -21,6 +21,7 @@ from routes.user_profile import user_profile_bp
 from routes.body_composition import body_composition_bp
 from routes.volume_splitter import volume_splitter_bp
 from routes.program_backup import program_backup_bp, init_backup_tables
+from routes.fatigue import fatigue_bp
 from datetime import datetime
 from werkzeug.middleware.proxy_fix import ProxyFix
 from utils.logger import setup_logging
@@ -88,6 +89,7 @@ app.register_blueprint(user_profile_bp)
 app.register_blueprint(body_composition_bp)
 app.register_blueprint(volume_splitter_bp)
 app.register_blueprint(program_backup_bp)
+app.register_blueprint(fatigue_bp)
 
 # Log registered routes (debug level only)
 logger.debug("Registered routes:")
