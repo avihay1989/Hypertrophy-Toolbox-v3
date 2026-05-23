@@ -125,6 +125,8 @@ Working tree on 2026-05-18 entered the session with three dirty entries: `.claud
 
 ### Open follow-ups (not blocking)
 
+> **All three closed by 2026-05-23.** Pixel baselines locked via `toHaveScreenshot()` in `b5b8c7a`; the §4.6 lock-in entry at the top of this log has the verification details. Worktree disposition closed by inspection + branch cleanup in `21859a1` (both old worktree directories were already absent from disk; the related branch refs `test/visual-baseline-thumbnails` local + remote and `origin/redesign/calm-glass-2026` were deleted with owner approval — see [`docs/LEFTOVERS_BY_PRIORITY.md §6`](../LEFTOVERS_BY_PRIORITY.md)). Owner eyes-on review of the 18 generated PNGs happened before the `toHaveScreenshot()` lock-in commit. Original 2026-05-18 list preserved below for audit.
+
 - Owner eyes-on review of the 18 visual-baseline screenshots in `D:/development/Hypertrophy-Toolbox-v3-visual-baseline-s4/e2e/artifacts/visual-baseline/`.
 - Worktree `D:/development/Hypertrophy-Toolbox-v3-visual-baseline-s4` still holds `test/visual-baseline-thumbnails` (merged on remote, deleted as remote ref). Decide whether to remove the worktree (frees disk; loses local venv/node_modules) or keep it.
 - Optional later: lock pixel baselines via `toHaveScreenshot()` once layout has fully settled.

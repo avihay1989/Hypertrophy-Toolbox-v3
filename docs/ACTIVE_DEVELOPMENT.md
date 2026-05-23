@@ -4,7 +4,7 @@ This file is the execution source of truth for autonomous development sessions. 
 
 ## Current Objective
 
-**As of 2026-05-23 (latest session): local `main` is fully up to date with `origin/main` at `ff244aa` (0 commits ahead).** The 2026-05-23 hygiene session, the six in-flight scope commits, the KI-001 / KI-009 / §4.6 baseline / §5 expansion follow-ups, and the YouTube curation closure have all landed. The lead-up: Body Composition Issue #21 fully shipped via PR #31 (squash `20b4b24`, 2026-05-20) and hardened in PR #32 (`94482d7`, 2026-05-21, `captured_at` ISO validation + JS↔Python parity test); response-contract exceptions migrated 2026-05-21 (`cbf745a`); §5 YouTube curation landed in two passes — `cf21191` (2026-05-22, 36 rows) + `ff244aa` (2026-05-23, +20 rows → **56 cumulative**, curation closed by diminishing returns). 2026-05-23 also landed the six in-flight scopes as separate commits (Profile #17/#18 hooks `de3e4d0`; workout-cool §3.6 Profile bodymap `18ad223`; navbar hover dropdowns `ef475cc`; navbar icon accents + motion `89561df`; Body Composition visual baselines `40d7dd2`; ui-hardening spec + Known Issues table `0ae5b39`), the docs-only hygiene commit, the KI-001 filter-cache deletion (`6d87284`), the KI-009 xlsxwriter exporter (`4bbe06b`) + docs (`f944366`), and the §4.6 visual-baseline `toHaveScreenshot()` lock-in (`b5b8c7a`). No active workstream remains in-flight.
+**As of 2026-05-23 (latest session): local `main` is fully up to date with `origin/main` at `21859a1` (0 commits ahead).** The 2026-05-23 hygiene session, the six in-flight scope commits, the KI-001 / KI-009 / §4.6 baseline / §5 expansion follow-ups, and the YouTube curation closure have all landed. The lead-up: Body Composition Issue #21 fully shipped via PR #31 (squash `20b4b24`, 2026-05-20) and hardened in PR #32 (`94482d7`, 2026-05-21, `captured_at` ISO validation + JS↔Python parity test); response-contract exceptions migrated 2026-05-21 (`cbf745a`); §5 YouTube curation landed in two passes — `cf21191` (2026-05-22, 36 rows) + `ff244aa` (2026-05-23, +20 rows → **56 cumulative**, curation closed by diminishing returns). 2026-05-23 also landed the six in-flight scopes as separate commits (Profile #17/#18 hooks `de3e4d0`; workout-cool §3.6 Profile bodymap `18ad223`; navbar hover dropdowns `ef475cc`; navbar icon accents + motion `89561df`; Body Composition visual baselines `40d7dd2`; ui-hardening spec + Known Issues table `0ae5b39`), the docs-only hygiene commit, the KI-001 filter-cache deletion (`6d87284`), the KI-009 xlsxwriter exporter (`4bbe06b`) + docs (`f944366`), and the §4.6 visual-baseline `toHaveScreenshot()` lock-in (`b5b8c7a`). No active workstream remains in-flight.
 
 workout.cool §4 (free-exercise-db thumbnails) is **fully shipped on `origin/main`**. PR #20 (squash `8b348a5`) landed the feature; PR #23 (`bfd9087`) landed the post-merge handoff refresh + nav-dropdown e2e stabilization + dependency pin bumps; PR #22 (`631b5f8`) landed the §4.6 visual-baseline spec + seed. workout.cool §5 reference-video infrastructure shipped 2026-05-11; the curated content shipped in two passes — `cf21191` (2026-05-22, 36 rows) + `ff244aa` (2026-05-23, +20 rows → **56 cumulative**). Curation is **closed by diminishing returns** (only 1 of the remaining ~1,841 uncurated rows has >1 actual uses; long-tail uses the search fallback by design). workout.cool §3.6 Profile coverage bodymap was previously "deferred indefinitely"; it shipped locally on 2026-05-23 (`18ad223`).
 
@@ -40,17 +40,22 @@ state before choosing what to do next.
 4. **Do not reopen fatigue work.** Phase 1 is closed; Stage 4 is closed with no
    threshold changes. No Phase 2 planning or fatigue edits without fresh owner
    override.
-5. **Leave worktree disposition as an owner/admin decision.** Do not delete or
-   move `D:/development/Hypertrophy-Toolbox-v3-visual-baseline-s4` or
-   `D:/development/Hypertrophy-Toolbox-v3-redesign-calm-glass` without explicit
-   owner approval.
+5. **Worktree disposition — DONE.** Closed 2026-05-23 via `21859a1`. Both old
+   worktree paths (`Hypertrophy-Toolbox-v3-visual-baseline-s4`,
+   `Hypertrophy-Toolbox-v3-redesign-calm-glass`) were already absent from
+   `D:/development/` and neither was registered in `git worktree list`. Stale
+   branch refs (`test/visual-baseline-thumbnails` local + remote;
+   `origin/redesign/calm-glass-2026`) deleted with owner approval. Source of
+   truth: [`docs/LEFTOVERS_BY_PRIORITY.md §6`](LEFTOVERS_BY_PRIORITY.md).
 
 ## Current Branch
 
-`main`, **fully up to date with `origin/main` at `ff244aa`** (0 commits ahead). Working tree has only `data/database.db` runtime dirt (owner-approved kept dirty per `CLAUDE.md` agents-must-not list; do not commit). Feature branch `feat/body-composition-issue-21` was deleted locally and on the remote at the PR #31 merge.
+`main`, **fully up to date with `origin/main` at `21859a1`** (0 commits ahead). Working tree has only `data/database.db` runtime dirt (owner-approved kept dirty per `CLAUDE.md` agents-must-not list; do not commit). Feature branch `feat/body-composition-issue-21` was deleted locally and on the remote at the PR #31 merge.
 
 Recently landed on `origin/main` (newest first):
 
+- `21859a1` (2026-05-23) — **docs: close stale worktree disposition backlog** (LEFTOVERS row #14 closed; old worktree paths already absent from disk; stale branch refs `test/visual-baseline-thumbnails` local + remote and `origin/redesign/calm-glass-2026` deleted with owner approval).
+- `1956089` (2026-05-23) — **docs(workout-cool): close YouTube curation backlog** (LEFTOVERS row #12 closed by diminishing returns at 56 rows; ahead-of-origin status text refreshed).
 - `ff244aa` (2026-05-23) — **content(workout-cool): expand curated YouTube references** (+20 owner-vetted rows on top of `cf21191`; `data/youtube_curated_top_n.csv` now 56 rows + header; curation closed by diminishing returns — see [`docs/workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md`](workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md) "Curation Closed").
 - `b5b8c7a` (2026-05-23) — **test(workout-cool §4.6): lock visual-baseline thumbnails via `toHaveScreenshot()`** (18 committed PNG baselines at `maxDiffPixelRatio: 0.01`; closes LEFTOVERS row #13).
 - `f944366` (2026-05-23) — **docs: record KI-009 resolution**.
@@ -153,28 +158,13 @@ No active workstream is currently in-flight on `origin/main`. Owner-approved que
 - **Redesign post-P8 triage** — closed 2026-05-19 after verification against `origin/main`. 10 of 11 issues shipped (#2 `9052337`, #3+#4 `0a41725`, #5 `7880618`, #6 `38b1f59`, #7+#8 `9b0c71b`, #9 `a95b067`, #10 `f6e39d6`, #11 `f7d9f12`); #1 (nav Backup link) deferred by owner choice. `debug/redesign_post_p8_issues_SESSION_STATE.md` is historical only.
 - **phase5_3i_plan** — closed 2026-05-19 as accepted-as-shipped. Planning doc `docs/phase5_3i_plan.md` was authored 2026-04-15 (`c0da18e`) and deleted 2026-04-24 (`635fa3e`) with the rest of the spring-cleanup planning suite. The 5A–5H retroactive confidence-recovery validation gates never ran, but the underlying `12c90ac` refactors (3i-a..3i-h decompositions) have held under the test baseline for 5+ weeks (1160 passed; baseline rose from 934 at session-state writing) with no regression traced back to them. `debug/phase5_3i_plan_SESSION_STATE.md` is historical only. Re-open only if a concrete regression appears in one of the decomposed functions.
 
-### Optional — workout.cool §4 follow-ups
+### Closed — workout.cool §4 / §4.6 / §5 follow-ups
 
-None are blocking. Available if the owner wants final polish:
+All previously-tracked follow-ups have shipped:
 
-- Owner eyes-on review of the 18 visual-baseline screenshots at `D:/development/Hypertrophy-Toolbox-v3-visual-baseline-s4/e2e/artifacts/visual-baseline/`. The spec asserts behavioural invariants (thumbnail count ≥ 1, src prefix, theme attr) but doesn't pixel-compare.
-- Clean up the `D:/development/Hypertrophy-Toolbox-v3-visual-baseline-s4` worktree. The remote branch is gone; local branch `test/visual-baseline-thumbnails` is unmerged-locally because the worktree holds it. Worktree still carries untracked `.venv` + `node_modules`. **Do not delete without owner approval.**
-- Lock in `toHaveScreenshot()` pixel baselines once layout has settled (currently the spec captures PNGs for inspection only).
-
-### Optional — workout.cool §5 reference-video content
-
-- Curate a starter batch of YouTube IDs in `data/youtube_curated_top_n.csv` and
-  apply with `scripts/apply_youtube_curated.py`. Until this is done, the §5 modal
-  is expected to show the search fallback for every exercise. Source of truth:
-  [docs/workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md](workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md).
-- Consider a small UX polish if the fallback feels misleading: clearer tooltip
-  text for uncurated rows, a distinct search icon for uncurated rows, or hiding
-  the play button unless a curated ID exists.
-
-### Worktree disposition (open, awaiting owner decision)
-
-- **`D:/development/Hypertrophy-Toolbox-v3-visual-baseline-s4`** — branch `test/visual-baseline-thumbnails` at `99910a4`. Holds untracked `.venv` + `node_modules` + the §4.6 inspection screenshots. Remote branch was deleted at PR #22 merge. Keep for faster re-runs vs remove to free disk. Owner has not decided. **Do not delete without explicit approval.**
-- **`D:/development/Hypertrophy-Toolbox-v3-redesign-calm-glass`** — branch `redesign/calm-glass-2026` at `ba519df`, clean but behind `main`. No active workstream tied to it on the current handoff trail. Owner has not decided whether to revive, archive, or remove. **Do not delete without explicit approval.**
+- §4.6 pixel baselines locked via `toHaveScreenshot()` in `b5b8c7a` (2026-05-23). 18 committed PNG baselines at `e2e/__screenshots__/visual-baseline-thumbnails.spec.ts-snapshots/`.
+- §5 YouTube curation closed by diminishing returns at 56 rows (`cf21191` + `ff244aa`, 2026-05-23). Reopen only if owner supplies new vetted IDs — see [YOUTUBE_REFERENCE_VIDEOS.md "Curation Closed"](workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md).
+- Worktree disposition closed by inspection + branch cleanup in `21859a1` (2026-05-23). See [LEFTOVERS_BY_PRIORITY.md §6](LEFTOVERS_BY_PRIORITY.md).
 
 ### Fatigue meter — DO NOT REOPEN (status updated 2026-05-20)
 
@@ -207,7 +197,6 @@ Agents must not:
 
 - Reset, force-push, or otherwise discard working-tree state without owner approval.
 - Commit `data/database.db` (runtime; agents-must-not list in CLAUDE.md).
-- Delete or move the `Hypertrophy-Toolbox-v3-visual-baseline-s4` or `Hypertrophy-Toolbox-v3-redesign-calm-glass` worktrees without owner approval.
 - Start fatigue-meter work.
 - Start Phase 2 fatigue planning.
 - Edit `utils/fatigue.py`.
