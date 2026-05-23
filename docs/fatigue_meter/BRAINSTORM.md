@@ -5,6 +5,8 @@
 **Source inspiration:** Stimulus-to-Fatigue Ratio discussion, YouTube `3vX2hAitKyQ` (Gemini summary in user prompt).
 **Author goal:** add a "fatigue meter" view per session and per week so the user can see how demanding a designed plan is.
 
+> **Pointer (2026-05-23):** Phase 1 shipped 2026-05-03 (PR #7); Stage 4 closed 2026-05-20. **Phase 2 planning has been extracted to [`PHASE2_PLANNING.md`](PHASE2_PLANNING.md)** — that file is the source-of-action for any future Phase 2 work and carries the D2.x open-decision list. This brainstorm is preserved as historical source-of-thought and is **not** edited during implementation; refer to it for context (channels, SFR, decay, /fatigue page ideas, reviewer dialogue), but treat `PHASE2_PLANNING.md` as authoritative for Phase 2 scope and `PLANNING.md` as authoritative for Phase 1.
+
 This document is a brainstorm, not a plan. It deliberately presents alternatives, gaps, and open questions for IDE-LLM review. **No code is to be written until a chosen approach is locked in via a follow-up PLANNING.md.**
 
 ---

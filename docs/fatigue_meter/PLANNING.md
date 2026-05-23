@@ -528,25 +528,17 @@ Phase 1 ships with §24.B threshold bands marked "starting points, not science".
 
 ---
 
-## Stage 5 — Phase 2 Preview (NOT YET ACTIVE — do not start until Stage 4 exits)
+## Stage 5 — Phase 2 (NOT ACTIVE — owner-gated; detailed planning extracted)
 
-High-level only. Detailed planning happens in a separate Phase-2-PLANNING file once Stage 4 finishes.
+**Detailed Phase 2 planning lives in [`PHASE2_PLANNING.md`](PHASE2_PLANNING.md)** (extracted 2026-05-23). That doc carries the recommended MVP scope, the Phase-2 open-decision list (D2.1–D2.10), the staged implementation plan, files-touched matrix, test plan, rollback notes, and Phase-2 non-goals.
 
-- [ ] Decision required: does the user want three channels (Local / Systemic / Joint) or is one channel enough?
-- [ ] If three channels: split `utils/fatigue.py` math, add per-muscle MEV/MAV/MRV thresholds (`BRAINSTORM.md §5`).
-- [ ] Add dedicated `/fatigue` route + page.
-- [ ] Add Stimulus-to-Fatigue Ratio (SFR) display.
-- [ ] Add `/api/fatigue/*` endpoints (the API skipped in Phase 1).
-- [ ] Decision required: %1RM path for users with reference lifts in `user_profile`.
+Status: **planning extracted / awaiting owner decision.** Phase 2 has not been approved for implementation. Stage 4 closed 2026-05-20 with no threshold changes (see [`calibration-notes.md`](calibration-notes.md)); Phase 1 is the current working state.
 
 ---
 
-## Stage 6 — Phase 3 Preview (NOT YET ACTIVE)
+## Stage 6 — Phase 3 (NOT ACTIVE)
 
-- [ ] Plan-projection mode (read `user_selection`, show projected fatigue before training).
-- [ ] User-calibrated thresholds (override hardcoded defaults via `user_fatigue_thresholds` table — first schema change in this feature).
-- [ ] Optional decay model.
-- [ ] **Stage 6 introduces the first DB schema change in the feature** — `BRAINSTORM.md §18` rollback strategy section becomes load-bearing here.
+Phase 3 is the **first schema-changing stage** in the feature (`user_fatigue_thresholds` table for user-calibrated overrides; optional decay model; logged-data path side-by-side with the planned projection). [`BRAINSTORM.md §18`](BRAINSTORM.md) rollback strategy becomes load-bearing once any Phase 3 chapter starts. Detailed planning will live in a sibling `PHASE3_PLANNING.md` extracted when Phase 2 closes.
 
 ---
 
@@ -561,8 +553,8 @@ Update this as you progress. Reviewers can scan it to see where the work stands.
 | 2 | Phase 1 implementation | ✅ Complete | 2026-05-02 |
 | 3 | Phase 1 verification & merge | ✅ Closeout pass complete; 6/7 smoke items PASS, 1 documented-not-walked (smokes 4 + 5 walked 2026-05-10 via PR #12) | 2026-05-04 |
 | 4 | Post-merge calibration | ✅ Closed by owner-approved felt-label review 2026-05-20 — 5 anchors (1 real W20 + 4 generated), 4/5 felt labels agreed with computed bands, lone disagreement was on `hard_4d` synthetic scenario only; §4.2 "≥2 disagreements" bar not met; **no threshold changes**; `utils/fatigue.py` thresholds remain §24.B defaults | 2026-05-20 |
-| 5 | Phase 2 preview | ⬜ Not started — Phase 1 is the working state; Phase 2 entry remains a separate owner decision | — |
-| 6 | Phase 3 preview | ⬜ Not started | — |
+| 5 | Phase 2 | ⬜ Not started — planning extracted to [`PHASE2_PLANNING.md`](PHASE2_PLANNING.md) 2026-05-23; owner-gated, awaiting Stage 0 (D2.x) decision walk | 2026-05-23 (extraction only) |
+| 6 | Phase 3 | ⬜ Not started — first schema-changing stage; planning will be extracted to a sibling `PHASE3_PLANNING.md` once Phase 2 closes | — |
 
 Status legend: ⬜ Not started · 🟡 In progress · ✅ Complete · ❌ Blocked
 
@@ -576,6 +568,7 @@ Status legend: ⬜ Not started · 🟡 In progress · ✅ Complete · ❌ Blocke
 | `docs/fatigue_meter/data-audit.md` | Stage 1.2 | Data integrity findings. |
 | `docs/fatigue_meter/calibration-notes.md` | Stage 4 | Real-data threshold validation. *Stage 4 closed by owner-approved felt-label review 2026-05-20; status banner at top of file is now authoritative. 4 of 5 anchors agreed with computed bands; no threshold changes applied; §24.B defaults retained in `utils/fatigue.py`.* |
 | `docs/fatigue_meter/STAGE4_PARKED_HANDOFF.md` | Stage 4 | Operational parked-state handoff for future agents. *Created 2026-05-13 after owner chose Option 1; superseded 2026-05-20 by the owner-approved Stage 4 close. Preserved for historical context; `calibration-notes.md` is the current authoritative status.* |
+| `docs/fatigue_meter/PHASE2_PLANNING.md` | Stage 5 (planning extraction, 2026-05-23) | Phase 2 detailed planning — recommended MVP, D2.x decisions, staged plan, files/test/rollback. Phase 2 itself remains owner-gated; the doc exists so the next conversation can start from a structured base instead of re-deriving from `BRAINSTORM.md`. |
 
 ---
 
