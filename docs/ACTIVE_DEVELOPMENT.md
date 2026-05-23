@@ -4,16 +4,14 @@ This file is the execution source of truth for autonomous development sessions. 
 
 ## Current Objective
 
-**As of 2026-05-23 (latest session): local `main` is fully up to date with `origin/main` at `21859a1` (0 commits ahead).** The 2026-05-23 hygiene session, the six in-flight scope commits, the KI-001 / KI-009 / §4.6 baseline / §5 expansion follow-ups, and the YouTube curation closure have all landed. The lead-up: Body Composition Issue #21 fully shipped via PR #31 (squash `20b4b24`, 2026-05-20) and hardened in PR #32 (`94482d7`, 2026-05-21, `captured_at` ISO validation + JS↔Python parity test); response-contract exceptions migrated 2026-05-21 (`cbf745a`); §5 YouTube curation landed in two passes — `cf21191` (2026-05-22, 36 rows) + `ff244aa` (2026-05-23, +20 rows → **56 cumulative**, curation closed by diminishing returns). 2026-05-23 also landed the six in-flight scopes as separate commits (Profile #17/#18 hooks `de3e4d0`; workout-cool §3.6 Profile bodymap `18ad223`; navbar hover dropdowns `ef475cc`; navbar icon accents + motion `89561df`; Body Composition visual baselines `40d7dd2`; ui-hardening spec + Known Issues table `0ae5b39`), the docs-only hygiene commit, the KI-001 filter-cache deletion (`6d87284`), the KI-009 xlsxwriter exporter (`4bbe06b`) + docs (`f944366`), and the §4.6 visual-baseline `toHaveScreenshot()` lock-in (`b5b8c7a`). No active workstream remains in-flight.
+**As of 2026-05-24 (latest session): local `main` is at `1a93f66` (1 commit ahead of `origin/main` at `d5b80bf` — the unpushed Stage 3 docs close). Fatigue Meter Phase 2 Path 1 shipped 2026-05-23 via PR #35 (`d5b80bf`); Stage 3 verify-suite gate closed 2026-05-24 (`1a93f66`); Stage 4 calibration window OPEN 2026-05-24, earliest close 2026-06-07.** Phase 2 Stage 0 lock landed via PR #33 (`24c6f46`) and Stage 1 close via PR #34 (`be22286`); planning extracted earlier in `f01ccb9`. The 2026-05-23 hygiene session, the six in-flight scope commits, the KI-001 / KI-009 / §4.6 baseline / §5 expansion follow-ups, and the YouTube curation closure all landed before Phase 2 work began. The lead-up: Body Composition Issue #21 fully shipped via PR #31 (squash `20b4b24`, 2026-05-20) and hardened in PR #32 (`94482d7`, 2026-05-21, `captured_at` ISO validation + JS↔Python parity test); response-contract exceptions migrated 2026-05-21 (`cbf745a`); §5 YouTube curation landed in two passes — `cf21191` (2026-05-22, 36 rows) + `ff244aa` (2026-05-23, +20 rows → **56 cumulative**, curation closed by diminishing returns). 2026-05-23 also landed the six in-flight scopes as separate commits (Profile #17/#18 hooks `de3e4d0`; workout-cool §3.6 Profile bodymap `18ad223`; navbar hover dropdowns `ef475cc`; navbar icon accents + motion `89561df`; Body Composition visual baselines `40d7dd2`; ui-hardening spec + Known Issues table `0ae5b39`), the docs-only hygiene commit, the KI-001 filter-cache deletion (`6d87284`), the KI-009 xlsxwriter exporter (`4bbe06b`) + docs (`f944366`), and the §4.6 visual-baseline `toHaveScreenshot()` lock-in (`b5b8c7a`). No active workstream remains in-flight.
 
 workout.cool §4 (free-exercise-db thumbnails) is **fully shipped on `origin/main`**. PR #20 (squash `8b348a5`) landed the feature; PR #23 (`bfd9087`) landed the post-merge handoff refresh + nav-dropdown e2e stabilization + dependency pin bumps; PR #22 (`631b5f8`) landed the §4.6 visual-baseline spec + seed. workout.cool §5 reference-video infrastructure shipped 2026-05-11; the curated content shipped in two passes — `cf21191` (2026-05-22, 36 rows) + `ff244aa` (2026-05-23, +20 rows → **56 cumulative**). Curation is **closed by diminishing returns** (only 1 of the remaining ~1,841 uncurated rows has >1 actual uses; long-tail uses the search fallback by design). workout.cool §3.6 Profile coverage bodymap was previously "deferred indefinitely"; it shipped locally on 2026-05-23 (`18ad223`).
 
-As of 2026-05-20 (later in the day), the fatigue meter workstream has been **closed via an owner-approved Stage 4 calibration review** that walked PLANNING.md §4.1 → §4.3 to a no-change decision. This is a docs-only close — `utils/fatigue.py`, `tests/test_fatigue.py`, and `scripts/fatigue_calibration_report.py` were **not touched**. After this close, no workstream remains in-flight.
-
 - **Redesign post-P8 triage** — closed (10 of 11 shipped, #1 deferred by owner choice; verified 2026-05-19, PR #25).
 - **phase5_3i_plan** — closed (accepted-as-shipped 2026-05-19; planning doc shipped `c0da18e` and deleted `635fa3e`, 5A–5H validation never ran but `12c90ac` refactors have held 5+ weeks under the 1160-test baseline; PR #25).
-- **Fatigue meter** — Phase 1 done; **Stage 4 closed 2026-05-20 by owner-approved felt-label calibration review with no threshold changes**. Owner labeled 5 anchors (1 real logged week W20 from the now-populated `workout_log` + 4 generator scenarios from `generated-calibration-report.md`); 4 of 5 felt labels agreed with the computed bands; the lone disagreement was on the `hard_4d` synthetic generator scenario only, so PLANNING.md §4.2's "≥2 disagreements" bar was not met. `utils/fatigue.py` thresholds remain the §24.B defaults. STAGE4_PARKED_HANDOFF.md is now superseded; the authoritative status lives in `calibration-notes.md` "2026-05-20 — owner-approved felt-label calibration review (Stage 4 close)". Phase 2 entry remains a separate owner decision.
-  - Earlier in the same day: PR #26 (2026-05-20) shipped a docs-only owner-approved synthetic-override / coherence pass section; PR #28 (2026-05-20) shipped a presentation-only badge restyle (template + SCSS + refreshed visual snapshots). Both are preserved.
+- **Fatigue meter** — Phase 1 shipped; Phase 1 Stage 4 closed 2026-05-20 (owner-approved felt-label review, no threshold changes — `calibration-notes.md` authoritative). **Phase 2 Path 1 shipped 2026-05-23 via PR #35 (`d5b80bf`)** (per-muscle accumulator, period selector, dedicated `/fatigue` route, dual planned + logged bars, two SFR cards, nav link, badge → page link; 91 new pytest cases for total 1442; 8/8 `e2e/fatigue.spec.ts` green). Stage 0 lock PR #33 (`24c6f46`), Stage 1 close PR #34 (`be22286`). **Phase 2 Stage 3 verify-suite gate closed 2026-05-24 (`1a93f66`)** — 13 + 17 reds on full Chromium match the pre-existing baseline exactly with zero new Stage-2 reds. **Phase 2 Stage 4 calibration window OPEN 2026-05-24**, earliest close 2026-06-07 (≥2 weeks real use). Source of truth: [`docs/fatigue_meter/PHASE2_PLANNING.md`](fatigue_meter/PHASE2_PLANNING.md).
+  - 2026-05-20 history preserved: PR #26 (`2b34b50`) docs-only synthetic-override / coherence pass; PR #28 (`63c745d`) presentation-only badge restyle.
 
 Pick a new workstream from owner direction.
 
@@ -37,9 +35,17 @@ state before choosing what to do next.
    expand further without owner-vetted IDs. See
    [`docs/workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md`](workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md)
    "Curation Closed".
-4. **Do not reopen fatigue work.** Phase 1 is closed; Stage 4 is closed with no
-   threshold changes. No Phase 2 planning or fatigue edits without fresh owner
-   override.
+4. **Fatigue Meter Phase 2 Stage 4 — TRACKING (window OPEN).** Phase 2 Path 1
+   shipped 2026-05-23 (PR #35 `d5b80bf`); Stage 3 verify-suite gate closed
+   2026-05-24 (`1a93f66`); Stage 4 calibration window open 2026-05-24, earliest
+   close 2026-06-07 (≥2 weeks real use). **No per-muscle threshold tuning
+   without ≥2 same-direction real-use disagreements** — synthetic-generator-only
+   mismatches do not justify changes (Phase 1 `hard_4d` precedent). Do not edit
+   `utils/fatigue.py::MUSCLE_VOLUME_LANDMARKS` / `SESSION_FATIGUE_BANDS` /
+   `WEEKLY_FATIGUE_BANDS`, do not edit `tests/test_fatigue.py` boundary tests,
+   do not tune `scripts/fatigue_calibration_report.py::SCENARIOS`. Source of
+   truth: [`docs/fatigue_meter/PHASE2_PLANNING.md`](fatigue_meter/PHASE2_PLANNING.md)
+   Stage 4 + §10.
 5. **Worktree disposition — DONE.** Closed 2026-05-23 via `21859a1`. Both old
    worktree paths (`Hypertrophy-Toolbox-v3-visual-baseline-s4`,
    `Hypertrophy-Toolbox-v3-redesign-calm-glass`) were already absent from
@@ -50,10 +56,19 @@ state before choosing what to do next.
 
 ## Current Branch
 
-`main`, **fully up to date with `origin/main` at `21859a1`** (0 commits ahead). Working tree has only `data/database.db` runtime dirt (owner-approved kept dirty per `CLAUDE.md` agents-must-not list; do not commit). Feature branch `feat/body-composition-issue-21` was deleted locally and on the remote at the PR #31 merge.
+`main`, at `1a93f66` (1 commit ahead of `origin/main` at `d5b80bf` — the unpushed Stage 3 docs close `docs(fatigue): close phase 2 stage 3 gate`). Working tree has only `data/database.db` runtime dirt (owner-approved kept dirty per `CLAUDE.md` agents-must-not list; do not commit). Feature branch `feat/body-composition-issue-21` was deleted locally and on the remote at the PR #31 merge; feature branches `feat/fatigue-meter-phase-2` and `feat/fatigue-meter-phase-2-stage-2` were merged via PR #34 and PR #35 respectively.
+
+Recently landed on local `main` ahead of `origin/main` (newest first):
+
+- `1a93f66` (2026-05-24) — **docs(fatigue): close phase 2 stage 3 gate** (unpushed). Flips [`docs/fatigue_meter/PHASE2_PLANNING.md`](fatigue_meter/PHASE2_PLANNING.md) status banner to Stage 3 CLOSED + Stage 4 OPEN; verify-suite gate on `main` @ `d5b80bf` recorded (pytest 1442 passed; Playwright Chromium full 449 passed / 13 failed / 17 did-not-run — reds match pre-existing baseline exactly, zero new Stage-2 reds).
 
 Recently landed on `origin/main` (newest first):
 
+- `d5b80bf` (2026-05-23) — **PR #35** `feat(fatigue): add stage 2 fatigue breakdown surface`. Phase 2 Path 1 squash: per-muscle accumulator (`utils/fatigue.py` planned + logged + 4-week window), `routes/fatigue.py` blueprint, `templates/fatigue.html` + `_fatigue_muscle_bar.html`, period selector, two SFR cards, nav link, badge → page link, SCSS, 91 new pytest cases (1351 → 1442), `e2e/fatigue.spec.ts` 8 passed. Pre-merge restore point: backup id 5, label `pre-fatigue-meter-phase-2-stage-2-merge-2026-05-23`.
+- `be22286` (2026-05-23) — **PR #34** `chore(fatigue): close Phase 2 Stage 1 prerequisites`. Catalog cleanup pass — 633 `primary_muscle_group` NULLs eliminated (132 inferred from `exercise_name` via `utils.constants.MUSCLE_ALIAS ∪ MUSCLE_GROUPS`, 501 dormant rows assigned `"Unassigned"` sentinel); `tests/test_catalog_invariants.py::test_catalog_primary_muscle_group_has_no_nulls` added; pre-flight backup id 5 captured (label `pre-fatigue-meter-phase-2-2026-05-23`); pytest 1350 → 1351.
+- `24c6f46` (2026-05-23) — **PR #33** `docs(fatigue): lock Phase 2 Path 1 scope via Stage 0 walk`. Stage 0 decisions D2.1–D2.10 + stretch decisions + catalog re-scope synced into [`docs/fatigue_meter/BRAINSTORM.md §13.1 Phase 2 Decision Log`](fatigue_meter/BRAINSTORM.md); [`docs/fatigue_meter/PHASE2_PLANNING.md`](fatigue_meter/PHASE2_PLANNING.md) authored as canonical Phase 2 source.
+- `f01ccb9` (2026-05-23) — **docs(fatigue): extract Phase 2 planning**. Splits Phase 2 planning out of `docs/fatigue_meter/PLANNING.md` Stage 5/6 + `docs/fatigue_meter/BRAINSTORM.md` Phase 2 matrix.
+- `15ea316` (2026-05-23) — **docs: sync handoff after worktree cleanup** (LEFTOVERS row #14 follow-up).
 - `21859a1` (2026-05-23) — **docs: close stale worktree disposition backlog** (LEFTOVERS row #14 closed; old worktree paths already absent from disk; stale branch refs `test/visual-baseline-thumbnails` local + remote and `origin/redesign/calm-glass-2026` deleted with owner approval).
 - `1956089` (2026-05-23) — **docs(workout-cool): close YouTube curation backlog** (LEFTOVERS row #12 closed by diminishing returns at 56 rows; ahead-of-origin status text refreshed).
 - `ff244aa` (2026-05-23) — **content(workout-cool): expand curated YouTube references** (+20 owner-vetted rows on top of `cf21191`; `data/youtube_curated_top_n.csv` now 56 rows + header; curation closed by diminishing returns — see [`docs/workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md`](workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md) "Curation Closed").
@@ -166,24 +181,33 @@ All previously-tracked follow-ups have shipped:
 - §5 YouTube curation closed by diminishing returns at 56 rows (`cf21191` + `ff244aa`, 2026-05-23). Reopen only if owner supplies new vetted IDs — see [YOUTUBE_REFERENCE_VIDEOS.md "Curation Closed"](workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md).
 - Worktree disposition closed by inspection + branch cleanup in `21859a1` (2026-05-23). See [LEFTOVERS_BY_PRIORITY.md §6](LEFTOVERS_BY_PRIORITY.md).
 
-### Fatigue meter — DO NOT REOPEN (status updated 2026-05-20)
+### Fatigue meter Phase 2 — Stage 4 calibration window OPEN (status updated 2026-05-24)
 
-Phase 1 is the working state. **Stage 4 was closed by owner-approved felt-label calibration review on 2026-05-20 with no threshold changes.** STAGE4_PARKED_HANDOFF.md is superseded; `calibration-notes.md` is authoritative.
+Phase 1 shipped; Phase 1 Stage 4 closed 2026-05-20 (no threshold changes). **Phase 2 Path 1 shipped 2026-05-23 via PR #35 (`d5b80bf`); Phase 2 Stage 3 verify-suite gate closed 2026-05-24 (`1a93f66`); Phase 2 Stage 4 calibration window OPEN 2026-05-24, earliest close 2026-06-07** (≥2 weeks real use). Source of truth: [`docs/fatigue_meter/PHASE2_PLANNING.md`](fatigue_meter/PHASE2_PLANNING.md) Stage 4 + §10. `calibration-notes.md` remains the Phase 1 Stage 4 authority; STAGE4_PARKED_HANDOFF.md is superseded.
 
-Do not, without an explicit new owner override:
+**Live calibration guardrails** (do not, without an explicit new owner override):
 
-- Edit `utils/fatigue.py` (thresholds remain §24.B defaults).
+- Edit `utils/fatigue.py::MUSCLE_VOLUME_LANDMARKS` / `SESSION_FATIGUE_BANDS` / `WEEKLY_FATIGUE_BANDS` (per-muscle and global thresholds remain §24.B defaults + BRAINSTORM §5 verbatim for the 12 ranked muscles).
 - Edit `tests/test_fatigue.py` boundary-classification tests.
 - Tune `scripts/fatigue_calibration_report.py::SCENARIOS` (Hypothesis B retune of `hard_4d` is a documented-not-applied deferred follow-up).
-- Start Phase 2 work, add a `/fatigue` page, or add new API endpoints.
 
-Re-open Stage 4 review only if `workout_log` accumulates ≥4 representative real weeks with varied stress shapes and the owner requests a re-walk, or the owner explicitly overrides this status.
+**Calibration evidence to collect during the window** (per [`PHASE2_PLANNING.md`](fatigue_meter/PHASE2_PLANNING.md) Stage 4 / §10):
 
-**Earlier 2026-05-20 history (preserved):**
+- Per-muscle band disagreements recorded as `(muscle, period, engine band, felt label, direction)`. **Two same-direction disagreements = signal; one isolated disagreement = noise** (Phase 1 §4.2 rule).
+- Real-use only: `workout_log` data drives the signal. Synthetic generator mismatches do not justify threshold changes (Phase 1 `hard_4d` precedent — scenario under-shoot, not threshold drift).
+- `/fatigue` UX notes: MRV sort usefulness, period selector reach (this session / this week / last 4 weeks), `fatigue == 0 → "—"` SFR sentinel behavior, planned-vs-logged side-by-side usefulness vs clutter.
+- Watch the six unranked labels (Front-Shoulder, Rear-Shoulder, Lower Back, Hip-Adductors, Middle-Traps, Neck) — `—` neutral state is intentional pending vetted MEV/MAV/MRV (Phase-3 follow-up).
+- Watch the `Unassigned` bucket — should stay empty in `workout_log`-driven bars (501 sentinel rows verified dormant at Stage 1); if a logged set lands there, name the offending exercise as a catalog cleanup signal.
+- Link reciprocity (badge → page, page → summary) and console errors.
+- `movement_pattern` cleanup (454 NULLs) stays Phase-2-independent unless a symptom appears.
 
-- **Bounded synthetic-override / coherence pass** (PR #26 `2b34b50`) — docs-only addition to `calibration-notes.md`. No code or script changes.
-- **Badge restyle** (PR #28 `63c745d`) — presentation-only `templates/_fatigue_badge.html` + `scss/_fatigue.scss` + built CSS + 12 refreshed visual snapshots. No fatigue math / threshold / API changes.
-- **Stage 4 close** (this doc-only walk, later on 2026-05-20) — owner labeled 5 anchors (1 real W20 + 4 generated); 4/5 agreed; 1 isolated disagreement on `hard_4d` generated scenario was treated as scenario under-shoot per Hypothesis B, not as threshold drift. No `utils/fatigue.py` change.
+Threshold tuning requires both the ≥2 same-direction real-use disagreement bar AND a fresh owner go-ahead.
+
+**Earlier history (preserved):**
+
+- 2026-05-20 — Phase 1 Stage 4 close (owner labeled 5 anchors; 4/5 agreed; 1 isolated `hard_4d` synthetic disagreement → no threshold change).
+- 2026-05-20 — PR #26 (`2b34b50`) docs-only synthetic-override / coherence pass; PR #28 (`63c745d`) presentation-only badge restyle.
+- 2026-05-23 — Phase 2 Stage 0 lock PR #33 (`24c6f46`); Stage 1 close PR #34 (`be22286`); Stage 2 ship PR #35 (`d5b80bf`).
 
 ## Agent Authority
 
@@ -197,10 +221,9 @@ Agents must not:
 
 - Reset, force-push, or otherwise discard working-tree state without owner approval.
 - Commit `data/database.db` (runtime; agents-must-not list in CLAUDE.md).
-- Start fatigue-meter work.
-- Start Phase 2 fatigue planning.
-- Edit `utils/fatigue.py`.
-- Tune `scripts/fatigue_calibration_report.py` SCENARIOS.
+- Edit `utils/fatigue.py::MUSCLE_VOLUME_LANDMARKS` / `SESSION_FATIGUE_BANDS` / `WEEKLY_FATIGUE_BANDS` (per-muscle and global thresholds; gated by Phase 2 Stage 4 calibration — see DO NOT REOPEN block above).
+- Edit `tests/test_fatigue.py` boundary-classification tests.
+- Tune `scripts/fatigue_calibration_report.py::SCENARIOS`.
 - Touch unrelated dirty files unless the active task requires it.
 
 ## Stop Conditions
