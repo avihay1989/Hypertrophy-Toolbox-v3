@@ -365,6 +365,26 @@ The author's biases that should be questioned:
 | D12 | API parameter names & empty-state shape (if API ships) | spec'd in PLANNING.md | **N/A in Phase 1 (API skipped per D9)** | Deferred until Phase 2 API work. | 2026-04-30 |
 | D13 | Performance strategy | re-query DB / reuse loaded summary rows / cache by `(week, log_max_id)` | **Extend/reuse existing summary query path to expose per-exercise rows; no caching** | OVERRIDE: do not rely on already-aggregated summary rows — fatigue needs `movement_pattern`, `reps`, `sets`, and `RIR`. No cache in Phase 1. | 2026-04-30 |
 
+### 13.1 Phase 2 Decision Log (locked 2026-05-23 per PHASE2_PLANNING.md Stage 0)
+
+Owner-driven Stage 0 walk on 2026-05-23. **Path 1** scope locked: planned + logged side-by-side + period selector on day one. Two overrides vs author recommendation — D2.5 (data scope) and D2.12 (period selector) — both expand the original MVP draft. One new decision (D2.13 catalog re-scope) was surfaced during the walk by Codex review and was not in the original planning draft.
+
+| # | Decision | Options | Chosen | Rationale | Date |
+|---|---|---|---|---|---|
+| D2.1 | Channel split (Phase 2) | local-only / +systemic / +joint | **Local-only (Channel A)** | Author rec approved — systemic + joint stay Phase 3. | 2026-05-23 |
+| D2.2 | Page placement (Phase 2) | embed-only / dedicated-only / both | **Dedicated `/fatigue` + keep existing badge with link** | Author rec approved (Option C from §7) — embed-only would crowd summary cards; dedicated-only would orphan the badge. | 2026-05-23 |
+| D2.3 | Threshold source (Phase 2) | hardcoded / user-calibrated / both | **Hardcoded research defaults; no UI override** | Author rec approved — calibration table is Phase 3. Carries forward D2. | 2026-05-23 |
+| D2.4 | Sets basis (Phase 2 per-muscle) | raw / effective | **Raw sets** | Author rec approved (carry forward D3 override) — per-muscle channel must be CountingMode-invariant for the same reason the global badge is. | 2026-05-23 |
+| D2.5 | Data scope (Phase 2) | planned-only / logged-only / planned + logged side-by-side | **Planned + Logged side-by-side** | OVERRIDE of author rec (planned-only / carry forward D10). Owner picked richer view on day one. Doubles Stage 2 UI surface area; chapter count 6 → 8. | 2026-05-23 |
+| D2.6 | SFR denominator (Phase 2) | global / per-muscle | **Global fatigue for page-level SFR card(s); per-muscle SFR deferred** | Author rec approved — renders as two cards (planned + logged) per D2.5. Per-muscle SFR card-per-muscle stays Phase 3 unless Stage 1 dependency review surfaces a cheap path. | 2026-05-23 |
+| D2.7 | `/api/fatigue/*` in Phase 2 | ship / skip | **Skip (carry forward D9)** | Author rec approved — page is server-rendered; no client needs JSON. SQL-injection surface stays at zero. | 2026-05-23 |
+| D2.8 | Schema touch in Phase 2 | additive / none | **No schema change** | Author rec approved — first schema change is Phase 3 by design. | 2026-05-23 |
+| D2.9 | Per-muscle data source | new pipeline / reuse effective-sets aggregation | **Reuse `effective_sets`-style aggregation; query both `user_selection` and `workout_log`** | Author rec approved + extended per D2.5 (two queries: planned + logged). Honors D13 (re-query with fatigue-relevant columns; don't reuse already-aggregated rows). | 2026-05-23 |
+| D2.10 | Copy boundaries (Phase 2) | descriptive / prescriptive | **Descriptive — no "MRV"/"MEV" in user-facing copy; neutral bands** | Author rec approved — `BRAINSTORM.md §11 Q7` + Phase 1 §3.3 hard gate carries forward. | 2026-05-23 |
+| D2.11 | Per-muscle bar sort | absolute fatigue / % of MRV / fixed anatomical | **By % of MRV, highest first** | Stretch decision locked — most stressed muscle surfaces first; aligns with the "what should I rebalance?" intent of the page. | 2026-05-23 |
+| D2.12 | Period selector on day one | single-period (this week) / selector | **Ship with selector — this session / this week / last 4 weeks** | OVERRIDE of author rec (single-period MVP, selector as fast-follow). Owner picked richer page on first release. Adds new 4-week aggregator (no other module computes it) + 1 Stage 2 chapter. | 2026-05-23 |
+| D2.13 | Catalog data-quality re-scope | block on full cleanup / scope-down to active plan / hybrid | **Hybrid: clean 633 `primary_muscle_group` NULLs in Stage 1; defer 454 `movement_pattern` NULLs** | NEW decision surfaced by Codex review at Stage 0 (not in original planning draft). Per-muscle math depends on muscle group; movement_pattern is not used by Phase 2. | 2026-05-23 |
+
 ---
 
 ## 14. Prerequisites — Before Any Code Is Written
