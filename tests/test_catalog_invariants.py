@@ -41,3 +41,24 @@ def test_catalog_primary_muscle_group_has_no_nulls():
         f"Expected 0 NULL/blank primary_muscle_group rows in exercises, found {row['n']}. "
         "Re-run scripts/fatigue_stage1_cleanup.py to restore the invariant."
     )
+
+
+def test_catalog_movement_pattern_has_no_nulls():
+    """Fatigue Meter Phase 2 §10 #5 — every catalog row must have a non-NULL,
+    non-blank movement_pattern so fatigue's pattern-weight resolution and the
+    plan-generator's blueprint-slot matching never hit a NULL path for a
+    shipped exercise. Unresolved rows carry the 'unassigned' sentinel.
+    """
+    with _connect() as conn:
+        row = conn.execute(
+            """
+            SELECT COUNT(*) AS n
+              FROM exercises
+             WHERE movement_pattern IS NULL
+                OR TRIM(movement_pattern) = ''
+            """
+        ).fetchone()
+    assert row["n"] == 0, (
+        f"Expected 0 NULL/blank movement_pattern rows in exercises, found {row['n']}. "
+        "Re-run scripts/fatigue_movement_pattern_cleanup.py to restore the invariant."
+    )
