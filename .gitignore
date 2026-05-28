@@ -83,3 +83,10 @@ static/bodymaps/GPT/
 MASTER_HANDOVER.local.md
 WORKSTREAM_OWNERSHIP.local.md
 .claude/SHARED_PLAN.md
+
+# Fatigue Stage 4 personal calibration labels (felt-band annotations)
+docs/fatigue_meter/stage4_calibration_log.csv
+
+# Personal local data scratch (never commit)
+data/.personal-export.json
+data/.personal_data_dance.py
