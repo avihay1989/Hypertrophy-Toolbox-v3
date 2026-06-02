@@ -9,6 +9,7 @@ from utils.database import (
     DatabaseHandler,
     add_body_composition_snapshots_table,
     add_progression_goals_table,
+    add_strength_calibration_tables,
     add_user_profile_tables,
     add_volume_tracking_tables,
 )
@@ -43,6 +44,7 @@ def _initialize_test_database() -> None:
     add_volume_tracking_tables()
     add_user_profile_tables()
     add_body_composition_snapshots_table()
+    add_strength_calibration_tables()
     initialize_exercise_order()
     initialize_backup_tables()
 
@@ -110,6 +112,8 @@ def app(test_db_path):
                 tables = [
                     'program_backup_items',  # Drop child table first (FK constraint)
                     'program_backups',        # Then parent backup table
+                    'learned_strength_calibrations',
+                    'user_calibration_settings',
                     'user_profile_preferences',
                     'user_profile_lifts',
                     'user_profile',

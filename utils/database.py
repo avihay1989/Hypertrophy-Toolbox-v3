@@ -603,6 +603,49 @@ def upsert_user_profile_preference(
         handler.execute_query(query, params)
 
 
+def add_strength_calibration_tables() -> None:
+    """Ensure the learned-calibration tables exist (additive + idempotent).
+
+    ``learned_strength_calibrations`` holds one recomputed row per exercise;
+    ``user_calibration_settings`` is the single-row feature switch and defaults
+    to ``off`` so restoring a pre-calibration backup leaves learned suggestions
+    inert. See ``docs/user_profile/LEARNED_CALIBRATION_PLAN.md``.
+    """
+    ddl_calibrations = """
+        CREATE TABLE IF NOT EXISTS learned_strength_calibrations (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            exercise_name TEXT UNIQUE NOT NULL,
+            lift_key TEXT,
+            primary_muscle TEXT,
+            estimated_1rm REAL,
+            suggested_weight REAL,
+            suggested_min_reps INTEGER,
+            suggested_max_reps INTEGER,
+            suggested_rir INTEGER,
+            suggested_rpe REAL,
+            confidence TEXT,
+            sample_count INTEGER,
+            last_log_id INTEGER,
+            last_observed_at TEXT,
+            source TEXT,
+            created_at DATETIME,
+            updated_at DATETIME
+        )
+    """
+    ddl_settings = """
+        CREATE TABLE IF NOT EXISTS user_calibration_settings (
+            id INTEGER PRIMARY KEY CHECK (id = 1),
+            mode TEXT NOT NULL DEFAULT 'off' CHECK (mode IN ('off', 'suggest')),
+            allow_related_exercise_learning INTEGER NOT NULL DEFAULT 0,
+            min_sessions_for_related INTEGER,
+            updated_at DATETIME
+        )
+    """
+    with DatabaseHandler() as db:
+        db.execute_query(ddl_calibrations)
+        db.execute_query(ddl_settings)
+
+
 def add_body_composition_snapshots_table() -> None:
     """Ensure the body_composition_snapshots table + index exist (Issue #21)."""
     ddl_table = """

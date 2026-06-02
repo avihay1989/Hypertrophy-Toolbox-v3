@@ -96,6 +96,40 @@ def _get_progression_status(
         return "maintain"
 
 
+def decide_progression_target(
+    *,
+    weight: Optional[float],
+    reps: Optional[int],
+    planned_min_reps: Optional[int],
+    planned_max_reps: Optional[int],
+    rir: Optional[int] = None,
+    rpe: Optional[float] = None,
+    is_novice: bool = True,
+) -> Dict[str, Any]:
+    """Public double-progression decision for a single observed top set.
+
+    Shared by the progression page and the learned-calibration estimator so
+    both speak the same double-progression language (effort window RIR 1-3 /
+    RPE 7-9, increase weight at the top of the range, otherwise hold load and
+    build reps). Given the most recent performed set and the rep range it was
+    trained in, return the next-session target. Weight only advances on
+    ``increase_weight``; otherwise the load is held. Mirrors
+    ``_get_progression_status`` / ``_calculate_weight_increment`` so the
+    existing suggestion copy stays in sync — do not duplicate these rules in
+    callers.
+    """
+    status = _get_progression_status(reps, planned_min_reps, planned_max_reps, rir, rpe)
+    suggested_weight = weight
+    if status == "increase_weight" and weight is not None:
+        suggested_weight = weight + _calculate_weight_increment(weight, is_novice)
+    return {
+        "status": status,
+        "suggested_weight": suggested_weight,
+        "suggested_min_reps": planned_min_reps,
+        "suggested_max_reps": planned_max_reps,
+    }
+
+
 def _analyze_consistency(history: List[Dict[str, Any]], min_sessions: int = 2) -> Dict[str, Any]:
     """
     Analyze training consistency for smarter suggestions.

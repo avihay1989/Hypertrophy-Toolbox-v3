@@ -5,6 +5,7 @@ from utils.database import (
     DatabaseHandler,
     add_body_composition_snapshots_table,
     add_progression_goals_table,
+    add_strength_calibration_tables,
     add_user_profile_tables,
     add_volume_tracking_tables,
 )
@@ -65,6 +66,8 @@ logger.info("Adding user profile tables...")
 add_user_profile_tables()
 logger.info("Adding body composition snapshots table...")
 add_body_composition_snapshots_table()
+logger.info("Adding strength calibration tables...")
+add_strength_calibration_tables()
 logger.info("Initializing exercise order...")
 initialize_exercise_order()
 logger.info("Initializing backup tables...")
@@ -173,6 +176,8 @@ def erase_data():
             tables = [
                 'program_backup_items',  # Drop child table first (FK constraint)
                 'program_backups',        # Then parent backup table
+                'learned_strength_calibrations',
+                'user_calibration_settings',
                 'user_profile_preferences',
                 'user_profile_lifts',
                 'user_profile',
@@ -199,6 +204,8 @@ def erase_data():
         add_user_profile_tables()
         logger.info("Adding body composition snapshots table...")
         add_body_composition_snapshots_table()
+        logger.info("Adding strength calibration tables...")
+        add_strength_calibration_tables()
         logger.info("Initializing exercise order...")
         initialize_exercise_order()
         logger.info("Reinitializing backup tables...")

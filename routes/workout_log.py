@@ -9,6 +9,7 @@ from utils.workout_log import (
 from utils.errors import success_response, error_response
 from utils.export_utils import create_excel_workbook, generate_timestamped_filename
 from utils.logger import get_logger
+from utils.strength_calibration import update_calibration_for_exercise
 
 workout_log_bp = Blueprint('workout_log', __name__)
 logger = get_logger()
@@ -58,12 +59,22 @@ def update_workout_log():
 
         with DatabaseHandler() as db:
             # Check if log entry exists
-            check_query = "SELECT id FROM workout_log WHERE id = ?"
+            check_query = "SELECT id, exercise FROM workout_log WHERE id = ?"
             existing = db.fetch_one(check_query, (log_id,))
             if not existing:
                 return error_response("NOT_FOUND", f"Workout log entry with ID {log_id} not found", 404)
-            
+
             db.execute_query(query, params)
+
+            # Recompute learned calibration from the updated logs, reusing the
+            # open handler (plan §"DatabaseHandler Requirement"). Guarded so a
+            # calibration failure never rolls back the user's log write.
+            try:
+                update_calibration_for_exercise(existing["exercise"], db=db)
+            except Exception:
+                logger.exception(
+                    "Calibration recompute failed for log %s; log update preserved", log_id
+                )
 
         logger.info(f"Updated workout log {log_id}")
         return jsonify(success_response(message="Workout log updated successfully"))
@@ -82,14 +93,23 @@ def delete_workout_log():
         
         with DatabaseHandler() as db:
             # Check if log entry exists
-            check_query = "SELECT id FROM workout_log WHERE id = ?"
+            check_query = "SELECT id, exercise FROM workout_log WHERE id = ?"
             existing = db.fetch_one(check_query, (log_id,))
             if not existing:
                 return error_response("NOT_FOUND", f"Workout log entry with ID {log_id} not found", 404)
-            
+
             query = "DELETE FROM workout_log WHERE id = ?"
             db.execute_query(query, (log_id,))
-        
+
+            # Recompute against the remaining logs; clears the calibration row
+            # when the deleted set was the last usable one (invalidate-on-delete).
+            try:
+                update_calibration_for_exercise(existing["exercise"], db=db)
+            except Exception:
+                logger.exception(
+                    "Calibration recompute failed after deleting log %s", log_id
+                )
+
         logger.info(f"Deleted workout log {log_id}")
         return jsonify(success_response(message="Log entry deleted successfully"))
         
