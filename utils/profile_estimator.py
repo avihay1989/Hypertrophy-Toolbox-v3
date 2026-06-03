@@ -1327,6 +1327,11 @@ def estimate_for_exercise(exercise_name: str, *, db: DatabaseHandler) -> dict[st
 
         is_dumbbell = normalize_equipment(exercise_row.get("equipment")) == "Dumbbells"
 
+        learned = _lookup_learned_calibration(exercise_row["exercise_name"], db)
+        if learned:
+            learned["is_dumbbell"] = is_dumbbell
+            return learned
+
         logged = _lookup_last_logged(exercise_row["exercise_name"], db)
         if logged:
             logged["is_dumbbell"] = is_dumbbell
@@ -1395,6 +1400,100 @@ def _lookup_last_logged(exercise_name: str, db: DatabaseHandler) -> Optional[dic
         "trace": _build_log_trace(
             weight=weight, reps_low=min_rep, reps_high=max_rep
         ),
+    }
+
+
+def _lookup_learned_calibration(
+    exercise_name: str, db: DatabaseHandler
+) -> Optional[dict[str, Any]]:
+    """Top-priority estimate from learned calibration, or None to fall through.
+
+    Returns a suggestion only when the user has opted in (settings mode
+    ``suggest``) AND a stored row exists with usable confidence. Anything else
+    — mode ``off``/no settings row, no calibration row, or a ``low`` band —
+    returns None so the existing last-log → Profile → cold-start chain runs
+    unchanged (plan §"Estimate Priority" / §"Settings Default" regression
+    guard). Imported lazily because ``strength_calibration`` imports from this
+    module (avoids a circular import at load time).
+    """
+    from utils.strength_calibration import (
+        USABLE_SUGGEST_CONFIDENCES,
+        get_calibration_mode,
+        get_learned_calibration,
+    )
+
+    if get_calibration_mode(db=db) != "suggest":
+        return None
+    row = get_learned_calibration(exercise_name, db=db)
+    if not row or row.get("confidence") not in USABLE_SUGGEST_CONFIDENCES:
+        return None
+    if row.get("suggested_weight") is None:
+        return None
+
+    default = DEFAULT_ESTIMATE
+    weight = float(row["suggested_weight"])
+    min_rep = (
+        int(row["suggested_min_reps"])
+        if row.get("suggested_min_reps") is not None
+        else default["min_rep"]
+    )
+    max_rep = (
+        int(row["suggested_max_reps"])
+        if row.get("suggested_max_reps") is not None
+        else default["max_rep"]
+    )
+    return {
+        "weight": weight,
+        "sets": default["sets"],
+        "min_rep": min_rep,
+        "max_rep": max_rep,
+        "rir": (
+            int(row["suggested_rir"])
+            if row.get("suggested_rir") is not None
+            else default["rir"]
+        ),
+        "rpe": (
+            float(row["suggested_rpe"])
+            if row.get("suggested_rpe") is not None
+            else default["rpe"]
+        ),
+        "source": "learned",
+        "reason": "learned_calibration",
+        "trace": _build_learned_trace(
+            row, weight=weight, reps_low=min_rep, reps_high=max_rep
+        ),
+    }
+
+
+def _build_learned_trace(
+    row: dict[str, Any], *, weight: float, reps_low: int, reps_high: int
+) -> dict[str, Any]:
+    rep_label = f"{reps_low}" if reps_low == reps_high else f"{reps_low}–{reps_high}"
+    sample_count = row.get("sample_count") or 0
+    confidence = row.get("confidence")
+    e1rm = row.get("estimated_1rm")
+    steps: list[dict[str, Any]] = [
+        {
+            "label": "Learned from your logged sets",
+            "value": f"{weight:g} kg × {rep_label}",
+            "detail": (
+                f"Calibrated from {sample_count} recent scored "
+                f"{'log' if sample_count == 1 else 'logs'} for this exact "
+                f"exercise (confidence: {confidence})."
+            ),
+        },
+    ]
+    if e1rm:
+        steps.append({
+            "label": "Estimated strength",
+            "value": f"~{float(e1rm):g} kg e1RM",
+            "detail": "Canonical Epley estimate from your best recent top set.",
+        })
+    return {
+        "source": "learned",
+        "confidence": confidence,
+        "sample_count": sample_count,
+        "steps": steps,
     }
 
 

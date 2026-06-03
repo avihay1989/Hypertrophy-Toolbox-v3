@@ -53,9 +53,16 @@ CONFIDENCE_HIGH = "high"
 
 CALIBRATION_SOURCE = "exact_logs"
 
-# -- Settings (default-off; estimator integration lands in a later phase) ----
+# -- Settings (default-off; estimator reads these in `suggest` mode) ----------
 DEFAULT_CALIBRATION_MODE = "off"
 VALID_CALIBRATION_MODES = ("off", "suggest")
+
+# Confidence bands strong enough to override the existing estimator chain when
+# mode is ``suggest``. A ``low`` band (stale / sparse / inconsistent) is *not*
+# usable — the estimator falls through to its last-log / Profile chain instead,
+# so weak evidence never displaces a real reference lift (plan §"Estimate
+# Priority": learned wins only "when confidence is usable").
+USABLE_SUGGEST_CONFIDENCES = (CONFIDENCE_MEDIUM, CONFIDENCE_HIGH)
 
 _DT_FORMATS = (
     "%Y-%m-%d %H:%M:%S",
@@ -75,6 +82,43 @@ def get_calibration_mode(*, db: DatabaseHandler) -> str:
     row = db.fetch_one("SELECT mode FROM user_calibration_settings WHERE id = 1")
     mode = (row or {}).get("mode")
     return mode if mode in VALID_CALIBRATION_MODES else DEFAULT_CALIBRATION_MODE
+
+
+def set_calibration_mode(mode: str, *, db: DatabaseHandler) -> str:
+    """Upsert the single-row calibration mode; return the stored value.
+
+    Turning learned suggestions on is an explicit user action (plan §"Settings
+    Default"). Reserved Phase 2 columns keep their schema defaults.
+    """
+    if mode not in VALID_CALIBRATION_MODES:
+        raise ValueError(f"mode must be one of {VALID_CALIBRATION_MODES}")
+    db.execute_query(
+        """
+        INSERT INTO user_calibration_settings (id, mode, updated_at)
+        VALUES (1, ?, CURRENT_TIMESTAMP)
+        ON CONFLICT(id) DO UPDATE SET
+            mode = excluded.mode,
+            updated_at = CURRENT_TIMESTAMP
+        """,
+        (mode,),
+    )
+    return mode
+
+
+def get_learned_calibration(
+    exercise_name: str, *, db: DatabaseHandler
+) -> Optional[dict[str, Any]]:
+    """Return the stored learned-calibration row for one exact exercise, or None.
+
+    Read-only lookup used by the estimator. Whether the row is strong enough to
+    *act on* is decided by the caller against :data:`USABLE_SUGGEST_CONFIDENCES`.
+    """
+    if not exercise_name or not exercise_name.strip():
+        return None
+    return db.fetch_one(
+        "SELECT * FROM learned_strength_calibrations WHERE exercise_name = ? COLLATE NOCASE",
+        (exercise_name.strip(),),
+    )
 
 
 def _utcnow() -> datetime:
