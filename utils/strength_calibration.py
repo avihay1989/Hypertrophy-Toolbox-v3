@@ -53,6 +53,12 @@ CONFIDENCE_HIGH = "high"
 
 CALIBRATION_SOURCE = "exact_logs"
 
+# Outcomes surfaced to the UI after a scored log change (plan §"Notifications").
+CALIB_STATUS_OFF = "off"
+CALIB_STATUS_UPDATED = "updated"
+CALIB_STATUS_LOW_CONFIDENCE = "low_confidence"
+CALIB_STATUS_NONE = "none"
+
 # -- Settings (default-off; estimator reads these in `suggest` mode) ----------
 DEFAULT_CALIBRATION_MODE = "off"
 VALID_CALIBRATION_MODES = ("off", "suggest")
@@ -322,6 +328,43 @@ def update_calibration_for_exercise(
     }
     _upsert_calibration(payload, db=db)
     return payload
+
+
+def recompute_calibration_after_log(
+    exercise_name: str, *, db: DatabaseHandler, now: Optional[datetime] = None
+) -> dict[str, Any]:
+    """Recompute one exercise's calibration after a scored log change.
+
+    Returns a small UI-facing summary the workout-log route forwards so the
+    client can pick the right notification (plan §"Notifications"):
+
+    - ``off``            — learned calibration is disabled (mode ``off`` / no
+      settings row); the row is still recomputed so it's ready if enabled later.
+    - ``updated``        — usable confidence (medium/high); the suggestion changed.
+    - ``low_confidence`` — recomputed but too weak/stale/sparse to act on.
+    - ``none``           — no usable scored logs remain (row cleared / unknown).
+
+    Reuses the caller's open ``DatabaseHandler`` (single transaction with the
+    log write — plan §"DatabaseHandler Requirement").
+    """
+    mode = get_calibration_mode(db=db)
+    payload = update_calibration_for_exercise(exercise_name, db=db, now=now)
+
+    if mode != "suggest":
+        status = CALIB_STATUS_OFF
+    elif payload is None:
+        status = CALIB_STATUS_NONE
+    elif payload.get("confidence") in USABLE_SUGGEST_CONFIDENCES:
+        status = CALIB_STATUS_UPDATED
+    else:
+        status = CALIB_STATUS_LOW_CONFIDENCE
+
+    return {
+        "mode": mode,
+        "status": status,
+        "exercise": (payload or {}).get("exercise_name", exercise_name),
+        "confidence": (payload or {}).get("confidence"),
+    }
 
 
 def _upsert_calibration(payload: dict[str, Any], *, db: DatabaseHandler) -> None:

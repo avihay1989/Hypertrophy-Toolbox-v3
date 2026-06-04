@@ -9,7 +9,10 @@ from utils.workout_log import (
 from utils.errors import success_response, error_response
 from utils.export_utils import create_excel_workbook, generate_timestamped_filename
 from utils.logger import get_logger
-from utils.strength_calibration import update_calibration_for_exercise
+from utils.strength_calibration import (
+    recompute_calibration_after_log,
+    update_calibration_for_exercise,
+)
 
 workout_log_bp = Blueprint('workout_log', __name__)
 logger = get_logger()
@@ -56,7 +59,9 @@ def update_workout_log():
         set_clause = ", ".join(f"{k} = ?" for k in valid_updates.keys())
         query = f"UPDATE workout_log SET {set_clause} WHERE id = ?"
         params = list(valid_updates.values()) + [log_id]
+        scored_changed = any(k.startswith("scored_") for k in valid_updates)
 
+        calibration = None
         with DatabaseHandler() as db:
             # Check if log entry exists
             check_query = "SELECT id, exercise FROM workout_log WHERE id = ?"
@@ -68,16 +73,23 @@ def update_workout_log():
 
             # Recompute learned calibration from the updated logs, reusing the
             # open handler (plan §"DatabaseHandler Requirement"). Guarded so a
-            # calibration failure never rolls back the user's log write.
+            # calibration failure never rolls back the user's log write. Only a
+            # scored change is a "meaningful log update" worth notifying about
+            # (plan §"Notifications").
             try:
-                update_calibration_for_exercise(existing["exercise"], db=db)
+                summary = recompute_calibration_after_log(existing["exercise"], db=db)
+                if scored_changed:
+                    calibration = summary
             except Exception:
                 logger.exception(
                     "Calibration recompute failed for log %s; log update preserved", log_id
                 )
 
         logger.info(f"Updated workout log {log_id}")
-        return jsonify(success_response(message="Workout log updated successfully"))
+        return jsonify(success_response(
+            data={"calibration": calibration} if calibration else None,
+            message="Workout log updated successfully",
+        ))
     except Exception as e:
         logger.exception("Error updating workout log")
         return error_response("INTERNAL_ERROR", "Failed to update workout log", 500)

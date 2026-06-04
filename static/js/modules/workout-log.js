@@ -398,10 +398,31 @@ export async function updateScoredValue(logId, field, value) {
             badge.textContent = isProgressive ? 'Achieved' : 'Pending';
         }
 
-        showToast('Value updated successfully');
+        notifyCalibrationOutcome(response?.data?.calibration);
     } catch (error) {
         console.error('Error updating value:', error);
         showToast('error', 'Failed to update value');
+    }
+}
+
+// Pick the post-save toast based on the learned-calibration outcome the
+// /update_workout_log route reports (plan §"Notifications"). Falls back to the
+// plain confirmation when the change carried no calibration summary (e.g. a
+// non-scored field, or the recompute was skipped).
+function notifyCalibrationOutcome(calibration) {
+    if (!calibration) {
+        showToast('Value updated successfully');
+        return;
+    }
+    switch (calibration.status) {
+        case 'updated':
+            showToast('success', `Calibration updated for ${calibration.exercise}.`);
+            break;
+        case 'off':
+            showToast('info', 'Logged set saved. Learned calibration is currently off.');
+            break;
+        default: // low_confidence | none
+            showToast('info', 'Logged set saved. More data needed before learned calibration changes this exercise.');
     }
 }
 

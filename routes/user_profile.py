@@ -275,6 +275,7 @@ def _load_profile_context(db: DatabaseHandler) -> dict[str, Any]:
     latest_body_composition = _load_latest_body_composition(db)
     return {
         "profile": profile or {},
+        "calibration_mode": get_calibration_mode(db=db),
         "reference_lifts": reference_lifts,
         "reference_lift_groups": reference_lift_groups,
         "reference_lift_groups_anterior": reference_lift_groups_anterior,

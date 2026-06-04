@@ -8224,3 +8224,99 @@ tr.superset-partner-dragging {
 [data-theme='dark'] .workout-estimate-trace-step-detail {
     color: var(--ink-3, #939bb2);
 }
+
+/* Learned Calibration — source badge + Apply/Keep/Reset actions. */
+.workout-estimate-learned-badge {
+    align-items: center;
+    background: color-mix(in srgb, var(--accent, #4c6ef5) 14%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 32%, transparent);
+    border-radius: 999px;
+    color: color-mix(in srgb, var(--accent, #4c6ef5) 78%, var(--ink-1, #22283a));
+    display: inline-flex;
+    font-size: 0.76rem;
+    font-weight: 700;
+    gap: 0.3rem;
+    letter-spacing: 0.01em;
+    padding: 0.1rem 0.6rem;
+}
+
+.workout-estimate-learned-badge[hidden] {
+    display: none;
+}
+
+.workout-estimate-learned-badge[data-confidence="high"] {
+    background: color-mix(in srgb, var(--success, #2f9e44) 16%, transparent);
+    border-color: color-mix(in srgb, var(--success, #2f9e44) 38%, transparent);
+    color: color-mix(in srgb, var(--success, #2f9e44) 70%, var(--ink-1, #22283a));
+}
+
+.workout-estimate-learned-badge[data-confidence="low"] {
+    background: color-mix(in srgb, var(--warning, #e8590c) 14%, transparent);
+    border-color: color-mix(in srgb, var(--warning, #e8590c) 34%, transparent);
+    color: color-mix(in srgb, var(--warning, #e8590c) 72%, var(--ink-1, #22283a));
+}
+
+.workout-estimate-learned-badge .fa-wand-magic-sparkles {
+    font-size: 0.72rem;
+}
+
+.workout-estimate-trace-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.65rem;
+}
+
+.workout-estimate-trace-action {
+    background: color-mix(in srgb, var(--surface-2, #f5f7fb) 70%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 24%, transparent);
+    border-radius: 8px;
+    color: var(--ink-2, #4a5170);
+    cursor: pointer;
+    font-size: 0.84rem;
+    font-weight: 600;
+    padding: 0.3rem 0.75rem;
+    transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.workout-estimate-trace-action:hover {
+    background: color-mix(in srgb, var(--accent, #4c6ef5) 12%, transparent);
+    color: var(--ink-1, #22283a);
+}
+
+.workout-estimate-trace-action:focus-visible {
+    outline: 2px solid var(--accent, #4c6ef5);
+    outline-offset: 2px;
+}
+
+.workout-estimate-trace-action.is-primary {
+    background: color-mix(in srgb, var(--accent, #4c6ef5) 88%, white);
+    border-color: transparent;
+    color: #fff;
+}
+
+.workout-estimate-trace-action.is-primary:hover {
+    background: var(--accent, #4c6ef5);
+    color: #fff;
+}
+
+.workout-estimate-trace-action.is-reset {
+    margin-left: auto;
+    color: color-mix(in srgb, var(--danger, #e03131) 78%, var(--ink-2, #4a5170));
+}
+
+.workout-estimate-trace-action.is-reset:hover {
+    background: color-mix(in srgb, var(--danger, #e03131) 12%, transparent);
+    border-color: color-mix(in srgb, var(--danger, #e03131) 34%, transparent);
+    color: var(--danger, #e03131);
+}
+
+[data-theme='dark'] .workout-estimate-trace-action {
+    background: color-mix(in srgb, var(--surface-1, #161a2d) 80%, black);
+    border-color: color-mix(in srgb, var(--accent, #6d8dff) 30%, transparent);
+    color: var(--ink-2, #b4bad0);
+}
+
+[data-theme='dark'] .workout-estimate-trace-action.is-primary {
+    color: #fff;
+}
