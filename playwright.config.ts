@@ -1,7 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
-import { E2E_DB_PATH } from './e2e/global-setup';
 
 const venvPython = process.platform === 'win32'
   ? path.join(process.cwd(), '.venv', 'Scripts', 'python.exe')
@@ -12,6 +11,13 @@ const configuredWorkers = Number(process.env.PW_WORKERS ?? '1');
 const workers = Number.isFinite(configuredWorkers) && configuredWorkers > 0 ? configuredWorkers : 1;
 const artifactsRoot = process.env.TEST_ARTIFACTS_DIR ?? 'artifacts';
 const playwrightArtifactsDir = path.join(artifactsRoot, 'playwright');
+
+/* Throwaway DB the web server runs against (under gitignored artifacts/), so the
+   suite never touches the developer's live data/database.db. It is seeded by the
+   web-server command itself — Playwright starts webServer before globalSetup, so
+   seeding in globalSetup would race the server's first DB open (CI failure). */
+const e2eDbPath = path.join(process.cwd(), 'artifacts', 'e2e', 'database.e2e.db');
+const seedDbCommand = `${pythonExecutable} ${path.join('e2e', 'scripts', 'prepare_e2e_db.py')} --output "${e2eDbPath}"`;
 const defaultViewport = { width: 1440, height: 900 };
 const deterministicChromiumArgs = [
   '--disable-font-subpixel-positioning',
@@ -25,8 +31,6 @@ const deterministicChromiumArgs = [
  */
 export default defineConfig({
   testDir: './e2e',
-  /* Seed a fresh, deterministic throwaway DB before the suite (see e2e/global-setup.ts). */
-  globalSetup: './e2e/global-setup.ts',
   /* Run tests in files in parallel */
   fullyParallel: false,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -88,15 +92,17 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: `${pythonExecutable} app.py`,
+    /* Seed the throwaway DB, then start the app against it. Seeding here (not in
+       globalSetup) guarantees the DB exists before app.py's first open. */
+    command: `${seedDbCommand} && ${pythonExecutable} app.py`,
     url: 'http://127.0.0.1:5000',
     reuseExistingServer,
     timeout: 120 * 1000,
-    /* Run against the isolated throwaway DB seeded in globalSetup, never the
-       developer's live data/database.db. */
+    /* Isolated throwaway DB under gitignored artifacts/, never the developer's
+       live data/database.db. */
     env: {
       ...process.env,
-      DB_FILE: E2E_DB_PATH,
+      DB_FILE: e2eDbPath,
     },
   },
 

@@ -26,10 +26,11 @@ Full per-spec test count map: `.claude/rules/testing.md`.
 - `npx playwright test --project=chromium --reporter=line` — Chromium only; Firefox/WebKit are not configured.
 - `PW_REUSE_SERVER=1` reuses an already-running Flask process.
 
-## Database isolation (globalSetup)
-- The suite runs against an **isolated throwaway DB**, never the developer's live `data/database.db`. `playwright.config.ts` sets `globalSetup: ./e2e/global-setup.ts` and `webServer.env.DB_FILE` to `artifacts/e2e/database.e2e.db`.
-- `global-setup.ts` runs `e2e/scripts/prepare_e2e_db.py`, which snapshots the committed seed (`fixtures/database.visual.seed.db`), applies migrations, ensures the learned-calibration tables exist, then **wipes all user-state** (profile, reference lifts, plan, logs, calibration, backups) — full exercise catalog preserved. So every run starts from an identical clean slate and tests must not depend on ambient saved data.
-- Skipped when `PW_REUSE_SERVER=1` (a reused server owns its own DB; reseeding under it would corrupt WAL).
+## Database isolation (web-server command)
+- The suite runs against an **isolated throwaway DB**, never the developer's live `data/database.db`. `playwright.config.ts` points `webServer.env.DB_FILE` at `artifacts/e2e/database.e2e.db` and the `webServer.command` seeds it *before* launching the app: `prepare_e2e_db.py --output <db> && python app.py`.
+- Seeding lives in the web-server command (not `globalSetup`) on purpose: Playwright starts `webServer` **before** `globalSetup`, so seeding in `globalSetup` races `app.py`'s first DB open (fails in CI on a fresh checkout).
+- `e2e/scripts/prepare_e2e_db.py` snapshots the committed seed (`fixtures/database.visual.seed.db`), applies migrations, ensures the learned-calibration tables exist, then **wipes all user-state** (profile, reference lifts, plan, logs, calibration, backups) — full exercise catalog preserved. Every run starts from an identical clean slate; tests must not depend on ambient saved data.
+- With `PW_REUSE_SERVER=1` and a server already running, the command (and reseed) is skipped — the reused server owns its own DB.
 - Off-viewport navbar toggles (`#muscleModeToggle`, `#darkModeToggle`) can't be reached by actionability clicks at desktop width — dispatch via `page.evaluate(() => el?.click())` (see `clickMuscleModeToggle` in `workout-plan.spec.ts`, `clickDarkModeToggle` in `nav-dropdown.spec.ts`).
 
 ## Gotchas
