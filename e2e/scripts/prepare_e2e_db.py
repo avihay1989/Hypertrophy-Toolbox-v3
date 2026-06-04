@@ -1,10 +1,13 @@
 """Create an isolated, deterministic SQLite DB for the Chromium E2E suite.
 
-The app honors ``DB_FILE``. Playwright's ``globalSetup`` runs this script before
-starting the Flask web server and points ``DB_FILE`` at the output, so the whole
-suite runs against a throwaway DB derived from the committed seed
+The app honors ``DB_FILE``. Playwright's ``webServer.command`` runs this script
+before starting the Flask app (``prepare_e2e_db.py --output <db> && python
+app.py``) and points ``DB_FILE`` at the same output, so the whole suite runs
+against a throwaway DB derived from the committed seed
 (``e2e/fixtures/database.visual.seed.db``) — never the developer's live
-``data/database.db``.
+``data/database.db``. Seeding lives in the web-server command (not
+``globalSetup``) because Playwright starts ``webServer`` before ``globalSetup``,
+which would otherwise race the app's first DB open.
 
 The result is reproducible on every run: the full exercise catalog is preserved,
 all user-state (profile, reference lifts, plan, logs, calibration, backups) is
