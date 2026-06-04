@@ -1002,6 +1002,7 @@ def _build_profile_trace(
     target_tier: Tier,
     tier_multiplier: float,
     cross_factor: float,
+    basis_factor: float,
     preset_key: str,
     preset: dict[str, Any],
     target_1rm: float,
@@ -1044,6 +1045,21 @@ def _build_profile_trace(
             "label": "Cross-muscle factor",
             "factor": round(cross_factor, 2),
             "detail": "Applied because the target exercise isn't a direct match for the reference lift.",
+        })
+
+    if basis_factor != 1.0:
+        direction = (
+            "per-hand dumbbell → total load"
+            if basis_factor > 1.0
+            else "total load → per-hand dumbbell"
+        )
+        steps.append({
+            "label": "Dumbbell load conversion",
+            "factor": round(basis_factor, 2),
+            "detail": (
+                f"Reference and target use different load bases ({direction}); "
+                "applying the two-dumbbells-per-barbell factor."
+            ),
         })
 
     steps.append({
@@ -1309,6 +1325,25 @@ def round_weight(weight: float, equipment: Optional[str], tier: str) -> float:
     return round(max(rounded, floor), 2)
 
 
+def _load_basis_factor(reference_lift_key: str, target_is_per_hand: bool) -> float:
+    """Reconcile per-hand (dumbbell) vs total (barbell/machine) load bases.
+
+    Dumbbell loads — references in ``DUMBBELL_LIFT_KEYS`` and dumbbell-equipment
+    targets — are expressed **per hand**; everything else is a single total /
+    system load (see the module docstring, Issue #10). The estimator math is
+    otherwise unit-agnostic, so a total-load reference fed into a per-hand
+    target (or vice versa) is off by ~2× with no correction. When the two
+    disagree, convert with the simple "two dumbbells = one barbell" model:
+      - per-hand reference → total target: ×2
+      - total reference → per-hand target: ÷2
+    Same-basis pairs return 1.0 (no conversion).
+    """
+    reference_is_per_hand = reference_lift_key in DUMBBELL_LIFT_KEYS
+    if reference_is_per_hand == target_is_per_hand:
+        return 1.0
+    return 2.0 if reference_is_per_hand else 0.5
+
+
 def estimate_for_exercise(exercise_name: str, *, db: DatabaseHandler) -> dict[str, Any]:
     try:
         if not exercise_name or not exercise_name.strip():
@@ -1527,6 +1562,8 @@ def _estimate_from_profile(
     primary_muscle = normalize_muscle(exercise_row.get("primary_muscle_group"))
     lift_chain = MUSCLE_TO_KEY_LIFT.get(primary_muscle or "", [])
 
+    target_is_per_hand = normalize_equipment(exercise_row.get("equipment")) == "Dumbbells"
+
     direct_lift_key = _match_direct_lift_key(exercise_row.get("exercise_name", ""))
 
     candidates: list[tuple[str, bool]] = []
@@ -1594,7 +1631,8 @@ def _estimate_from_profile(
             TIER_RATIOS[tier] / TIER_RATIOS[reference_tier],
             1.0,
         )
-        target_1rm = reference_1rm * tier_multiplier * cross_factor
+        basis_factor = _load_basis_factor(lift_key, target_is_per_hand)
+        target_1rm = reference_1rm * tier_multiplier * cross_factor * basis_factor
         pre_round_weight = target_1rm * preset["pct_1rm"]
         working_weight = round_weight(
             pre_round_weight,
@@ -1620,6 +1658,7 @@ def _estimate_from_profile(
                 target_tier=tier,
                 tier_multiplier=tier_multiplier,
                 cross_factor=cross_factor,
+                basis_factor=basis_factor,
                 preset_key=preset_key,
                 preset=preset,
                 target_1rm=target_1rm,

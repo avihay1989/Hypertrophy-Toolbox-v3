@@ -15,6 +15,7 @@ from utils.profile_estimator import (
     epley_1rm,
     estimate_for_exercise,
     round_weight,
+    _load_basis_factor,
 )
 
 
@@ -351,6 +352,101 @@ def test_dumbbell_bench_press_uses_dedicated_slug_not_barbell(clean_db):
     # Epley(40, 8) ≈ 50.67; complex × heavy (0.85) ≈ 43.07 → dumbbell rounding
     # increment 1.0 (weight ≥ 10) → ~43.0
     assert estimate["weight"] == pytest.approx(43.0, abs=1.0)
+
+
+def test_load_basis_factor_converts_between_per_hand_and_total():
+    """Per-hand (dumbbell) ↔ total (barbell/machine) load-basis conversion.
+
+    Dumbbell reference slugs are per-hand; everything else is total/system
+    load. Mixed pairs use the simple two-dumbbells-per-barbell factor;
+    same-basis pairs are unchanged.
+    """
+    # total reference → per-hand dumbbell target: ÷2
+    assert _load_basis_factor("barbell_bench_press", True) == 0.5
+    # per-hand dumbbell reference → total target: ×2
+    assert _load_basis_factor("dumbbell_bench_press", False) == 2.0
+    # same basis: no conversion
+    assert _load_basis_factor("barbell_bench_press", False) == 1.0
+    assert _load_basis_factor("dumbbell_bench_press", True) == 1.0
+
+
+def test_barbell_reference_is_halved_for_dumbbell_target(clean_db):
+    """Regression (2026-06-02): a total-load barbell reference fed into a
+    per-hand dumbbell target must be halved.
+
+    Before the fix, Incline Dumbbell Press (Chest, Dumbbells) with only a
+    barbell bench reference (110 kg × 6) suggested 71 kg *per hand* — i.e.
+    142 kg total — because the chain picked the barbell reference and never
+    reconciled the total-vs-per-hand load bases.
+    """
+    _create_exercise(
+        clean_db,
+        "Incline Dumbbell Press",
+        primary="Chest",
+        equipment="Dumbbells",
+        mechanic="Compound",
+        movement_pattern="horizontal_push",
+    )
+    upsert_user_profile_lift("barbell_bench_press", 110, 6, db=clean_db)
+
+    estimate = estimate_for_exercise("Incline Dumbbell Press", db=clean_db)
+
+    assert estimate["source"] == "profile"
+    assert estimate["is_dumbbell"] is True
+    # Epley(110, 6) = 132 → accessory tier (×0.70) → ÷2 basis → moderate
+    # (×0.77) ≈ 35.6 → dumbbell round → ~36. Must be nowhere near the old 71.
+    assert estimate["weight"] == pytest.approx(36.0, abs=1.5)
+    assert estimate["weight"] < 50.0
+    conversion = [
+        step
+        for step in estimate["trace"]["steps"]
+        if step.get("label") == "Dumbbell load conversion"
+    ]
+    assert len(conversion) == 1
+    assert conversion[0]["factor"] == 0.5
+
+
+def test_dumbbell_reference_is_doubled_for_barbell_target(clean_db):
+    """A per-hand dumbbell reference feeding a total-load barbell target is
+    doubled, and the conversion step is surfaced in the trace."""
+    _create_exercise(
+        clean_db,
+        "Barbell Z Press",
+        primary="Front-Shoulder",
+        equipment="Barbell",
+        mechanic="Compound",
+    )
+    upsert_user_profile_lift("dumbbell_shoulder_press", 35, 5, db=clean_db)
+
+    estimate = estimate_for_exercise("Barbell Z Press", db=clean_db)
+
+    assert estimate["source"] == "profile"
+    assert estimate["is_dumbbell"] is False
+    conversion = [
+        step
+        for step in estimate["trace"]["steps"]
+        if step.get("label") == "Dumbbell load conversion"
+    ]
+    assert len(conversion) == 1
+    assert conversion[0]["factor"] == 2.0
+
+
+def test_same_load_basis_pair_has_no_conversion_step(clean_db):
+    """A dumbbell reference for a dumbbell target (and a barbell reference for
+    a barbell target) share a load basis — no conversion step appears."""
+    _create_exercise(
+        clean_db,
+        "Flat Dumbbell Bench Press",
+        primary="Chest",
+        equipment="Dumbbells",
+        mechanic="Compound",
+    )
+    upsert_user_profile_lift("dumbbell_bench_press", 40, 8, db=clean_db)
+
+    estimate = estimate_for_exercise("Flat Dumbbell Bench Press", db=clean_db)
+
+    labels = [step.get("label") for step in estimate["trace"]["steps"]]
+    assert "Dumbbell load conversion" not in labels
 
 
 def test_machine_chest_press_falls_back_to_barbell_with_cross_factor(clean_db):
