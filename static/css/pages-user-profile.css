@@ -283,6 +283,17 @@
     color: var(--ink-3, #939bb2);
 }
 
+.profile-calibration-copy {
+    color: var(--ink-2, #4a5170);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin: 0 0 1rem;
+}
+
+[data-theme='dark'] .profile-calibration-copy {
+    color: var(--ink-2, #b4bad0);
+}
+
 .user-profile-layout {
     display: grid;
     gap: 1rem;

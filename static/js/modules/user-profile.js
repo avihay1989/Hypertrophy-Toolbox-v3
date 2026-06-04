@@ -1057,6 +1057,51 @@ async function initializeBodymap() {
     });
 }
 
+// Learned Calibration mode toggle (off/suggest). Not autosave-form-shaped
+// (single {mode} payload to a dedicated endpoint), so it's wired directly.
+const CALIBRATION_MODE_TEXT = {
+    off: 'Off — learned suggestions are disabled',
+    suggest: 'On — Workout Controls learns from your recent scored logs',
+};
+
+function updateCalibrationStatusText(mode) {
+    const text = document.querySelector('[data-calibration-text]');
+    if (text) {
+        text.textContent = CALIBRATION_MODE_TEXT[mode] || CALIBRATION_MODE_TEXT.off;
+    }
+}
+
+function bindCalibrationSettings() {
+    const form = document.getElementById('profile-calibration-form');
+    if (!form) return;
+    const checked = form.querySelector('input[name="calibration_mode"]:checked');
+    updateCalibrationStatusText(checked ? checked.value : 'off');
+
+    form.addEventListener('change', async (event) => {
+        const input = event.target;
+        if (!input || input.name !== 'calibration_mode') return;
+        const mode = input.value;
+        try {
+            const response = await api.post(
+                '/api/user_profile/calibration_settings',
+                { mode },
+            );
+            const saved = response?.data?.mode || mode;
+            updateCalibrationStatusText(saved);
+            showToast(
+                'success',
+                saved === 'suggest'
+                    ? 'Learned suggestions enabled'
+                    : 'Learned suggestions turned off',
+            );
+        } catch (error) {
+            showToast('error', error?.message || 'Failed to save calibration settings', {
+                requestId: error?.requestId,
+            });
+        }
+    });
+}
+
 export function initializeUserProfile() {
     bindAutosaveForm('profile-demographics-form', profilePayload, '/api/user_profile');
     bindAutosaveForm('profile-lifts-form', liftPayload, '/api/user_profile/lifts');
@@ -1068,6 +1113,7 @@ export function initializeUserProfile() {
     );
     initializeCollapseToggles();
     bindInsightsAutoUpdate();
+    bindCalibrationSettings();
     initializeBodymap();
 }
 

@@ -475,6 +475,54 @@
                     </form>
                 </div>
             </section>
+
+            {# Learned Calibration — opt-in (default off). When set to "suggest",
+               Workout Controls prioritises suggestions learned from your recent
+               scored logs over the static Profile estimate. Per-exercise reset
+               lives on the Plan page where an exercise context exists. See
+               docs/user_profile/LEARNED_CALIBRATION_PLAN.md. #}
+            <section class="collapsible-frame action-frame frame-calm-glass profile-calibration" data-section="learned calibration">
+                <div class="frame-header frame-header-2025">
+                    <div class="frame-header-left">
+                        <span class="frame-title">Learned Calibration</span>
+                    </div>
+                    <div class="frame-header-right">
+                        <button class="collapse-toggle" type="button" title="Collapse learned calibration" aria-expanded="true" aria-controls="profile-calibration-content">
+                            <i class="fas fa-chevron-up toggle-icon" aria-hidden="true"></i>
+                            <span class="toggle-text">Hide</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="frame-content" id="profile-calibration-content">
+                    <p class="profile-calibration-copy">
+                        When enabled, Workout Controls learns from your recent scored logs and
+                        suggests weights from what you actually lifted &mdash; not just your saved
+                        reference lifts. Suggestions are explained on the Plan page and never change
+                        your reference lifts or planned rows. You can apply, keep, or reset them.
+                    </p>
+                    <form id="profile-calibration-form" class="profile-form" aria-label="Learned calibration mode">
+                        <fieldset class="preference-group" data-setting="calibration-mode">
+                            <legend>Learned suggestions</legend>
+                            <div class="segmented-options">
+                                <label class="segmented-option">
+                                    <input type="radio" name="calibration_mode" value="off" {% if calibration_mode != 'suggest' %}checked{% endif %}>
+                                    <span>Off</span>
+                                </label>
+                                <label class="segmented-option">
+                                    <input type="radio" name="calibration_mode" value="suggest" {% if calibration_mode == 'suggest' %}checked{% endif %}>
+                                    <span>Suggest</span>
+                                </label>
+                            </div>
+                        </fieldset>
+                        <div class="profile-actions profile-actions-end">
+                            <div class="profile-autosave-status" data-calibration-status="idle" role="status" aria-live="polite">
+                                <i class="fas fa-cloud-check profile-autosave-icon" aria-hidden="true"></i>
+                                <span class="profile-autosave-text" data-calibration-text>Off &mdash; learned suggestions are disabled</span>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </section>
         </div>
     </div>
 </main>

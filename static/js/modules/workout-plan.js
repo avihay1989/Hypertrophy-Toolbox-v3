@@ -148,10 +148,17 @@ const DEFAULT_PROFILE_ESTIMATE = {
 };
 
 const ESTIMATE_SOURCE_LABELS = {
+    learned: 'learned from your recent logs',
     log: 'from your last set',
     profile: 'from your profile',
     cold_start: 'from population estimate',
     default: 'default values',
+};
+
+const CONFIDENCE_LABELS = {
+    high: 'high confidence',
+    medium: 'medium confidence',
+    low: 'low confidence',
 };
 
 /**
@@ -804,12 +811,75 @@ function applyEstimateToWorkoutControls(estimate) {
         provenance.textContent = ESTIMATE_SOURCE_LABELS[resolved.source] || ESTIMATE_SOURCE_LABELS.default;
     }
 
+    updateLearnedBadge(resolved);
+
     const handHint = document.getElementById('weight-hand-hint');
     if (handHint) {
         handHint.hidden = !resolved.is_dumbbell;
     }
 
     updateEstimateTraceUI(resolved);
+}
+
+// Learned Calibration — compact source badge next to the provenance line.
+// Shown only when the estimator returned a learned suggestion (settings mode
+// `suggest` + usable confidence). The confidence drives the badge tint.
+function updateLearnedBadge(estimate) {
+    const badge = document.getElementById('workout-estimate-learned-badge');
+    if (!badge) return;
+    const isLearned = estimate?.source === 'learned';
+    if (!isLearned) {
+        badge.hidden = true;
+        badge.dataset.confidence = '';
+        badge.removeAttribute('title');
+        return;
+    }
+    const confidence = estimate?.trace?.confidence || '';
+    const sampleCount = estimate?.trace?.sample_count || 0;
+    badge.hidden = false;
+    badge.dataset.confidence = confidence;
+    const label = badge.querySelector('.workout-estimate-learned-badge-label');
+    if (label) {
+        label.textContent = confidence
+            ? `Learned · ${CONFIDENCE_LABELS[confidence] || confidence}`
+            : 'Learned';
+    }
+    badge.title = sampleCount
+        ? `Suggested from ${sampleCount} recent scored ${sampleCount === 1 ? 'log' : 'logs'} for this exercise`
+        : 'Suggested from your recent scored logs';
+}
+
+// Force the current learned suggestion into the Workout Controls inputs.
+// Client-side only — populates inputs, never persists to user_selection
+// (plan §"User Actions": Apply suggestion is client-side for the MVP).
+function applyLearnedSuggestionToInputs() {
+    const estimate = latestTracePayload;
+    if (!estimate) return;
+    setWorkoutControlValue('weight', estimate.weight);
+    setWorkoutControlValue('sets', estimate.sets);
+    setWorkoutControlValue('min_rep', estimate.min_rep);
+    setWorkoutControlValue('max_rep_range', estimate.max_rep);
+    setWorkoutControlValue('rir', estimate.rir);
+    setWorkoutControlValue('rpe', estimate.rpe);
+    // The user explicitly accepted the suggestion, so the weight is no longer a
+    // pending manual edit — let later estimates flow in again.
+    resetWeightDirtyForTests();
+    showToast('Suggestion applied');
+}
+
+async function resetLearnedForCurrentExercise() {
+    const exerciseName = document.getElementById('exercise')?.value || '';
+    if (!exerciseName) return;
+    try {
+        await api.post('/api/user_profile/calibration/reset', { exercise: exerciseName });
+        showToast('success', 'Learned data reset for this exercise');
+        // Re-fetch so the controls fall back to the last-log / Profile estimate.
+        await applyUserProfileEstimateForSelectedExercise();
+    } catch (error) {
+        showToast('error', error?.message || 'Failed to reset learned data', {
+            requestId: error?.requestId,
+        });
+    }
 }
 
 // Issue #17 — Plan-page "show the math" trace expander.
@@ -848,6 +918,7 @@ function renderEstimateTrace(estimate) {
     if (!trace) return;
 
     const headlineMap = {
+        learned: 'Learned from your recent logs',
         log: 'From your last logged set',
         profile: 'From your saved reference lift',
         cold_start: 'From a population estimate',
@@ -906,6 +977,51 @@ function renderEstimateTrace(estimate) {
         hint.appendChild(link);
         container.appendChild(hint);
     }
+
+    if (trace.source === 'learned') {
+        container.appendChild(buildLearnedActions());
+    }
+}
+
+// Apply / Keep / Reset row shown inside the learned-suggestion details. Apply
+// is client-side only; Reset clears the stored row and re-fetches the estimate.
+function buildLearnedActions() {
+    const actions = document.createElement('div');
+    actions.className = 'workout-estimate-trace-actions';
+
+    const apply = document.createElement('button');
+    apply.type = 'button';
+    apply.className = 'workout-estimate-trace-action is-primary';
+    apply.setAttribute('data-learned-apply', '');
+    apply.textContent = 'Apply suggestion';
+    apply.addEventListener('click', applyLearnedSuggestionToInputs);
+
+    const keep = document.createElement('button');
+    keep.type = 'button';
+    keep.className = 'workout-estimate-trace-action';
+    keep.setAttribute('data-learned-keep', '');
+    keep.textContent = 'Keep current';
+    keep.addEventListener('click', collapseEstimateTrace);
+
+    const reset = document.createElement('button');
+    reset.type = 'button';
+    reset.className = 'workout-estimate-trace-action is-reset';
+    reset.setAttribute('data-learned-reset', '');
+    reset.textContent = 'Reset learned data';
+    reset.addEventListener('click', resetLearnedForCurrentExercise);
+
+    actions.append(apply, keep, reset);
+    return actions;
+}
+
+function collapseEstimateTrace() {
+    const toggle = document.getElementById('workout-estimate-trace-toggle');
+    const container = document.getElementById('workout-estimate-trace');
+    if (!toggle || !container) return;
+    toggle.setAttribute('aria-expanded', 'false');
+    container.hidden = true;
+    const labelEl = toggle.querySelector('.workout-estimate-trace-toggle-label');
+    if (labelEl) labelEl.textContent = 'Show the math';
 }
 
 function bindEstimateTraceToggle() {

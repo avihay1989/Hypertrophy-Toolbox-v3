@@ -177,6 +177,29 @@ def test_save_user_profile_lifts_accepts_new_split_and_added_slugs(
     assert len(payload["data"]) == len(new_slugs)
 
 
+def test_profile_page_renders_calibration_off_by_default(client, clean_db):
+    """The Learned Calibration section renders with `off` selected when no
+    settings row exists (default-off regression guard)."""
+    response = client.get("/user_profile")
+
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+    assert "Learned Calibration" in html
+    assert 'name="calibration_mode"' in html
+    # `off` radio is checked, `suggest` is not.
+    assert 'value="off" checked' in html
+    assert 'value="suggest" checked' not in html
+
+
+def test_profile_page_reflects_suggest_mode(client, clean_db):
+    """Enabling `suggest` is reflected in the rendered control state."""
+    client.post("/api/user_profile/calibration_settings", json={"mode": "suggest"})
+
+    html = client.get("/user_profile").get_data(as_text=True)
+    assert 'value="suggest" checked' in html
+    assert 'value="off" checked' not in html
+
+
 def test_user_profile_page_renders_grouped_questionnaire(client, clean_db):
     """Issue #11 + Issue #24: the questionnaire renders muscle-group headings
     and every new label from Issue #6, partitioned across the anterior +

@@ -13,6 +13,12 @@ from utils.database import (
 )
 from utils.errors import error_response, success_response
 from utils.logger import get_logger
+from utils.strength_calibration import (
+    VALID_CALIBRATION_MODES,
+    get_calibration_mode,
+    reset_calibration_for_exercise,
+    set_calibration_mode,
+)
 from utils.profile_estimator import (
     DEFAULT_PREFERENCES,
     DUMBBELL_LIFT_KEYS,
@@ -269,6 +275,7 @@ def _load_profile_context(db: DatabaseHandler) -> dict[str, Any]:
     latest_body_composition = _load_latest_body_composition(db)
     return {
         "profile": profile or {},
+        "calibration_mode": get_calibration_mode(db=db),
         "reference_lifts": reference_lifts,
         "reference_lift_groups": reference_lift_groups,
         "reference_lift_groups_anterior": reference_lift_groups_anterior,
@@ -477,3 +484,65 @@ def get_user_profile_estimate():
     except Exception:
         logger.exception("Failed to estimate exercise", extra={"exercise": exercise})
         return error_response("INTERNAL_ERROR", "Failed to estimate exercise", 500)
+
+
+@user_profile_bp.route("/api/user_profile/calibration_settings", methods=["GET", "POST"])
+def calibration_settings():
+    """Read or update the learned-calibration mode (default-off feature switch).
+
+    GET returns the active mode (``off`` when no settings row exists). POST sets
+    it; ``suggest`` is the explicit opt-in that lets the estimator prioritise
+    learned suggestions. See ``docs/user_profile/LEARNED_CALIBRATION_PLAN.md``.
+    """
+    if request.method == "GET":
+        try:
+            with DatabaseHandler() as db:
+                mode = get_calibration_mode(db=db)
+            return jsonify(success_response(data={"mode": mode}))
+        except Exception:
+            logger.exception("Failed to read calibration settings")
+            return error_response("INTERNAL_ERROR", "Failed to read calibration settings", 500)
+
+    data = None
+    try:
+        data = _get_json_payload("calibration_settings")
+        if not isinstance(data, dict):
+            raise ValueError("Invalid JSON data")
+        mode = _nullable_text(data.get("mode"))
+        if mode not in VALID_CALIBRATION_MODES:
+            raise ValueError(f"mode must be one of {', '.join(VALID_CALIBRATION_MODES)}")
+
+        with DatabaseHandler() as db:
+            saved = set_calibration_mode(mode, db=db)
+        return jsonify(success_response(data={"mode": saved}, message="Calibration settings saved"))
+    except ValueError as exc:
+        logger.warning("Validation error saving calibration settings", extra={"error": str(exc)})
+        return error_response("VALIDATION_ERROR", str(exc), 400)
+    except Exception:
+        logger.exception("Failed to save calibration settings", extra={"payload": data})
+        return error_response("INTERNAL_ERROR", "Failed to save calibration settings", 500)
+
+
+@user_profile_bp.route("/api/user_profile/calibration/reset", methods=["POST"])
+def reset_calibration():
+    """Clear the learned calibration for one exercise (user reset action)."""
+    data = None
+    try:
+        data = _get_json_payload("reset_calibration")
+        if not isinstance(data, dict):
+            raise ValueError("Invalid JSON data")
+        exercise = _nullable_text(data.get("exercise"))
+        if exercise is None:
+            raise ValueError("exercise is required")
+
+        with DatabaseHandler() as db:
+            reset_calibration_for_exercise(exercise, db=db)
+        return jsonify(
+            success_response(data={"exercise": exercise}, message="Learned calibration reset")
+        )
+    except ValueError as exc:
+        logger.warning("Validation error resetting calibration", extra={"error": str(exc)})
+        return error_response("VALIDATION_ERROR", str(exc), 400)
+    except Exception:
+        logger.exception("Failed to reset calibration", extra={"payload": data})
+        return error_response("INTERNAL_ERROR", "Failed to reset calibration", 500)
