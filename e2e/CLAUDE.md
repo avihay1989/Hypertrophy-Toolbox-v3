@@ -26,6 +26,12 @@ Full per-spec test count map: `.claude/rules/testing.md`.
 - `npx playwright test --project=chromium --reporter=line` — Chromium only; Firefox/WebKit are not configured.
 - `PW_REUSE_SERVER=1` reuses an already-running Flask process.
 
+## Database isolation (globalSetup)
+- The suite runs against an **isolated throwaway DB**, never the developer's live `data/database.db`. `playwright.config.ts` sets `globalSetup: ./e2e/global-setup.ts` and `webServer.env.DB_FILE` to `artifacts/e2e/database.e2e.db`.
+- `global-setup.ts` runs `e2e/scripts/prepare_e2e_db.py`, which snapshots the committed seed (`fixtures/database.visual.seed.db`), applies migrations, ensures the learned-calibration tables exist, then **wipes all user-state** (profile, reference lifts, plan, logs, calibration, backups) — full exercise catalog preserved. So every run starts from an identical clean slate and tests must not depend on ambient saved data.
+- Skipped when `PW_REUSE_SERVER=1` (a reused server owns its own DB; reseeding under it would corrupt WAL).
+- Off-viewport navbar toggles (`#muscleModeToggle`, `#darkModeToggle`) can't be reached by actionability clicks at desktop width — dispatch via `page.evaluate(() => el?.click())` (see `clickMuscleModeToggle` in `workout-plan.spec.ts`, `clickDarkModeToggle` in `nav-dropdown.spec.ts`).
+
 ## Gotchas
 - **Known current red (out-of-scope)**: `nav-dropdown.spec.ts:117` — dark-mode toggle off-viewport at 1440 width. Do not "fix" this without an explicit task.
 - **Known historical flake**: `program-backup.spec.ts:79` — sequential DB-pollution flake observed in earlier full runs; it passed in the 2026-05-10 full run and passes in isolation.

@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
+import { E2E_DB_PATH } from './e2e/global-setup';
 
 const venvPython = process.platform === 'win32'
   ? path.join(process.cwd(), '.venv', 'Scripts', 'python.exe')
@@ -24,6 +25,8 @@ const deterministicChromiumArgs = [
  */
 export default defineConfig({
   testDir: './e2e',
+  /* Seed a fresh, deterministic throwaway DB before the suite (see e2e/global-setup.ts). */
+  globalSetup: './e2e/global-setup.ts',
   /* Run tests in files in parallel */
   fullyParallel: false,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -89,6 +92,12 @@ export default defineConfig({
     url: 'http://127.0.0.1:5000',
     reuseExistingServer,
     timeout: 120 * 1000,
+    /* Run against the isolated throwaway DB seeded in globalSetup, never the
+       developer's live data/database.db. */
+    env: {
+      ...process.env,
+      DB_FILE: E2E_DB_PATH,
+    },
   },
 
   /* Global timeout settings */

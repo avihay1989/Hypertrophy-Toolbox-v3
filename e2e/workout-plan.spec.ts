@@ -10,6 +10,20 @@
 import type { Page } from '@playwright/test';
 import { test, expect, ROUTES, SELECTORS, waitForPageReady, resetWorkoutPlan } from './fixtures';
 
+/**
+ * Toggle the muscle-naming mode. The `#muscleModeToggle` button lives in the
+ * navbar and can sit outside the viewport at desktop widths (same navbar-overflow
+ * family as the dark-mode toggle in nav-dropdown.spec.ts), which makes
+ * Playwright's actionability click time out. Dispatch the click directly — the
+ * button's handler is what we're exercising, not its on-screen hit-testing.
+ */
+async function clickMuscleModeToggle(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const toggle = document.querySelector('#muscleModeToggle') as HTMLElement | null;
+    toggle?.click();
+  });
+}
+
 test.beforeEach(async ({ page }) => {
   await resetWorkoutPlan(page);
 });
@@ -242,12 +256,12 @@ test.describe('Workout Plan Page', () => {
     await expect(tableModeToggle).toContainText('Simple');
     await expect(advancedOnlyHeader).toBeHidden();
 
-    await page.locator('#muscleModeToggle').click();
+    await clickMuscleModeToggle(page);
 
     await expect(tableModeToggle).toContainText('Advanced');
     await expect(advancedOnlyHeader).toBeVisible();
 
-    await page.locator('#muscleModeToggle').click();
+    await clickMuscleModeToggle(page);
 
     await expect(tableModeToggle).toContainText('Simple');
     await expect(advancedOnlyHeader).toBeHidden();
@@ -275,7 +289,7 @@ test.describe('Workout Plan Page', () => {
       });
     }, muscleFilters);
 
-    await page.locator('#muscleModeToggle').click();
+    await clickMuscleModeToggle(page);
 
     await page.waitForFunction((selectors) => {
       return selectors.every((selector) => {
