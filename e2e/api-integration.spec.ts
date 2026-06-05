@@ -73,7 +73,7 @@ async function getValidExerciseName(request: import('@playwright/test').APIReque
 
 async function seedWorkoutPlanExercise(
   request: import('@playwright/test').APIRequestContext,
-  overrides: Partial<typeof VALID_WORKOUT_PLAN_EXERCISE> = {}
+  overrides: Partial<typeof VALID_WORKOUT_PLAN_EXERCISE> & { exercise?: string } = {}
 ) {
   const exercise = overrides.exercise ?? await getValidExerciseName(request);
   const response = await request.post(`${BASE_URL}/add_exercise`, {
@@ -406,9 +406,9 @@ test.describe('Double Progression API (v1.5.0)', () => {
     const rawPayload = await response.json();
     expect(rawPayload.ok).toBe(true);
     expect(rawPayload.status).toBe('success');
-    const data = unwrapApiData(rawPayload);
+    const data = unwrapApiData(rawPayload) as Array<{ type: string }>;
     expect(Array.isArray(data)).toBe(true);
-    
+
     // Should return "start training" type suggestion for unknown exercise
     if (data.length > 0) {
       expect(['technique', 'info', 'start']).toContain(data[0].type);

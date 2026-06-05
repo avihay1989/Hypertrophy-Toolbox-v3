@@ -18,7 +18,9 @@ export async function installDeterminism(
     // @ts-ignore - this class intentionally shadows the browser Date constructor.
     globalThis.Date = class extends NativeDate {
       constructor(...args: any[]) {
-        super(...(args.length ? args : [FIXED]));
+        // Cast to a tuple so the spread satisfies tsc (TS2556); the Date copy
+        // shim forwards all original args unchanged at runtime.
+        super(...((args.length ? args : [FIXED]) as [number]));
       }
 
       static now() {

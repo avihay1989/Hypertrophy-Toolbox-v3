@@ -3,11 +3,12 @@
  *
  * Smoke + save-flow coverage for the standalone /body_composition page.
  */
+import type { Page } from '@playwright/test';
 import { test, expect, waitForPageReady } from './fixtures';
 
 const ROUTE = '/body_composition';
 
-async function seedProfile(page) {
+async function seedProfile(page: Page) {
   const res = await page.request.post('/api/user_profile', {
     data: {
       gender: 'M',
@@ -20,7 +21,7 @@ async function seedProfile(page) {
   expect(res.ok(), 'profile seed must succeed').toBeTruthy();
 }
 
-async function clearSnapshots(page) {
+async function clearSnapshots(page: Page) {
   const listResp = await page.request.get('/api/body_composition/snapshots');
   if (!listResp.ok()) return;
   const payload = await listResp.json();

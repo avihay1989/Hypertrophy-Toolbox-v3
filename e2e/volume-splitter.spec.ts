@@ -9,12 +9,13 @@
  * - Calculate and reset buttons
  * - Export to Excel
  */
+import type { Page } from '@playwright/test';
 import { test, expect, ROUTES, SELECTORS, waitForPageReady, expectToast } from './fixtures';
 
-async function setVolumeSlider(page, muscle: string, value: number) {
+async function setVolumeSlider(page: Page, muscle: string, value: number) {
   const slider = page.locator(`#sliders input.volume-slider[data-muscle="${muscle}"]`);
   await expect(slider).toBeVisible();
-  await slider.evaluate((element, nextValue) => {
+  await slider.evaluate((element: Element, nextValue: number) => {
     const input = element as HTMLInputElement;
     input.value = String(nextValue);
     input.dispatchEvent(new Event('input', { bubbles: true }));
@@ -22,7 +23,7 @@ async function setVolumeSlider(page, muscle: string, value: number) {
   }, value);
 }
 
-async function expectVolumeSliderValue(page, muscle: string, expectedValue: number) {
+async function expectVolumeSliderValue(page: Page, muscle: string, expectedValue: number) {
   const slider = page.locator(`#sliders input.volume-slider[data-muscle="${muscle}"]`);
   const valueBadge = page.locator(`.current-value[data-muscle="${muscle}"]`);
 

@@ -336,15 +336,15 @@ jobs:
         safety check --json || true
       continue-on-error: true
 
-  # MEASURE-ONLY / NON-BLOCKING static typing gate (Phase 3,
-  # docs/ci_cd_phase3/PLANNING.md). pyright + tsc surface their backlogs to the
-  # job summary + an artifact but never fail the build. Path to blocking:
-  #   tsc    -> drop continue-on-error once its backlog reaches 0 (first follow-up)
-  #   pyright-> baseline-allowlist (block only NEW errors vs the uploaded snapshot)
-  # The recorded counts are pyright 1.1.410 under the committed pyrightconfig.json
+  # Static typing gate (Phase 3, docs/ci_cd_phase3/PLANNING.md).
+  #   tsc --noEmit -> BLOCKING (backlog cleared to 0 in the tsc fast-follow).
+  #   pyright      -> measure-only / non-blocking; surfaces its count to the job
+  #                   summary + artifact. Path to blocking: baseline-allowlist
+  #                   (block only NEW errors vs the uploaded snapshot).
+  # The recorded pyright count is 1.1.410 under the committed pyrightconfig.json
   # (py3.12 + Windows platform) — approximate, not 3.11-runtime-authoritative.
   typecheck:
-    name: Type Check (pyright + tsc, non-blocking)
+    name: Type Check (tsc blocking + pyright measure-only)
     runs-on: ubuntu-latest
 
     steps:
@@ -386,18 +386,23 @@ jobs:
           echo "- Path to blocking: baseline-allowlist (block only new-vs-snapshot)."
         } >> "$GITHUB_STEP_SUMMARY"
 
-    - name: tsc --noEmit (non-blocking, measure-only)
-      continue-on-error: true
+    # BLOCKING: backlog was cleared to 0 in the tsc fast-follow. A non-zero count
+    # fails the job. The count is still written to the summary + uploaded (the
+    # artifact step is if: always()) so a regression shows what broke.
+    - name: tsc --noEmit (blocking)
       run: |
-        npx tsc --noEmit > tsc.txt 2>&1 || true
+        set +e
+        npx tsc --noEmit > tsc.txt 2>&1
+        STATUS=$?
+        set -e
         COUNT=$(grep -cE "error TS[0-9]+" tsc.txt || true)
-        echo "::notice title=tsc (non-blocking)::tsc --noEmit reported $COUNT errors (e2e + playwright.config.ts scope)"
+        echo "::notice title=tsc (blocking)::tsc --noEmit reported $COUNT errors (e2e + playwright.config.ts scope)"
         {
-          echo "### tsc --noEmit (non-blocking — measure-only)"
+          echo "### tsc --noEmit (blocking)"
           echo "- **errors**: $COUNT (scope: e2e specs + playwright.config.ts; app JS under static/js/modules/* is NOT covered)"
-          echo "- Path to blocking: clear to 0, then drop continue-on-error (recommended first follow-up)."
         } >> "$GITHUB_STEP_SUMMARY"
         cat tsc.txt
+        exit $STATUS
 
     - name: Upload static-analysis outputs
       if: always()

@@ -5,6 +5,7 @@
  * - Routine cascade always resets on back/refresh.
  * - Deep-link query for routine is ignored.
  */
+import type { Page } from '@playwright/test';
 import { test, expect, ROUTES, SELECTORS, waitForPageReady } from './fixtures';
 
 type RoutineState = {
@@ -14,7 +15,7 @@ type RoutineState = {
   hidden: string;
 };
 
-async function readRoutineState(page): Promise<RoutineState> {
+async function readRoutineState(page: Page): Promise<RoutineState> {
   const env = await page.locator(SELECTORS.ROUTINE_ENV).inputValue();
   const program = await page.locator(SELECTORS.ROUTINE_PROGRAM).inputValue();
   const day = await page.locator(SELECTORS.ROUTINE_DAY).inputValue();
@@ -22,7 +23,7 @@ async function readRoutineState(page): Promise<RoutineState> {
   return { env, program, day, hidden };
 }
 
-async function selectRoutine(page): Promise<void> {
+async function selectRoutine(page: Page): Promise<void> {
   await page.locator(SELECTORS.ROUTINE_ENV).selectOption('GYM');
   await page.waitForFunction(() => {
     const select = document.getElementById('routine-program') as HTMLSelectElement;
