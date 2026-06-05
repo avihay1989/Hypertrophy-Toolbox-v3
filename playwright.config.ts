@@ -12,6 +12,14 @@ const workers = Number.isFinite(configuredWorkers) && configuredWorkers > 0 ? co
 const artifactsRoot = process.env.TEST_ARTIFACTS_DIR ?? 'artifacts';
 const playwrightArtifactsDir = path.join(artifactsRoot, 'playwright');
 
+/* CI-only JUnit reporter, gated on process.env.CI so local `npx playwright test`
+   (and the --update-snapshots visual-baseline workflow) keep the interactive
+   list + html reporters untouched. Each CI job runs on its own runner, so a
+   fixed filename never collides — the uploaded artifact is named per job. */
+const ciReporters: import('@playwright/test').ReporterDescription[] = process.env.CI
+  ? [['junit', { outputFile: path.join(playwrightArtifactsDir, 'junit.xml') }]]
+  : [];
+
 /* Throwaway DB the web server runs against (under gitignored artifacts/), so the
    suite never touches the developer's live data/database.db. It is seeded by the
    web-server command itself — Playwright starts webServer before globalSetup, so
@@ -43,6 +51,7 @@ export default defineConfig({
   reporter: [
     ['list'],
     ['html', { outputFolder: path.join(playwrightArtifactsDir, 'report') }],
+    ...ciReporters,
   ],
   outputDir: path.join(playwrightArtifactsDir, 'test-results'),
   snapshotPathTemplate: '{testDir}/__screenshots__/{testFilePath}-snapshots/{arg}{ext}',
