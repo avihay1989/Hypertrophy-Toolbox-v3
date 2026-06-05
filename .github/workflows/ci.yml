@@ -310,31 +310,10 @@ jobs:
         path: artifacts/pytest/junit.xml
         retention-days: 7
 
-  dependency-check:
-    name: Dependency Health Check
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-        
-    - name: Check for outdated packages
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip list --outdated
-      continue-on-error: true
-      
-    - name: Check package vulnerabilities
-      run: |
-        pip install safety
-        safety check --json || true
-      continue-on-error: true
+  # NOTE: the former `dependency-check` job (outdated/safety scans) moved to the
+  # manual Deep Gate (.github/workflows/deep-gate.yml) in Phase 4.5 — it's
+  # informational and doesn't belong on the required PR path. It was never a
+  # required status check, so branch protection is unaffected.
 
   # Static typing gate (Phase 3, docs/ci_cd_phase3/PLANNING.md).
   #   tsc --noEmit -> BLOCKING (backlog cleared to 0 in the tsc fast-follow).

@@ -299,6 +299,19 @@ deliberate, correct cost of `main` being trustworthy.
 **Goal:** catch slow/env-sensitive regressions during development without
 running time-based jobs in the owner's work environment.
 
+> **Status (2026-06-06): cheap parts SHIPPED; 4.2 visual deferred.**
+> `.github/workflows/deep-gate.yml` added (`workflow_dispatch` only — no cron),
+> with jobs: **full-e2e** (every spec minus the two visual ones, accessibility
+> included), **cold-start** (4.3 — boots app.py with no `data/database.db`,
+> asserts `GET /` → 200), **old-db-migration** (4.4 — generates a pre-migration
+> DB via `tests/fixtures/make_old_schema_db.py`, boots, asserts `/` + `/workout_plan`
+> → 200; verified locally to upgrade in place and preserve the seeded row), and
+> **dependency-health** (4.5 — moved off the required PR path; it was never a
+> required check, so branch protection is unaffected). **Step 4.2 (Linux visual
+> baselines) is intentionally NOT done** — it needs a Linux-generated baseline
+> set (the committed 66 snapshots are Windows-rendered) and a `{platform}` token
+> in `snapshotPathTemplate`; tracked as a separate focused effort.
+
 - **Step 4.1 — Add a manually triggered workflow.**
   Add `workflow_dispatch` only. Do **not** add `schedule` / `cron`. The workflow
   can be run against `main` or a PR branch when the owner wants a deeper pass
