@@ -1,0 +1,169 @@
+name: Deep Gate (manual)
+
+# Manually-triggered deep gate (workflow_dispatch ONLY — no cron / schedule, per
+# docs/CI_CD_IMPROVEMENT_PLAN.md §0). Runs the slow / environment-sensitive checks
+# that deliberately do NOT gate every PR: full E2E incl. accessibility, the
+# cold-start + old-DB migration smokes, and the informational dependency scan
+# (moved here from the PR pipeline). Trigger from the Actions tab or with
+# `gh workflow run deep-gate.yml --ref <branch>`.
+#
+# Visual regression (Phase 4.2) is intentionally NOT here yet — it first needs a
+# Linux-generated baseline set (the committed snapshots are Windows-rendered).
+on:
+  workflow_dispatch:
+
+jobs:
+  full-e2e:
+    name: Full E2E incl. accessibility (Chromium)
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Install npm dependencies
+      run: npm ci
+
+    - name: Build Bootstrap-customized CSS
+      run: npm run build:css
+
+    - name: Install Playwright Chromium
+      run: npx playwright install --with-deps chromium
+
+    # Run every spec EXCEPT the two visual ones (visual.spec.ts,
+    # visual-baseline-thumbnails.spec.ts) — their committed baselines are
+    # Windows-rendered and diff ~100% on ubuntu until Phase 4.2 lands a
+    # Linux baseline set. Everything else runs, accessibility included; this is a
+    # manual gate, so a human reads the report (known-red nav-dropdown may fail).
+    - name: Run full suite (minus visual)
+      run: |
+        SPECS=$(ls e2e/*.spec.ts | grep -vE 'visual' | tr '\n' ' ')
+        echo "Running: $SPECS"
+        npx playwright test --project=chromium $SPECS
+
+    - name: Upload Playwright artifacts
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: deep-gate-full-e2e
+        path: artifacts/playwright
+        retention-days: 7
+
+  cold-start:
+    name: Cold start (missing DB) smoke
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    # Fresh-clone / first-run path: no data/database.db present. The real app.py
+    # startup must build the schema from scratch and serve the welcome page.
+    - name: Boot with no database.db and assert GET / -> 200
+      run: |
+        rm -f data/database.db data/database.db-wal data/database.db-shm data/database.db-journal
+        FLASK_USE_RELOADER=0 python app.py &
+        APP_PID=$!
+        code=000
+        for _ in $(seq 1 30); do
+          code=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:5000/ || echo 000)
+          [ "$code" = "200" ] && break
+          sleep 2
+        done
+        kill "$APP_PID" 2>/dev/null || true
+        echo "cold start: GET / -> $code"
+        [ "$code" = "200" ]
+
+  old-db-migration:
+    name: Old-DB migration compatibility
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    # Generate a pre-migration DB (no exercise_order, no add_*_table tables) with a
+    # seeded program row, then boot the real app.py. The startup ALTERs / add_*_table
+    # helpers must upgrade it in place and serve both the welcome and plan pages.
+    - name: Generate historical-schema DB, boot, assert upgrade
+      run: |
+        python tests/fixtures/make_old_schema_db.py --output data/database.db
+        FLASK_USE_RELOADER=0 python app.py &
+        APP_PID=$!
+        root=000
+        for _ in $(seq 1 30); do
+          root=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:5000/ || echo 000)
+          [ "$root" = "200" ] && break
+          sleep 2
+        done
+        plan=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:5000/workout_plan || echo 000)
+        kill "$APP_PID" 2>/dev/null || true
+        echo "old-DB migration: GET / -> $root ; GET /workout_plan -> $plan"
+        [ "$root" = "200" ] && [ "$plan" = "200" ]
+
+  dependency-health:
+    name: Dependency Health Check
+    runs-on: ubuntu-latest
+
+    # Moved out of the required PR pipeline (Phase 4.5) — outdated/safety scans are
+    # informational and don't belong on the critical merge path.
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Check for outdated packages
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip list --outdated
+      continue-on-error: true
+
+    - name: Check package vulnerabilities
+      run: |
+        pip install safety
+        safety check --json || true
+      continue-on-error: true
