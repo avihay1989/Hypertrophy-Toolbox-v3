@@ -62,6 +62,39 @@ jobs:
         # Exit-zero treats all errors as warnings
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude=venv,env,.git,__pycache__
 
+    # MEASURE-ONLY / NON-BLOCKING (Phase 3, docs/ci_cd_phase3/PLANNING.md). Surfaces
+    # the hardened-diagnostic backlog without failing the build. F841 is the
+    # expected `except ... as e` logging idiom (logger.exception captures the
+    # active exception implicitly) — reported on its own line, NOT a flip
+    # candidate. Path to blocking: grow the blocking E9,F63,F7,F82 selection above
+    # rule-by-rule as each meaningful rule (F811/E711/E712, then F401) reaches 0.
+    - name: Flake8 diagnostics (non-blocking, measure-only)
+      continue-on-error: true
+      run: |
+        EXCL=".venv,venv,env,.git,__pycache__,node_modules"
+        flake8 . --select=F401,F811,E711,E712 --count --statistics --exclude="$EXCL" > flake8_meaningful.txt 2>&1 || true
+        flake8 . --select=F841 --count --statistics --exclude="$EXCL" > flake8_idiom.txt 2>&1 || true
+        MEANINGFUL=$(tail -1 flake8_meaningful.txt | tr -d '[:space:]')
+        IDIOM=$(tail -1 flake8_idiom.txt | tr -d '[:space:]')
+        echo "::notice title=flake8 diagnostics (non-blocking)::meaningful (F401/F811/E711/E712)=$MEANINGFUL ; F841 idiom=$IDIOM"
+        {
+          echo "### flake8 diagnostics (non-blocking — measure-only)"
+          echo "- **Meaningful (F401/F811/E711/E712)**: $MEANINGFUL — flip candidates"
+          echo "- **F841**: $IDIOM — expected \`except ... as e\` idiom, not a flip candidate"
+        } >> "$GITHUB_STEP_SUMMARY"
+        echo "===== meaningful ====="; cat flake8_meaningful.txt
+        echo "===== F841 (idiom) ====="; cat flake8_idiom.txt
+
+    - name: Upload flake8 diagnostics
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: static-analysis-flake8
+        path: |
+          flake8_meaningful.txt
+          flake8_idiom.txt
+        retention-days: 14
+
   frontend-build:
     name: Frontend Build (npm ci + SCSS)
     runs-on: ubuntu-latest
@@ -302,4 +335,77 @@ jobs:
         pip install safety
         safety check --json || true
       continue-on-error: true
+
+  # MEASURE-ONLY / NON-BLOCKING static typing gate (Phase 3,
+  # docs/ci_cd_phase3/PLANNING.md). pyright + tsc surface their backlogs to the
+  # job summary + an artifact but never fail the build. Path to blocking:
+  #   tsc    -> drop continue-on-error once its backlog reaches 0 (first follow-up)
+  #   pyright-> baseline-allowlist (block only NEW errors vs the uploaded snapshot)
+  # The recorded counts are pyright 1.1.410 under the committed pyrightconfig.json
+  # (py3.12 + Windows platform) — approximate, not 3.11-runtime-authoritative.
+  typecheck:
+    name: Type Check (pyright + tsc, non-blocking)
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    # pyrightconfig.json pins venv ".venv"; create + populate it so pyright
+    # resolves third-party imports the same way it does on the developer's box.
+    - name: Create .venv and install Python dependencies
+      run: |
+        python -m venv .venv
+        .venv/bin/python -m pip install --upgrade pip
+        .venv/bin/python -m pip install -r requirements.txt
+
+    - name: Install npm dependencies
+      run: npm ci
+
+    - name: pyright (non-blocking, measure-only)
+      continue-on-error: true
+      run: |
+        npx pyright@1.1.410 --outputjson > pyright.json 2> pyright.stderr.txt || true
+        COUNT=$(python -c "import json; print(json.load(open('pyright.json'))['summary']['errorCount'])" 2>/dev/null || echo "unknown")
+        echo "::notice title=pyright (non-blocking)::pyright 1.1.410 reported $COUNT errors (py3.12 config, not 3.11-runtime-authoritative)"
+        {
+          echo "### pyright (non-blocking — measure-only)"
+          echo "- **errors**: $COUNT (pyright 1.1.410, py3.12 + Windows-platform config — approximate)"
+          echo "- Path to blocking: baseline-allowlist (block only new-vs-snapshot)."
+        } >> "$GITHUB_STEP_SUMMARY"
+
+    - name: tsc --noEmit (non-blocking, measure-only)
+      continue-on-error: true
+      run: |
+        npx tsc --noEmit > tsc.txt 2>&1 || true
+        COUNT=$(grep -cE "error TS[0-9]+" tsc.txt || true)
+        echo "::notice title=tsc (non-blocking)::tsc --noEmit reported $COUNT errors (e2e + playwright.config.ts scope)"
+        {
+          echo "### tsc --noEmit (non-blocking — measure-only)"
+          echo "- **errors**: $COUNT (scope: e2e specs + playwright.config.ts; app JS under static/js/modules/* is NOT covered)"
+          echo "- Path to blocking: clear to 0, then drop continue-on-error (recommended first follow-up)."
+        } >> "$GITHUB_STEP_SUMMARY"
+        cat tsc.txt
+
+    - name: Upload static-analysis outputs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: static-analysis-typecheck
+        path: |
+          pyright.json
+          tsc.txt
+        retention-days: 14
 
