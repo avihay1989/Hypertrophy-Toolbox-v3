@@ -25,6 +25,7 @@ from utils.program_backup import (
     BACKUP_SCHEMA_VERSION,
 )
 from utils.database import DatabaseHandler
+from routes.workout_plan import initialize_exercise_order, column_exists
 
 
 class TestProgramBackup:
@@ -876,3 +877,193 @@ class TestEraseDataDeletesBackups:
         new_backup = create_backup(name="New Backup After Erase")
         assert new_backup is not None
         assert new_backup['item_count'] == 1
+
+
+# Columns that the program backup snapshot owns and is responsible for restoring
+# row-for-row (see utils/program_backup.py create_backup / restore_backup). The
+# active program's surrogate ``id`` is intentionally excluded: restore re-inserts
+# rows, so ids are not preserved and are not part of the backup contract.
+_BACKUP_OWNED_COLUMNS = (
+    "routine", "exercise", "sets", "min_rep_range", "max_rep_range",
+    "rir", "rpe", "weight", "exercise_order", "superset_group",
+)
+# Subset captured by a backup taken before the ``exercise_order`` startup ALTER.
+_BASE_OWNED_COLUMNS = tuple(c for c in _BACKUP_OWNED_COLUMNS if c != "exercise_order")
+
+
+def _none_safe_key(row):
+    """Sort key that tolerates NULL (None) values mixed with real values."""
+    return tuple((value is None, value) for value in row)
+
+
+def _snapshot_user_selection(db, columns=_BACKUP_OWNED_COLUMNS):
+    """Return a deterministically ordered list of user_selection rows.
+
+    Ordering is by value (not by id) so two snapshots can be compared row-for-row
+    regardless of the surrogate ids assigned on insert/restore.
+    """
+    select_cols = ", ".join(columns)
+    rows = db.fetch_all(f"SELECT {select_cols} FROM user_selection")
+    return sorted(
+        (tuple(row[col] for col in columns) for row in rows),
+        key=_none_safe_key,
+    )
+
+
+def _seed_known_program(exercise_factory):
+    """Seed a known multi-routine program with ordering, RIR/RPE, rep ranges,
+    weights, and a superset pair. Returns the inserted row tuples (backup-owned
+    columns) for reference.
+    """
+    rows = [
+        # routine, exercise, sets, min, max, rir, rpe, weight, order, superset
+        ("Upper A", "Bench Press", 3, 6, 8, 2, 8.0, 100.0, 1, "ss-1"),
+        ("Upper A", "Incline Press", 3, 8, 10, 1, 9.0, 60.0, 2, "ss-1"),
+        ("Upper A", "Barbell Row", 4, 8, 12, 2, 7.5, 80.0, 3, None),
+        ("Lower B", "Squat", 4, 5, 5, 3, 7.0, 140.0, 4, None),
+        ("Lower B", "Deadlift", 2, 3, 5, 1, 9.5, 180.0, 5, None),
+    ]
+    for name in {row[1] for row in rows}:
+        exercise_factory(name)
+    with DatabaseHandler() as db:
+        # Honor pre-ALTER schemas where exercise_order has not been added yet.
+        has_order = column_exists(db, "user_selection", "exercise_order")
+        for row in rows:
+            if has_order:
+                db.execute_query(
+                    """
+                    INSERT INTO user_selection
+                        (routine, exercise, sets, min_rep_range, max_rep_range,
+                         rir, rpe, weight, exercise_order, superset_group)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    row,
+                )
+            else:
+                db.execute_query(
+                    """
+                    INSERT INTO user_selection
+                        (routine, exercise, sets, min_rep_range, max_rep_range,
+                         rir, rpe, weight, superset_group)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    row[:8] + (row[9],),
+                )
+    return rows
+
+
+class TestUserSelectionBackupIntegrity:
+    """Row-for-row integrity of the user_selection backup/restore round-trip.
+
+    Backup scope is intentionally ``user_selection`` program state only (routines
+    and planned selections), per CLAUDE.md §1. These tests assert that every
+    backup-owned column survives a snapshot → mutate → restore round-trip exactly.
+    They deliberately do not assert that workout_log / profile / calibration rows
+    survive: restore intentionally deletes workout_log when replacing the program.
+    """
+
+    def test_restore_preserves_user_selection_row_for_row(self, clean_db, exercise_factory):
+        """Full program restore reproduces every backup-owned column exactly."""
+        _seed_known_program(exercise_factory)
+
+        with DatabaseHandler() as db:
+            before = _snapshot_user_selection(db)
+        assert len(before) == 5
+
+        backup = create_backup(name="Integrity Program")
+
+        # Erase the active program (workout_log first to respect FK intent).
+        with DatabaseHandler() as db:
+            db.execute_query("DELETE FROM workout_log")
+            db.execute_query("DELETE FROM user_selection")
+        assert get_active_program_count() == 0
+
+        result = restore_backup(backup["id"])
+        assert result["restored_count"] == 5
+        assert result["skipped"] == []
+
+        with DatabaseHandler() as db:
+            after = _snapshot_user_selection(db)
+
+        assert after == before
+
+    def test_restore_over_non_empty_program_matches_snapshot(self, clean_db, exercise_factory):
+        """Restore over a different non-empty program yields exactly the snapshot."""
+        _seed_known_program(exercise_factory)
+
+        with DatabaseHandler() as db:
+            before = _snapshot_user_selection(db)
+
+        backup = create_backup(name="Integrity Program")
+
+        # Replace the active program with a different, non-empty program.
+        exercise_factory("Leg Press")
+        intervening = ("Intervening", "Leg Press", 5, 12, 15, 0, 10.0, 200.0, 9, "zz-9")
+        with DatabaseHandler() as db:
+            db.execute_query("DELETE FROM workout_log")
+            db.execute_query("DELETE FROM user_selection")
+            db.execute_query(
+                """
+                INSERT INTO user_selection
+                    (routine, exercise, sets, min_rep_range, max_rep_range,
+                     rir, rpe, weight, exercise_order, superset_group)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                intervening,
+            )
+        assert get_active_program_count() == 1
+
+        result = restore_backup(backup["id"])
+        assert result["restored_count"] == 5
+
+        with DatabaseHandler() as db:
+            after = _snapshot_user_selection(db)
+
+        assert after == before
+        assert intervening not in after  # intervening program fully replaced
+
+    def test_restore_backup_taken_before_exercise_order_alter(self, clean_db, exercise_factory):
+        """A backup captured before the exercise_order startup ALTER restores cleanly.
+
+        Simulates the documented startup migration path (CLAUDE.md §5
+        "exercise_order column"): the column is added to an existing DB via ALTER.
+        A backup taken while the column was absent must still restore its
+        base-owned columns (including superset_group) row-for-row, with
+        exercise_order left NULL on the restored rows.
+        """
+        # Pre-ALTER state: user_selection without the exercise_order column.
+        with DatabaseHandler() as db:
+            db.execute_query("ALTER TABLE user_selection DROP COLUMN exercise_order")
+            assert not column_exists(db, "user_selection", "exercise_order")
+
+        _seed_known_program(exercise_factory)
+
+        with DatabaseHandler() as db:
+            before = _snapshot_user_selection(db, columns=_BASE_OWNED_COLUMNS)
+        assert len(before) == 5
+
+        # Backup is taken while exercise_order is absent.
+        backup = create_backup(name="Pre-ALTER Program")
+        details = get_backup_details(backup["id"])
+        assert all(item["exercise_order"] is None for item in details["items"])
+
+        # Startup ALTER runs on the upgraded DB, re-adding exercise_order.
+        assert initialize_exercise_order() is True
+        with DatabaseHandler() as db:
+            assert column_exists(db, "user_selection", "exercise_order")
+
+        # Erase and restore the pre-ALTER backup into the post-ALTER schema.
+        with DatabaseHandler() as db:
+            db.execute_query("DELETE FROM workout_log")
+            db.execute_query("DELETE FROM user_selection")
+
+        result = restore_backup(backup["id"])
+        assert result["restored_count"] == 5
+        assert result["skipped"] == []
+
+        with DatabaseHandler() as db:
+            after = _snapshot_user_selection(db, columns=_BASE_OWNED_COLUMNS)
+            order_values = db.fetch_all("SELECT exercise_order FROM user_selection")
+
+        assert after == before
+        assert all(row["exercise_order"] is None for row in order_values)
