@@ -9,6 +9,7 @@
  *  - Deactivate / delete-active degrades to an empty state.
  *  - Drawer open state persists across reloads.
  */
+import type { Page, Response } from '@playwright/test';
 import { test, expect, ROUTES, SELECTORS, waitForPageReady, resetWorkoutPlan } from './fixtures';
 
 const VOLUME_PROGRESS_ENDPOINT = '/api/volume_progress';
@@ -19,7 +20,7 @@ const DRAWER_VIEWPORTS = [
 ];
 const DRAWER_THEMES = ['light', 'dark'] as const;
 
-async function clearActivePlans(page) {
+async function clearActivePlans(page: Page) {
     const response = await page.request.get('/api/volume_history');
     const payload = await response.json();
     const data = payload?.data ?? {};
@@ -28,7 +29,7 @@ async function clearActivePlans(page) {
     }
 }
 
-async function saveAndActivatePlan(page, body) {
+async function saveAndActivatePlan(page: Page, body: Record<string, unknown>) {
     const response = await page.request.post('/api/save_volume_plan', {
         data: { activate: true, ...body }
     });
@@ -37,7 +38,7 @@ async function saveAndActivatePlan(page, body) {
     return payload?.data?.plan_id ?? payload?.plan_id;
 }
 
-async function addExerciseToPlan(page, exercise, sets, routine = 'GYM - Full Body - Workout A') {
+async function addExerciseToPlan(page: Page, exercise: string, sets: number, routine = 'GYM - Full Body - Workout A') {
     const response = await page.request.post('/add_exercise', {
         data: {
             routine,
@@ -53,16 +54,16 @@ async function addExerciseToPlan(page, exercise, sets, routine = 'GYM - Full Bod
     expect(response.ok(), `expected /add_exercise to succeed for ${exercise}`).toBeTruthy();
 }
 
-function progressResponsePromise(page) {
+function progressResponsePromise(page: Page) {
     return page.waitForResponse(
-        (response) => response.url().includes(VOLUME_PROGRESS_ENDPOINT) && response.ok(),
+        (response: Response) => response.url().includes(VOLUME_PROGRESS_ENDPOINT) && response.ok(),
         { timeout: 5000 }
     );
 }
 
-async function dispatchVolumeChange(page, reason) {
+async function dispatchVolumeChange(page: Page, reason: string) {
     const settled = progressResponsePromise(page);
-    await page.evaluate((triggerReason) => {
+    await page.evaluate((triggerReason: string) => {
         document.dispatchEvent(new CustomEvent('workout-plan:volume-affecting-change', {
             detail: { reason: triggerReason }
         }));
@@ -70,13 +71,13 @@ async function dispatchVolumeChange(page, reason) {
     await settled;
 }
 
-async function getDrawerRowText(page, muscle) {
+async function getDrawerRowText(page: Page, muscle: string) {
     const row = page.locator('.vp-row', { has: page.locator('.vp-row__name', { hasText: muscle }) });
     await expect(row).toBeVisible();
     return (await row.locator('.vp-row__sets').innerText()).trim();
 }
 
-async function expectDrawerLayoutStable(page, theme) {
+async function expectDrawerLayoutStable(page: Page, theme: string) {
     const drawer = page.locator('#vpDrawer');
     await expect(drawer).toHaveAttribute('aria-hidden', 'false');
     await expect(drawer.locator('.vp-row').first()).toBeVisible();
@@ -90,7 +91,7 @@ async function expectDrawerLayoutStable(page, theme) {
 
     const layout = await page.evaluate(() => {
         const drawerEl = document.getElementById('vpDrawer');
-        const rectOf = (element) => {
+        const rectOf = (element: Element) => {
             const rect = element.getBoundingClientRect();
             return {
                 top: rect.top,

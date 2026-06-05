@@ -256,10 +256,21 @@ deliberate, correct cost of `main` being trustworthy.
 ### Phase 3 — Cheap static gates
 **Goal:** catch type/contract errors and real lint issues for near-zero runtime.
 
+> **Status (2026-06-06):** Phase 3 measure-only landed (PR #43). The **tsc
+> fast-follow is complete**: the `tsc --noEmit` backlog was cleared from 31 → **0**
+> and the gate is now **BLOCKING** in `.github/workflows/ci.yml` (job
+> "Type Check (tsc blocking + pyright measure-only)"). **pyright (138) and flake8
+> remain measure-only**; their flip paths are unchanged (pyright →
+> baseline-allowlist; flake8 → grow the blocking selection rule-by-rule). The 31
+> tsc fixes were type-only (param annotations, casts, an `e2e/app-modules.d.ts`
+> ambient declaration for `/static/js/modules/*` dynamic imports) — no runtime
+> behavior change.
+
 - **Step 3.1 — Add a `typecheck` job: `pyright` + `tsc --noEmit`.**
   Configs already exist (`pyrightconfig.json`, `tsconfig.json`). Start in a
   **non-blocking** mode for one or two PRs to measure the existing error
   backlog, then flip to blocking once clean (or once a baseline is agreed).
+  **tsc is now blocking (done, see Status above); pyright stays non-blocking.**
   Important scope/setup notes:
   - `tsc --noEmit` currently checks `e2e/**/*.ts` and `playwright.config.ts`,
     not app JS under `static/js/modules/*`.
