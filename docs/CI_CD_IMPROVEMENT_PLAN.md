@@ -305,7 +305,8 @@ running time-based jobs in the owner's work environment.
 > included), **cold-start** (4.3 — boots app.py with no `data/database.db`,
 > asserts `GET /` → 200), **old-db-migration** (4.4 — generates a pre-migration
 > DB via `tests/fixtures/make_old_schema_db.py`, boots, asserts `/` + `/workout_plan`
-> → 200; verified locally to upgrade in place and preserve the seeded row), and
+> → 200, migrated columns/tables, and preservation of the seeded row; the fixture
+> generator requires an explicit throwaway `--output` path), and
 > **dependency-health** (4.5 — moved off the required PR path; it was never a
 > required check, so branch protection is unaffected). **Step 4.2 (Linux visual
 > baselines) is intentionally NOT done** — it needs a Linux-generated baseline
