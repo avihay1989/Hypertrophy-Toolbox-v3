@@ -779,6 +779,17 @@ test.describe('Muscle selector body-map variants', () => {
 test.describe('Exercise reference video modal (workout-plan)', () => {
   test.beforeEach(async ({ page, consoleErrors }) => {
     consoleErrors.startCollecting();
+
+    // Block the real YouTube embed network. These specs assert the iframe `src`
+    // attribute + link wiring, not playback; loading the real embed pulls in
+    // YouTube scripts that emit intermittent console errors (e.g. a
+    // compute-pressure permissions-policy violation) which flake the
+    // console-error collector in CI. Fulfilling with an empty document keeps the
+    // src attribute set while loading nothing third-party.
+    await page.route(/^https:\/\/www\.youtube\.com\/embed\//, (route) =>
+      route.fulfill({ status: 200, contentType: 'text/html', body: '' }),
+    );
+
     await page.goto(ROUTES.WORKOUT_PLAN);
     await waitForPageReady(page);
 
@@ -856,9 +867,18 @@ test.describe('Exercise reference video modal (workout-plan)', () => {
     // Drive the modal directly via its public API. This exercises the JS
     // logic without mutating the live exercises table — equivalent to a
     // curated youtube_video_id arriving in the row data.
+    // Open and wait for Bootstrap to FINISH the show transition
+    // (`shown.bs.modal`). Interacting before the transition completes makes
+    // Bootstrap drop the dismiss click — hide() is a no-op while transitioning —
+    // which left the modal open (the actual 1-in-N CI flake here). Registering
+    // the listener before show() closes the race.
     await page.evaluate(() => {
-      // @ts-expect-error - exposed by static/js/modules/exercise-video-modal.js
-      window.openExerciseVideoModal('dQw4w9WgXcQ', 'Test Exercise');
+      return new Promise<void>((resolve) => {
+        const el = document.getElementById('exerciseVideoModal');
+        el?.addEventListener('shown.bs.modal', () => resolve(), { once: true });
+        // @ts-expect-error - exposed by static/js/modules/exercise-video-modal.js
+        window.openExerciseVideoModal('dQw4w9WgXcQ', 'Test Exercise');
+      });
     });
 
     const modal = page.locator('#exerciseVideoModal');
@@ -869,8 +889,12 @@ test.describe('Exercise reference video modal (workout-plan)', () => {
     await expect(page.locator('#exerciseVideoSearchWrap')).toBeHidden();
 
     const iframe = page.locator('#exerciseVideoIframe');
-    const src = await iframe.getAttribute('src');
-    expect(src).toMatch(/^https:\/\/www\.youtube\.com\/embed\/dQw4w9WgXcQ/);
+    // Auto-retrying assertion (not a one-shot getAttribute) — robust even though
+    // openExerciseVideoModal sets src synchronously.
+    await expect(iframe).toHaveAttribute(
+      'src',
+      /^https:\/\/www\.youtube\.com\/embed\/dQw4w9WgXcQ/,
+    );
 
     const externalLink = page.locator('#exerciseVideoExternalLink');
     const externalHref = await externalLink.getAttribute('href');
@@ -878,11 +902,18 @@ test.describe('Exercise reference video modal (workout-plan)', () => {
     expect(await externalLink.getAttribute('target')).toBe('_blank');
     expect(await externalLink.getAttribute('rel')).toBe('noopener noreferrer');
 
-    // Close — iframe src must be blanked so playback stops.
+    // Close — iframe src must be blanked so playback stops. The blank happens in
+    // the `hidden.bs.modal` handler (exercise-video-modal.js), which can fire a
+    // tick after Playwright considers the modal hidden; poll so the read can't
+    // race the handler.
     await page.locator('#exerciseVideoModal .btn-close').click();
     await expect(modal).toBeHidden();
-    const srcAfter = await iframe.getAttribute('src');
-    expect(srcAfter === '' || srcAfter === null).toBe(true);
+    await expect
+      .poll(async () => {
+        const srcAfter = await iframe.getAttribute('src');
+        return srcAfter === '' || srcAfter === null;
+      })
+      .toBe(true);
   });
 
   test('opening for a different exercise swaps the URL cleanly', async ({ page }) => {
