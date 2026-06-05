@@ -89,8 +89,9 @@ jobs:
     # startup must build the schema from scratch and serve the welcome page.
     - name: Boot with no database.db and assert GET / -> 200
       run: |
-        rm -f data/database.db data/database.db-wal data/database.db-shm data/database.db-journal
-        FLASK_USE_RELOADER=0 python app.py &
+        export DB_FILE=artifacts/deep-gate/cold-start.db
+        rm -f "$DB_FILE" "$DB_FILE-wal" "$DB_FILE-shm" "$DB_FILE-journal"
+        DB_FILE="$DB_FILE" FLASK_USE_RELOADER=0 python app.py &
         APP_PID=$!
         code=000
         for _ in $(seq 1 30); do
@@ -126,8 +127,9 @@ jobs:
     # helpers must upgrade it in place and serve both the welcome and plan pages.
     - name: Generate historical-schema DB, boot, assert upgrade
       run: |
-        python tests/fixtures/make_old_schema_db.py --output data/database.db
-        FLASK_USE_RELOADER=0 python app.py &
+        export DB_FILE=artifacts/deep-gate/old-schema.db
+        python tests/fixtures/make_old_schema_db.py --output "$DB_FILE"
+        DB_FILE="$DB_FILE" FLASK_USE_RELOADER=0 python app.py &
         APP_PID=$!
         root=000
         for _ in $(seq 1 30); do
@@ -139,6 +141,64 @@ jobs:
         kill "$APP_PID" 2>/dev/null || true
         echo "old-DB migration: GET / -> $root ; GET /workout_plan -> $plan"
         [ "$root" = "200" ] && [ "$plan" = "200" ]
+        python - <<'PY'
+        import os
+        import sqlite3
+
+        db_file = os.environ["DB_FILE"]
+        con = sqlite3.connect(db_file)
+        try:
+            columns = {
+                row[1]
+                for row in con.execute("PRAGMA table_info(user_selection)").fetchall()
+            }
+            required_columns = {
+                "exercise_order",
+                "superset_group",
+                "execution_style",
+                "time_cap_seconds",
+            }
+            missing_columns = sorted(required_columns - columns)
+            if missing_columns:
+                raise SystemExit(f"missing migrated columns: {missing_columns}")
+
+            required_tables = {
+                "progression_goals",
+                "volume_plans",
+                "muscle_volumes",
+                "user_profile",
+                "user_profile_lifts",
+                "user_profile_preferences",
+                "body_composition_snapshots",
+                "learned_strength_calibrations",
+                "user_calibration_settings",
+                "program_backups",
+                "program_backup_items",
+            }
+            tables = {
+                row[0]
+                for row in con.execute(
+                    "SELECT name FROM sqlite_master WHERE type='table'"
+                ).fetchall()
+            }
+            missing_tables = sorted(required_tables - tables)
+            if missing_tables:
+                raise SystemExit(f"missing migrated tables: {missing_tables}")
+
+            row = con.execute(
+                """
+                SELECT routine, exercise, sets, min_rep_range, max_rep_range, rir, rpe, weight
+                FROM user_selection
+                WHERE routine = ? AND exercise = ?
+                """,
+                ("Legacy Routine", "Legacy Bench Press"),
+            ).fetchone()
+            expected = ("Legacy Routine", "Legacy Bench Press", 3, 6, 8, 2, 8.0, 100.0)
+            if row != expected:
+                raise SystemExit(f"legacy row mismatch: {row!r}")
+        finally:
+            con.close()
+        PY
 
   dependency-health:
     name: Dependency Health Check

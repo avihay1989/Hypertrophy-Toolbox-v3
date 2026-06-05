@@ -80,8 +80,8 @@ def main() -> None:
     parser.add_argument(
         "--output",
         type=Path,
-        default=REPO_ROOT / "data" / "database.db",
-        help="Path to write the historical-schema DB (default: data/database.db)",
+        required=True,
+        help="Path to write the historical-schema DB.",
     )
     args = parser.parse_args()
     print(build(args.output))
