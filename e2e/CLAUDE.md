@@ -33,9 +33,26 @@ Full per-spec test count map: `.claude/rules/testing.md`.
 - With `PW_REUSE_SERVER=1` and a server already running, the command (and reseed) is skipped — the reused server owns its own DB.
 - Off-viewport navbar toggles (`#muscleModeToggle`, `#darkModeToggle`) can't be reached by actionability clicks at desktop width — dispatch via `page.evaluate(() => el?.click())` (see `clickMuscleModeToggle` in `workout-plan.spec.ts`, `clickDarkModeToggle` in `nav-dropdown.spec.ts`).
 
+## CI inclusion contract (Phase 1 — `e2e-functional` / `e2e-backup` jobs)
+The GitHub Actions gate runs a curated, deterministic subset on **ubuntu/Chromium** (not every spec). Auditable contract for all specs:
+
+| Spec | CI placement | Reason |
+|---|---|---|
+| `api-integration`, `body-composition`, `browser-navigation-state`, `dark-mode`, `empty-states`, `error-handling`, `exercise-interactions`, `fatigue`, `learned-calibration`, `progression`, `replace-exercise-errors`, `smoke-navigation`, `summary-pages`, `superset-edge-cases`, `ui-hardening`, `user-profile`, `validation-boundary`, `volume-splitter`, `workout-log`, `workout-plan` | `e2e-functional` job | Deterministic functional/product coverage |
+| `smoke-navigation` | also `e2e-smoke` job | Fast standalone "is the app up" signal |
+| `program-backup` | `e2e-backup` job (isolated) | Live backup/restore mutations — own server + fresh seed avoids intra-run sequential-DB pollution without any between-spec reset |
+| `accessibility` | excluded (Phase 4 manual deep gate) | Run-cost/stability not yet measured on CI |
+| `nav-dropdown` | excluded | Documented current red (off-viewport toggle) |
+| `fatigue-stage4-smokes`, `volume-progress` | excluded (measure-first) | Live geometry / sub-pixel / tap-target asserts — same cross-OS rendering class as visual specs; revisit after a measured ubuntu stability run |
+| `visual`, `visual-baseline-thumbnails` | excluded (Phase 4) | Windows-generated baselines diff on Linux; thumbnails need the `prepare_visual_db.py` preflight |
+
+- The functional/backup specs assert **current shipped behavior**. A future intentional behavior change (e.g. a fatigue Stage-4 threshold tweak) must update the spec deliberately — it should not be treated as "CI caught a regression."
+- **No sharding in Phase 1** (single order-safe job). Sharding to n=2 is a deferred fast-follow once per-spec timings justify it (`docs/ci_cd_phase1/PLANNING.md`).
+- **Artifact-upload privacy**: trace/screenshot/video/HTML-report uploads are safe *because* the suite runs only against the committed, user-state-wiped seed (`prepare_e2e_db.py`) — no real user data. CI must **never** upload the developer's live `data/database.db` or `data/auto_backup/`.
+
 ## Gotchas
 - **Known current red (out-of-scope)**: `nav-dropdown.spec.ts:117` — dark-mode toggle off-viewport at 1440 width. Do not "fix" this without an explicit task.
-- **Known historical flake**: `program-backup.spec.ts:79` — sequential DB-pollution flake observed in earlier full runs; it passed in the 2026-05-10 full run and passes in isolation.
+- **Known historical flake**: `program-backup.spec.ts` (`Backup Center Page` describe block) — sequential DB-pollution flake observed in earlier full runs; passes in isolation. This is why CI runs it in the isolated `e2e-backup` job (see CI inclusion contract above), not alongside other DB-mutating specs.
 - Visual snapshot regressions need an intentional re-baseline. Don't blanket-`--update-snapshots`.
 - Chromium is the only configured project (`playwright.config.ts`).
 
