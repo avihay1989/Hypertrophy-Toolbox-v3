@@ -334,10 +334,29 @@ running time-based jobs in the owner's work environment.
 ### Phase 5 — Enforcement
 **Goal:** make the gate actually gate.
 
-- **Step 5.1 — Enable branch protection on `main`.**
-  Require: pytest, e2e-functional (all shards), typecheck, flake8, frontend-build,
-  pip-audit, backup-restore (via pytest). Require branches up-to-date before
-  merge. Require PR (no direct pushes to `main`).
+> **Status (2026-06-06): DONE** — council-reviewed (`docs/ci_cd_phase5/PLANNING.md`)
+> and applied to the live repo. `main` is now branch-protected. Applied config
+> (exact JSON + recovery commands recorded in the Phase 5 planning doc):
+> - **8 required status checks**: `Run Tests`, `E2E Functional (Chromium)`,
+>   `E2E Backup (Chromium, isolated)`, `E2E Smoke (Chromium)`,
+>   `Type Check (tsc blocking + pyright measure-only)`, `Code Linting`,
+>   `Frontend Build (npm ci + SCSS)`, `Security Audit`. `Dependency Health Check`
+>   is **not** required (informational / continue-on-error end-to-end).
+> - **strict = OFF** (solo repo; avoids re-running the flake-prone E2E set on
+>   every unrelated merge and fighting auto-merge).
+> - **required approving reviews = 0** (solo owner can't self-approve).
+> - **enforce_admins = false** (documented admin-override escape hatch).
+> - require PR before merge (no direct pushes to `main`); force-push + deletion
+>   blocked.
+> - **Invariant:** renaming any required job's `name:` in `ci.yml` requires
+>   re-PUTting protection in the same PR (exact-string match). Known upcoming
+>   break: the pyright→blocking flip will rename `Type Check (...)`.
+
+- **Step 5.1 — Enable branch protection on `main`.** *(applied; see Status.)*
+  Original target: require pytest, e2e-functional, typecheck, flake8,
+  frontend-build, pip-audit, backup-restore (via pytest). **Deviations from the
+  v1 sketch, per council + owner:** strict is OFF (not "up-to-date required"),
+  and enforce_admins is false (escape hatch).
   *Improves:* turns the whole plan from "exists" into "enforced."
   *Note:* aligns with the documented PR workflow (auto-merge on green CI).
 
