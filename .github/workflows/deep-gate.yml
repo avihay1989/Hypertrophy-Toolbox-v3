@@ -90,6 +90,7 @@ jobs:
     - name: Boot with no database.db and assert GET / -> 200
       run: |
         export DB_FILE=artifacts/deep-gate/cold-start.db
+        mkdir -p "$(dirname "$DB_FILE")"
         rm -f "$DB_FILE" "$DB_FILE-wal" "$DB_FILE-shm" "$DB_FILE-journal"
         DB_FILE="$DB_FILE" FLASK_USE_RELOADER=0 python app.py &
         APP_PID=$!
