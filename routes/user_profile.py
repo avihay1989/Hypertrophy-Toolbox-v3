@@ -15,10 +15,15 @@ from utils.errors import error_response, success_response
 from utils.logger import get_logger
 from utils.strength_calibration import (
     VALID_CALIBRATION_MODES,
+    clear_ignored_transfers,
     get_calibration_settings,
     ignore_calibration_transfer,
+    list_ignored_transfers,
+    list_learned_calibrations,
+    reset_all_calibrations,
     reset_calibration_for_exercise,
     set_calibration_settings,
+    unignore_calibration_transfer,
 )
 from utils.profile_estimator import (
     DEFAULT_PREFERENCES,
@@ -596,3 +601,78 @@ def ignore_calibration_transfer_route():
     except Exception:
         logger.exception("Failed to ignore calibration transfer", extra={"payload": data})
         return error_response("INTERNAL_ERROR", "Failed to ignore calibration transfer", 500)
+
+
+@user_profile_bp.route("/api/user_profile/calibration/dashboard")
+def calibration_dashboard():
+    """Read-only calibration review surface (Phase 2B).
+
+    Returns the learned-calibration rows and ignored related pairs the Profile
+    page renders. Never mutates state and never exposes internal transfer-ratio
+    tuning data. See ``docs/user_profile/LEARNED_CALIBRATION_PLAN.md``.
+    """
+    try:
+        with DatabaseHandler() as db:
+            data = {
+                "learned": list_learned_calibrations(db=db),
+                "ignored_transfers": list_ignored_transfers(db=db),
+            }
+        return jsonify(success_response(data=data))
+    except Exception:
+        logger.exception("Failed to load calibration dashboard")
+        return error_response("INTERNAL_ERROR", "Failed to load calibration dashboard", 500)
+
+
+@user_profile_bp.route("/api/user_profile/calibration/unignore_transfer", methods=["POST"])
+def unignore_calibration_transfer_route():
+    """Restore one previously-ignored related source-target pair (Phase 2B)."""
+    data = None
+    try:
+        data = _get_json_payload("unignore_calibration_transfer")
+        if not isinstance(data, dict):
+            raise ValueError("Invalid JSON data")
+        source = _nullable_text(data.get("source_exercise"))
+        target = _nullable_text(data.get("target_exercise"))
+        if source is None:
+            raise ValueError("source_exercise is required")
+        if target is None:
+            raise ValueError("target_exercise is required")
+
+        with DatabaseHandler() as db:
+            unignore_calibration_transfer(source, target, db=db)
+        return jsonify(
+            success_response(
+                data={"source_exercise": source, "target_exercise": target},
+                message="Related calibration restored",
+            )
+        )
+    except ValueError as exc:
+        logger.warning("Validation error restoring calibration transfer", extra={"error": str(exc)})
+        return error_response("VALIDATION_ERROR", str(exc), 400)
+    except Exception:
+        logger.exception("Failed to restore calibration transfer", extra={"payload": data})
+        return error_response("INTERNAL_ERROR", "Failed to restore calibration transfer", 500)
+
+
+@user_profile_bp.route("/api/user_profile/calibration/clear_ignored_transfers", methods=["POST"])
+def clear_ignored_calibration_transfers_route():
+    """Remove all ignored related pairs (Phase 2B bulk control)."""
+    try:
+        with DatabaseHandler() as db:
+            clear_ignored_transfers(db=db)
+        return jsonify(success_response(data={}, message="Cleared all ignored transfers"))
+    except Exception:
+        logger.exception("Failed to clear ignored calibration transfers")
+        return error_response("INTERNAL_ERROR", "Failed to clear ignored transfers", 500)
+
+
+@user_profile_bp.route("/api/user_profile/calibration/reset_all", methods=["POST"])
+def reset_all_calibration_route():
+    """Clear every learned-calibration row (Phase 2B bulk reset control)."""
+    try:
+        with DatabaseHandler() as db:
+            reset_all_calibrations(db=db)
+        return jsonify(success_response(data={}, message="Reset all learned calibration"))
+    except Exception:
+        logger.exception("Failed to reset all calibration")
+        return error_response("INTERNAL_ERROR", "Failed to reset all calibration", 500)

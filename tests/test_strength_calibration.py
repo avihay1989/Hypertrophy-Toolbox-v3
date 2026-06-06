@@ -17,8 +17,14 @@ from utils.strength_calibration import (
     _classify_confidence,
     _utcnow,
     _variance_within_high_band,
+    clear_ignored_transfers,
     get_calibration_mode,
+    ignore_calibration_transfer,
+    list_ignored_transfers,
+    list_learned_calibrations,
+    reset_all_calibrations,
     reset_calibration_for_exercise,
+    unignore_calibration_transfer,
     update_calibration_for_exercise,
 )
 
@@ -301,3 +307,79 @@ def test_delete_workout_log_route_invalidates_calibration(
     assert resp.status_code == 200
     assert resp.get_json()["ok"] is True
     assert _calibration_row(clean_db, ex) is None
+
+
+# --------------------------------------------------------------------------- #
+# Phase 2B — review/control helpers
+# --------------------------------------------------------------------------- #
+
+def test_list_learned_calibrations_returns_all_recent_first(
+    clean_db, exercise_factory, workout_plan_factory
+):
+    older = exercise_factory("Barbell Bench Press", equipment="Barbell")
+    newer = exercise_factory("Barbell Back Squat", equipment="Barbell")
+    for ex in (older, newer):
+        plan = workout_plan_factory(exercise_name=ex)
+        _log(clean_db, plan, ex, scored_weight=100.0, scored_max_reps=8)
+        update_calibration_for_exercise(ex, db=clean_db)
+    # Force a stale observed date on the bench row so ordering is deterministic.
+    clean_db.execute_query(
+        "UPDATE learned_strength_calibrations SET last_observed_at = ? WHERE exercise_name = ?",
+        ("2000-01-01 00:00:00", older),
+    )
+
+    rows = list_learned_calibrations(db=clean_db)
+    names = [r["exercise_name"] for r in rows]
+    assert names == [newer, older]
+    # Read-only shape: never leaks internal transfer-ratio columns.
+    assert "ratio" not in rows[0]
+    assert {"exercise_name", "confidence", "sample_count", "estimated_1rm",
+            "suggested_weight", "last_observed_at"} <= set(rows[0])
+
+
+def test_list_learned_calibrations_empty(clean_db):
+    assert list_learned_calibrations(db=clean_db) == []
+
+
+def test_list_and_unignore_transfers(clean_db):
+    ignore_calibration_transfer("Barbell Bench Press", "Incline Dumbbell Bench Press", db=clean_db)
+    ignore_calibration_transfer("Barbell Back Squat", "Leg Press", db=clean_db)
+    assert len(list_ignored_transfers(db=clean_db)) == 2
+
+    unignore_calibration_transfer(
+        "Barbell Bench Press", "Incline Dumbbell Bench Press", db=clean_db
+    )
+    remaining = list_ignored_transfers(db=clean_db)
+    assert len(remaining) == 1
+    assert remaining[0]["source_exercise_name"] == "Barbell Back Squat"
+
+
+def test_unignore_transfer_is_case_insensitive(clean_db):
+    ignore_calibration_transfer("Barbell Bench Press", "Incline Dumbbell Bench Press", db=clean_db)
+    unignore_calibration_transfer(
+        "barbell bench press", "incline dumbbell bench press", db=clean_db
+    )
+    assert list_ignored_transfers(db=clean_db) == []
+
+
+def test_clear_ignored_transfers_removes_all(clean_db):
+    ignore_calibration_transfer("A", "B", db=clean_db)
+    ignore_calibration_transfer("C", "D", db=clean_db)
+    clear_ignored_transfers(db=clean_db)
+    assert list_ignored_transfers(db=clean_db) == []
+
+
+def test_reset_all_calibrations_clears_rows_only(
+    clean_db, exercise_factory, workout_plan_factory
+):
+    ex = exercise_factory("Barbell Bench Press", equipment="Barbell")
+    plan = workout_plan_factory(exercise_name=ex)
+    _log(clean_db, plan, ex, scored_weight=100.0, scored_max_reps=8)
+    update_calibration_for_exercise(ex, db=clean_db)
+    ignore_calibration_transfer("Barbell Bench Press", "Incline Dumbbell Bench Press", db=clean_db)
+    assert _calibration_row(clean_db, ex) is not None
+
+    reset_all_calibrations(db=clean_db)
+    assert list_learned_calibrations(db=clean_db) == []
+    # Ignored transfers are a separate concern — left untouched by reset-all.
+    assert len(list_ignored_transfers(db=clean_db)) == 1

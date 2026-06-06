@@ -294,6 +294,68 @@
     color: var(--ink-2, #b4bad0);
 }
 
+/* Phase 2B — calibration review/control surface */
+.profile-calibration-review {
+    border-top: 1px solid var(--line-1, #e2e5ee);
+    display: grid;
+    gap: 1.5rem;
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+}
+
+[data-theme='dark'] .profile-calibration-review {
+    border-top-color: var(--line-1, #2a2f45);
+}
+
+.profile-calibration-review-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem;
+}
+
+.profile-calibration-review-empty {
+    color: var(--ink-3, #6b7290);
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+.profile-calibration-table {
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    width: 100%;
+}
+
+.profile-calibration-table th,
+.profile-calibration-table td {
+    border-bottom: 1px solid var(--line-1, #e2e5ee);
+    padding: 0.4rem 0.5rem;
+    text-align: left;
+}
+
+[data-theme='dark'] .profile-calibration-table th,
+[data-theme='dark'] .profile-calibration-table td {
+    border-bottom-color: var(--line-1, #2a2f45);
+}
+
+.profile-calibration-ignored-list {
+    display: grid;
+    gap: 0.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.profile-calibration-ignored-row {
+    align-items: center;
+    display: flex;
+    gap: 0.75rem;
+    justify-content: space-between;
+}
+
+.profile-calibration-ignored-pair {
+    font-size: 0.875rem;
+}
+
 .user-profile-layout {
     display: grid;
     gap: 1rem;

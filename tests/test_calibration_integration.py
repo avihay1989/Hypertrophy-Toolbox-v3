@@ -401,3 +401,124 @@ def test_reset_endpoint_requires_exercise(client, clean_db):
     resp = client.post("/api/user_profile/calibration/reset", json={})
     assert resp.status_code == 400
     assert resp.get_json()["error"]["code"] == "VALIDATION_ERROR"
+
+
+# --------------------------------------------------------------------------- #
+# Phase 2B — review/control surface endpoints
+# --------------------------------------------------------------------------- #
+
+def test_dashboard_endpoint_returns_learned_and_ignored(
+    client, clean_db, exercise_factory, workout_plan_factory, workout_log_factory
+):
+    _seed_related_bench_pair(exercise_factory)
+    _seed_high_confidence_bench_source(clean_db, workout_plan_factory, workout_log_factory)
+    client.post(
+        "/api/user_profile/calibration/ignore_transfer",
+        json={"source_exercise": BENCH, "target_exercise": INCLINE_DB_BENCH},
+    )
+
+    resp = client.get("/api/user_profile/calibration/dashboard")
+    assert resp.status_code == 200
+    payload = resp.get_json()
+    assert payload["ok"] is True
+    data = payload["data"]
+    assert [r["exercise_name"] for r in data["learned"]] == [BENCH]
+    assert data["learned"][0]["confidence"] == "high"
+    assert "ratio" not in data["learned"][0]
+    assert len(data["ignored_transfers"]) == 1
+    assert data["ignored_transfers"][0]["source_exercise_name"] == BENCH
+    assert data["ignored_transfers"][0]["target_exercise_name"] == INCLINE_DB_BENCH
+
+
+def test_dashboard_endpoint_does_not_mutate_state(client, clean_db):
+    before = clean_db.fetch_one(
+        "SELECT COUNT(*) AS n FROM learned_strength_calibrations"
+    )["n"]
+    client.get("/api/user_profile/calibration/dashboard")
+    after = clean_db.fetch_one(
+        "SELECT COUNT(*) AS n FROM learned_strength_calibrations"
+    )["n"]
+    assert before == after == 0
+
+
+def test_unignore_endpoint_restores_related_fallback(
+    client, clean_db, exercise_factory, workout_plan_factory, workout_log_factory
+):
+    _seed_related_bench_pair(exercise_factory)
+    _seed_high_confidence_bench_source(clean_db, workout_plan_factory, workout_log_factory)
+    _insert_bench_to_incline_ratio(clean_db)
+    set_calibration_settings("suggest", db=clean_db, allow_related_exercise_learning=True)
+
+    client.post(
+        "/api/user_profile/calibration/ignore_transfer",
+        json={"source_exercise": BENCH, "target_exercise": INCLINE_DB_BENCH},
+    )
+    suppressed = client.get(
+        "/api/user_profile/estimate", query_string={"exercise": INCLINE_DB_BENCH}
+    )
+    assert suppressed.get_json()["data"]["source"] == "default"
+
+    restored = client.post(
+        "/api/user_profile/calibration/unignore_transfer",
+        json={"source_exercise": BENCH, "target_exercise": INCLINE_DB_BENCH},
+    )
+    assert restored.status_code == 200
+    assert restored.get_json()["ok"] is True
+
+    # Source exact calibration survived; related transfer is eligible again.
+    assert clean_db.fetch_one(
+        "SELECT 1 FROM learned_strength_calibrations WHERE exercise_name = ?", (BENCH,)
+    ) is not None
+    after = client.get(
+        "/api/user_profile/estimate", query_string={"exercise": INCLINE_DB_BENCH}
+    )
+    assert after.get_json()["data"]["source"] == "related_learned"
+
+
+def test_unignore_endpoint_requires_both_exercises(client, clean_db):
+    resp = client.post(
+        "/api/user_profile/calibration/unignore_transfer",
+        json={"source_exercise": BENCH},
+    )
+    assert resp.status_code == 400
+    assert resp.get_json()["error"]["code"] == "VALIDATION_ERROR"
+
+
+def test_clear_ignored_transfers_endpoint(client, clean_db):
+    for source, target in [(BENCH, INCLINE_DB_BENCH), (SQUAT, "Leg Press")]:
+        client.post(
+            "/api/user_profile/calibration/ignore_transfer",
+            json={"source_exercise": source, "target_exercise": target},
+        )
+    assert clean_db.fetch_one(
+        "SELECT COUNT(*) AS n FROM ignored_calibration_transfers"
+    )["n"] == 2
+
+    resp = client.post("/api/user_profile/calibration/clear_ignored_transfers")
+    assert resp.status_code == 200
+    assert resp.get_json()["ok"] is True
+    assert clean_db.fetch_one(
+        "SELECT COUNT(*) AS n FROM ignored_calibration_transfers"
+    )["n"] == 0
+
+
+def test_reset_all_endpoint_clears_learned_but_keeps_ratios_and_settings(
+    client, clean_db, exercise_factory, workout_plan_factory, workout_log_factory
+):
+    _seed_related_bench_pair(exercise_factory)
+    _seed_high_confidence_bench_source(clean_db, workout_plan_factory, workout_log_factory)
+    _insert_bench_to_incline_ratio(clean_db)
+    set_calibration_settings("suggest", db=clean_db, allow_related_exercise_learning=True)
+
+    resp = client.post("/api/user_profile/calibration/reset_all")
+    assert resp.status_code == 200
+    assert resp.get_json()["ok"] is True
+
+    assert clean_db.fetch_one(
+        "SELECT COUNT(*) AS n FROM learned_strength_calibrations"
+    )["n"] == 0
+    # Transfer ratios and settings are separate concerns — untouched.
+    assert clean_db.fetch_one(
+        "SELECT COUNT(*) AS n FROM exercise_transfer_ratios"
+    )["n"] == 1
+    assert get_calibration_settings(db=clean_db)["mode"] == "suggest"

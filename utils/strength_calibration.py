@@ -180,6 +180,36 @@ def get_learned_calibration(
     )
 
 
+def list_learned_calibrations(*, db: DatabaseHandler) -> list[dict[str, Any]]:
+    """Return every learned-calibration row for the Phase 2B review surface.
+
+    Read-only. Most-recently-observed first (then exercise name) so the user
+    sees their freshest evidence at the top. Columns mirror what the dashboard
+    renders — exercise, confidence, sample count, e1RM, suggestion, observed
+    date — and never include internal transfer-ratio tuning data.
+    """
+    return db.fetch_all(
+        """
+        SELECT exercise_name, confidence, sample_count, estimated_1rm,
+               suggested_weight, suggested_min_reps, suggested_max_reps,
+               suggested_rir, suggested_rpe, last_observed_at, updated_at
+        FROM learned_strength_calibrations
+        ORDER BY last_observed_at DESC, exercise_name COLLATE NOCASE
+        """
+    )
+
+
+def list_ignored_transfers(*, db: DatabaseHandler) -> list[dict[str, Any]]:
+    """Return every ignored related source→target pair (newest first)."""
+    return db.fetch_all(
+        """
+        SELECT source_exercise_name, target_exercise_name, created_at
+        FROM ignored_calibration_transfers
+        ORDER BY created_at DESC, id DESC
+        """
+    )
+
+
 _CONFIDENCE_RANK = {
     CONFIDENCE_LOW: 1,
     CONFIDENCE_MEDIUM: 2,
@@ -212,6 +242,34 @@ def ignore_calibration_transfer(
         """,
         (source, target),
     )
+
+
+def unignore_calibration_transfer(
+    source_exercise_name: str, target_exercise_name: str, *, db: DatabaseHandler
+) -> None:
+    """Restore one previously-ignored related pair (Phase 2B control).
+
+    Removes only the ignore record — the source exercise's exact learned
+    calibration is untouched, so related fallback becomes eligible again for
+    that target if a transfer ratio still exists.
+    """
+    source = (source_exercise_name or "").strip()
+    target = (target_exercise_name or "").strip()
+    if not source or not target:
+        return
+    db.execute_query(
+        """
+        DELETE FROM ignored_calibration_transfers
+        WHERE source_exercise_name = ? COLLATE NOCASE
+          AND target_exercise_name = ? COLLATE NOCASE
+        """,
+        (source, target),
+    )
+
+
+def clear_ignored_transfers(*, db: DatabaseHandler) -> None:
+    """Remove all ignored related pairs (Phase 2B bulk control)."""
+    db.execute_query("DELETE FROM ignored_calibration_transfers")
 
 
 def get_related_calibration_candidate(
@@ -437,6 +495,15 @@ def reset_calibration_for_exercise(exercise_name: str, *, db: DatabaseHandler) -
     if not exercise_name or not exercise_name.strip():
         return
     _delete_calibration(exercise_name.strip(), db=db)
+
+
+def reset_all_calibrations(*, db: DatabaseHandler) -> None:
+    """Clear every learned-calibration row (Phase 2B bulk reset control).
+
+    Deletes only ``learned_strength_calibrations`` — settings and curated
+    transfer ratios are left intact, and rows recompute on the next scored log.
+    """
+    db.execute_query("DELETE FROM learned_strength_calibrations")
 
 
 def update_calibration_for_exercise(
