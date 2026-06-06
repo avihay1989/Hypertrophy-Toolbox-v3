@@ -29,7 +29,11 @@ SCRIPTS_DIR = REPO_ROOT / "e2e" / "scripts"
 if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
 
-from prepare_visual_db import apply_migrations, snapshot_database  # noqa: E402
+from prepare_visual_db import (  # noqa: E402
+    apply_migrations,
+    assert_safe_output,
+    snapshot_database,
+)
 
 DEFAULT_SEED = REPO_ROOT / "e2e" / "fixtures" / "database.visual.seed.db"
 DEFAULT_OUTPUT = REPO_ROOT / "artifacts" / "e2e" / "database.e2e.db"
@@ -72,32 +76,13 @@ def wipe_user_state(database_path: Path) -> None:
         con.close()
 
 
-def _ensure_calibration_tables(database_path: Path) -> None:
-    """Create the learned-calibration tables in the seed DB.
-
-    ``apply_migrations`` (shared with the visual prep) predates the learned
-    calibration feature, so it does not create these. The Profile page now reads
-    ``user_calibration_settings`` on every render, so a seed missing the table
-    500s the whole page. Create them here so the E2E DB is self-sufficient and
-    does not rely on app startup having run first.
-    """
-    if str(REPO_ROOT) not in sys.path:
-        sys.path.insert(0, str(REPO_ROOT))
-    import utils.config
-
-    utils.config.DB_FILE = str(database_path)
-    from utils.database import add_strength_calibration_tables
-
-    add_strength_calibration_tables()
-
-
 def prepare(source: Path, output: Path) -> Path:
     output = output.resolve()
     snapshot_database(source.resolve(), output)
-    # apply_migrations brings a possibly-older seed up to the current schema
-    # (body_composition, etc.); the calibration tables need a separate call.
+    # apply_migrations now mirrors app.py's full startup table sequence,
+    # including the learned-calibration tables, so the seed is schema-identical
+    # to a booted app before user-state is wiped.
     apply_migrations(output)
-    _ensure_calibration_tables(output)
     wipe_user_state(output)
     return output
 
@@ -106,7 +91,13 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source", type=Path, default=DEFAULT_SEED)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Override the live-data guard (allows --output of data/database.db).",
+    )
     args = parser.parse_args()
+    assert_safe_output(args.output.resolve(), args.force)
     print(prepare(args.source, args.output))
 
 

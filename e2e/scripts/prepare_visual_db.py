@@ -22,6 +22,27 @@ DEFAULT_SEED = REPO_ROOT / "e2e" / "fixtures" / "database.visual.seed.db"
 DEFAULT_SOURCE = DEFAULT_SEED if DEFAULT_SEED.exists() else REPO_ROOT / "data" / "database.db"
 DEFAULT_OUTPUT = REPO_ROOT / "artifacts" / "visual" / "database.visual.db"
 
+# Paths this seeder must never overwrite: the developer's live DB and the
+# auto-backup snapshots beside it. The guard is path-identity based (not
+# existence based) so it refuses regardless of whether the file is present.
+LIVE_DB = REPO_ROOT / "data" / "database.db"
+AUTO_BACKUP_DIR = REPO_ROOT / "data" / "auto_backup"
+
+
+def assert_safe_output(output: Path, force: bool) -> None:
+    resolved = output.resolve()
+    live = LIVE_DB.resolve()
+    auto_backup = AUTO_BACKUP_DIR.resolve()
+    if force:
+        return
+    if resolved == live or auto_backup in resolved.parents:
+        raise SystemExit(
+            f"Refusing to --output a live-data path: {resolved}\n"
+            "This seeder snapshots a throwaway DB; writing the live "
+            "data/database.db (or anything under data/auto_backup/) would "
+            "clobber real user data. Pass --force only if you truly intend to."
+        )
+
 
 def _remove_sqlite_sidecars(database_path: Path) -> None:
     for candidate in (
@@ -58,17 +79,23 @@ def apply_migrations(database_path: Path) -> None:
     from utils.database import (
         add_body_composition_snapshots_table,
         add_progression_goals_table,
+        add_strength_calibration_tables,
         add_user_profile_tables,
         add_volume_tracking_tables,
     )
     from routes.program_backup import init_backup_tables
     from routes.workout_plan import initialize_exercise_order
 
+    # Mirror app.py's startup table-creation sequence exactly so a visual seed is
+    # schema-identical to a freshly booted app — including the learned-calibration
+    # tables the Profile page reads on every render (a missing table 500s the page
+    # and would freeze a broken render into a baseline).
     initialize_database()
     add_progression_goals_table()
     add_volume_tracking_tables()
     add_user_profile_tables()
     add_body_composition_snapshots_table()
+    add_strength_calibration_tables()
     initialize_exercise_order()
     init_backup_tables()
 
@@ -77,9 +104,15 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source", type=Path, default=DEFAULT_SOURCE)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Override the live-data guard (allows --output of data/database.db).",
+    )
     args = parser.parse_args()
 
     output_path = args.output.resolve()
+    assert_safe_output(output_path, args.force)
     snapshot_database(args.source.resolve(), output_path)
     apply_migrations(output_path)
     print(output_path)

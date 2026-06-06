@@ -8,15 +8,22 @@
  *   - view modes: simple, advanced (workout_plan only)
  *
  * Screenshots are locked via `toHaveScreenshot()` baselines under
- * e2e/__screenshots__/visual-baseline-thumbnails.spec.ts-snapshots/.
+ * e2e/__screenshots__/{platform}/visual-baseline-thumbnails.spec.ts-snapshots/.
  *
- * Requires the worktree DB to be seeded by
- *   scripts/seed_visual_baseline.py
- * and the apply step (`scripts/apply_free_exercise_db_mapping.py`) to
- * have populated media_path values.
+ * Requires the plan rows + media_path thumbnails from the committed visual
+ * fixture. Run with the web server seeded by the visual seeder, i.e. set
+ * PW_VISUAL_SEED=1 (see playwright.config.ts) so prepare_visual_db.py seeds the
+ * throwaway DB before Flask opens it — the functional seed wipes user-state and
+ * would leave this spec with no rows.
  */
 import { test, expect, Page } from '@playwright/test';
 import { ROUTES } from './fixtures';
+import {
+  elementScreenshotOptions,
+  installDeterminism,
+  prepareForScreenshot,
+  type VisualTheme,
+} from './visual-helpers';
 
 const VIEWPORTS = [
   { name: 'desktop', width: 1440, height: 900 },
@@ -24,15 +31,11 @@ const VIEWPORTS = [
   { name: 'mobile', width: 375, height: 667 },
 ] as const;
 
-const THEMES = ['light', 'dark'] as const;
+const THEMES: VisualTheme[] = ['light', 'dark'];
 const PLAN_VIEW_MODES = ['simple', 'advanced'] as const;
 
-async function applyTheme(page: Page, theme: 'light' | 'dark'): Promise<void> {
-  await page.addInitScript((t) => {
-    localStorage.setItem('darkMode', t === 'dark' ? 'true' : 'false');
-  }, theme);
-}
-
+// installDeterminism clears localStorage, so the plan view-mode flag must be set
+// in an init script registered AFTER it (init scripts run in registration order).
 async function applyPlanViewMode(page: Page, mode: 'simple' | 'advanced'): Promise<void> {
   await page.addInitScript((m) => {
     localStorage.setItem('hypertrophy_filter_view_mode', m);
@@ -51,7 +54,7 @@ test.describe('§4 visual baseline — workout_plan thumbnails', () => {
             viewport: { width: viewport.width, height: viewport.height },
           });
           const page = await context.newPage();
-          await applyTheme(page, theme);
+          await installDeterminism(page, { theme });
           await applyPlanViewMode(page, mode);
 
           await page.goto(ROUTES.WORKOUT_PLAN);
@@ -75,8 +78,9 @@ test.describe('§4 visual baseline — workout_plan thumbnails', () => {
           expect(htmlTheme).toBe(theme);
 
           // Save screenshot artifact (full table only — keeps diff size sane).
+          await prepareForScreenshot(page);
           const target = page.locator('.workout-plan-table, #workout_plan_table_body').first();
-          await expect(target).toHaveScreenshot(`${label}.png`, { maxDiffPixelRatio: 0.01 });
+          await expect(target).toHaveScreenshot(`${label}.png`, elementScreenshotOptions());
 
           await context.close();
         });
@@ -94,7 +98,7 @@ test.describe('§4 visual baseline — workout_log thumbnails', () => {
           viewport: { width: viewport.width, height: viewport.height },
         });
         const page = await context.newPage();
-        await applyTheme(page, theme);
+        await installDeterminism(page, { theme });
 
         await page.goto(ROUTES.WORKOUT_LOG);
         await page.waitForLoadState('domcontentloaded');
@@ -116,8 +120,9 @@ test.describe('§4 visual baseline — workout_log thumbnails', () => {
         const htmlTheme = await page.locator('html').getAttribute('data-theme');
         expect(htmlTheme).toBe(theme);
 
+        await prepareForScreenshot(page);
         const target = page.locator('.workout-log-table, #workout-log-table').first();
-        await expect(target).toHaveScreenshot(`${label}.png`, { maxDiffPixelRatio: 0.01 });
+        await expect(target).toHaveScreenshot(`${label}.png`, elementScreenshotOptions());
 
         await context.close();
       });

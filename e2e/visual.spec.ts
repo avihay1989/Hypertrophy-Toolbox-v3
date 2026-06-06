@@ -1,7 +1,3 @@
-import { execFileSync } from 'node:child_process';
-import fs from 'node:fs';
-import path from 'node:path';
-
 import { test, expect, ROUTES, waitForPageReady } from './strict-fixtures';
 import {
   installDeterminism,
@@ -29,18 +25,10 @@ const viewports = [
 
 const themes: VisualTheme[] = ['light', 'dark'];
 
-test.beforeAll(() => {
-  const venvPython = process.platform === 'win32'
-    ? path.join(process.cwd(), '.venv', 'Scripts', 'python.exe')
-    : path.join(process.cwd(), '.venv', 'bin', 'python');
-  const pythonExecutable = fs.existsSync(venvPython) ? venvPython : 'python';
-  const databasePath = process.env.DB_FILE ?? path.join(process.cwd(), 'data', 'database.db');
-  execFileSync(pythonExecutable, [
-    'e2e/scripts/prepare_visual_db.py',
-    '--output',
-    databasePath,
-  ], { stdio: 'ignore' });
-});
+// The visual fixture data (plan rows + media_path thumbnails) is seeded by the
+// web-server command when PW_VISUAL_SEED=1 (see playwright.config.ts), before
+// Flask opens the DB. No per-spec runtime DB rewrite — that race-prone path
+// (replacing DB_FILE under the running server, with a live-DB fallback) is gone.
 
 for (const appPage of pages) {
   test.describe(`visual baseline: ${appPage.name}`, () => {
