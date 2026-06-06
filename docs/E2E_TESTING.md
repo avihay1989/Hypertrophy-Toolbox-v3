@@ -86,7 +86,7 @@ There are currently **25** Playwright spec files in `e2e/`:
 
 - The suite covers page-level browser flows, targeted regression paths, API smoke checks, Backup Center flows, navbar routing, and visual baselines.
 - `api-integration.spec.ts` remains intentionally tolerant in some assertions while a few legacy response shapes are preserved.
-- Visual snapshots live under `e2e/__screenshots__/visual.spec.ts-snapshots/`.
+- Visual snapshots are split by platform: `e2e/__screenshots__/win32/visual.spec.ts-snapshots/` (local Windows) and `e2e/__screenshots__/linux/visual.spec.ts-snapshots/` (CI; via the `{platform}` segment in `snapshotPathTemplate`). See the "Visual spec contract" in [`e2e/CLAUDE.md`](../e2e/CLAUDE.md).
 
 ## Maintenance Rules
 
