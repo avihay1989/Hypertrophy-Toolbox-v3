@@ -1064,37 +1064,85 @@ const CALIBRATION_MODE_TEXT = {
     suggest: 'On — Workout Controls learns from your recent scored logs',
 };
 
-function updateCalibrationStatusText(mode) {
+function updateCalibrationStatusText(mode, allowRelated = false) {
     const text = document.querySelector('[data-calibration-text]');
     if (text) {
-        text.textContent = CALIBRATION_MODE_TEXT[mode] || CALIBRATION_MODE_TEXT.off;
+        if (mode === 'suggest' && allowRelated) {
+            text.textContent = 'On — exact and related learned suggestions are enabled';
+        } else {
+            text.textContent = CALIBRATION_MODE_TEXT[mode] || CALIBRATION_MODE_TEXT.off;
+        }
+    }
+}
+
+function readCalibrationForm(form) {
+    const checkedMode = form.querySelector('input[name="calibration_mode"]:checked');
+    const related = form.querySelector('input[name="allow_related_exercise_learning"]');
+    const mode = checkedMode ? checkedMode.value : 'off';
+    return {
+        mode,
+        allow_related_exercise_learning: mode === 'suggest' && Boolean(related?.checked),
+    };
+}
+
+function syncRelatedCalibrationControl(form, settings) {
+    const related = form.querySelector('input[name="allow_related_exercise_learning"]');
+    if (!related) return;
+    related.disabled = settings.mode !== 'suggest';
+    if (settings.mode !== 'suggest') {
+        related.checked = false;
     }
 }
 
 function bindCalibrationSettings() {
     const form = document.getElementById('profile-calibration-form');
     if (!form) return;
-    const checked = form.querySelector('input[name="calibration_mode"]:checked');
-    updateCalibrationStatusText(checked ? checked.value : 'off');
+    let currentSettings = readCalibrationForm(form);
+    syncRelatedCalibrationControl(form, currentSettings);
+    updateCalibrationStatusText(
+        currentSettings.mode,
+        currentSettings.allow_related_exercise_learning,
+    );
 
     form.addEventListener('change', async (event) => {
         const input = event.target;
-        if (!input || input.name !== 'calibration_mode') return;
-        const mode = input.value;
+        if (
+            !input
+            || !['calibration_mode', 'allow_related_exercise_learning'].includes(input.name)
+        ) return;
+        const previousSettings = currentSettings;
+        const settings = readCalibrationForm(form);
+        syncRelatedCalibrationControl(form, settings);
         try {
             const response = await api.post(
                 '/api/user_profile/calibration_settings',
-                { mode },
+                settings,
             );
-            const saved = response?.data?.mode || mode;
-            updateCalibrationStatusText(saved);
+            const saved = {
+                ...settings,
+                ...(response?.data || {}),
+            };
+            currentSettings = saved;
+            syncRelatedCalibrationControl(form, saved);
+            updateCalibrationStatusText(saved.mode, saved.allow_related_exercise_learning);
             showToast(
                 'success',
-                saved === 'suggest'
+                saved.mode === 'suggest'
                     ? 'Learned suggestions enabled'
                     : 'Learned suggestions turned off',
             );
         } catch (error) {
+            const modeInput = form.querySelector(
+                `input[name="calibration_mode"][value="${previousSettings.mode}"]`,
+            );
+            if (modeInput) modeInput.checked = true;
+            const related = form.querySelector('input[name="allow_related_exercise_learning"]');
+            if (related) related.checked = previousSettings.allow_related_exercise_learning;
+            syncRelatedCalibrationControl(form, previousSettings);
+            updateCalibrationStatusText(
+                previousSettings.mode,
+                previousSettings.allow_related_exercise_learning,
+            );
             showToast('error', error?.message || 'Failed to save calibration settings', {
                 requestId: error?.requestId,
             });

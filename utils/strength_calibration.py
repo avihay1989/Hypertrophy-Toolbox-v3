@@ -26,9 +26,9 @@ from typing import Any, Optional
 from utils.database import DatabaseHandler
 from utils.logger import get_logger
 from utils.normalization import normalize_muscle
+from utils.lift_matching import match_direct_lift_key
 from utils.profile_estimator import (
     DEFAULT_ESTIMATE,
-    _match_direct_lift_key,
     classify_tier,
     epley_1rm,
 )
@@ -42,7 +42,7 @@ MIN_EXACT_LOGS_HIGH = 3
 MAX_RECENT_DAYS = 90
 STALE_AFTER_DAYS = 180
 MAX_E1RM_VARIANCE_PCT_HIGH = 10
-# Phase 2 reserved constants (not used by the MVP).
+# Related transfer gates (Phase 2A).
 MIN_RELATED_LOGS = 3
 MIN_RELATED_CONFIDENCE = "medium"
 
@@ -85,9 +85,74 @@ def get_calibration_mode(*, db: DatabaseHandler) -> str:
     current estimator (no learned suggestions) — this is the regression guard
     the plan calls out under §"Settings Default".
     """
-    row = db.fetch_one("SELECT mode FROM user_calibration_settings WHERE id = 1")
+    return get_calibration_settings(db=db)["mode"]
+
+
+def get_calibration_settings(*, db: DatabaseHandler) -> dict[str, Any]:
+    """Return learned-calibration settings with safe default-off semantics."""
+    row = db.fetch_one(
+        """
+        SELECT mode, allow_related_exercise_learning, min_sessions_for_related
+        FROM user_calibration_settings
+        WHERE id = 1
+        """
+    )
     mode = (row or {}).get("mode")
-    return mode if mode in VALID_CALIBRATION_MODES else DEFAULT_CALIBRATION_MODE
+    if mode not in VALID_CALIBRATION_MODES:
+        mode = DEFAULT_CALIBRATION_MODE
+    allow_related = bool((row or {}).get("allow_related_exercise_learning") or 0)
+    return {
+        "mode": mode,
+        "allow_related_exercise_learning": allow_related,
+        "min_sessions_for_related": (row or {}).get("min_sessions_for_related"),
+    }
+
+
+def related_exercise_learning_enabled(*, db: DatabaseHandler) -> bool:
+    """True only when learned suggestions and related transfer are both enabled."""
+    settings = get_calibration_settings(db=db)
+    return (
+        settings["mode"] == "suggest"
+        and settings["allow_related_exercise_learning"] is True
+    )
+
+
+def set_calibration_settings(
+    mode: str,
+    *,
+    db: DatabaseHandler,
+    allow_related_exercise_learning: Optional[bool] = None,
+) -> dict[str, Any]:
+    """Upsert calibration settings; preserve the related flag when omitted."""
+    if mode not in VALID_CALIBRATION_MODES:
+        raise ValueError(f"mode must be one of {VALID_CALIBRATION_MODES}")
+
+    if allow_related_exercise_learning is None:
+        db.execute_query(
+            """
+            INSERT INTO user_calibration_settings (id, mode, updated_at)
+            VALUES (1, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(id) DO UPDATE SET
+                mode = excluded.mode,
+                updated_at = CURRENT_TIMESTAMP
+            """,
+            (mode,),
+        )
+    else:
+        db.execute_query(
+            """
+            INSERT INTO user_calibration_settings (
+                id, mode, allow_related_exercise_learning, updated_at
+            )
+            VALUES (1, ?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(id) DO UPDATE SET
+                mode = excluded.mode,
+                allow_related_exercise_learning = excluded.allow_related_exercise_learning,
+                updated_at = CURRENT_TIMESTAMP
+            """,
+            (mode, 1 if allow_related_exercise_learning else 0),
+        )
+    return get_calibration_settings(db=db)
 
 
 def set_calibration_mode(mode: str, *, db: DatabaseHandler) -> str:
@@ -96,19 +161,7 @@ def set_calibration_mode(mode: str, *, db: DatabaseHandler) -> str:
     Turning learned suggestions on is an explicit user action (plan §"Settings
     Default"). Reserved Phase 2 columns keep their schema defaults.
     """
-    if mode not in VALID_CALIBRATION_MODES:
-        raise ValueError(f"mode must be one of {VALID_CALIBRATION_MODES}")
-    db.execute_query(
-        """
-        INSERT INTO user_calibration_settings (id, mode, updated_at)
-        VALUES (1, ?, CURRENT_TIMESTAMP)
-        ON CONFLICT(id) DO UPDATE SET
-            mode = excluded.mode,
-            updated_at = CURRENT_TIMESTAMP
-        """,
-        (mode,),
-    )
-    return mode
+    return set_calibration_settings(mode, db=db)["mode"]
 
 
 def get_learned_calibration(
@@ -125,6 +178,149 @@ def get_learned_calibration(
         "SELECT * FROM learned_strength_calibrations WHERE exercise_name = ? COLLATE NOCASE",
         (exercise_name.strip(),),
     )
+
+
+_CONFIDENCE_RANK = {
+    CONFIDENCE_LOW: 1,
+    CONFIDENCE_MEDIUM: 2,
+    CONFIDENCE_HIGH: 3,
+}
+
+_LOAD_BASIS_FACTOR = {
+    "total_to_total": 1.0,
+    "total_to_per_hand": 0.5,
+    "per_hand_to_total": 2.0,
+    "per_hand_to_per_hand": 1.0,
+}
+
+
+def ignore_calibration_transfer(
+    source_exercise_name: str, target_exercise_name: str, *, db: DatabaseHandler
+) -> None:
+    """Suppress one related source-target pair without deleting exact evidence."""
+    source = (source_exercise_name or "").strip()
+    target = (target_exercise_name or "").strip()
+    if not source or not target:
+        return
+    db.execute_query(
+        """
+        INSERT INTO ignored_calibration_transfers (
+            source_exercise_name, target_exercise_name, created_at
+        )
+        VALUES (?, ?, CURRENT_TIMESTAMP)
+        ON CONFLICT(source_exercise_name, target_exercise_name) DO NOTHING
+        """,
+        (source, target),
+    )
+
+
+def get_related_calibration_candidate(
+    target_exercise_row: dict[str, Any],
+    *,
+    db: DatabaseHandler,
+    now: Optional[datetime] = None,
+) -> Optional[dict[str, Any]]:
+    """Return the strongest eligible related calibration for a target exercise.
+
+    Phase 2A is intentionally read-only and ratio-gated: no explicit
+    ``exercise_transfer_ratios`` row means no related suggestion, even when a
+    plausible source calibration exists.
+    """
+    if not related_exercise_learning_enabled(db=db):
+        return None
+    if not target_exercise_row or classify_tier(target_exercise_row) == "excluded":
+        return None
+
+    target_name = (target_exercise_row.get("exercise_name") or "").strip()
+    if not target_name:
+        return None
+
+    now = now or _utcnow()
+    target_lift_key = match_direct_lift_key(target_name)
+    rows = db.fetch_all(
+        """
+        SELECT
+            c.exercise_name AS source_exercise_name,
+            c.lift_key AS source_lift_key,
+            c.primary_muscle AS source_primary_muscle,
+            c.estimated_1rm AS source_estimated_1rm,
+            c.suggested_weight AS source_suggested_weight,
+            c.suggested_min_reps AS source_suggested_min_reps,
+            c.suggested_max_reps AS source_suggested_max_reps,
+            c.confidence AS source_confidence,
+            c.sample_count AS source_sample_count,
+            c.last_observed_at AS source_last_observed_at,
+            r.id AS transfer_ratio_id,
+            r.source_lift_key AS ratio_source_lift_key,
+            r.target_lift_key AS ratio_target_lift_key,
+            r.ratio AS transfer_ratio,
+            r.load_basis,
+            r.relationship_type,
+            r.confidence AS transfer_confidence,
+            r.notes AS transfer_notes
+        FROM exercise_transfer_ratios r
+        JOIN learned_strength_calibrations c
+          ON c.exercise_name = r.source_exercise_name COLLATE NOCASE
+        LEFT JOIN ignored_calibration_transfers ignored
+          ON ignored.source_exercise_name = r.source_exercise_name COLLATE NOCASE
+         AND ignored.target_exercise_name = r.target_exercise_name COLLATE NOCASE
+        WHERE r.target_exercise_name = ? COLLATE NOCASE
+          AND c.exercise_name <> ? COLLATE NOCASE
+          AND ignored.id IS NULL
+        """,
+        (target_name, target_name),
+    )
+
+    candidates: list[dict[str, Any]] = []
+    for row in rows:
+        if row.get("source_confidence") not in USABLE_SUGGEST_CONFIDENCES:
+            continue
+        if int(row.get("source_sample_count") or 0) < MIN_RELATED_LOGS:
+            continue
+        observed_at = _parse_dt(row.get("source_last_observed_at"))
+        if observed_at is not None and _age_days(now, observed_at) > STALE_AFTER_DAYS:
+            continue
+        if row.get("transfer_confidence") not in USABLE_SUGGEST_CONFIDENCES:
+            continue
+        basis_factor = _LOAD_BASIS_FACTOR.get(row.get("load_basis"))
+        if basis_factor is None:
+            continue
+        try:
+            source_e1rm = float(row["source_estimated_1rm"])
+            transfer_ratio = float(row["transfer_ratio"])
+        except (TypeError, ValueError):
+            continue
+        if source_e1rm <= 0 or transfer_ratio <= 0:
+            continue
+        ratio_source_key = row.get("ratio_source_lift_key")
+        ratio_target_key = row.get("ratio_target_lift_key")
+        if ratio_source_key and row.get("source_lift_key") and ratio_source_key != row.get("source_lift_key"):
+            continue
+        if ratio_target_key and target_lift_key and ratio_target_key != target_lift_key:
+            continue
+
+        target_e1rm = source_e1rm * transfer_ratio * basis_factor
+        candidate = dict(row)
+        candidate.update({
+            "target_exercise_name": target_name,
+            "target_lift_key": target_lift_key,
+            "target_estimated_1rm": target_e1rm,
+            "load_basis_factor": basis_factor,
+        })
+        candidates.append(candidate)
+
+    if not candidates:
+        return None
+
+    def sort_key(row: dict[str, Any]) -> tuple[int, datetime, int]:
+        observed = _parse_dt(row.get("source_last_observed_at")) or datetime.min
+        return (
+            _CONFIDENCE_RANK.get(row.get("source_confidence"), 0),
+            observed,
+            int(row.get("source_sample_count") or 0),
+        )
+
+    return max(candidates, key=sort_key)
 
 
 def _utcnow() -> datetime:
@@ -309,7 +505,7 @@ def update_calibration_for_exercise(
 
     payload = {
         "exercise_name": canonical_name,
-        "lift_key": _match_direct_lift_key(canonical_name),
+        "lift_key": match_direct_lift_key(canonical_name),
         "primary_muscle": normalize_muscle(exercise_row.get("primary_muscle_group")),
         "estimated_1rm": round(e1rms[0], 2),
         "suggested_weight": decision["suggested_weight"],
@@ -324,7 +520,6 @@ def update_calibration_for_exercise(
             str(latest["created_at"]) if latest.get("created_at") is not None else None
         ),
         "source": CALIBRATION_SOURCE,
-        "progression_status": decision["status"],
     }
     _upsert_calibration(payload, db=db)
     return payload

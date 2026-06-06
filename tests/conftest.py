@@ -112,6 +112,8 @@ def app(test_db_path):
                 tables = [
                     'program_backup_items',  # Drop child table first (FK constraint)
                     'program_backups',        # Then parent backup table
+                    'ignored_calibration_transfers',
+                    'exercise_transfer_ratios',
                     'learned_strength_calibrations',
                     'user_calibration_settings',
                     'user_profile_preferences',
@@ -175,6 +177,10 @@ def clean_db(db_handler):
         tables = [
             'program_backup_items',
             'program_backups',
+            'ignored_calibration_transfers',
+            'exercise_transfer_ratios',
+            'learned_strength_calibrations',
+            'user_calibration_settings',
             'user_profile_preferences',
             'user_profile_lifts',
             'user_profile',

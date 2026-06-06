@@ -2,7 +2,12 @@
 
 ## Status
 
-This is a planning document, not an implementation ticket ready to code without review. The MVP should be a low-risk exact-exercise learning feature. Related-exercise propagation belongs in Phase 2.
+MVP learned calibration is shipped on `main`:
+
+- PR #37 / `fd2e2f5`: exact-exercise learned calibration backend, settings, estimator integration, Profile controls, Workout Controls source UI/actions, workout-log notifications, tests, and E2E.
+- PR #39 / `62db541`: separate profile-estimator dumbbell/total-load reference fix.
+
+This document is now the planning source for Phase 2. Phase 2 is not ready to code without design review because related-exercise transfer can change suggestion behavior across many exercises and needs explicit product choices.
 
 ## Goal
 
@@ -17,14 +22,15 @@ Example target behavior:
 
 ## Current Behavior
 
-The current estimate flow prioritizes:
+The shipped estimate flow prioritizes:
 
-1. Last logged set for the exact exercise.
-2. Profile reference lifts.
-3. Cold-start demographics.
-4. Static default.
+1. Exact exercise learned calibration, when settings mode is `suggest` and confidence is usable.
+2. Last logged set for the exact exercise.
+3. Profile reference lifts.
+4. Cold-start demographics.
+5. Static default.
 
-Exact exercises adapt today, but only by mirroring the latest logged row. Similar exercises do not learn from logs. Cross-exercise propagation exists only through Profile reference lifts, and workout logs do not write back to those reference lifts.
+Exact exercises now adapt from recent valid scored logs instead of only mirroring the latest row. Similar exercises still do not learn from logs. Cross-exercise propagation exists only through Profile reference lifts, and workout logs do not write back to those reference lifts.
 
 ## Desired Result
 
@@ -80,6 +86,223 @@ Phase 2 can add:
 - Manual `Promote to Profile reference lift` action.
 - Fatigue-aware and volume-aware set suggestions.
 - E2E coverage for the full related-learning UI flow.
+
+### Phase 2 Scope Split
+
+Phase 2 should be split into reviewable stages:
+
+1. **Phase 2A - related-exercise suggestions only.** Add read-only transfer from one exercise's learned calibration to a related target exercise. No Profile writes, no plan-row writes, no dashboard, no auto-apply.
+2. **Phase 2B - review and control surface.** Add an audit/dashboard view, ignored-transfer controls, and bulk reset only after 2A behavior is stable.
+3. **Phase 2C - promote to Profile.** Add manual promote-to-Profile as its own explicit action with route tests, response-contract tests, and clear copy that it changes the user's declared baseline.
+4. **Phase 2D - fatigue/volume-aware suggestions.** Keep this separate from strength transfer so fatigue logic does not become a hidden modifier inside Workout Controls.
+
+Only Phase 2A should be considered for the next implementation slice.
+
+## Phase 2A Related-Exercise Transfer Plan
+
+### Product Principle
+
+Related transfer should be conservative and explainable:
+
+- Use related logs only when the target exercise has no usable exact learned calibration and no exact last-log fallback.
+- Keep the existing Profile reference chain as the fallback if related evidence is weak, stale, or hard to explain.
+- Never silently overwrite Profile lifts, planned program rows, or historical logs.
+- Show that a suggestion is transferred, not exact: e.g. `Related: learned from Barbell Bench Press`.
+- Allow the user to reset/ignore a transferred source without deleting the source exercise's exact calibration.
+
+### Priority
+
+Phase 2A estimator priority should be:
+
+1. Exact exercise learned calibration.
+2. Exact last-log fallback.
+3. Related exercise learned calibration.
+4. Profile reference lifts.
+5. Cold-start demographics.
+6. Static default.
+
+This keeps exact user evidence above transferred evidence. It also means a single target-exercise log immediately suppresses related transfer for that target.
+
+### Settings
+
+Use the existing reserved settings fields before adding new user-facing modes:
+
+- `user_calibration_settings.mode`: remains `off` / `suggest`.
+- `user_calibration_settings.allow_related_exercise_learning`: must default to `0`.
+- No settings row must still behave as fully off.
+- Related transfer can only run when `mode == 'suggest'` and `allow_related_exercise_learning == 1`.
+
+Do not add `auto_apply` in Phase 2A.
+
+### Transfer Eligibility
+
+A source calibration may transfer to a target exercise only when all are true:
+
+- Source has usable confidence (`medium` or `high`) and at least `MIN_RELATED_LOGS` valid source logs.
+- Source is not stale by exact-calibration rules.
+- Source and target are not the same exact exercise.
+- Target has no usable exact learned calibration and no exact last-log fallback.
+- Target is not excluded by `classify_tier()`.
+- Source and target pass a deterministic relationship rule.
+- The relationship has an explainable transfer ratio.
+- The user has not ignored this source-target pair.
+
+### Relationship Rules
+
+Start with a deterministic, testable relationship score. Do not use fuzzy text similarity as the primary signal.
+
+Inputs available today:
+
+- `lift_key` from `utils.lift_matching.match_direct_lift_key()`.
+- `primary_muscle_group`.
+- `movement_pattern`.
+- `equipment`.
+- `mechanic`.
+- Existing per-hand vs total-load handling via `_load_basis_factor()`.
+
+Initial allowed relations:
+
+1. **Same direct lift key**: e.g. barbell bench variants that map to the same key-lift vocabulary.
+2. **Same primary muscle + same movement pattern + compatible mechanic**: e.g. horizontal push to horizontal push, squat to squat.
+3. **Equipment-compatible pairs only**: barbell/machine/cable/dumbbell/bodyweight compatibility must be explicit, not inferred from names.
+
+Initial blocked relations:
+
+- Different primary muscle.
+- Different movement pattern, unless manually whitelisted.
+- Unilateral vs bilateral transfers until a ratio is explicitly defined.
+- Bodyweight exercises where external load is not the main performance variable.
+- Exercises classified as `excluded`.
+- Any pair whose load basis cannot be explained as total-load or per-hand.
+
+### Transfer Ratios
+
+Do not hard-code one universal ratio for all related exercises.
+
+Recommended first slice:
+
+- Add a small `exercise_transfer_ratios` table for curated source-target pairs.
+- Store directional ratios (`source_exercise_name`, `target_exercise_name`, `ratio`, `basis`, `confidence`, `notes`).
+- Seed only a tiny safe set after review, or allow the table to start empty and prove the plumbing first.
+- Direction matters: `bench -> incline dumbbell press` is not necessarily the same as `incline dumbbell press -> bench`.
+
+If an MVP-without-seed is preferred, Phase 2A can first compute candidates but never return them until ratios exist. That gives tests and dashboard/audit visibility without changing Workout Controls behavior.
+
+### Suggested Schema
+
+Additive, idempotent tables:
+
+#### `exercise_transfer_ratios`
+
+- `id`
+- `source_exercise_name`
+- `target_exercise_name`
+- `source_lift_key`
+- `target_lift_key`
+- `ratio`
+- `load_basis`: `total_to_total`, `total_to_per_hand`, `per_hand_to_total`, `per_hand_to_per_hand`
+- `relationship_type`: `same_lift_key`, `same_pattern`, `manual`
+- `confidence`: `low`, `medium`, `high`
+- `notes`
+- `created_at`
+- `updated_at`
+
+#### `ignored_calibration_transfers`
+
+- `id`
+- `source_exercise_name`
+- `target_exercise_name`
+- `created_at`
+
+Optional later table for Phase 2B:
+
+#### `calibration_events`
+
+- `id`
+- `event_type`
+- `exercise_name`
+- `related_source_exercise_name`
+- `payload_json`
+- `created_at`
+
+### Algorithm Sketch
+
+When estimating a target exercise:
+
+1. Run the shipped exact learned lookup.
+2. Run the shipped exact last-log lookup.
+3. If both miss, and related learning is enabled, query candidate source calibrations.
+4. Join candidate source rows to explicit transfer ratios for the target.
+5. Discard ignored source-target pairs.
+6. Discard low-confidence, stale, excluded, or unsupported-basis candidates.
+7. Convert source `estimated_1rm` through the directional ratio and load-basis factor to produce target `estimated_1rm`.
+8. Use the target exercise's rep goals and the existing progression helper to derive target `suggested_weight` where possible.
+9. Pick the highest-confidence candidate; tie-break by most recent `last_observed_at`, then largest sample count.
+10. Return `source: "related_learned"`, `reason: "related_calibration"`, and a trace that names the source exercise and ratio.
+
+### Trace Requirements
+
+Workout Controls trace must show:
+
+- Source exercise.
+- Source confidence and sample count.
+- Source observed top set / e1RM.
+- Relationship type.
+- Transfer ratio and load-basis conversion.
+- Final progression decision.
+- Why exact learned/log data did not apply.
+
+Example:
+
+```text
+Source: Related learned calibration
+Learned from: Barbell Bench Press, 4 recent logs, confidence high
+Transfer: Bench Press -> Incline Dumbbell Press, ratio 0.72, total-load to per-hand
+Estimated strength: 92 kg source e1RM -> 33 kg/hand target
+Progression: maintain and build reps
+```
+
+### User Controls
+
+Phase 2A controls:
+
+- Enable/disable related learned suggestions in Profile.
+- Reset learned data for the target exercise (already exists for exact rows).
+- Ignore this related source for this target.
+- Keep current.
+- Apply suggestion client-side only.
+
+Do not add promote-to-Profile or auto-apply in Phase 2A.
+
+### Data Lifecycle
+
+- `/erase-data` must clear transfer ratios only if they are user-generated. If curated app-default ratios are shipped, they should be recreated by startup/seed logic rather than deleted permanently.
+- Deleting a source workout log should recompute the exact source calibration; related suggestions should derive from the new exact row at read time instead of storing copied related rows.
+- Deleting a target log should not delete source calibration.
+- Backup/restore must be safe with old snapshots missing Phase 2 tables.
+- The workout-log write path must continue reusing the open `DatabaseHandler`.
+
+### Open Decisions For Opus Review
+
+1. Should Phase 2A ship with zero default transfer ratios first, proving plumbing without behavior change?
+2. Which first 10-20 source-target pairs are safe enough to seed?
+3. Should related transfer use source `suggested_weight` or source `estimated_1rm` as the ratio input?
+4. Should exact last-log fallback always beat related learned evidence, or should stale/low-quality exact logs fall below high-confidence related evidence?
+5. Should unilateral/bilateral pairs be blocked for the whole first slice?
+6. Should machine/cable exercises require manual ratios only?
+7. Is a per-exercise ignore enough, or do we need ignore-by-source-target pair from the start?
+8. How should bodyweight-loaded movements be represented, or should they remain blocked?
+
+### Phase 2A Acceptance Criteria
+
+- With related learning disabled, estimate endpoint output is byte-for-byte equivalent to shipped MVP behavior.
+- With related learning enabled but no transfer ratios, output is still unchanged.
+- The first Phase 2A implementation slice ships with zero seeded transfer ratios.
+- With one valid curated transfer ratio, target uses related calibration only after exact learned and exact log miss.
+- Exact target log immediately suppresses related transfer.
+- Low/stale source confidence does not override Profile reference lifts.
+- Trace clearly names source exercise, relationship, ratio, confidence, and fallback reason.
+- Reset/ignore controls do not delete the source exercise's exact learned calibration.
 
 ## Strength Formula
 
@@ -244,7 +467,7 @@ Phase 2 actions:
 
 ## Data Model
 
-Likely MVP tables:
+Shipped MVP tables:
 
 ### `learned_strength_calibrations`
 
@@ -279,7 +502,7 @@ Normalize before persisting:
 - `min_sessions_for_related`, reserved for Phase 2
 - `updated_at`
 
-Phase 2 can add `calibration_events` when the Profile dashboard or audit history needs a real consumer.
+Phase 2A should add `exercise_transfer_ratios` and `ignored_calibration_transfers` only if related transfer is enabled. Phase 2B can add `calibration_events` when the Profile dashboard or audit history has a real consumer.
 
 ## Data Lifecycle
 
@@ -304,7 +527,7 @@ The workout-log hook must reuse the open `DatabaseHandler`.
 
 When `/update_workout_log` updates a row, call calibration with `db=db` inside the same handler block. Do not open a nested `DatabaseHandler` while the write path is active.
 
-## Development Tasks
+## Shipped MVP Tasks
 
 1. Create `utils/strength_calibration.py`.
 2. Add numeric confidence constants.
@@ -323,9 +546,26 @@ When `/update_workout_log` updates a row, call calibration with `db=db` inside t
 15. Add Workout Controls source badges and explanation details.
 16. Add migration notes because estimator priority changes product behavior.
 
+## Phase 2A Development Tasks
+
+1. Lock the transfer model after Opus/product review.
+2. Add additive Phase 2A tables in `utils/database.py`.
+3. Register table creation during app startup and tests.
+4. Register table cleanup in test fixtures and production erase-data flow.
+5. Extend settings helpers to read/write `allow_related_exercise_learning`.
+6. Add a small backend helper that returns eligible related candidates for a target exercise.
+7. Add explicit transfer-ratio lookup and load-basis conversion.
+8. Add ignored source-target pair helpers and reset/ignore endpoints.
+9. Extend `utils/profile_estimator.py` with related learned lookup after exact log fallback.
+10. Add trace fields for related learned calibration.
+11. Add Profile UI toggle for related suggestions, gated behind learned suggestions.
+12. Add Workout Controls copy/actions for related-source suggestions.
+13. Add migration notes because estimator priority can change behavior.
+14. Keep promote-to-Profile, dashboard, auto-apply, and fatigue-aware changes out of Phase 2A.
+
 ## Testing Plan
 
-### Unit Tests
+### Shipped MVP Unit Tests
 
 - Canonical `epley_1rm()` is used; no RIR-adjusted formula is introduced.
 - RIR/RPE affect quality/progression, not e1RM definition.
@@ -340,7 +580,22 @@ When `/update_workout_log` updates a row, call calibration with `db=db` inside t
 - Profile fallback still works when learned calibration is disabled or unavailable.
 - Existing last-log fallback still works.
 
-### Route Tests
+### Phase 2A Unit Tests
+
+- Relationship rules allow only explicit same-lift-key / same-pattern compatible pairs.
+- Blocked relations do not produce candidates.
+- Transfer ratios are directional.
+- Per-hand vs total-load conversion is applied once.
+- Related confidence uses source confidence, sample count, staleness, and `MIN_RELATED_LOGS`.
+- Ignored source-target pairs are excluded.
+- Related transfer is unavailable when no settings row exists.
+- Related transfer is unavailable when `mode == 'off'`.
+- Related transfer is unavailable when `allow_related_exercise_learning == 0`.
+- Exact learned calibration outranks related learned calibration.
+- Exact last-log fallback outranks related learned calibration.
+- Related learned calibration outranks Profile only when all eligibility gates pass.
+
+### Shipped MVP Route Tests
 
 - `/update_workout_log` updates calibration after scored data changes.
 - `/update_workout_log` reuses the existing DB handler path without nested writes.
@@ -350,7 +605,18 @@ When `/update_workout_log` updates a row, call calibration with `db=db` inside t
 - Delete-log endpoint invalidates or recomputes affected calibration.
 - All new responses use `success_response()` / `error_response()`.
 
-### Integration Tests
+### Phase 2A Route Tests
+
+- Settings endpoint persists `allow_related_exercise_learning`.
+- Invalid related settings values return structured errors.
+- Estimate endpoint returns related source only when both learned and related settings are enabled.
+- Estimate endpoint falls back unchanged when related is disabled.
+- Estimate endpoint falls back unchanged when no transfer ratio exists.
+- Ignore endpoint clears only the selected source-target relation.
+- Ignore endpoint does not delete source exact calibration.
+- All new responses use `success_response()` / `error_response()`.
+
+### Shipped MVP Integration Tests
 
 - With settings off, log `120 kg` squat and verify current estimator output is unchanged.
 - With settings on, log `120 kg` squat and verify learned exact-exercise output.
@@ -358,7 +624,18 @@ When `/update_workout_log` updates a row, call calibration with `db=db` inside t
 - Verify current exact-log behavior remains available as fallback.
 - Verify erase-data removes calibration tables.
 
-### E2E Tests
+### Phase 2A Integration Tests
+
+- With related disabled, a source calibration plus transfer ratio does not affect target estimate.
+- With related enabled and no exact target data, target estimate uses the related source.
+- After logging the target exercise once, target estimate uses exact last-log fallback instead of related.
+- After creating usable exact target calibration, target estimate uses exact learned instead of related.
+- Deleting the source's last usable log removes the related suggestion.
+- Ignoring a source-target pair restores Profile/cold-start fallback for that target.
+- Profile reference lift rows are not overwritten.
+- Existing exact-calibration MVP tests remain green unchanged.
+
+### Shipped MVP E2E Tests
 
 - User enables learned suggestions in Profile.
 - User edits scored workout log.
@@ -367,6 +644,15 @@ When `/update_workout_log` updates a row, call calibration with `db=db` inside t
 - User sees learned source badge and explanation.
 - User resets learned calibration.
 - User disables learned suggestions and sees fallback behavior.
+
+### Phase 2A E2E Tests
+
+- User enables related learned suggestions in Profile.
+- User opens Workout Controls for a related target with no exact logs.
+- User sees related-source badge, source exercise name, confidence, and trace details.
+- User applies the related suggestion client-side.
+- User ignores the related source and sees fallback behavior.
+- User disables related learned suggestions and sees fallback behavior while exact learned suggestions remain available.
 
 ### Visual Testing
 
@@ -392,6 +678,8 @@ Required gate:
 
 ## Recommended Build Order
 
+MVP build order is complete through item 8 below:
+
 1. Exact exercise calibration backend.
 2. Settings default-off behavior and regression guard.
 3. Estimator priority integration.
@@ -400,6 +688,17 @@ Required gate:
 6. Trace/source display in Workout Controls.
 7. Profile settings UI.
 8. E2E and visual coverage.
-9. Phase 2 related-exercise calibration plan.
 
-This order gives the user a meaningful exact-exercise learning improvement first, while keeping cross-exercise learning behind a separate, more deliberate design pass.
+Phase 2A recommended order:
+
+1. Opus/product review of the transfer model and first allowed ratio set.
+2. Add Phase 2A tables and cleanup/reinit paths.
+3. Extend settings backend and Profile toggle.
+4. Implement candidate generation behind `allow_related_exercise_learning`.
+5. Implement transfer-ratio lookup and related trace construction.
+6. Integrate estimator priority after exact last-log fallback.
+7. Add ignore source-target endpoint and Workout Controls action.
+8. Add focused pytest, then E2E for the related-source UI.
+9. Run full pytest and relevant Chromium Playwright specs.
+
+This order keeps related transfer behind an explicit second switch until the model is reviewable and testable.

@@ -176,6 +176,8 @@ def erase_data():
             tables = [
                 'program_backup_items',  # Drop child table first (FK constraint)
                 'program_backups',        # Then parent backup table
+                'ignored_calibration_transfers',
+                'exercise_transfer_ratios',
                 'learned_strength_calibrations',
                 'user_calibration_settings',
                 'user_profile_preferences',

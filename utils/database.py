@@ -641,9 +641,48 @@ def add_strength_calibration_tables() -> None:
             updated_at DATETIME
         )
     """
+    ddl_transfer_ratios = """
+        CREATE TABLE IF NOT EXISTS exercise_transfer_ratios (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            source_exercise_name TEXT NOT NULL,
+            target_exercise_name TEXT NOT NULL,
+            source_lift_key TEXT,
+            target_lift_key TEXT,
+            ratio REAL NOT NULL CHECK (ratio > 0),
+            load_basis TEXT NOT NULL CHECK (
+                load_basis IN (
+                    'total_to_total',
+                    'total_to_per_hand',
+                    'per_hand_to_total',
+                    'per_hand_to_per_hand'
+                )
+            ),
+            relationship_type TEXT NOT NULL CHECK (
+                relationship_type IN ('same_lift_key', 'same_pattern', 'manual')
+            ),
+            confidence TEXT NOT NULL DEFAULT 'medium' CHECK (
+                confidence IN ('low', 'medium', 'high')
+            ),
+            notes TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(source_exercise_name, target_exercise_name)
+        )
+    """
+    ddl_ignored_transfers = """
+        CREATE TABLE IF NOT EXISTS ignored_calibration_transfers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            source_exercise_name TEXT NOT NULL,
+            target_exercise_name TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(source_exercise_name, target_exercise_name)
+        )
+    """
     with DatabaseHandler() as db:
         db.execute_query(ddl_calibrations)
         db.execute_query(ddl_settings)
+        db.execute_query(ddl_transfer_ratios)
+        db.execute_query(ddl_ignored_transfers)
 
 
 def add_body_composition_snapshots_table() -> None:

@@ -573,6 +573,32 @@
     outline-offset: -2px;
 }
 
+.profile-checkbox-option {
+    align-items: center;
+    background: color-mix(in srgb, var(--surface-2, #f5f7fb) 74%, transparent);
+    border: 1px solid color-mix(in srgb, var(--ink-3, #7c849c) 18%, transparent);
+    border-radius: 8px;
+    color: var(--ink-2, #4a5170);
+    cursor: pointer;
+    display: flex;
+    font-size: 0.86rem;
+    font-weight: 650;
+    gap: 0.55rem;
+    margin: 0;
+    min-height: 38px;
+    padding: 0.45rem 0.65rem;
+}
+
+.profile-checkbox-option input {
+    accent-color: var(--accent, #4c6ef5);
+    flex: 0 0 auto;
+}
+
+.profile-checkbox-option:has(input:disabled) {
+    cursor: not-allowed;
+    opacity: 0.62;
+}
+
 [data-theme='dark'] .profile-field .form-label,
 [data-theme='dark'] .preference-group legend {
     color: var(--ink-2, #b4bad0);
@@ -598,6 +624,12 @@
 [data-theme='dark'] .segmented-option input:checked + span {
     background: color-mix(in srgb, var(--accent, #6d8dff) 24%, var(--surface-1, #161a2d));
     color: var(--ink-1, #eef1f6);
+}
+
+[data-theme='dark'] .profile-checkbox-option {
+    background: color-mix(in srgb, var(--surface-1, #161a2d) 80%, black);
+    border-color: color-mix(in srgb, var(--ink-3, #939bb2) 22%, transparent);
+    color: var(--ink-2, #b4bad0);
 }
 
 @media (min-width: 1200px) {
