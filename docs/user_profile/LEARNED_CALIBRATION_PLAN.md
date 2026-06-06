@@ -2,12 +2,13 @@
 
 ## Status
 
-MVP learned calibration is shipped on `main`:
+MVP + Phase 2A learned calibration are shipped on `main`:
 
 - PR #37 / `fd2e2f5`: exact-exercise learned calibration backend, settings, estimator integration, Profile controls, Workout Controls source UI/actions, workout-log notifications, tests, and E2E.
 - PR #39 / `62db541`: separate profile-estimator dumbbell/total-load reference fix.
+- PR #53 / `0f8b4b7`: Phase 2A read-only, ratio-gated related-exercise transfer — `utils/lift_matching.py`, additive `exercise_transfer_ratios` + `ignored_calibration_transfers` tables, `allow_related_exercise_learning` settings flag (default `0`), estimator priority (exact learned → exact log → related learned → Profile → cold-start → default), Profile toggle, Workout Controls related-source badge/trace/ignore. Ships with **zero** seeded ratios, so no behavior change until learned mode + related mode + a ratio row all exist.
 
-This document is now the planning source for Phase 2. Phase 2 is not ready to code without design review because related-exercise transfer can change suggestion behavior across many exercises and needs explicit product choices.
+**Phase 2A is complete.** The next implementation slice is **Phase 2B** (review and control surface) — see §"Phase 2B Review and Control Surface" below. This document remains the planning source for Phases 2B–2D; 2C (promote to Profile) and 2D (fatigue/volume-aware) still need design review before coding.
 
 ## Goal
 
@@ -96,7 +97,58 @@ Phase 2 should be split into reviewable stages:
 3. **Phase 2C - promote to Profile.** Add manual promote-to-Profile as its own explicit action with route tests, response-contract tests, and clear copy that it changes the user's declared baseline.
 4. **Phase 2D - fatigue/volume-aware suggestions.** Keep this separate from strength transfer so fatigue logic does not become a hidden modifier inside Workout Controls.
 
-Only Phase 2A should be considered for the next implementation slice.
+Phase 2A is shipped (PR #53). **Phase 2B is the next implementation slice** — see below.
+
+## Phase 2B Review and Control Surface
+
+### Goal
+
+Give the user a Profile surface to *inspect* learned calibration state and *manage* ignored related transfers, **without changing estimator math**. This is a read/control layer over the rows Phase 2A already writes — it does not promote to Profile, write reference lifts, write plan rows, auto-apply, add fatigue/volume awareness, change estimator priority, or seed transfer ratios.
+
+### Locked decisions (Opus review, 2026-06-06)
+
+1. **Placement** — a new section on `/user_profile`, beside the existing Learned Calibration settings. No new route/page/nav entry.
+2. **No `calibration_events` table** — deferred until a real audit-history consumer exists (plan §"Data Model"). 2B reads live state only.
+3. **Transfer-ratio rows stay internal** — the surface shows learned calibrations + ignored pairs only. Curated ratios are not user-visible (there are zero seeded today).
+4. **Bulk reset requires UI confirmation** — destructive actions (reset all learned, clear all ignored) prompt before firing.
+5. **Clear ignored transfers: per-pair + global** — each ignored pair has an un-ignore (remove) control, plus a bulk "clear all ignored" control.
+
+### Surface contents
+
+- **Learned calibrations** (read-only list): exercise name, confidence, sample count, estimated 1RM, suggested weight + rep range, last observed date.
+- **Ignored related transfers** (list with per-row remove): source exercise, target exercise, created date.
+- **Bulk controls**: "Reset all learned calibration" and "Clear all ignored transfers", both confirmed.
+- Existing per-exercise reset (Plan page) and per-pair ignore (Workout Controls) are unchanged.
+
+### Backend (additive, no schema change)
+
+New helpers in `utils/strength_calibration.py` (all reuse the caller's `DatabaseHandler`):
+
+- `list_learned_calibrations(*, db)` — all rows, most-recently-observed first.
+- `list_ignored_transfers(*, db)` — all ignored source→target pairs.
+- `unignore_calibration_transfer(source, target, *, db)` — delete one pair.
+- `clear_ignored_transfers(*, db)` — delete all ignored pairs.
+- `reset_all_calibrations(*, db)` — delete all learned-calibration rows (does not touch settings or transfer ratios).
+
+New routes in `routes/user_profile.py` (all `success_response()` / `error_response()`):
+
+- `GET  /api/user_profile/calibration/dashboard` — `{learned: [...], ignored_transfers: [...]}`.
+- `POST /api/user_profile/calibration/unignore_transfer` — `{source_exercise, target_exercise}`.
+- `POST /api/user_profile/calibration/clear_ignored_transfers`.
+- `POST /api/user_profile/calibration/reset_all`.
+
+### Acceptance criteria
+
+- The dashboard route returns learned rows + ignored pairs and never mutates state.
+- Un-ignore removes exactly one pair and leaves the source's exact learned calibration intact (restoring related fallback for that target).
+- Clear-ignored removes all ignored pairs only.
+- Reset-all clears all learned-calibration rows but leaves `user_calibration_settings` and `exercise_transfer_ratios` untouched.
+- Estimator output is byte-for-byte unchanged by adding this surface (no priority/math change).
+- All new responses use the standard contract; bulk actions confirm in the UI.
+
+### Out of scope for 2B
+
+Promote-to-Profile (2C), Profile/plan-row writes, auto-apply, fatigue/volume-aware suggestions (2D), user-visible/seeded transfer ratios, and `calibration_events` history.
 
 ## Phase 2A Related-Exercise Transfer Plan
 
