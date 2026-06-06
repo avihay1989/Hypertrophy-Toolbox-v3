@@ -23,12 +23,15 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any, Optional
 
-from utils.database import DatabaseHandler
+from utils.database import DatabaseHandler, upsert_user_profile_lift
 from utils.logger import get_logger
-from utils.normalization import normalize_muscle
+from utils.normalization import normalize_equipment, normalize_muscle
 from utils.lift_matching import match_direct_lift_key
 from utils.profile_estimator import (
     DEFAULT_ESTIMATE,
+    DUMBBELL_LIFT_KEYS,
+    KEY_LIFT_LABELS,
+    KEY_LIFTS,
     classify_tier,
     epley_1rm,
 )
@@ -504,6 +507,180 @@ def reset_all_calibrations(*, db: DatabaseHandler) -> None:
     transfer ratios are left intact, and rows recompute on the next scored log.
     """
     db.execute_query("DELETE FROM learned_strength_calibrations")
+
+
+# -- Phase 2C: promote learned calibration → declared Profile reference lift --
+#
+# The only Phase 2 path that writes user-declared baseline data. It graduates a
+# *measured* learned result into ``user_profile_lifts`` so it survives learned
+# mode being off/stale once exact log fallback is unavailable, and feeds the
+# Profile/cold-start/cohort surfaces that never read learned rows. Estimator
+# priority is unchanged: while learned mode is on and the row is usable, Workout
+# Controls still serves the learned suggestion, not the promoted Profile value
+# (plan §"Phase 2C").
+
+
+def _promotion_basis_factor(source_is_per_hand: bool, target_is_per_hand: bool) -> float:
+    """Convert a measured load from the *exercise* basis to the *lift_key* basis.
+
+    Dumbbell loads are per hand; everything else is a single total/system load
+    (same "two dumbbells = one barbell" model as
+    :func:`profile_estimator._load_basis_factor`, but the source side here is
+    the exercise, not a reference lift_key).
+    """
+    if source_is_per_hand == target_is_per_hand:
+        return 1.0
+    return 2.0 if source_is_per_hand else 0.5
+
+
+def resolve_promotion_target(
+    exercise_name: str, *, db: DatabaseHandler
+) -> Optional[dict[str, Any]]:
+    """Return the promotion plan for one exact learned calibration, or ``None``.
+
+    Promotable only when (plan §"Phase 2C / Eligibility"): a learned row exists
+    with usable (``medium``/``high``) confidence; ``exercise_name`` resolves to a
+    known ``KEY_LIFTS`` reference-lift slug; and the source log
+    (``last_log_id``) still carries a usable scored top set. The measured top
+    set is basis-converted into the slug's load basis — no estimator math and no
+    rounding to equipment increments (reference lifts hold raw user values).
+    """
+    if not exercise_name or not exercise_name.strip():
+        return None
+    row = get_learned_calibration(exercise_name.strip(), db=db)
+    if not row or row.get("confidence") not in USABLE_SUGGEST_CONFIDENCES:
+        return None
+
+    canonical_name = row.get("exercise_name") or exercise_name.strip()
+    lift_key = match_direct_lift_key(canonical_name)
+    if not lift_key or lift_key not in KEY_LIFTS:
+        return None
+
+    last_log_id = row.get("last_log_id")
+    if last_log_id is None:
+        return None
+    log = db.fetch_one(
+        "SELECT scored_weight, scored_max_reps FROM workout_log WHERE id = ?",
+        (last_log_id,),
+    )
+    if not log:
+        return None
+    scored_weight = log.get("scored_weight")
+    scored_reps = log.get("scored_max_reps")
+    if scored_weight is None or scored_reps is None:
+        return None
+    try:
+        scored_weight = float(scored_weight)
+        scored_reps = int(scored_reps)
+    except (TypeError, ValueError):
+        return None
+    if scored_weight <= 0 or scored_reps <= 0:
+        return None
+
+    exercise_row = db.fetch_one(
+        """
+        SELECT exercise_name, primary_muscle_group, equipment, mechanic, movement_pattern
+        FROM exercises
+        WHERE exercise_name = ? COLLATE NOCASE
+        """,
+        (canonical_name,),
+    )
+    if not exercise_row or classify_tier(exercise_row) == "excluded":
+        return None
+    source_is_per_hand = (
+        normalize_equipment((exercise_row or {}).get("equipment")) == "Dumbbells"
+    )
+    factor = _promotion_basis_factor(source_is_per_hand, lift_key in DUMBBELL_LIFT_KEYS)
+    weight_kg = round(scored_weight * factor, 2)
+
+    existing = db.fetch_one(
+        "SELECT weight_kg, reps FROM user_profile_lifts WHERE lift_key = ?",
+        (lift_key,),
+    )
+    existing_reference = None
+    if existing and (
+        existing.get("weight_kg") is not None or existing.get("reps") is not None
+    ):
+        existing_reference = {
+            "weight_kg": existing.get("weight_kg"),
+            "reps": existing.get("reps"),
+        }
+
+    return {
+        "exercise_name": canonical_name,
+        "lift_key": lift_key,
+        "lift_label": KEY_LIFT_LABELS.get(lift_key, lift_key),
+        "weight_kg": weight_kg,
+        "reps": scored_reps,
+        "confidence": row.get("confidence"),
+        "existing_reference": existing_reference,
+    }
+
+
+def promote_calibration_to_profile(
+    exercise_name: str, *, db: DatabaseHandler, overwrite: bool = False
+) -> dict[str, Any]:
+    """Promote an exact learned calibration into the Profile reference lift.
+
+    Returns a status dict the route maps to a response:
+
+    - ``not_promotable`` — no usable learned row / unresolvable slug / no source
+      log (route → ``NOT_PROMOTABLE`` 400).
+    - ``exists`` — a reference lift already exists and ``overwrite`` is false; no
+      write (route → ``REFERENCE_LIFT_EXISTS`` 400 guard; the UI confirms first).
+    - ``promoted`` — written. Graduates the row; does **not** delete it, and
+      touches nothing but ``user_profile_lifts``.
+    """
+    target = resolve_promotion_target(exercise_name, db=db)
+    if target is None:
+        return {"status": "not_promotable"}
+    if target["existing_reference"] is not None and not overwrite:
+        return {"status": "exists", "target": target}
+
+    upsert_user_profile_lift(
+        target["lift_key"], target["weight_kg"], target["reps"], db=db
+    )
+    return {
+        "status": "promoted",
+        "lift_key": target["lift_key"],
+        "lift_label": target["lift_label"],
+        "weight_kg": target["weight_kg"],
+        "reps": target["reps"],
+        "overwrote": target["existing_reference"] is not None,
+        "previous": target["existing_reference"],
+    }
+
+
+def get_calibration_dashboard(*, db: DatabaseHandler) -> dict[str, Any]:
+    """Learned + ignored review payload, with per-row promotion annotations.
+
+    Read-only. Each learned row gains ``lift_key`` / ``lift_label`` /
+    ``promotable`` / ``existing_reference`` / ``promote_weight_kg`` /
+    ``promote_reps`` so the Profile review table can render the right button
+    label and confirm copy without a per-click round-trip (plan §"Phase 2C /
+    Route contract"). Never mutates state.
+    """
+    learned = list_learned_calibrations(db=db)
+    for row in learned:
+        target = resolve_promotion_target(row.get("exercise_name"), db=db)
+        if target is None:
+            row["promotable"] = False
+            row["lift_key"] = None
+            row["lift_label"] = None
+            row["existing_reference"] = None
+            row["promote_weight_kg"] = None
+            row["promote_reps"] = None
+        else:
+            row["promotable"] = True
+            row["lift_key"] = target["lift_key"]
+            row["lift_label"] = target["lift_label"]
+            row["existing_reference"] = target["existing_reference"]
+            row["promote_weight_kg"] = target["weight_kg"]
+            row["promote_reps"] = target["reps"]
+    return {
+        "learned": learned,
+        "ignored_transfers": list_ignored_transfers(db=db),
+    }
 
 
 def update_calibration_for_exercise(

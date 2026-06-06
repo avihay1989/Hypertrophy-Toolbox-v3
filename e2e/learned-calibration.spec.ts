@@ -15,6 +15,8 @@ import { test, expect, ROUTES, SELECTORS, waitForPageReady } from './fixtures';
 import type { Page } from '@playwright/test';
 
 const CALIBRATION_SETTINGS = '/api/user_profile/calibration_settings';
+const CALIBRATION_DASHBOARD = '/api/user_profile/calibration/dashboard';
+const CALIBRATION_PROMOTE = '/api/user_profile/calibration/promote';
 const CALIBRATION_RESET = '/api/user_profile/calibration/reset';
 const CALIBRATION_IGNORE = '/api/user_profile/calibration/ignore_transfer';
 const ESTIMATE = '/api/user_profile/estimate';
@@ -91,6 +93,157 @@ test.describe('Learned Calibration — Profile settings', () => {
       page.locator('input[name="calibration_mode"][value="suggest"]'),
     ).toBeChecked();
     await expect(page.locator('input[name="allow_related_exercise_learning"]')).toBeChecked();
+  });
+
+  test('promotes a learned row to a Profile reference lift', async ({ page, consoleErrors }) => {
+    consoleErrors.startCollecting();
+    await page.route(`**${CALIBRATION_DASHBOARD}`, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          ok: true,
+          status: 'success',
+          data: {
+            learned: [
+              {
+                exercise_name: 'Barbell Bench Press',
+                confidence: 'medium',
+                sample_count: 1,
+                estimated_1rm: 126.67,
+                suggested_weight: 102.5,
+                suggested_min_reps: 6,
+                suggested_max_reps: 8,
+                last_observed_at: '2026-06-06 10:00:00',
+                promotable: true,
+                lift_key: 'barbell_bench_press',
+                lift_label: 'Barbell Bench Press',
+                existing_reference: null,
+                promote_weight_kg: 100,
+                promote_reps: 8,
+              },
+            ],
+            ignored_transfers: [],
+          },
+        }),
+      });
+    });
+    await page.route(`**${CALIBRATION_PROMOTE}`, async (route) => {
+      expect(route.request().postDataJSON()).toEqual({
+        exercise: 'Barbell Bench Press',
+        overwrite: false,
+      });
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          ok: true,
+          status: 'success',
+          data: {
+            lift_key: 'barbell_bench_press',
+            lift_label: 'Barbell Bench Press',
+            weight_kg: 100,
+            reps: 8,
+            overwrote: false,
+            previous: null,
+          },
+        }),
+      });
+    });
+
+    await page.goto(ROUTES.USER_PROFILE);
+    await waitForPageReady(page);
+
+    const review = page.locator('[data-calibration-review]');
+    await expect(review.locator('[data-learned-table]')).toBeVisible();
+    await expect(review).toContainText('Barbell Bench Press');
+    const button = review.locator('[data-promote-exercise="Barbell Bench Press"]');
+    await expect(button).toBeVisible();
+
+    page.once('dialog', async (dialog) => {
+      expect(dialog.message()).toContain('Save 100 kg × 8');
+      expect(dialog.message()).toContain('declared Profile reference lift');
+      await dialog.accept();
+    });
+    await button.click();
+    await expect(page.locator(SELECTORS.TOAST_BODY)).toContainText(
+      'Promoted to Profile reference lift: Barbell Bench Press 100 kg × 8',
+    );
+
+    consoleErrors.assertNoErrors();
+  });
+
+  test('promote overwrite confirm shows old and new reference values', async ({ page, consoleErrors }) => {
+    consoleErrors.startCollecting();
+    await page.route(`**${CALIBRATION_DASHBOARD}`, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          ok: true,
+          status: 'success',
+          data: {
+            learned: [
+              {
+                exercise_name: 'Barbell Bench Press',
+                confidence: 'medium',
+                sample_count: 1,
+                estimated_1rm: 126.67,
+                suggested_weight: 102.5,
+                suggested_min_reps: 6,
+                suggested_max_reps: 8,
+                last_observed_at: '2026-06-06 10:00:00',
+                promotable: true,
+                lift_key: 'barbell_bench_press',
+                lift_label: 'Barbell Bench Press',
+                existing_reference: { weight_kg: 90, reps: 5 },
+                promote_weight_kg: 100,
+                promote_reps: 8,
+              },
+            ],
+            ignored_transfers: [],
+          },
+        }),
+      });
+    });
+    await page.route(`**${CALIBRATION_PROMOTE}`, async (route) => {
+      expect(route.request().postDataJSON()).toEqual({
+        exercise: 'Barbell Bench Press',
+        overwrite: true,
+      });
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          ok: true,
+          status: 'success',
+          data: {
+            lift_key: 'barbell_bench_press',
+            lift_label: 'Barbell Bench Press',
+            weight_kg: 100,
+            reps: 8,
+            overwrote: true,
+            previous: { weight_kg: 90, reps: 5 },
+          },
+        }),
+      });
+    });
+
+    await page.goto(ROUTES.USER_PROFILE);
+    await waitForPageReady(page);
+
+    const button = page.locator('[data-promote-exercise="Barbell Bench Press"]');
+    page.once('dialog', async (dialog) => {
+      expect(dialog.message()).toContain('Current: 90 kg × 5');
+      expect(dialog.message()).toContain('New (from your logged set): 100 kg × 8');
+      await dialog.accept();
+    });
+    await button.click();
+    await expect(page.locator(SELECTORS.TOAST_BODY)).toContainText(
+      'Promoted to Profile reference lift: Barbell Bench Press 100 kg × 8',
+    );
+
+    consoleErrors.assertNoErrors();
   });
 });
 

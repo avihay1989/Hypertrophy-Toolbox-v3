@@ -18,12 +18,15 @@ from utils.strength_calibration import (
     _utcnow,
     _variance_within_high_band,
     clear_ignored_transfers,
+    get_calibration_dashboard,
     get_calibration_mode,
     ignore_calibration_transfer,
     list_ignored_transfers,
     list_learned_calibrations,
+    promote_calibration_to_profile,
     reset_all_calibrations,
     reset_calibration_for_exercise,
+    resolve_promotion_target,
     unignore_calibration_transfer,
     update_calibration_for_exercise,
 )
@@ -383,3 +386,177 @@ def test_reset_all_calibrations_clears_rows_only(
     assert list_learned_calibrations(db=clean_db) == []
     # Ignored transfers are a separate concern — left untouched by reset-all.
     assert len(list_ignored_transfers(db=clean_db)) == 1
+
+
+# --------------------------------------------------------------------------- #
+# Phase 2C — promote learned calibration to Profile reference lift
+# --------------------------------------------------------------------------- #
+
+def test_resolve_promotion_target_uses_measured_top_set(
+    clean_db, exercise_factory, workout_plan_factory
+):
+    ex = exercise_factory("Barbell Bench Press", equipment="Barbell")
+    plan = workout_plan_factory(exercise_name=ex)
+    _log(clean_db, plan, ex, scored_weight=100.0, scored_max_reps=14)
+    update_calibration_for_exercise(ex, db=clean_db)
+
+    target = resolve_promotion_target(ex, db=clean_db)
+    assert target["lift_key"] == "barbell_bench_press"
+    assert target["weight_kg"] == 100.0
+    assert target["reps"] == 14
+    assert target["existing_reference"] is None
+
+
+def test_resolve_promotion_target_converts_dumbbell_to_total_lift_basis(
+    clean_db, exercise_factory, workout_plan_factory
+):
+    ex = exercise_factory("Incline Dumbbell Bench Press", equipment="Dumbbells")
+    plan = workout_plan_factory(exercise_name=ex)
+    _log(clean_db, plan, ex, scored_weight=36.0, scored_max_reps=8)
+    update_calibration_for_exercise(ex, db=clean_db)
+
+    target = resolve_promotion_target(ex, db=clean_db)
+    assert target["lift_key"] == "incline_bench_press"
+    assert target["weight_kg"] == 72.0
+    assert target["reps"] == 8
+
+
+def test_resolve_promotion_target_converts_total_to_dumbbell_lift_basis(
+    clean_db, exercise_factory, workout_plan_factory
+):
+    ex = exercise_factory("Machine Dumbbell Bench Press", equipment="Machine")
+    plan = workout_plan_factory(exercise_name=ex)
+    _log(clean_db, plan, ex, scored_weight=80.0, scored_max_reps=8)
+    update_calibration_for_exercise(ex, db=clean_db)
+
+    target = resolve_promotion_target(ex, db=clean_db)
+    assert target["lift_key"] == "dumbbell_bench_press"
+    assert target["weight_kg"] == 40.0
+    assert target["reps"] == 8
+
+
+def test_resolve_promotion_target_blocks_low_confidence_and_unmapped_exercises(
+    clean_db, exercise_factory, workout_plan_factory
+):
+    low = exercise_factory("Barbell Bench Press", equipment="Barbell")
+    plan = workout_plan_factory(exercise_name=low)
+    _log(clean_db, plan, low, scored_weight=100.0, scored_max_reps=8)
+    update_calibration_for_exercise(low, db=clean_db)
+    clean_db.execute_query(
+        "UPDATE learned_strength_calibrations SET confidence = 'low' WHERE exercise_name = ?",
+        (low,),
+    )
+    assert resolve_promotion_target(low, db=clean_db) is None
+
+    unmapped = exercise_factory("Pec Deck", equipment="Machine")
+    unmapped_plan = workout_plan_factory(exercise_name=unmapped)
+    _log(clean_db, unmapped_plan, unmapped, scored_weight=60.0, scored_max_reps=10)
+    update_calibration_for_exercise(unmapped, db=clean_db)
+    assert resolve_promotion_target(unmapped, db=clean_db) is None
+
+
+def test_resolve_promotion_target_blocks_excluded_exercise_even_with_lift_key(
+    clean_db, exercise_factory, workout_plan_factory
+):
+    ex = exercise_factory("Weighted Pull-Up With Band", equipment="Band")
+    plan = workout_plan_factory(exercise_name=ex)
+    log_id = _log(clean_db, plan, ex, scored_weight=20.0, scored_max_reps=6)
+    clean_db.execute_query(
+        """
+        INSERT INTO learned_strength_calibrations (
+            exercise_name, lift_key, estimated_1rm, suggested_weight,
+            confidence, sample_count, last_log_id, source, created_at, updated_at
+        ) VALUES (?, 'weighted_pullups', 24.0, 20.0, 'medium', 1, ?,
+                  'exact_logs', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        """,
+        (ex, log_id),
+    )
+
+    assert resolve_promotion_target(ex, db=clean_db) is None
+
+
+def test_resolve_promotion_target_requires_source_log(
+    clean_db, exercise_factory, workout_plan_factory
+):
+    ex = exercise_factory("Barbell Bench Press", equipment="Barbell")
+    plan = workout_plan_factory(exercise_name=ex)
+    log_id = _log(clean_db, plan, ex, scored_weight=100.0, scored_max_reps=8)
+    update_calibration_for_exercise(ex, db=clean_db)
+    clean_db.execute_query("DELETE FROM workout_log WHERE id = ?", (log_id,))
+
+    assert resolve_promotion_target(ex, db=clean_db) is None
+
+
+def test_promote_calibration_to_profile_writes_reference_and_keeps_learned_row(
+    clean_db, exercise_factory, workout_plan_factory
+):
+    ex = exercise_factory("Barbell Bench Press", equipment="Barbell")
+    plan = workout_plan_factory(exercise_name=ex)
+    _log(clean_db, plan, ex, scored_weight=102.5, scored_max_reps=7)
+    update_calibration_for_exercise(ex, db=clean_db)
+
+    result = promote_calibration_to_profile(ex, db=clean_db)
+    assert result["status"] == "promoted"
+    assert result["lift_key"] == "barbell_bench_press"
+    assert result["weight_kg"] == 102.5
+    assert result["reps"] == 7
+    assert result["overwrote"] is False
+    assert _calibration_row(clean_db, ex) is not None
+    saved = clean_db.fetch_one(
+        "SELECT weight_kg, reps FROM user_profile_lifts WHERE lift_key = ?",
+        ("barbell_bench_press",),
+    )
+    assert saved["weight_kg"] == 102.5
+    assert saved["reps"] == 7
+
+
+def test_promote_calibration_to_profile_requires_overwrite_for_existing_reference(
+    clean_db, exercise_factory, workout_plan_factory
+):
+    ex = exercise_factory("Barbell Bench Press", equipment="Barbell")
+    plan = workout_plan_factory(exercise_name=ex)
+    _log(clean_db, plan, ex, scored_weight=110.0, scored_max_reps=6)
+    update_calibration_for_exercise(ex, db=clean_db)
+    clean_db.execute_query(
+        """
+        INSERT INTO user_profile_lifts (lift_key, weight_kg, reps, updated_at)
+        VALUES ('barbell_bench_press', 90.0, 5, CURRENT_TIMESTAMP)
+        """
+    )
+
+    blocked = promote_calibration_to_profile(ex, db=clean_db)
+    assert blocked["status"] == "exists"
+    saved = clean_db.fetch_one(
+        "SELECT weight_kg, reps FROM user_profile_lifts WHERE lift_key = ?",
+        ("barbell_bench_press",),
+    )
+    assert saved["weight_kg"] == 90.0
+    assert saved["reps"] == 5
+
+    overwritten = promote_calibration_to_profile(ex, db=clean_db, overwrite=True)
+    assert overwritten["status"] == "promoted"
+    assert overwritten["overwrote"] is True
+    assert overwritten["previous"] == {"weight_kg": 90.0, "reps": 5}
+    saved = clean_db.fetch_one(
+        "SELECT weight_kg, reps FROM user_profile_lifts WHERE lift_key = ?",
+        ("barbell_bench_press",),
+    )
+    assert saved["weight_kg"] == 110.0
+    assert saved["reps"] == 6
+
+
+def test_calibration_dashboard_adds_promotion_annotations(
+    clean_db, exercise_factory, workout_plan_factory
+):
+    ex = exercise_factory("Barbell Bench Press", equipment="Barbell")
+    plan = workout_plan_factory(exercise_name=ex)
+    _log(clean_db, plan, ex, scored_weight=100.0, scored_max_reps=8)
+    update_calibration_for_exercise(ex, db=clean_db)
+
+    dashboard = get_calibration_dashboard(db=clean_db)
+    row = dashboard["learned"][0]
+    assert row["promotable"] is True
+    assert row["lift_key"] == "barbell_bench_press"
+    assert row["lift_label"] == "Barbell Bench Press"
+    assert row["promote_weight_kg"] == 100.0
+    assert row["promote_reps"] == 8

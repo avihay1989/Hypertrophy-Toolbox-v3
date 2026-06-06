@@ -1208,8 +1208,42 @@ function renderLearnedCalibrations(review, rows) {
             td.textContent = text;
             tr.appendChild(td);
         }
+        tr.appendChild(buildPromoteCell(row));
         body.appendChild(tr);
     }
+}
+
+// Phase 2C — per-row "Promote to reference lift". Promotable rows carry the
+// proposed (basis-converted) weight/reps and any existing reference value as
+// data-* attributes so the click handler can build the confirm copy without a
+// per-click round-trip. Non-promotable rows show a disabled button + tooltip.
+function buildPromoteCell(row) {
+    const td = document.createElement('td');
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'btn btn-outline-primary btn-sm';
+    button.textContent = 'Promote to reference lift';
+
+    if (!row.promotable) {
+        button.disabled = true;
+        button.title = 'No matching Profile reference lift for this exercise';
+        td.appendChild(button);
+        return td;
+    }
+
+    button.dataset.promoteExercise = row.exercise_name || '';
+    button.dataset.promoteLiftLabel = row.lift_label || row.lift_key || 'this lift';
+    button.dataset.promoteWeight = row.promote_weight_kg != null ? String(row.promote_weight_kg) : '';
+    button.dataset.promoteReps = row.promote_reps != null ? String(row.promote_reps) : '';
+    if (row.existing_reference) {
+        button.dataset.promoteHasExisting = '1';
+        button.dataset.promoteExistingWeight =
+            row.existing_reference.weight_kg != null ? String(row.existing_reference.weight_kg) : '—';
+        button.dataset.promoteExistingReps =
+            row.existing_reference.reps != null ? String(row.existing_reference.reps) : '—';
+    }
+    td.appendChild(button);
+    return td;
 }
 
 function renderIgnoredTransfers(review, rows) {
@@ -1286,6 +1320,37 @@ function bindCalibrationReview() {
     review.addEventListener('click', (event) => {
         const target = event.target;
         if (!(target instanceof HTMLElement)) return;
+
+        const promote = target.closest('[data-promote-exercise]');
+        if (promote) {
+            const label = promote.dataset.promoteLiftLabel || 'this lift';
+            const weight = promote.dataset.promoteWeight;
+            const reps = promote.dataset.promoteReps;
+            let overwrite = false;
+            if (promote.dataset.promoteHasExisting === '1') {
+                const ok = window.confirm(
+                    `Replace your declared Profile reference lift for ${label}? `
+                    + 'This changes your saved baseline.\n\n'
+                    + `Current: ${promote.dataset.promoteExistingWeight} kg × ${promote.dataset.promoteExistingReps}\n`
+                    + `New (from your logged set): ${weight} kg × ${reps}\n\n`
+                    + 'Your learned suggestion already drives Workout Controls — this only '
+                    + 'updates the baseline used when learned data is unavailable.',
+                );
+                if (!ok) return;
+                overwrite = true;
+            } else if (!window.confirm(
+                `Save ${weight} kg × ${reps} as your declared Profile reference lift for ${label}? `
+                + 'This sets your saved baseline (separate from the live learned suggestion).',
+            )) {
+                return;
+            }
+            runAction(
+                '/api/user_profile/calibration/promote',
+                { exercise: promote.dataset.promoteExercise, overwrite },
+                `Promoted to Profile reference lift: ${label} ${weight} kg × ${reps}`,
+            );
+            return;
+        }
 
         const unignore = target.closest('[data-unignore-source]');
         if (unignore) {
