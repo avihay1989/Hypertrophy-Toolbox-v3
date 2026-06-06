@@ -528,6 +528,50 @@
                             </div>
                         </div>
                     </form>
+
+                    {# Phase 2B — read/control-only review surface. Lists are
+                       rendered client-side from /api/user_profile/calibration/dashboard
+                       (see user-profile.js); bulk actions confirm before firing.
+                       No estimator math changes here. #}
+                    <div class="profile-calibration-review" data-calibration-review>
+                        <div class="profile-calibration-review-block">
+                            <h3 class="profile-calibration-review-title">Learned calibrations</h3>
+                            <p class="profile-calibration-review-empty" data-learned-empty>
+                                No learned calibrations yet &mdash; log scored sets to build them.
+                            </p>
+                            <table class="profile-calibration-table" data-learned-table hidden>
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Exercise</th>
+                                        <th scope="col">Confidence</th>
+                                        <th scope="col">Samples</th>
+                                        <th scope="col">Est. 1RM</th>
+                                        <th scope="col">Suggested</th>
+                                        <th scope="col">Last observed</th>
+                                    </tr>
+                                </thead>
+                                <tbody data-learned-rows></tbody>
+                            </table>
+                            <div class="profile-actions profile-actions-end">
+                                <button type="button" class="btn btn-outline-danger btn-sm" data-reset-all-calibration hidden>
+                                    Reset all learned calibration
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="profile-calibration-review-block">
+                            <h3 class="profile-calibration-review-title">Ignored related transfers</h3>
+                            <p class="profile-calibration-review-empty" data-ignored-empty>
+                                No ignored related transfers.
+                            </p>
+                            <ul class="profile-calibration-ignored-list" data-ignored-list hidden></ul>
+                            <div class="profile-actions profile-actions-end">
+                                <button type="button" class="btn btn-outline-danger btn-sm" data-clear-ignored-transfers hidden>
+                                    Clear all ignored transfers
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
         </div>

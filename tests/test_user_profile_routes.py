@@ -193,6 +193,17 @@ def test_profile_page_renders_calibration_off_by_default(client, clean_db):
     assert 'name="allow_related_exercise_learning"  disabled' in html
 
 
+def test_profile_page_renders_calibration_review_surface(client, clean_db):
+    """The Phase 2B review surface (lists + bulk controls) renders on the page;
+    JS hydrates it from the dashboard endpoint."""
+    html = client.get("/user_profile").get_data(as_text=True)
+    assert "data-calibration-review" in html
+    assert "Learned calibrations" in html
+    assert "Ignored related transfers" in html
+    assert "data-reset-all-calibration" in html
+    assert "data-clear-ignored-transfers" in html
+
+
 def test_profile_page_reflects_suggest_mode(client, clean_db):
     """Enabling `suggest` is reflected in the rendered control state."""
     client.post(
