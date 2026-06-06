@@ -917,9 +917,11 @@ body:not(:has(#navbar)) .navbar {
   height: 64px !important;
   min-height: 64px !important;
   max-height: 64px !important;
-  /* Frosted white glass background */
-  background: rgba(255, 255, 255, 0.75) !important;
-  background-color: rgba(255, 255, 255, 0.75) !important;
+  /* TEMP DRIFT-DETECTION PROBE (Phase 4.2 PR-4) — REVERT BEFORE MERGE.
+     Recolor the actual navbar-background rule (the one that wins the
+     cascade) so the visual-linux compare gate goes red on real UI drift. */
+  background: #ff00ff !important;
+  background-color: #ff00ff !important;
   backdrop-filter: blur(20px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
@@ -1535,8 +1537,3 @@ body:not(:has(#navbar)) .navbar {
     transform: none;
   }
 }
-
-/* TEMP DRIFT-DETECTION PROBE (Phase 4.2 PR-4) — REVERT BEFORE MERGE.
-   Deliberate large-area visible change to prove the visual-linux compare
-   gate detects UI drift. Recolors the navbar background on every page. */
-#navbar { background: #ff00ff !important; }
