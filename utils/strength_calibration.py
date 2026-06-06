@@ -26,9 +26,9 @@ from typing import Any, Optional
 from utils.database import DatabaseHandler
 from utils.logger import get_logger
 from utils.normalization import normalize_muscle
+from utils.lift_matching import match_direct_lift_key
 from utils.profile_estimator import (
     DEFAULT_ESTIMATE,
-    _match_direct_lift_key,
     classify_tier,
     epley_1rm,
 )
@@ -309,7 +309,7 @@ def update_calibration_for_exercise(
 
     payload = {
         "exercise_name": canonical_name,
-        "lift_key": _match_direct_lift_key(canonical_name),
+        "lift_key": match_direct_lift_key(canonical_name),
         "primary_muscle": normalize_muscle(exercise_row.get("primary_muscle_group")),
         "estimated_1rm": round(e1rms[0], 2),
         "suggested_weight": decision["suggested_weight"],
