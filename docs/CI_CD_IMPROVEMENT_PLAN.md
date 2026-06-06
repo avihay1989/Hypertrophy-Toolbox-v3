@@ -299,19 +299,22 @@ deliberate, correct cost of `main` being trustworthy.
 **Goal:** catch slow/env-sensitive regressions during development without
 running time-based jobs in the owner's work environment.
 
-> **Status (2026-06-06): cheap parts SHIPPED; 4.2 visual deferred.**
+> **Status (2026-06-06): Phase 4 SHIPPED, including 4.2 Linux visual baselines.**
 > `.github/workflows/deep-gate.yml` added (`workflow_dispatch` only — no cron),
-> with jobs: **full-e2e** (every spec minus the two visual ones, accessibility
-> included), **cold-start** (4.3 — boots app.py with no `data/database.db`,
+> with jobs: **full-e2e** (every non-visual spec, accessibility included),
+> **visual-linux** (4.2 — opt-in manual Linux/Chromium visual regression with
+> committed `e2e/__screenshots__/linux/` baselines and `generate` / `compare`
+> modes), **cold-start** (4.3 — boots app.py with no `data/database.db`,
 > asserts `GET /` → 200), **old-db-migration** (4.4 — generates a pre-migration
 > DB via `tests/fixtures/make_old_schema_db.py`, boots, asserts `/` + `/workout_plan`
 > → 200, migrated columns/tables, and preservation of the seeded row; the fixture
 > generator requires an explicit throwaway `--output` path), and
 > **dependency-health** (4.5 — moved off the required PR path; it was never a
-> required check, so branch protection is unaffected). **Step 4.2 (Linux visual
-> baselines) is intentionally NOT done** — it needs a Linux-generated baseline
-> set (the committed 66 snapshots are Windows-rendered) and a `{platform}` token
-> in `snapshotPathTemplate`; tracked as a separate focused effort.
+> required check, so branch protection is unaffected). Phase 4.2 shipped through
+> PR #48–#51: `{platform}` snapshot split, canonical populated visual seed,
+> `PW_VISUAL_SEED`, manual visual job pinned to `ubuntu-24.04`, 66 committed
+> Linux PNGs, two green compare runs, and a proven deliberate drift red. No
+> `ci.yml`, required-check, or branch-protection change.
 
 - **Step 4.1 — Add a manually triggered workflow.**
   Add `workflow_dispatch` only. Do **not** add `schedule` / `cron`. The workflow

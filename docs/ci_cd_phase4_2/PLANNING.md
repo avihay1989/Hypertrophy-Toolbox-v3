@@ -1,9 +1,10 @@
 # Phase 4.2 — Linux Visual Baselines (PLANNING)
 
-> **Status:** Plan v2 (council-reviewed, owner-approved). **PR-1 SHIPPED** (#48 —
-> `{platform}` template + win32 relocation). **PR-2 IMPLEMENTED** (this change —
-> Linux-ready specs, determinism harness, canonical populated visual seed, schema
-> parity, live-DB guard, `PW_VISUAL_SEED`; see §11). **PR-3 / PR-4 pending.**
+> **Status:** COMPLETE (2026-06-06). Shipped via PR #48, #49, #50, and #51;
+> final merge commit `04b9819`. Linux visual baselines are committed under
+> `e2e/__screenshots__/linux/`; Windows baselines remain under
+> `e2e/__screenshots__/win32/`. The visual job is manual-only in the Deep Gate,
+> with `generate` and `compare` modes.
 > **Author:** Claude Code session, 2026-06-06
 > **Parent:** [`docs/CI_CD_IMPROVEMENT_PLAN.md`](../CI_CD_IMPROVEMENT_PLAN.md) §4.2 (Phase 4 manual deep gate).
 > **Scope:** Stand up a Linux/Chromium visual-regression baseline set so
@@ -16,7 +17,7 @@
 
 ## 0. Why this is its own phase
 
-The 66 committed PNGs under `e2e/__screenshots__/` were rendered on
+The original 66 committed PNGs under `e2e/__screenshots__/win32/` were rendered on
 **Windows/Chromium**:
 
 | Snapshot dir | Count | Source spec |
@@ -24,12 +25,11 @@ The 66 committed PNGs under `e2e/__screenshots__/` were rendered on
 | `visual.spec.ts-snapshots/` | 48 | 8 pages × 3 viewports × 2 themes |
 | `visual-baseline-thumbnails.spec.ts-snapshots/` | 18 | plan 3×2×2 (12) + log 3×2 (6) |
 
-CI runs **ubuntu-latest**. Cross-OS font hinting / sub-pixel rasterization
-differs, so these baselines diff ~100% on Linux (CLAUDE.md §5; CI_CD plan §2.2).
-The deep gate (`deep-gate.yml`) already **excludes** both visual specs for this
-exact reason (`ls e2e/*.spec.ts | grep -vE 'visual'`). This phase produces the
-missing Linux baseline set and wires a manual job to use it, without disturbing
-the owner's local Windows visual workflow.
+CI visual comparison runs on **ubuntu-24.04**. Cross-OS font hinting /
+sub-pixel rasterization differs, so Windows baselines are not used on Linux
+(CLAUDE.md §5; CI_CD plan §2.2). This phase produced the missing Linux baseline
+set and wired a manual Deep Gate job to use it, without disturbing the owner's
+local Windows visual workflow.
 
 This phase is **isolated from the required PR gate by design.** Nothing here
 touches `ci.yml`, the 8 required status checks, or branch protection. The only
@@ -44,9 +44,9 @@ covered in §3.
 Two ways to get reproducible Linux renders that match between the baseline-
 generation run and the comparison run.
 
-### Option A — Committed Linux PNGs (rendered on `ubuntu-latest`)
+### Option A — Committed Linux PNGs (rendered on `ubuntu-24.04`)
 Generate baselines by running `--update-snapshots` once on the GitHub
-`ubuntu-latest` runner, commit the resulting PNGs under a Linux-specific path,
+`ubuntu-24.04` runner, commit the resulting PNGs under a Linux-specific path,
 and have the manual visual job compare against them on the same runner image.
 
 - **Pro:** zero new infra — reuses the existing `setup-python` / `setup-node` /
@@ -57,10 +57,10 @@ and have the manual visual job compare against them on the same runner image.
   Playwright version.
 - **Pro:** human-in-the-loop review is natural — the owner downloads the
   generated PNGs as an artifact and commits them deliberately (no auto-push).
-- **Con:** baselines are pinned to whatever `ubuntu-latest` currently is. A
-  GitHub runner-image bump (e.g. ubuntu 24.04 → 26.04) or a Playwright bump can
-  shift font rendering and require a re-baseline. Mitigated by §7 rollback +
-  pinning Playwright; `ubuntu-latest` drift is the residual risk.
+- **Con:** baselines are pinned to the `ubuntu-24.04` runner image. A runner
+  image refresh or a Playwright bump can shift font rendering and require a
+  re-baseline. Mitigated by §7 rollback + pinning Playwright; image refresh
+  drift is the residual risk.
 - **Con:** no local reproduction on the owner's Windows box — a Linux diff can
   only be reproduced in CI (or in Docker ad hoc).
 
@@ -88,7 +88,7 @@ comparison, so the rasterizer is identical regardless of host runner image.
 
 ## 2. Recommended choice and rationale
 
-**Recommendation: Option A — committed Linux PNGs rendered on `ubuntu-latest`.**
+**Recommendation: Option A — committed Linux PNGs rendered on `ubuntu-24.04`.**
 
 Rationale:
 
@@ -101,19 +101,19 @@ Rationale:
    `deep-gate.yml`'s `full-e2e` job. No container plumbing, no Flask-in-Docker
    rewire, no second version-pin to keep in sync.
 3. **Drift is a manageable, visible event, not a silent failure.** The realistic
-   failure mode — a `ubuntu-latest` image bump shifting fonts — surfaces as a
-   visual diff in a *manual* run the owner is already reading. The response is a
-   deliberate re-baseline (§7), the same operation Option A uses for any
-   intentional UI change. Docker trades this occasional, visible re-baseline for
-   permanent standing complexity.
-4. **Reversible.** If `ubuntu-latest` drift ever becomes frequent enough to
+   failure mode — an `ubuntu-24.04` image refresh shifting fonts — surfaces as
+   a visual diff in a *manual* run the owner is already reading. The response
+   is a deliberate re-baseline (§7), the same operation Option A uses for any
+   intentional UI change. Docker trades this occasional, visible re-baseline
+   for permanent standing complexity.
+4. **Reversible.** If runner-image drift ever becomes frequent enough to
    annoy, upgrading Option A → Option B is incremental: pin the runner to the
    Docker image, regenerate, commit. The `{platform}` path split (§3) and the
    job shape (§5) are unchanged by that upgrade.
 
 **Escalate to Docker only if** the council surfaces a concrete reason — e.g. the
 owner wants to reproduce Linux diffs locally on Windows as a routine workflow,
-or evidence that `ubuntu-latest` font rendering is unstable enough that Option A
+or evidence that `ubuntu-24.04` font rendering is unstable enough that Option A
 re-baselines would be frequent. Absent that, Option A.
 
 > **Pin Playwright regardless of option.** Whichever path, the visual job must
@@ -226,7 +226,7 @@ existing `full-e2e` job.
 
 ### 4.2 Pinning note
 The `generate` and `compare` jobs **must** run on the same runner image label
-(`ubuntu-latest`) and the same pinned Playwright version, or the comparison will
+(`ubuntu-24.04`) and the same pinned Playwright version, or the comparison will
 diff against a baseline rendered by a different rasterizer. Document this
 coupling in a comment in `deep-gate.yml` next to the visual job.
 
@@ -392,7 +392,7 @@ The phase is done when **all** hold:
    missing thumbnails, correct themes/viewports).
 5. After the owner commits the `linux/` baselines, a manual run with
    `run_visual=true, visual_mode=compare` passes **green** against them on
-   `ubuntu-latest`.
+   `ubuntu-24.04`.
 6. A deliberate, trivial CSS change makes the `compare` run **fail** with a diff
    artifact (proves the gate actually detects drift) — then revert.
 7. **No change to `ci.yml`, the 8 required status checks, or branch protection.**
@@ -408,7 +408,7 @@ The phase is done when **all** hold:
 | Risk | Likelihood | Mitigation |
 |---|---|---|
 | `prepare_visual_db.py` rewriting `DB_FILE` under the running Flask server misbehaves on Linux (untested) | Medium | First `generate` run is the proof point (§5). Fallback: job-level seed step + `PW_REUSE_SERVER=1` so the server opens an already-seeded visual DB. |
-| `ubuntu-latest` image bump shifts font rendering → `compare` reds with no code change | Medium (over time) | Re-baseline via `generate` (the same operation as an intentional UI change). It's a *manual* gate, so a human reads the diff and decides. If frequent, escalate to Option B (Docker pin) — the `{platform}` split makes that a drop-in. |
+| `ubuntu-24.04` image refresh shifts font rendering → `compare` reds with no code change | Medium (over time) | Re-baseline via `generate` (the same operation as an intentional UI change). It's a *manual* gate, so a human reads the diff and decides. If frequent, escalate to Option B (Docker pin) — the `{platform}` split makes that a drop-in. |
 | Template change breaks the owner's local Windows visual run | Low | The move + template edit land in one commit; acceptance criterion #2 verifies zero local diffs before push. |
 | Visual job accidentally treated as a required check | Low | `if: ${{ inputs.run_visual }}` + `workflow_dispatch`-only; acceptance #7 asserts no `ci.yml`/branch-protection change. A non-required job cannot block merge. |
 | Playwright version drift between generate and compare moves pixels | Low | Pin `@playwright/test` exactly in `package.json`; both modes use the same installed version (§2, §4.2). |
@@ -578,7 +578,7 @@ Supersedes §7; additions/replacements:
   confirmed-clean, 0 rejected, 0 deferred).
 - [x] **User approves Plan v2** (Option A, the §10.3 webServer-seed redesign, and
   the 4-PR split). Approved 2026-06-06.
-- [x] Ready to implement — PR-1 shipped (#48); PR-2 implemented (§11).
+- [x] Complete — PR #48, #49, #50, and #51 shipped (§12).
 
 ---
 
@@ -659,9 +659,49 @@ Confirmation compare after re-baseline: visual.spec data set **24 passed**,
 thumbnails **18 passed**, `tsc --noEmit` clean, functional smoke (default seed)
 **10 passed**.
 
-### 11.4 Deferred to PR-3/PR-4 (unchanged)
+### 11.4 Completed by PR-3/PR-4
 The `deep-gate.yml` `visual-linux` job, `e2e/CLAUDE.md` CI-contract update, the
-stale-`__screenshots__`-path doc sweep, and committing the Linux baselines remain
-PR-3/PR-4. PR-2 touches **no** `ci.yml`, required check, or branch protection.
+stale-`__screenshots__`-path doc sweep, and committing the Linux baselines were
+completed by PR #50 and PR #51. Neither PR touched `ci.yml`, required checks, or
+branch protection.
 
-*End of Plan v2 + PR-2 record.*
+---
+
+## 12. Final closeout (2026-06-06)
+
+Phase 4.2 is fully shipped.
+
+| PR | Merge commit | Result |
+|---|---|---|
+| #48 | `728fb65` | Added the `{platform}` snapshot path segment and relocated the 66 Windows baselines to `e2e/__screenshots__/win32/` as pure renames. |
+| #49 | `7774227` | Made visual specs Linux-ready: canonical populated visual seed, determinism harness, schema parity, live-DB guard, `PW_VISUAL_SEED`, and Windows re-baseline for affected snapshots. |
+| #50 | `b1d7a29` | Wired the manual `visual-linux` Deep Gate job and updated the E2E contract/docs. On-branch `generate` mode produced the expected Linux artifact. |
+| #51 | `04b9819` | Committed the reviewed 66 Linux PNG baselines under `e2e/__screenshots__/linux/` and validated compare/drift behavior. |
+
+Final verification:
+- The PR #50 generate artifact contained exactly **66** non-empty Linux PNGs:
+  48 `visual.spec.ts` baselines and 18 `visual-baseline-thumbnails.spec.ts`
+  baselines, with filenames mirroring the `win32/` set.
+- PR #51 committed exactly those 66 Linux PNGs and no docs/workflow/test/data
+  files.
+- Linux visual compare passed in two successful Deep Gate runs on the PR branch:
+  run `27066624168` and run `27066890745`.
+- Deliberate drift detection was proven in run `27067019708`: a temporary CSS
+  change made the `Visual regression (Linux baselines)` job fail and uploaded
+  `visual-linux-report`; the temporary change was fully reverted before merge.
+- The post-merge `main` CI run for PR #51 passed (`27067538178`).
+
+Constraints confirmed:
+- `ci.yml`, the 8 required checks, and branch protection were not changed.
+- `data/database.db` was not committed.
+- `win32/` baselines were not changed in PR #51.
+- Visual specs remain `workflow_dispatch`-only and opt-in via the Deep Gate
+  inputs.
+
+Known follow-up:
+- One manual-deep full-E2E run during PR #51 exposed an unrelated
+  `accessibility.spec.ts:283` focus-return flake. It is not caused by the
+  PNG-only PR #51 and did not block Phase 4.2, but it should be investigated
+  separately to keep the manual Deep Gate trustworthy.
+
+*End of Plan v2 + implementation record.*
