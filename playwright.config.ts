@@ -25,7 +25,13 @@ const ciReporters: import('@playwright/test').ReporterDescription[] = process.en
    web-server command itself — Playwright starts webServer before globalSetup, so
    seeding in globalSetup would race the server's first DB open (CI failure). */
 const e2eDbPath = path.join(process.cwd(), 'artifacts', 'e2e', 'database.e2e.db');
-const seedDbCommand = `${pythonExecutable} ${path.join('e2e', 'scripts', 'prepare_e2e_db.py')} --output "${e2eDbPath}"`;
+/* PW_VISUAL_SEED=1 seeds the throwaway DB with the full visual fixture (plan rows
+   + media_path thumbnails preserved) instead of the user-state-wiped functional
+   seed, so the visual specs get their data from the web server before Flask opens
+   the DB — no per-spec runtime DB rewrite. Default (unset) keeps the functional
+   suite on prepare_e2e_db.py. */
+const seedScript = process.env.PW_VISUAL_SEED === '1' ? 'prepare_visual_db.py' : 'prepare_e2e_db.py';
+const seedDbCommand = `${pythonExecutable} ${path.join('e2e', 'scripts', seedScript)} --output "${e2eDbPath}"`;
 const defaultViewport = { width: 1440, height: 900 };
 const deterministicChromiumArgs = [
   '--disable-font-subpixel-positioning',

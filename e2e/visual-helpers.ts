@@ -197,3 +197,22 @@ export function visualScreenshotOptions(page: Page): {
     threshold: 0,
   };
 }
+
+/**
+ * Screenshot options for element/locator-scoped shots (e.g. a single table),
+ * sharing the same animation/caret/tolerance discipline as the full-page
+ * baselines but without `fullPage` (invalid for a locator screenshot).
+ */
+export function elementScreenshotOptions(): {
+  animations: 'disabled';
+  caret: 'hide';
+  maxDiffPixels: number;
+  threshold: 0;
+} {
+  return {
+    animations: 'disabled',
+    caret: 'hide',
+    maxDiffPixels: 800,
+    threshold: 0,
+  };
+}
