@@ -54,7 +54,7 @@ export default defineConfig({
     ...ciReporters,
   ],
   outputDir: path.join(playwrightArtifactsDir, 'test-results'),
-  snapshotPathTemplate: '{testDir}/__screenshots__/{testFilePath}-snapshots/{arg}{ext}',
+  snapshotPathTemplate: '{testDir}/__screenshots__/{platform}/{testFilePath}-snapshots/{arg}{ext}',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
