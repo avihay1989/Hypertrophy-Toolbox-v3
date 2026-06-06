@@ -1535,3 +1535,8 @@ body:not(:has(#navbar)) .navbar {
     transform: none;
   }
 }
+
+/* TEMP DRIFT-DETECTION PROBE (Phase 4.2 PR-4) — REVERT BEFORE MERGE.
+   Deliberate large-area visible change to prove the visual-linux compare
+   gate detects UI drift. Recolors the navbar background on every page. */
+#navbar { background: #ff00ff !important; }
