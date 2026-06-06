@@ -1220,6 +1220,11 @@ def estimate_for_exercise(exercise_name: str, *, db: DatabaseHandler) -> dict[st
             logged["is_dumbbell"] = is_dumbbell
             return logged
 
+        related = _lookup_related_learned_calibration(exercise_row, db)
+        if related:
+            related["is_dumbbell"] = is_dumbbell
+            return related
+
         profile_lifts = db.fetch_all(
             "SELECT lift_key, weight_kg, reps FROM user_profile_lifts"
         )
@@ -1282,6 +1287,63 @@ def _lookup_last_logged(exercise_name: str, db: DatabaseHandler) -> Optional[dic
         "reason": "log",
         "trace": _build_log_trace(
             weight=weight, reps_low=min_rep, reps_high=max_rep
+        ),
+    }
+
+
+def _lookup_related_learned_calibration(
+    exercise_row: dict[str, Any], db: DatabaseHandler
+) -> Optional[dict[str, Any]]:
+    """Read-only related learned estimate, after exact learned/log fallbacks."""
+    from utils.strength_calibration import get_related_calibration_candidate
+
+    candidate = get_related_calibration_candidate(exercise_row, db=db)
+    if not candidate:
+        return None
+
+    target_tier = classify_tier(exercise_row)
+    if target_tier == "excluded":
+        return None
+
+    preferences = db.fetch_all("SELECT tier, rep_range FROM user_profile_preferences")
+    preference_by_tier = {
+        row.get("tier"): row.get("rep_range")
+        for row in preferences
+        if row.get("tier") and row.get("rep_range")
+    }
+    preset_key = preference_by_tier.get(target_tier, DEFAULT_PREFERENCES[target_tier])
+    preset = REP_RANGE_PRESETS[preset_key]
+
+    try:
+        target_1rm = float(candidate["target_estimated_1rm"])
+    except (TypeError, ValueError):
+        return None
+    if target_1rm <= 0:
+        return None
+
+    pre_round_weight = target_1rm * preset["pct_1rm"]
+    working_weight = round_weight(
+        pre_round_weight,
+        exercise_row.get("equipment"),
+        target_tier,
+    )
+    return {
+        "weight": working_weight,
+        "sets": PROFILE_DEFAULT_SETS,
+        "min_rep": preset["min_rep"],
+        "max_rep": preset["max_rep"],
+        "rir": preset["rir"],
+        "rpe": preset["rpe"],
+        "source": "related_learned",
+        "reason": "related_calibration",
+        "trace": _build_related_learned_trace(
+            candidate,
+            target_tier=target_tier,
+            preset_key=preset_key,
+            preset=preset,
+            pre_round_weight=pre_round_weight,
+            working_weight=working_weight,
+            equipment=exercise_row.get("equipment"),
         ),
     }
 
@@ -1360,7 +1422,7 @@ def _build_learned_trace(
             "label": "Learned from your logged sets",
             "value": f"{weight:g} kg × {rep_label}",
             "detail": (
-                f"Calibrated from {sample_count} recent scored "
+                f"Calibrated from {sample_count} scored "
                 f"{'log' if sample_count == 1 else 'logs'} for this exact "
                 f"exercise (confidence: {confidence})."
             ),
@@ -1377,6 +1439,77 @@ def _build_learned_trace(
         "confidence": confidence,
         "sample_count": sample_count,
         "steps": steps,
+    }
+
+
+def _build_related_learned_trace(
+    candidate: dict[str, Any],
+    *,
+    target_tier: str,
+    preset_key: str,
+    preset: dict[str, Any],
+    pre_round_weight: float,
+    working_weight: float,
+    equipment: Optional[str],
+) -> dict[str, Any]:
+    source_e1rm = float(candidate.get("source_estimated_1rm") or 0)
+    target_e1rm = float(candidate.get("target_estimated_1rm") or 0)
+    ratio = float(candidate.get("transfer_ratio") or 0)
+    basis_factor = float(candidate.get("load_basis_factor") or 1)
+    source_name = candidate.get("source_exercise_name") or "related exercise"
+    target_name = candidate.get("target_exercise_name") or "target exercise"
+    sample_count = int(candidate.get("source_sample_count") or 0)
+    confidence = candidate.get("source_confidence")
+    load_basis = str(candidate.get("load_basis") or "").replace("_", " ")
+    relationship = str(candidate.get("relationship_type") or "").replace("_", " ")
+
+    return {
+        "source": "related_learned",
+        "confidence": confidence,
+        "sample_count": sample_count,
+        "source_exercise": source_name,
+        "target_exercise": target_name,
+        "relationship_type": candidate.get("relationship_type"),
+        "transfer_ratio": ratio,
+        "load_basis": candidate.get("load_basis"),
+        "steps": [
+            {
+                "label": "Related learned calibration",
+                "value": f"Learned from {source_name}",
+                "detail": (
+                    f"{sample_count} scored "
+                    f"{'log' if sample_count == 1 else 'logs'}, "
+                    f"confidence: {confidence}. Exact learned/log data for "
+                    f"{target_name} was not available."
+                ),
+            },
+            {
+                "label": "Transfer",
+                "value": f"{source_name} -> {target_name}",
+                "detail": (
+                    f"Relationship: {relationship}; ratio {ratio:g}; "
+                    f"load basis: {load_basis} (factor {basis_factor:g})."
+                ),
+            },
+            {
+                "label": "Estimated strength",
+                "value": f"~{target_e1rm:g} kg e1RM",
+                "detail": (
+                    f"Source e1RM ~{source_e1rm:g} kg × ratio {ratio:g} × "
+                    f"basis factor {basis_factor:g}."
+                ),
+            },
+            {
+                "label": "Progression target",
+                "value": f"{working_weight:g} kg × {preset['min_rep']}–{preset['max_rep']}",
+                "detail": (
+                    f"{preset_key.title()} preset for {target_tier} tier "
+                    f"({preset['pct_1rm']:.0%} e1RM), then rounded for "
+                    f"{normalize_equipment(equipment) or 'equipment'} from "
+                    f"{round(pre_round_weight, 2)} kg."
+                ),
+            },
+        ],
     }
 
 

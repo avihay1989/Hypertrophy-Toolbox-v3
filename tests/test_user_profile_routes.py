@@ -186,18 +186,24 @@ def test_profile_page_renders_calibration_off_by_default(client, clean_db):
     html = response.get_data(as_text=True)
     assert "Learned Calibration" in html
     assert 'name="calibration_mode"' in html
+    assert 'name="allow_related_exercise_learning"' in html
     # `off` radio is checked, `suggest` is not.
     assert 'value="off" checked' in html
     assert 'value="suggest" checked' not in html
+    assert 'name="allow_related_exercise_learning"  disabled' in html
 
 
 def test_profile_page_reflects_suggest_mode(client, clean_db):
     """Enabling `suggest` is reflected in the rendered control state."""
-    client.post("/api/user_profile/calibration_settings", json={"mode": "suggest"})
+    client.post(
+        "/api/user_profile/calibration_settings",
+        json={"mode": "suggest", "allow_related_exercise_learning": True},
+    )
 
     html = client.get("/user_profile").get_data(as_text=True)
     assert 'value="suggest" checked' in html
     assert 'value="off" checked' not in html
+    assert 'name="allow_related_exercise_learning" checked' in html
 
 
 def test_user_profile_page_renders_grouped_questionnaire(client, clean_db):

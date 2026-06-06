@@ -8,11 +8,15 @@ calibration. See ``docs/user_profile/LEARNED_CALIBRATION_PLAN.md``.
 """
 from utils.strength_calibration import (
     get_calibration_mode,
+    get_calibration_settings,
     set_calibration_mode,
+    set_calibration_settings,
     update_calibration_for_exercise,
 )
 
 SQUAT = "Barbell Back Squat"
+BENCH = "Barbell Bench Press"
+INCLINE_DB_BENCH = "Incline Dumbbell Bench Press"
 
 
 def _seed_exercise(exercise_factory):
@@ -38,6 +42,62 @@ def _seed_log(clean_db, workout_plan_factory, workout_log_factory, **scored):
     return workout_log_factory(plan_id=plan_id, **defaults)
 
 
+def _seed_related_bench_pair(exercise_factory):
+    exercise_factory(
+        BENCH,
+        primary_muscle_group="Chest",
+        equipment="Barbell",
+        mechanic="Compound",
+    )
+    exercise_factory(
+        INCLINE_DB_BENCH,
+        primary_muscle_group="Chest",
+        equipment="Dumbbells",
+        mechanic="Compound",
+    )
+
+
+def _seed_high_confidence_bench_source(
+    clean_db, workout_plan_factory, workout_log_factory
+):
+    plan_id = workout_plan_factory(exercise_name=BENCH)
+    for _ in range(3):
+        workout_log_factory(
+            plan_id=plan_id,
+            exercise=BENCH,
+            scored_weight=100.0,
+            scored_min_reps=8,
+            scored_max_reps=8,
+            scored_rir=2,
+        )
+    calibration = update_calibration_for_exercise(BENCH, db=clean_db)
+    assert calibration["confidence"] == "high"
+    return calibration
+
+
+def _insert_bench_to_incline_ratio(clean_db):
+    clean_db.execute_query(
+        """
+        INSERT INTO exercise_transfer_ratios (
+            source_exercise_name, target_exercise_name,
+            source_lift_key, target_lift_key, ratio, load_basis,
+            relationship_type, confidence, notes
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            BENCH,
+            INCLINE_DB_BENCH,
+            "barbell_bench_press",
+            "incline_bench_press",
+            0.72,
+            "total_to_per_hand",
+            "manual",
+            "high",
+            "Test-only explicit directional ratio.",
+        ),
+    )
+
+
 # --------------------------------------------------------------------------- #
 # Settings endpoint
 # --------------------------------------------------------------------------- #
@@ -59,6 +119,34 @@ def test_settings_set_suggest_round_trips(client, clean_db):
 
     get = client.get("/api/user_profile/calibration_settings")
     assert get.get_json()["data"]["mode"] == "suggest"
+    assert get.get_json()["data"]["allow_related_exercise_learning"] is False
+
+
+def test_settings_related_flag_round_trips(client, clean_db):
+    post = client.post(
+        "/api/user_profile/calibration_settings",
+        json={"mode": "suggest", "allow_related_exercise_learning": True},
+    )
+    assert post.status_code == 200
+    assert post.get_json()["data"] == {
+        "mode": "suggest",
+        "allow_related_exercise_learning": True,
+        "min_sessions_for_related": None,
+    }
+
+    settings = get_calibration_settings(db=clean_db)
+    assert settings["mode"] == "suggest"
+    assert settings["allow_related_exercise_learning"] is True
+
+
+def test_settings_rejects_invalid_related_flag(client, clean_db):
+    resp = client.post(
+        "/api/user_profile/calibration_settings",
+        json={"mode": "suggest", "allow_related_exercise_learning": "yes"},
+    )
+    assert resp.status_code == 400
+    assert resp.get_json()["error"]["code"] == "VALIDATION_ERROR"
+    assert get_calibration_settings(db=clean_db)["mode"] == "off"
 
 
 def test_settings_rejects_invalid_mode(client, clean_db):
@@ -151,6 +239,128 @@ def test_suggest_mode_falls_back_when_no_calibration_row(
     resp = client.get("/api/user_profile/estimate", query_string={"exercise": SQUAT})
     estimate = resp.get_json()["data"]
     assert estimate["source"] == "log"
+
+
+# --------------------------------------------------------------------------- #
+# Related learned transfer (Phase 2A)
+# --------------------------------------------------------------------------- #
+
+def test_related_disabled_keeps_existing_fallback_unchanged(
+    client, clean_db, exercise_factory, workout_plan_factory, workout_log_factory
+):
+    _seed_related_bench_pair(exercise_factory)
+    _seed_high_confidence_bench_source(clean_db, workout_plan_factory, workout_log_factory)
+    _insert_bench_to_incline_ratio(clean_db)
+    set_calibration_mode("suggest", db=clean_db)
+
+    resp = client.get(
+        "/api/user_profile/estimate", query_string={"exercise": INCLINE_DB_BENCH}
+    )
+    estimate = resp.get_json()["data"]
+    assert estimate["source"] == "default"
+    assert estimate["reason"] == "default_no_reference"
+
+
+def test_related_enabled_without_ratio_keeps_existing_fallback(
+    client, clean_db, exercise_factory, workout_plan_factory, workout_log_factory
+):
+    _seed_related_bench_pair(exercise_factory)
+    _seed_high_confidence_bench_source(clean_db, workout_plan_factory, workout_log_factory)
+    set_calibration_settings(
+        "suggest", db=clean_db, allow_related_exercise_learning=True
+    )
+
+    resp = client.get(
+        "/api/user_profile/estimate", query_string={"exercise": INCLINE_DB_BENCH}
+    )
+    estimate = resp.get_json()["data"]
+    assert estimate["source"] == "default"
+    assert estimate["reason"] == "default_no_reference"
+
+
+def test_related_enabled_with_ratio_surfaces_related_source(
+    client, clean_db, exercise_factory, workout_plan_factory, workout_log_factory
+):
+    _seed_related_bench_pair(exercise_factory)
+    source = _seed_high_confidence_bench_source(
+        clean_db, workout_plan_factory, workout_log_factory
+    )
+    _insert_bench_to_incline_ratio(clean_db)
+    set_calibration_settings(
+        "suggest", db=clean_db, allow_related_exercise_learning=True
+    )
+
+    resp = client.get(
+        "/api/user_profile/estimate", query_string={"exercise": INCLINE_DB_BENCH}
+    )
+    estimate = resp.get_json()["data"]
+    assert estimate["source"] == "related_learned"
+    assert estimate["reason"] == "related_calibration"
+    assert estimate["trace"]["source_exercise"] == BENCH
+    assert estimate["trace"]["target_exercise"] == INCLINE_DB_BENCH
+    assert estimate["trace"]["transfer_ratio"] == 0.72
+    assert estimate["trace"]["load_basis"] == "total_to_per_hand"
+    assert estimate["trace"]["sample_count"] == source["sample_count"]
+    expected_target_e1rm = source["estimated_1rm"] * 0.72 * 0.5
+    assert estimate["trace"]["steps"][2]["value"] == f"~{expected_target_e1rm:g} kg e1RM"
+    assert estimate["weight"] == 39.0
+
+
+def test_exact_target_log_outranks_related_transfer(
+    client, clean_db, exercise_factory, workout_plan_factory, workout_log_factory
+):
+    _seed_related_bench_pair(exercise_factory)
+    _seed_high_confidence_bench_source(clean_db, workout_plan_factory, workout_log_factory)
+    _insert_bench_to_incline_ratio(clean_db)
+    set_calibration_settings(
+        "suggest", db=clean_db, allow_related_exercise_learning=True
+    )
+    target_plan = workout_plan_factory(exercise_name=INCLINE_DB_BENCH)
+    workout_log_factory(
+        plan_id=target_plan,
+        exercise=INCLINE_DB_BENCH,
+        scored_weight=35.0,
+        scored_min_reps=8,
+        scored_max_reps=8,
+    )
+
+    resp = client.get(
+        "/api/user_profile/estimate", query_string={"exercise": INCLINE_DB_BENCH}
+    )
+    estimate = resp.get_json()["data"]
+    assert estimate["source"] == "log"
+    assert estimate["weight"] == 35.0
+
+
+def test_ignore_transfer_endpoint_suppresses_pair_only(
+    client, clean_db, exercise_factory, workout_plan_factory, workout_log_factory
+):
+    _seed_related_bench_pair(exercise_factory)
+    _seed_high_confidence_bench_source(clean_db, workout_plan_factory, workout_log_factory)
+    _insert_bench_to_incline_ratio(clean_db)
+    set_calibration_settings(
+        "suggest", db=clean_db, allow_related_exercise_learning=True
+    )
+
+    ignored = client.post(
+        "/api/user_profile/calibration/ignore_transfer",
+        json={"source_exercise": BENCH, "target_exercise": INCLINE_DB_BENCH},
+    )
+    assert ignored.status_code == 200
+    assert ignored.get_json()["ok"] is True
+
+    source_row = clean_db.fetch_one(
+        "SELECT * FROM learned_strength_calibrations WHERE exercise_name = ?",
+        (BENCH,),
+    )
+    assert source_row is not None
+
+    resp = client.get(
+        "/api/user_profile/estimate", query_string={"exercise": INCLINE_DB_BENCH}
+    )
+    estimate = resp.get_json()["data"]
+    assert estimate["source"] == "default"
+    assert estimate["reason"] == "default_no_reference"
 
 
 # --------------------------------------------------------------------------- #

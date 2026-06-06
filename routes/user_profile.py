@@ -15,9 +15,10 @@ from utils.errors import error_response, success_response
 from utils.logger import get_logger
 from utils.strength_calibration import (
     VALID_CALIBRATION_MODES,
-    get_calibration_mode,
+    get_calibration_settings,
+    ignore_calibration_transfer,
     reset_calibration_for_exercise,
-    set_calibration_mode,
+    set_calibration_settings,
 )
 from utils.profile_estimator import (
     DEFAULT_PREFERENCES,
@@ -193,6 +194,17 @@ def _nullable_int(value: Any, field_name: str, minimum: int, maximum: int) -> Op
     return parsed
 
 
+def _optional_bool(data: dict[str, Any], field_name: str) -> Optional[bool]:
+    if field_name not in data or data.get(field_name) is None:
+        return None
+    value = data.get(field_name)
+    if isinstance(value, bool):
+        return value
+    if value in (0, 1):
+        return bool(value)
+    raise ValueError(f"{field_name} must be true or false")
+
+
 def _load_latest_body_composition(db: DatabaseHandler) -> Optional[dict[str, Any]]:
     """Return the most recent `body_composition_snapshots` row enriched with
     the effective BFP (Navy if measured, else BMI), the ACE band label, and
@@ -273,9 +285,11 @@ def _load_profile_context(db: DatabaseHandler) -> dict[str, Any]:
     ]
     insights = _build_profile_insights(profile or {}, lift_rows)
     latest_body_composition = _load_latest_body_composition(db)
+    calibration_settings = get_calibration_settings(db=db)
     return {
         "profile": profile or {},
-        "calibration_mode": get_calibration_mode(db=db),
+        "calibration_mode": calibration_settings["mode"],
+        "calibration_allow_related": calibration_settings["allow_related_exercise_learning"],
         "reference_lifts": reference_lifts,
         "reference_lift_groups": reference_lift_groups,
         "reference_lift_groups_anterior": reference_lift_groups_anterior,
@@ -497,8 +511,8 @@ def calibration_settings():
     if request.method == "GET":
         try:
             with DatabaseHandler() as db:
-                mode = get_calibration_mode(db=db)
-            return jsonify(success_response(data={"mode": mode}))
+                settings = get_calibration_settings(db=db)
+            return jsonify(success_response(data=settings))
         except Exception:
             logger.exception("Failed to read calibration settings")
             return error_response("INTERNAL_ERROR", "Failed to read calibration settings", 500)
@@ -511,10 +525,15 @@ def calibration_settings():
         mode = _nullable_text(data.get("mode"))
         if mode not in VALID_CALIBRATION_MODES:
             raise ValueError(f"mode must be one of {', '.join(VALID_CALIBRATION_MODES)}")
+        allow_related = _optional_bool(data, "allow_related_exercise_learning")
 
         with DatabaseHandler() as db:
-            saved = set_calibration_mode(mode, db=db)
-        return jsonify(success_response(data={"mode": saved}, message="Calibration settings saved"))
+            saved = set_calibration_settings(
+                mode,
+                db=db,
+                allow_related_exercise_learning=allow_related,
+            )
+        return jsonify(success_response(data=saved, message="Calibration settings saved"))
     except ValueError as exc:
         logger.warning("Validation error saving calibration settings", extra={"error": str(exc)})
         return error_response("VALIDATION_ERROR", str(exc), 400)
@@ -546,3 +565,34 @@ def reset_calibration():
     except Exception:
         logger.exception("Failed to reset calibration", extra={"payload": data})
         return error_response("INTERNAL_ERROR", "Failed to reset calibration", 500)
+
+
+@user_profile_bp.route("/api/user_profile/calibration/ignore_transfer", methods=["POST"])
+def ignore_calibration_transfer_route():
+    """Ignore one related source-target calibration pair."""
+    data = None
+    try:
+        data = _get_json_payload("ignore_calibration_transfer")
+        if not isinstance(data, dict):
+            raise ValueError("Invalid JSON data")
+        source = _nullable_text(data.get("source_exercise"))
+        target = _nullable_text(data.get("target_exercise"))
+        if source is None:
+            raise ValueError("source_exercise is required")
+        if target is None:
+            raise ValueError("target_exercise is required")
+
+        with DatabaseHandler() as db:
+            ignore_calibration_transfer(source, target, db=db)
+        return jsonify(
+            success_response(
+                data={"source_exercise": source, "target_exercise": target},
+                message="Related calibration ignored",
+            )
+        )
+    except ValueError as exc:
+        logger.warning("Validation error ignoring calibration transfer", extra={"error": str(exc)})
+        return error_response("VALIDATION_ERROR", str(exc), 400)
+    except Exception:
+        logger.exception("Failed to ignore calibration transfer", extra={"payload": data})
+        return error_response("INTERNAL_ERROR", "Failed to ignore calibration transfer", 500)

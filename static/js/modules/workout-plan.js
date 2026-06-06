@@ -149,6 +149,7 @@ const DEFAULT_PROFILE_ESTIMATE = {
 
 const ESTIMATE_SOURCE_LABELS = {
     learned: 'learned from your recent logs',
+    related_learned: 'learned from a related exercise',
     log: 'from your last set',
     profile: 'from your profile',
     cold_start: 'from population estimate',
@@ -827,7 +828,7 @@ function applyEstimateToWorkoutControls(estimate) {
 function updateLearnedBadge(estimate) {
     const badge = document.getElementById('workout-estimate-learned-badge');
     if (!badge) return;
-    const isLearned = estimate?.source === 'learned';
+    const isLearned = ['learned', 'related_learned'].includes(estimate?.source);
     if (!isLearned) {
         badge.hidden = true;
         badge.dataset.confidence = '';
@@ -840,13 +841,21 @@ function updateLearnedBadge(estimate) {
     badge.dataset.confidence = confidence;
     const label = badge.querySelector('.workout-estimate-learned-badge-label');
     if (label) {
+        const prefix = estimate?.source === 'related_learned' ? 'Related' : 'Learned';
         label.textContent = confidence
-            ? `Learned · ${CONFIDENCE_LABELS[confidence] || confidence}`
-            : 'Learned';
+            ? `${prefix} · ${CONFIDENCE_LABELS[confidence] || confidence}`
+            : prefix;
     }
-    badge.title = sampleCount
-        ? `Suggested from ${sampleCount} recent scored ${sampleCount === 1 ? 'log' : 'logs'} for this exercise`
-        : 'Suggested from your recent scored logs';
+    if (estimate?.source === 'related_learned') {
+        const source = estimate?.trace?.source_exercise || 'a related exercise';
+        badge.title = sampleCount
+            ? `Suggested from ${sampleCount} scored ${sampleCount === 1 ? 'log' : 'logs'} for ${source}`
+            : `Suggested from ${source}`;
+    } else {
+        badge.title = sampleCount
+            ? `Suggested from ${sampleCount} scored ${sampleCount === 1 ? 'log' : 'logs'} for this exercise`
+            : 'Suggested from your scored logs';
+    }
 }
 
 // Force the current learned suggestion into the Workout Controls inputs.
@@ -877,6 +886,27 @@ async function resetLearnedForCurrentExercise() {
         await applyUserProfileEstimateForSelectedExercise();
     } catch (error) {
         showToast('error', error?.message || 'Failed to reset learned data', {
+            requestId: error?.requestId,
+        });
+    }
+}
+
+async function ignoreRelatedTransferForCurrentExercise() {
+    const estimate = latestTracePayload;
+    const sourceExercise = estimate?.trace?.source_exercise || '';
+    const targetExercise = estimate?.trace?.target_exercise
+        || document.getElementById('exercise')?.value
+        || '';
+    if (!sourceExercise || !targetExercise) return;
+    try {
+        await api.post('/api/user_profile/calibration/ignore_transfer', {
+            source_exercise: sourceExercise,
+            target_exercise: targetExercise,
+        });
+        showToast('success', 'Related suggestion ignored for this exercise');
+        await applyUserProfileEstimateForSelectedExercise();
+    } catch (error) {
+        showToast('error', error?.message || 'Failed to ignore related suggestion', {
             requestId: error?.requestId,
         });
     }
@@ -919,6 +949,7 @@ function renderEstimateTrace(estimate) {
 
     const headlineMap = {
         learned: 'Learned from your recent logs',
+        related_learned: 'Learned from a related exercise',
         log: 'From your last logged set',
         profile: 'From your saved reference lift',
         cold_start: 'From a population estimate',
@@ -978,7 +1009,7 @@ function renderEstimateTrace(estimate) {
         container.appendChild(hint);
     }
 
-    if (trace.source === 'learned') {
+    if (['learned', 'related_learned'].includes(trace.source)) {
         container.appendChild(buildLearnedActions());
     }
 }
@@ -1011,6 +1042,15 @@ function buildLearnedActions() {
     reset.addEventListener('click', resetLearnedForCurrentExercise);
 
     actions.append(apply, keep, reset);
+    if (latestTracePayload?.source === 'related_learned') {
+        const ignore = document.createElement('button');
+        ignore.type = 'button';
+        ignore.className = 'workout-estimate-trace-action is-reset';
+        ignore.setAttribute('data-related-ignore', '');
+        ignore.textContent = 'Ignore this source';
+        ignore.addEventListener('click', ignoreRelatedTransferForCurrentExercise);
+        actions.append(ignore);
+    }
     return actions;
 }
 

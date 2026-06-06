@@ -514,6 +514,13 @@
                                 </label>
                             </div>
                         </fieldset>
+                        <fieldset class="preference-group" data-setting="related-calibration">
+                            <legend>Related exercise suggestions</legend>
+                            <label class="profile-checkbox-option">
+                                <input type="checkbox" name="allow_related_exercise_learning" {% if calibration_allow_related %}checked{% endif %} {% if calibration_mode != 'suggest' %}disabled{% endif %}>
+                                <span>Use related learned lifts when this exercise has no exact log</span>
+                            </label>
+                        </fieldset>
                         <div class="profile-actions profile-actions-end">
                             <div class="profile-autosave-status" data-calibration-status="idle" role="status" aria-live="polite">
                                 <i class="fas fa-cloud-check profile-autosave-icon" aria-hidden="true"></i>
