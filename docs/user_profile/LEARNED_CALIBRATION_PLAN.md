@@ -2,13 +2,14 @@
 
 ## Status
 
-MVP + Phase 2A learned calibration are shipped on `main`:
+MVP + Phase 2A + Phase 2B learned calibration are shipped on `main`:
 
 - PR #37 / `fd2e2f5`: exact-exercise learned calibration backend, settings, estimator integration, Profile controls, Workout Controls source UI/actions, workout-log notifications, tests, and E2E.
 - PR #39 / `62db541`: separate profile-estimator dumbbell/total-load reference fix.
 - PR #53 / `0f8b4b7`: Phase 2A read-only, ratio-gated related-exercise transfer — `utils/lift_matching.py`, additive `exercise_transfer_ratios` + `ignored_calibration_transfers` tables, `allow_related_exercise_learning` settings flag (default `0`), estimator priority (exact learned → exact log → related learned → Profile → cold-start → default), Profile toggle, Workout Controls related-source badge/trace/ignore. Ships with **zero** seeded ratios, so no behavior change until learned mode + related mode + a ratio row all exist.
+- PR #54 / `bad70c6`: Phase 2B read/control-only review surface on `/user_profile` — learned-calibration list, ignored related-transfer list with per-row unignore, confirmed bulk reset-all / clear-ignored. No estimator math or priority change, no `calibration_events` table, transfer ratios remain internal. Verified: full pytest `1509 passed`; scoped Playwright (`user-profile.spec.ts` + `learned-calibration.spec.ts`) `30 passed`; CI all 8 jobs green.
 
-**Phase 2A is complete.** The next implementation slice is **Phase 2B** (review and control surface) — see §"Phase 2B Review and Control Surface" below. This document remains the planning source for Phases 2B–2D; 2C (promote to Profile) and 2D (fatigue/volume-aware) still need design review before coding.
+**Phases 2A and 2B are complete.** The next implementation slice is **Phase 2C** (promote to Profile) — see §"Phase 2C Promote-to-Profile Plan" below, with decisions locked 2026-06-06. This document remains the planning source for Phases 2C–2D; 2D (fatigue/volume-aware) still needs design review before coding.
 
 ## Goal
 
@@ -97,7 +98,7 @@ Phase 2 should be split into reviewable stages:
 3. **Phase 2C - promote to Profile.** Add manual promote-to-Profile as its own explicit action with route tests, response-contract tests, and clear copy that it changes the user's declared baseline.
 4. **Phase 2D - fatigue/volume-aware suggestions.** Keep this separate from strength transfer so fatigue logic does not become a hidden modifier inside Workout Controls.
 
-Phase 2A is shipped (PR #53). **Phase 2B is the next implementation slice** — see below.
+Phase 2A is shipped (PR #53). Phase 2B is shipped (PR #54). **Phase 2C is the next implementation slice** — see §"Phase 2C Promote-to-Profile Plan" below.
 
 ## Phase 2B Review and Control Surface
 
@@ -149,6 +150,123 @@ New routes in `routes/user_profile.py` (all `success_response()` / `error_respon
 ### Out of scope for 2B
 
 Promote-to-Profile (2C), Profile/plan-row writes, auto-apply, fatigue/volume-aware suggestions (2D), user-visible/seeded transfer ratios, and `calibration_events` history.
+
+## Phase 2C Promote-to-Profile Plan
+
+### Goal
+
+Give the user one explicit action to **graduate** an exact learned calibration into their **declared Profile reference lift** — the only Phase 2 step that writes into user-declared baseline data. This is the first Phase 2 surface that mutates `user_profile_lifts`, so it is gated, confirmed, and never silent.
+
+### Why this is not a no-op (and not the estimator change)
+
+Estimator priority is unchanged: `exact learned → exact log → related learned → Profile → cold-start → default`. While learned mode is on and the row is usable, Workout Controls still serves the **learned** suggestion, not the promoted Profile value. Promotion's effect surfaces elsewhere:
+
+- It becomes the **declared baseline** used when learned data and exact log fallback are unavailable (for example learned mode off or row reset/stale, with no exact target log taking priority).
+- It feeds the **cross-muscle fallback chain**, **accuracy band**, **cohort bars/donut**, and **cold-start replacement** on `/user_profile`, none of which read learned-calibration rows.
+- It is idempotent and reversible via backup/restore.
+
+So promotion is "save this measured number as my permanent baseline," distinct from the live learned suggestion. UI copy must make that distinction explicit.
+
+### Zero new schema
+
+Both endpoints of the write already exist: source `learned_strength_calibrations` (keyed by `exercise_name`) and sink `user_profile_lifts` (keyed by `lift_key`, columns `weight_kg` + `reps`, `upsert_user_profile_lift()` in `utils/database.py`). Phase 2C adds **no table and no column** — so no `tests/conftest.py` table-list change, no `/erase-data` change (`user_profile_lifts` is already wiped), and no backup/restore snapshot-compatibility concern. This is the single biggest risk reducer for the phase.
+
+### Locked decisions (Opus review, 2026-06-06)
+
+1. **What gets written** — the user's **measured top set**: `scored_weight × scored_max_reps` from the source log (`learned_strength_calibrations.last_log_id` → `workout_log`), basis-converted into the target `lift_key`'s load basis (see §"Load basis"). Keeps reference-lift semantics ("what I actually lifted", run through Epley) intact and round-trips: the estimator re-derives the same e1RM. Not the progression `suggested_weight` (forward-looking) and not a 1-rep e1RM entry (loses rep context).
+2. **Placement** — a per-row **"Promote to reference lift"** action in the Phase 2B learned-calibration review table on `/user_profile` only. Not on the Workout Controls trace (keeps a Profile-mutating action on the Profile page, off the fast-moving plan flow, and testable in isolation).
+3. **Promotable sources** — **exact learned rows only**, with usable confidence (`medium`/`high`) and an `exercise_name` that resolves to a known `KEY_LIFTS` slug via `match_direct_lift_key()`. Not related-transfer, not exact-last-log, not Profile/cold-start/default, not `low` confidence.
+4. **Overwrite policy** — **never silent**. If a reference lift already exists for the slug, the UI shows a confirm with current → new before writing. **No preservation table** in 2C (keeps it additive-minimal, consistent with the 2B deferral of `calibration_events`); the prior value stays recoverable via backup/restore. Server enforces a no-silent-overwrite guard as a backstop.
+
+### Eligibility (a learned row is promotable only when all hold)
+
+- A `learned_strength_calibrations` row exists for the exercise with confidence in `USABLE_SUGGEST_CONFIDENCES` (`medium`/`high`).
+- `match_direct_lift_key(exercise_name)` resolves to a slug in `KEY_LIFTS` (the questionnaire vocabulary). Exercises with no direct reference-lift slug are **not** promotable.
+- The source log (`last_log_id`) still exists and carries a usable `scored_weight` + `scored_max_reps`.
+- The exercise is not `excluded` by `classify_tier()`.
+
+### Load basis
+
+Reference-lift slugs in `DUMBBELL_LIFT_KEYS` are stored **per hand**; everything else is **total/system load**. The source exercise's `scored_weight` is in the *exercise's* basis (per hand iff its equipment normalizes to `Dumbbells`). Convert source→target explicitly (same "two dumbbells = one barbell" model as `_load_basis_factor()`, but source side is the exercise, not a lift_key):
+
+- `exercise_per_hand == lift_key_per_hand` → ×1.0
+- per-hand exercise → total-load slug → ×2.0
+- total-load exercise → per-hand slug → ÷2.0
+
+Store `weight_kg = round(converted, 2)`; **no** equipment increment-rounding (reference lifts hold raw user-entered values). Store `reps = int(scored_max_reps)` (truthful measured reps; `epley_1rm` caps at 12 internally, so no pre-cap needed).
+
+### Backend (additive, no schema change)
+
+New helpers in `utils/strength_calibration.py` (reuse the caller's `DatabaseHandler`):
+
+- `resolve_promotion_target(exercise_name, *, db) -> Optional[dict]` — returns the full promotion plan or `None` when not promotable: `{exercise_name, lift_key, weight_kg, reps, confidence, existing_reference}` where `existing_reference` is `{weight_kg, reps}` or `None`. Encapsulates the eligibility gates, the `last_log_id` lookup, and the basis conversion.
+- `promote_calibration_to_profile(exercise_name, *, db, overwrite=False) -> dict` — resolves, enforces the no-silent-overwrite guard, writes via `upsert_user_profile_lift()`, and returns `{lift_key, weight_kg, reps, overwrote, previous}`. **Does not delete the learned row** (promotion graduates, it does not consume) and touches nothing but `user_profile_lifts`.
+
+### Route contract (`routes/user_profile.py`, thin; `success_response()` / `error_response()`)
+
+1. **Enrich** existing `GET /api/user_profile/calibration/dashboard` — each `learned[]` row additionally carries `lift_key`, `lift_label`, `promotable` (bool), `existing_reference` (`{weight_kg, reps}` | null), `promote_weight_kg`, `promote_reps`. Additive keys only; `ignored_transfers` unchanged; still read-only. Lets the table render the correct button label and confirm copy without a per-click round-trip.
+2. **New** `POST /api/user_profile/calibration/promote` — body `{exercise: <name>, overwrite?: bool}`.
+   - Missing/blank `exercise` → `error_response("VALIDATION_ERROR", ..., 400)`.
+   - Not promotable (no usable learned row / unresolvable slug / missing source log) → `error_response("NOT_PROMOTABLE", ..., 400)`.
+   - Existing reference present and `overwrite` falsy → `error_response("REFERENCE_LIFT_EXISTS", ..., 400)` (guard backstop; UI confirms before sending `overwrite: true`).
+   - Otherwise write → `success_response(data={lift_key, lift_label, weight_kg, reps, overwrote, previous}, message="Promoted to Profile reference lift")`.
+
+### UI copy (Profile review table)
+
+- Button: **"Promote to reference lift"**. When not promotable, render **disabled with a tooltip**: "No matching Profile reference lift for this exercise." (discoverable + explains the gate).
+- No existing value — lightweight confirm: "Save **{w} kg × {reps}** as your declared Profile reference lift for **{lift_label}**? This sets your saved baseline (separate from the live learned suggestion)."
+- Overwrite — confirm shows old → new: "Replace your declared Profile reference lift for **{lift_label}**? This changes your saved baseline. Current: {old_w} kg × {old_reps}. New (from your logged set): {new_w} kg × {new_reps}. Your learned suggestion already drives Workout Controls — this only updates the baseline used when learned data is unavailable."
+- Success toast: "Promoted to Profile reference lift: {lift_label} {w} kg × {reps}."
+- Copy must keep "**learned suggestion**" and "**declared Profile reference**" visibly distinct.
+
+### Data lifecycle
+
+- Writes **only** `user_profile_lifts`. No plan-row (`user_selection`) writes, no `workout_log` rewrites, no learned-calibration deletion, no settings/transfer-ratio changes.
+- No new table → `/erase-data`, `tests/conftest.py` cleanup lists, and backup/restore are unchanged and already correct.
+- The learned row persists after promotion and continues to win in estimator priority while usable; promotion is idempotent.
+
+### Estimator priority
+
+**Unchanged.** Phase 2C does not touch the estimator chain. Migration note for the PR: promotion can change *future* suggestions only through the pre-existing Profile/cold-start fallback path and the accuracy/cohort displays — there is no priority or formula change.
+
+### Tests
+
+Unit (`tests/` calibration suite):
+- `resolve_promotion_target` returns `None` for: no learned row; `low` confidence; `exercise_name` with no `KEY_LIFTS` slug; missing source log.
+- Correct `weight_kg`/`reps` for same-basis (barbell exercise → barbell slug).
+- Per-hand → total conversion (×2) and total → per-hand conversion (÷2).
+- `existing_reference` populated when a reference lift already exists for the slug.
+- `promote_calibration_to_profile` writes the converted value; is idempotent; **does not** delete the learned row; **does not** touch other reference lifts, settings, or transfer ratios.
+
+Route:
+- Promote success with no existing value → 200 `ok`, `user_profile_lifts` written.
+- Existing + `overwrite=false` → `REFERENCE_LIFT_EXISTS`, no write.
+- Existing + `overwrite=true` → overwrites, `previous` returned.
+- Missing `exercise` → `VALIDATION_ERROR` 400.
+- Not promotable (low confidence / unresolvable slug) → `NOT_PROMOTABLE` 400.
+- Dashboard returns the new `promotable` / `existing_reference` annotations.
+- All responses use `success_response()` / `error_response()` (response-contract test).
+
+Integration (estimator priority proof):
+- Log → usable learned row → promote → `user_profile_lifts` holds the measured (basis-converted) set.
+- With learned mode **on**, post-promotion estimate still serves the **learned** source (priority unchanged).
+- With learned mode **off** (or learned row reset) and no exact-log fallback, post-promotion estimate now serves the **promoted Profile** value (baseline took effect).
+- Regression guard: non-promote actions (dashboard GET, ignore/unignore, clear-ignored, reset-all, settings) do **not** mutate `user_profile_lifts`.
+
+E2E (after implementation, focused Chromium):
+- Enable learned → log a set → open Profile review table → Promote → confirm → reference lift populated + success toast.
+- Promote over an existing value shows the old → new confirm.
+
+### Out of scope for 2C
+
+Auto-apply, plan-row (`user_selection`) writes, promoting related/last-log/cold-start sources, an in-app preserved-history table, fatigue/volume-aware suggestions (2D), and any estimator priority/formula change.
+
+### Open (non-blocking) defaults — proceed unless owner objects
+
+- Non-promotable rows: **disabled button + tooltip** (vs hide). Chosen for discoverability.
+- `REFERENCE_LIFT_EXISTS` guard returns **HTTP 400** (vs 200 + `reason`): the UI confirms before sending `overwrite: true`, so reaching the server without it is a true error, not the normal confirm flow.
+- Store **raw measured reps** (no pre-cap at 12; `epley_1rm` caps internally).
+- **No** `promoted_at`/source marker on the reference lift (no schema change; consistent with the no-preservation-table decision).
 
 ## Phase 2A Related-Exercise Transfer Plan
 

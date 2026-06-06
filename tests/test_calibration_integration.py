@@ -522,3 +522,215 @@ def test_reset_all_endpoint_clears_learned_but_keeps_ratios_and_settings(
         "SELECT COUNT(*) AS n FROM exercise_transfer_ratios"
     )["n"] == 1
     assert get_calibration_settings(db=clean_db)["mode"] == "suggest"
+
+
+# --------------------------------------------------------------------------- #
+# Phase 2C — promote learned calibration to Profile reference lift
+# --------------------------------------------------------------------------- #
+
+def test_dashboard_endpoint_includes_promotion_annotations(
+    client, clean_db, exercise_factory, workout_plan_factory, workout_log_factory
+):
+    exercise_factory(BENCH, primary_muscle_group="Chest", equipment="Barbell")
+    plan_id = workout_plan_factory(exercise_name=BENCH)
+    workout_log_factory(
+        plan_id=plan_id,
+        exercise=BENCH,
+        scored_weight=100.0,
+        scored_min_reps=8,
+        scored_max_reps=8,
+    )
+    update_calibration_for_exercise(BENCH, db=clean_db)
+
+    resp = client.get("/api/user_profile/calibration/dashboard")
+    assert resp.status_code == 200
+    row = resp.get_json()["data"]["learned"][0]
+    assert row["promotable"] is True
+    assert row["lift_key"] == "barbell_bench_press"
+    assert row["lift_label"] == "Barbell Bench Press"
+    assert row["promote_weight_kg"] == 100.0
+    assert row["promote_reps"] == 8
+    assert row["existing_reference"] is None
+
+
+def test_promote_endpoint_writes_reference_without_deleting_calibration(
+    client, clean_db, exercise_factory, workout_plan_factory, workout_log_factory
+):
+    exercise_factory(BENCH, primary_muscle_group="Chest", equipment="Barbell")
+    plan_id = workout_plan_factory(exercise_name=BENCH)
+    workout_log_factory(
+        plan_id=plan_id,
+        exercise=BENCH,
+        scored_weight=102.5,
+        scored_min_reps=7,
+        scored_max_reps=7,
+    )
+    update_calibration_for_exercise(BENCH, db=clean_db)
+
+    resp = client.post(
+        "/api/user_profile/calibration/promote",
+        json={"exercise": BENCH},
+    )
+    assert resp.status_code == 200
+    body = resp.get_json()
+    assert body["ok"] is True
+    assert body["data"]["lift_key"] == "barbell_bench_press"
+    assert body["data"]["weight_kg"] == 102.5
+    assert body["data"]["reps"] == 7
+    assert body["data"]["overwrote"] is False
+    assert clean_db.fetch_one(
+        "SELECT 1 FROM learned_strength_calibrations WHERE exercise_name = ?",
+        (BENCH,),
+    ) is not None
+    saved = clean_db.fetch_one(
+        "SELECT weight_kg, reps FROM user_profile_lifts WHERE lift_key = ?",
+        ("barbell_bench_press",),
+    )
+    assert saved["weight_kg"] == 102.5
+    assert saved["reps"] == 7
+
+
+def test_promote_endpoint_requires_overwrite_for_existing_reference(
+    client, clean_db, exercise_factory, workout_plan_factory, workout_log_factory
+):
+    exercise_factory(BENCH, primary_muscle_group="Chest", equipment="Barbell")
+    plan_id = workout_plan_factory(exercise_name=BENCH)
+    workout_log_factory(
+        plan_id=plan_id,
+        exercise=BENCH,
+        scored_weight=110.0,
+        scored_min_reps=6,
+        scored_max_reps=6,
+    )
+    update_calibration_for_exercise(BENCH, db=clean_db)
+    clean_db.execute_query(
+        """
+        INSERT INTO user_profile_lifts (lift_key, weight_kg, reps, updated_at)
+        VALUES ('barbell_bench_press', 90.0, 5, CURRENT_TIMESTAMP)
+        """
+    )
+
+    blocked = client.post(
+        "/api/user_profile/calibration/promote",
+        json={"exercise": BENCH},
+    )
+    assert blocked.status_code == 400
+    assert blocked.get_json()["error"]["code"] == "REFERENCE_LIFT_EXISTS"
+    saved = clean_db.fetch_one(
+        "SELECT weight_kg, reps FROM user_profile_lifts WHERE lift_key = ?",
+        ("barbell_bench_press",),
+    )
+    assert saved["weight_kg"] == 90.0
+    assert saved["reps"] == 5
+
+    overwritten = client.post(
+        "/api/user_profile/calibration/promote",
+        json={"exercise": BENCH, "overwrite": True},
+    )
+    assert overwritten.status_code == 200
+    data = overwritten.get_json()["data"]
+    assert data["overwrote"] is True
+    assert data["previous"] == {"weight_kg": 90.0, "reps": 5}
+    saved = clean_db.fetch_one(
+        "SELECT weight_kg, reps FROM user_profile_lifts WHERE lift_key = ?",
+        ("barbell_bench_press",),
+    )
+    assert saved["weight_kg"] == 110.0
+    assert saved["reps"] == 6
+
+
+def test_promote_endpoint_rejects_missing_or_non_promotable_exercise(
+    client, clean_db, exercise_factory, workout_plan_factory, workout_log_factory
+):
+    missing = client.post("/api/user_profile/calibration/promote", json={})
+    assert missing.status_code == 400
+    assert missing.get_json()["error"]["code"] == "VALIDATION_ERROR"
+
+    exercise_factory("Pec Deck", primary_muscle_group="Chest", equipment="Machine")
+    plan_id = workout_plan_factory(exercise_name="Pec Deck")
+    workout_log_factory(
+        plan_id=plan_id,
+        exercise="Pec Deck",
+        scored_weight=70.0,
+        scored_min_reps=10,
+        scored_max_reps=10,
+    )
+    update_calibration_for_exercise("Pec Deck", db=clean_db)
+
+    non_promotable = client.post(
+        "/api/user_profile/calibration/promote",
+        json={"exercise": "Pec Deck"},
+    )
+    assert non_promotable.status_code == 400
+    assert non_promotable.get_json()["error"]["code"] == "NOT_PROMOTABLE"
+    assert clean_db.fetch_one(
+        "SELECT COUNT(*) AS n FROM user_profile_lifts"
+    )["n"] == 0
+
+
+def test_promotion_does_not_change_learned_priority_when_mode_is_on(
+    client, clean_db, exercise_factory, workout_plan_factory, workout_log_factory
+):
+    exercise_factory(SQUAT, primary_muscle_group="Quadriceps", equipment="Barbell")
+    plan_id = workout_plan_factory(exercise_name=SQUAT)
+    workout_log_factory(
+        plan_id=plan_id,
+        exercise=SQUAT,
+        scored_weight=120.0,
+        scored_min_reps=8,
+        scored_max_reps=8,
+        scored_rir=2,
+    )
+    calibration = update_calibration_for_exercise(SQUAT, db=clean_db)
+    set_calibration_mode("suggest", db=clean_db)
+
+    promote = client.post(
+        "/api/user_profile/calibration/promote",
+        json={"exercise": SQUAT},
+    )
+    assert promote.status_code == 200
+
+    estimate = client.get(
+        "/api/user_profile/estimate", query_string={"exercise": SQUAT}
+    ).get_json()["data"]
+    assert estimate["source"] == "learned"
+    assert estimate["weight"] == calibration["suggested_weight"]
+
+
+def test_promoted_reference_takes_effect_without_learned_or_exact_log_fallback(
+    client, clean_db, exercise_factory, workout_plan_factory, workout_log_factory
+):
+    exercise_factory(BENCH, primary_muscle_group="Chest", equipment="Barbell")
+    plan_id = workout_plan_factory(exercise_name=BENCH)
+    workout_log_factory(
+        plan_id=plan_id,
+        exercise=BENCH,
+        scored_weight=100.0,
+        scored_min_reps=8,
+        scored_max_reps=8,
+        scored_rir=2,
+    )
+    update_calibration_for_exercise(BENCH, db=clean_db)
+    set_calibration_mode("suggest", db=clean_db)
+    client.post(
+        "/api/user_profile/calibration/promote",
+        json={"exercise": BENCH},
+    )
+
+    reset = client.post(
+        "/api/user_profile/calibration/reset", json={"exercise": BENCH}
+    )
+    assert reset.status_code == 200
+    clean_db.execute_query("DELETE FROM workout_log WHERE exercise = ?", (BENCH,))
+
+    estimate = client.get(
+        "/api/user_profile/estimate", query_string={"exercise": BENCH}
+    ).get_json()["data"]
+    assert estimate["source"] == "profile"
+    assert estimate["reason"] == "profile"
+    saved = clean_db.fetch_one(
+        "SELECT weight_kg, reps FROM user_profile_lifts WHERE lift_key = ?",
+        ("barbell_bench_press",),
+    )
+    assert saved["weight_kg"] == 100.0
+    assert saved["reps"] == 8

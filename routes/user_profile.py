@@ -16,10 +16,10 @@ from utils.logger import get_logger
 from utils.strength_calibration import (
     VALID_CALIBRATION_MODES,
     clear_ignored_transfers,
+    get_calibration_dashboard,
     get_calibration_settings,
     ignore_calibration_transfer,
-    list_ignored_transfers,
-    list_learned_calibrations,
+    promote_calibration_to_profile,
     reset_all_calibrations,
     reset_calibration_for_exercise,
     set_calibration_settings,
@@ -605,22 +605,79 @@ def ignore_calibration_transfer_route():
 
 @user_profile_bp.route("/api/user_profile/calibration/dashboard")
 def calibration_dashboard():
-    """Read-only calibration review surface (Phase 2B).
+    """Read-only calibration review surface (Phase 2B + 2C annotations).
 
-    Returns the learned-calibration rows and ignored related pairs the Profile
-    page renders. Never mutates state and never exposes internal transfer-ratio
-    tuning data. See ``docs/user_profile/LEARNED_CALIBRATION_PLAN.md``.
+    Returns the learned-calibration rows (each annotated with Phase 2C
+    promotion state: ``promotable`` / ``lift_key`` / ``lift_label`` /
+    ``existing_reference`` / ``promote_weight_kg`` / ``promote_reps``) and the
+    ignored related pairs the Profile page renders. Never mutates state and
+    never exposes internal transfer-ratio tuning data. See
+    ``docs/user_profile/LEARNED_CALIBRATION_PLAN.md``.
     """
     try:
         with DatabaseHandler() as db:
-            data = {
-                "learned": list_learned_calibrations(db=db),
-                "ignored_transfers": list_ignored_transfers(db=db),
-            }
+            data = get_calibration_dashboard(db=db)
         return jsonify(success_response(data=data))
     except Exception:
         logger.exception("Failed to load calibration dashboard")
         return error_response("INTERNAL_ERROR", "Failed to load calibration dashboard", 500)
+
+
+@user_profile_bp.route("/api/user_profile/calibration/promote", methods=["POST"])
+def promote_calibration_route():
+    """Promote an exact learned calibration into a declared Profile reference lift.
+
+    Writes the measured top set (basis-converted) into ``user_profile_lifts``.
+    Never silent: an existing reference lift requires ``overwrite=true`` (the UI
+    confirms old→new first). Does not change estimator priority. See
+    ``docs/user_profile/LEARNED_CALIBRATION_PLAN.md`` §"Phase 2C".
+    """
+    data = None
+    try:
+        data = _get_json_payload("promote_calibration")
+        if not isinstance(data, dict):
+            raise ValueError("Invalid JSON data")
+        exercise = _nullable_text(data.get("exercise"))
+        if exercise is None:
+            raise ValueError("exercise is required")
+        overwrite = bool(_optional_bool(data, "overwrite"))
+
+        with DatabaseHandler() as db:
+            result = promote_calibration_to_profile(exercise, db=db, overwrite=overwrite)
+
+        status = result.get("status")
+        if status == "not_promotable":
+            return error_response(
+                "NOT_PROMOTABLE",
+                "This learned calibration can't be promoted to a Profile reference lift.",
+                400,
+            )
+        if status == "exists":
+            return error_response(
+                "REFERENCE_LIFT_EXISTS",
+                "A Profile reference lift already exists for this lift; confirm to overwrite it.",
+                400,
+            )
+        return jsonify(
+            success_response(
+                data={
+                    "exercise": exercise,
+                    "lift_key": result["lift_key"],
+                    "lift_label": result["lift_label"],
+                    "weight_kg": result["weight_kg"],
+                    "reps": result["reps"],
+                    "overwrote": result["overwrote"],
+                    "previous": result["previous"],
+                },
+                message="Promoted to Profile reference lift",
+            )
+        )
+    except ValueError as exc:
+        logger.warning("Validation error promoting calibration", extra={"error": str(exc)})
+        return error_response("VALIDATION_ERROR", str(exc), 400)
+    except Exception:
+        logger.exception("Failed to promote calibration", extra={"payload": data})
+        return error_response("INTERNAL_ERROR", "Failed to promote calibration", 500)
 
 
 @user_profile_bp.route("/api/user_profile/calibration/unignore_transfer", methods=["POST"])
