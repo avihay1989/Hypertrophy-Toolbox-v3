@@ -416,6 +416,92 @@ Owner-locked 2026-06-07 (see the "Owner answers" sections above). This split ref
 3. **2D-C — optional manual adjustment affordance (still no auto-apply).** A client-side "apply a fatigue-suggested adjustment" affordance the user must explicitly accept, populating Workout Controls inputs only — no persistence to `user_selection`, `workout_log`, or `user_profile_lifts`. Same client-side-only contract as the MVP `Apply suggestion`.
 4. **2D-D — actual suggestion modification (much later, gated).** Only consider letting fatigue/volume change the suggested number after 2D-A..2D-C are stable, the owner **explicitly approves**, and Stage 4 real-use evidence supports it. Would require migration notes and a deliberate estimator-contract review.
 
+## Phase 2D-A Technical Implementation Plan
+
+Implementation-ready preflight for **2D-A — Advisory Fatigue Context Foundation** (technical decisions locked 2026-06-07). Nothing here changes a suggested number or the estimator priority chain; it implements the owner-locked answers above as a strictly additive, post-estimate advisory layer. No app code is written yet.
+
+### Locked technical decisions
+
+1. **Settings storage** — a **new single-row `fatigue_context_settings` table** (`id INTEGER PRIMARY KEY CHECK (id = 1)`), **not** new columns on `user_calibration_settings`. Keeps fatigue context separate from learned calibration (owner: independent toggle) and reusable app-wide; matches the existing single-row settings pattern.
+2. **User-selectable lens is two orthogonal dimensions**, not one flat list:
+   - `context_source`: `planned` | `logged` | `both`
+   - `context_period`: `this_session` | `this_week` | `last_4_weeks` (reuses `utils.fatigue.VALID_PERIODS`)
+3. **Defaults**: `enabled = false`, `context_source = both`, `context_period = this_week`. `both` directly satisfies the owner decision to **show both planned and logged when they disagree**.
+4. **`fatigue_context` is an additive post-estimate response block only.** It never alters `weight` / `sets` / `min_rep` / `max_rep` / `rir` / `rpe` / `source` / `reason` / `trace`.
+5. **Attach after `estimate_for_exercise()` returns**, from the route/decorator layer (`routes/user_profile.py` `get_user_profile_estimate`), so the estimator's six early-return paths and the priority chain stay **byte-for-byte unchanged**. Do not edit `utils/profile_estimator.py` return logic.
+6. **Omit/null the block when disabled** (and when no muscle resolves). Disabled → response identical to today.
+7. **No suggested weight/reps/sets changes. No estimator-priority change.**
+8. **No fatigue-threshold or volume-landmark tuning** — no edits to `utils/fatigue.py::MUSCLE_VOLUME_LANDMARKS` / `SESSION_FATIGUE_BANDS` / `WEEKLY_FATIGUE_BANDS`, no `tests/test_fatigue.py` boundary edits, no `scripts/fatigue_calibration_report.py::SCENARIOS` tuning (the existing Stage 4 gate still applies; consuming shipped bands as a read-only label does not trip it).
+9. **Reuse existing fatigue data/helpers** (`utils.fatigue_data.build_fatigue_page_context` and the `utils.fatigue` band/period helpers); do not invent new fatigue math.
+10. **Backend contract tests and focused Chromium E2E ship in the same (first) implementation PR.**
+
+### Files likely touched
+
+- **Backend**: `utils/database.py` (new idempotent `add_fatigue_context_settings_table()` registered in startup); `utils/fatigue_context.py` *(new — settings get/set helpers + `build_fatigue_context(exercise_name, estimate, *, db)`)*; `routes/user_profile.py` (new `GET/POST /api/user_profile/fatigue_context_settings`; attach the block after `estimate_for_exercise()` in `get_user_profile_estimate`); `app.py` (startup creation + `/erase-data` drop/reinit lists); `tests/conftest.py` (table creation + erase/clean lists).
+- **Frontend**: `templates/workout_plan.html` (optional neutral chip in the provenance row); `static/js/modules/workout-plan.js` (render a distinct "Fatigue context" advisory section below the strength steps in `renderEstimateTrace`, gated on the toggle); `templates/user_profile.html` + `static/js/modules/user-profile.js` (new independent toggle section, separate from Learned Calibration); `scss/_fatigue.scss` or the Workout Plan CSS bundle (neutral chip + advisory line; rebuild via `/build-css` if SCSS changes).
+- **Tests** *(authored during implementation, not in this preflight)*: `tests/test_fatigue_context.py`, additions to the estimate/route test file, `e2e/fatigue-context.spec.ts`.
+
+### Settings table + API contract
+
+```sql
+CREATE TABLE IF NOT EXISTS fatigue_context_settings (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    enabled INTEGER NOT NULL DEFAULT 0,
+    context_source TEXT NOT NULL DEFAULT 'both'
+        CHECK (context_source IN ('planned','logged','both')),
+    context_period TEXT NOT NULL DEFAULT 'this_week'
+        CHECK (context_period IN ('this_session','this_week','last_4_weeks')),
+    updated_at DATETIME
+)
+```
+
+- `GET  /api/user_profile/fatigue_context_settings` → `success_response(data={enabled, context_source, context_period})`; no row → the defaults above.
+- `POST /api/user_profile/fatigue_context_settings` body `{enabled?, context_source?, context_period?}` → validate against the CHECK vocabularies (reuse `VALID_PERIODS`), upsert single row, return saved settings; invalid value → `error_response("VALIDATION_ERROR", ..., 400)`.
+- `GET /api/user_profile/estimate` — unchanged path/params; response gains the additive `fatigue_context` key only when `enabled` and a muscle resolves.
+
+### `fatigue_context` response shape (additive)
+
+```jsonc
+"fatigue_context": {
+  "enabled": true,
+  "muscle": "Chest",            // resolved primary muscle, or null
+  "has_landmarks": true,        // false → neutral advisory path
+  "source": "both",             // echo of context_source
+  "period": "this_week",
+  "period_label": "This week (Mon–Sun)",
+  "planned": { "band": "moderate", "percent_of_mrv": 64.0, "has_landmarks": true },
+  "logged":  { "band": "light",    "percent_of_mrv": 28.0, "has_landmarks": true },
+  "disagree": true,             // planned.band != logged.band
+  "headline": "Chest fatigue: moderate (planned) · light (logged)",
+  "advisory": "This is context only and does not change your suggestion.",
+  "is_advisory_fallback": false // true for unranked / unknown / Unassigned
+}
+```
+
+- `planned` / `logged` populated per `context_source`; with `both`, include both sides and set `disagree` — never silently pick one.
+- Unranked muscle / `Unassigned` / no catalog muscle → `has_landmarks: false`, `band: null` (or `"—"`), `is_advisory_fallback: true`, neutral copy; never classified high/low, never blocks.
+
+### UI placement + copy (owner-locked)
+
+- Render inside the existing **"Show the math"** trace container (`#workout-estimate-trace`) as a **distinct section below** the strength steps — never merged into the strength explanation. The source badge stays unchanged.
+- Optional neutral **"Fatigue context"** chip in the provenance row (reuse the `.fatigue-badge__band` chip pattern, neutral — not confidence-colored). **Do not** use a "Fatigue adjusted" badge (the number does not change).
+- Eyebrow label: **"Fatigue context"**. Every variant ends with "does not change your suggestion":
+  - Ranked, agree: `"Chest fatigue: moderate. This does not change your suggestion."`
+  - Ranked, disagree (`both`): `"Chest fatigue: moderate (planned) · light (logged). This does not change your suggestion."`
+  - Unranked / `Unassigned`: `"Fatigue context isn't ranked for this muscle yet. This does not change your suggestion."`
+- Display gated behind the independent toggle (default off); off → no chip, no section, block omitted server-side.
+
+### Test plan
+
+- **Backend**: settings helpers (no row → defaults; round-trip; invalid value rejected); `build_fatigue_context` (ranked bands per side; `disagree`; `context_source` filtering; unranked / `Unassigned` / unknown-exercise → advisory fallback, never raises); **regression guard** proving the estimate response is byte-for-byte identical with the block disabled and that enabling it adds only `fatigue_context` (numbers, `source`, `reason`, `trace` unchanged); priority-unchanged proof across learned/log/related/profile/cold-start/default; route happy + validation paths; response-contract test; `/erase-data` + conftest lifecycle.
+- **E2E (Chromium, same PR)**: enable the independent toggle on Profile (separate from learned-calibration toggle); Workout Controls shows the distinct "Fatigue context" section below strength evidence with the mandatory copy and unchanged inputs; disagree case shows both sides; unranked muscle shows neutral fallback; toggle off → nothing rendered. Follow `e2e/learned-calibration.spec.ts` conventions (reset settings in `beforeEach`, route-mock the estimate for deterministic traces).
+
+### Open technical questions (carry into implementation, not product re-litigation)
+
+1. Confirm the two-dimension lens (`context_source` + `context_period`) matches owner intent vs. a single flat selector.
+2. Per-estimate cost: `build_fatigue_page_context` does two full-table scans + all-muscle aggregation per call; the estimate endpoint fires on each exercise selection. Mitigate by computing only when enabled; if needed, a thin single-muscle read helper over the same query (no new fatigue math) is an in-slice optimization, not a scope change. Acceptable at single-user localhost scale.
+3. Verify exercise `primary_muscle_group` and the fatigue-bar muscle key normalize identically (e.g. `normalize_muscle()`), so a ranked muscle is not silently routed to the advisory-fallback path; cover with an explicit test.
+
 ## Phase 2A Related-Exercise Transfer Plan
 
 ### Product Principle
