@@ -4,19 +4,20 @@ This file is the execution source of truth for autonomous development sessions. 
 
 ## Current Objective
 
-**As of 2026-06-04 (latest session): active branch is `feat/learned-calibration-backend`, not `main`.** Branch commits on top of `main` (newest first): `8a6d39a` (learned calibration plan doc), `76d7490` (wire learned calibration into estimator behind default-off settings), `5587784` (learned strength calibration backend foundation). This session continued the **Learned Calibration MVP from the UI/UX layer** (not Phase 2 related-exercise learning):
+**As of 2026-06-07 (latest session): active branch is `main`; the Phase 2C shipped baseline is `eb4dbf6`.** The entire learned-calibration MVP + Phase 2A/2B/2C track is **shipped to `main`**; there is no in-flight feature branch. Recent learned-calibration history on `main` entering this docs refresh (newest first): `eb4dbf6` (docs handover close-out), `d3cb404` (**PR #55** Phase 2C promote learned rows → Profile references), `bad70c6` (**PR #54** Phase 2B review surface), `0f8b4b7` (**PR #53** Phase 2A related-exercise transfer plumbing).
 
-1. **Backend response contract** — `/update_workout_log` returns `data.calibration = {mode, status, exercise, confidence}` after a *scored* change (`status` ∈ `off`/`updated`/`low_confidence`/`none`); new `recompute_calibration_after_log()` in `utils/strength_calibration.py`. Non-scored updates carry no block. Covered by `tests/test_workout_log_calibration_route.py` (7 cases).
-2. **Profile UI** — "Learned Calibration" off/suggest toggle (`templates/user_profile.html`, `static/js/modules/user-profile.js`, `pages-user-profile.css`); `calibration_mode` added to the profile context. 2 render cases in `tests/test_user_profile_routes.py`.
-3. **Workout Controls** — learned-source badge + confidence, "show the math" learned headline, and **Apply / Keep / Reset-per-exercise** actions (`static/js/modules/workout-plan.js`, `templates/workout_plan.html`, `pages-workout-plan.css`). Apply is client-side only (no `user_selection` write); Reset clears the row then re-fetches → fallback.
-4. **Workout-log toast** — `notifyCalibrationOutcome()` (`static/js/modules/workout-log.js`) maps status → notification copy.
-5. **E2E** — `e2e/learned-calibration.spec.ts` (4 Chromium cases).
+The prior 2026-06-04 `feat/learned-calibration-backend` branch (commits `8a6d39a` / `76d7490` / `5587784`) and its UI/UX follow-up work landed on `main` and the branch is gone — that handoff is **superseded** by the merged Phase 2C state below.
 
-**Verification (2026-06-04):** full pytest **1486 passed (~4m17s)**; `e2e/learned-calibration.spec.ts` 4 passed; user-profile/workout-plan/workout-log E2E 71 passed / 9 failed where **all 9 reds are pre-existing** (verified by re-running with this session's logic files stashed — driven by the uncommitted dumbbell-fix trace change + the documented `#muscleModeToggle` reds; zero new reds from this work).
+**Learned-calibration state (all on `main`):**
 
-**Guardrails honored:** no related-exercise calibration, no auto-apply, Profile reference lifts untouched, planned `user_selection` rows untouched, `utils/fatigue.py` not touched. The pre-existing dumbbell load-basis fix (`utils/profile_estimator.py` + its tests + `CLAUDE.md` note + donut CSS) is kept **separate** from the learned-calibration UI work. `data/database.db` left runtime-dirty (not committed).
+- **MVP** (PR #37 `fd2e2f5`) — exact-exercise learned calibration backend, settings, estimator integration, Profile controls, Workout Controls source UI/actions, workout-log notifications. Estimator priority: `exact learned → exact log → related learned → Profile → cold-start → default`.
+- **Phase 2A** (PR #53 `0f8b4b7`) — read-only, ratio-gated related-exercise transfer; ships with zero seeded ratios so no behavior change until learned + related modes + a ratio row all exist.
+- **Phase 2B** (PR #54 `bad70c6`) — read/control review surface on `/user_profile` (learned-calibration list, ignored-transfer controls, bulk reset). No estimator math change.
+- **Phase 2C** (PR #55 `d3cb404`) — per-row "Promote to reference lift" graduates an exact learned row into `user_profile_lifts` (measured top set, basis-converted). No schema change, no estimator-priority change, no silent overwrite (`REFERENCE_LIFT_EXISTS` guard + UI confirm). Full pytest **1524 passed**; CI all 8 checks green.
 
-**Remaining:** commit the UI work (suggest splitting learned-calibration UI vs the dumbbell fix into two commits); optional scoped visual re-baseline; Phase 2 (related-exercise transfer / promote-to-Profile / dashboard) remains out of scope.
+**Remaining learned-calibration work:** **Phase 2D — fatigue/volume-aware suggestions** is the only remaining Phase 2 slice. It is **not ready to code**: a design review must answer the questions in [`docs/user_profile/LEARNED_CALIBRATION_PLAN.md`](user_profile/LEARNED_CALIBRATION_PLAN.md) §"Phase 2D Design Review Questions" first, so fatigue logic does not become a hidden modifier inside Workout Controls. A conservative-first-slice recommendation and a 2D-A..2D-D implementation split are drafted in that plan / this session's handoff.
+
+**Guardrails honored across the track:** no auto-apply, Profile reference lifts written only via the explicit 2C promote action, planned `user_selection` rows untouched, historical `workout_log` untouched, `utils/fatigue.py` untouched. `data/database.db` is runtime-only and **must not be committed** (owner policy).
 
 ---
 
@@ -72,7 +73,7 @@ state before choosing what to do next.
 
 ## Current Branch
 
-`main`, in sync with `origin/main` (0 commits ahead) at the 2026-05-29 handover-sync commit. This sync pushed `df9b6f9` (movement_pattern cleanup, 2026-05-25), `f2cdc23` (Stage 4 observer tooling, 2026-05-29), and this handover sync on top of the prior `origin/main` tip `39193f6`. Working tree has only `data/database.db` runtime dirt (owner-approved kept dirty per `CLAUDE.md` agents-must-not list; do not commit). Feature branch `feat/body-composition-issue-21` was deleted locally and on the remote at the PR #31 merge; feature branches `feat/fatigue-meter-phase-2` and `feat/fatigue-meter-phase-2-stage-2` were merged via PR #34 and PR #35 respectively.
+`main`; Phase 2C shipped baseline is `eb4dbf6` (2026-06-07 learned-calibration Phase 2C handover close-out). The learned-calibration track merged on top of the prior 2026-05-29 handover-sync state: `0f8b4b7` (PR #53 Phase 2A), `bad70c6` (PR #54 Phase 2B), `d3cb404` (PR #55 Phase 2C), `eb4dbf6` (docs close-out). Expected working-tree dirt after this docs refresh is only `data/database.db` runtime dirt (owner-approved DB dirt kept per `CLAUDE.md` agents-must-not list; **do not commit `data/database.db`**). Feature branches `feat/calibration-phase-2c-promote-profile` (PR #55), `feat/calibration-phase-2b` (PR #54), and the Phase 2A branch were merged and deleted; earlier `feat/body-composition-issue-21` (PR #31), `feat/fatigue-meter-phase-2` (PR #34), and `feat/fatigue-meter-phase-2-stage-2` (PR #35) likewise merged and deleted.
 
 Recent local / `main` history (newest first):
 

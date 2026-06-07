@@ -2,14 +2,15 @@
 
 ## Status
 
-MVP + Phase 2A + Phase 2B learned calibration are shipped on `main`:
+MVP + Phase 2A + Phase 2B + Phase 2C learned calibration are shipped on `main`:
 
 - PR #37 / `fd2e2f5`: exact-exercise learned calibration backend, settings, estimator integration, Profile controls, Workout Controls source UI/actions, workout-log notifications, tests, and E2E.
 - PR #39 / `62db541`: separate profile-estimator dumbbell/total-load reference fix.
 - PR #53 / `0f8b4b7`: Phase 2A read-only, ratio-gated related-exercise transfer — `utils/lift_matching.py`, additive `exercise_transfer_ratios` + `ignored_calibration_transfers` tables, `allow_related_exercise_learning` settings flag (default `0`), estimator priority (exact learned → exact log → related learned → Profile → cold-start → default), Profile toggle, Workout Controls related-source badge/trace/ignore. Ships with **zero** seeded ratios, so no behavior change until learned mode + related mode + a ratio row all exist.
 - PR #54 / `bad70c6`: Phase 2B read/control-only review surface on `/user_profile` — learned-calibration list, ignored related-transfer list with per-row unignore, confirmed bulk reset-all / clear-ignored. No estimator math or priority change, no `calibration_events` table, transfer ratios remain internal. Verified: full pytest `1509 passed`; scoped Playwright (`user-profile.spec.ts` + `learned-calibration.spec.ts`) `30 passed`; CI all 8 jobs green.
+- PR #55 / `d3cb404`: Phase 2C explicit promote-to-Profile action — exact learned rows can be promoted from the `/user_profile` review table into `user_profile_lifts` by writing the measured top set, basis-converted between dumbbell per-hand and total/system load. No schema change, no estimator-priority change, no silent overwrite (`REFERENCE_LIFT_EXISTS` guard + UI confirm). Verified: full pytest `1524 passed`; CI all 8 jobs green.
 
-**Phases 2A and 2B are complete.** The next implementation slice is **Phase 2C** (promote to Profile) — see §"Phase 2C Promote-to-Profile Plan" below, with decisions locked 2026-06-06. This document remains the planning source for Phases 2C–2D; 2D (fatigue/volume-aware) still needs design review before coding.
+**Phases 2A, 2B, and 2C are complete.** The next possible implementation slice is **Phase 2D** (fatigue/volume-aware suggestions), but it is **not ready to code** until the design-review questions in §"Phase 2D Design Review Questions" are answered.
 
 ## Goal
 
@@ -98,7 +99,7 @@ Phase 2 should be split into reviewable stages:
 3. **Phase 2C - promote to Profile.** Add manual promote-to-Profile as its own explicit action with route tests, response-contract tests, and clear copy that it changes the user's declared baseline.
 4. **Phase 2D - fatigue/volume-aware suggestions.** Keep this separate from strength transfer so fatigue logic does not become a hidden modifier inside Workout Controls.
 
-Phase 2A is shipped (PR #53). Phase 2B is shipped (PR #54). **Phase 2C is the next implementation slice** — see §"Phase 2C Promote-to-Profile Plan" below.
+Phase 2A is shipped (PR #53). Phase 2B is shipped (PR #54). Phase 2C is shipped (PR #55). **Phase 2D is the only remaining Phase 2 slice**, and must start with design review before coding.
 
 ## Phase 2B Review and Control Surface
 
@@ -267,6 +268,107 @@ Auto-apply, plan-row (`user_selection`) writes, promoting related/last-log/cold-
 - `REFERENCE_LIFT_EXISTS` guard returns **HTTP 400** (vs 200 + `reason`): the UI confirms before sending `overwrite: true`, so reaching the server without it is a true error, not the normal confirm flow.
 - Store **raw measured reps** (no pre-cap at 12; `epley_1rm` caps internally).
 - **No** `promoted_at`/source marker on the reference lift (no schema change; consistent with the no-preservation-table decision).
+
+## Phase 2D Design Review Questions
+
+Phase 2D is the remaining Phase 2 slice and is **not ready to code**. Answer these product/design questions before implementation so fatigue or volume does not become a hidden modifier inside Workout Controls.
+
+### Core behavior
+
+1. Should fatigue/volume affect the actual suggested **weight**, **reps**, **sets**, or only add explanation/caution text?
+2. Should Phase 2D ever automatically reduce a suggestion, or should it only recommend a manual adjustment the user can accept?
+3. If fatigue/volume changes a suggestion, should that change be temporary for the current planning context only, or persisted anywhere?
+4. Should Phase 2D change the existing estimator priority chain, or remain a post-estimate advisory layer?
+
+### Inputs
+
+1. Should the feature use planned fatigue, logged fatigue, this-session fatigue, weekly fatigue, last-4-weeks fatigue, or some combination?
+2. Which fatigue/volume source is authoritative when planned and logged signals disagree?
+3. Should it use per-muscle fatigue only, movement-pattern fatigue, set-volume landmarks, SFR, or a combined score?
+4. Should unranked/unknown muscles or `"Unassigned"` buckets block adjustments, fall back to advisory text, or be ignored?
+
+### Guardrails
+
+1. What thresholds allow fatigue/volume to influence a suggestion?
+2. Should low-confidence learned calibration disable fatigue-aware changes, or should fatigue still apply to Profile/log/default estimates?
+3. Should high fatigue ever override exact learned calibration, or only decorate it with caution text?
+4. How do we prevent double-counting fatigue when the user has already logged a reduced performance set that learned calibration sees?
+
+### Trace and UX
+
+1. How visible should the fatigue/volume modifier be in Workout Controls trace?
+2. What exact copy distinguishes strength evidence from fatigue/volume context?
+3. Should the UI show a separate badge such as `Fatigue adjusted`, or keep the existing learned/profile/default source badge unchanged?
+4. Should the user be able to disable fatigue-aware suggestions independently from learned calibration?
+
+### Scope boundaries
+
+1. Should Phase 2D be limited to Workout Controls suggestions, or also affect Profile review/dashboard surfaces?
+2. Should Phase 2D include route/API changes, or can it be implemented entirely inside the estimate response trace?
+3. Should Phase 2D include E2E coverage immediately, or start with backend trace/contract tests first?
+4. What is explicitly out of scope: plan-row writes, auto-apply, fatigue-threshold tuning, volume-landmark changes, calibration formula changes, or all of these?
+
+## Phase 2D Design-Review Decision List + Recommended Defaults
+
+Recommended answers below are **defaults to review, not decisions** — bias is toward the most conservative first slice that still ships visible value. Nothing here is implemented. Each default keeps Phase 2D a **post-estimate advisory layer** that never silently changes a number and never persists.
+
+### Core behavior
+
+| # | Question | Recommended default |
+|---|---|---|
+| C1 | Affect weight / reps / sets, or only explanation/caution text? | **Advisory text only.** Do not modify suggested weight, reps, or sets in the first slice. |
+| C2 | Auto-reduce, or only recommend a manual adjustment? | **Recommend only.** No automatic reduction; the user accepts any change. |
+| C3 | If a suggestion changes, temporary or persisted? | **Temporary / display-only.** Persist nothing (no `user_selection`, `workout_log`, or `user_profile_lifts` writes). |
+| C4 | Change estimator priority chain, or stay a post-estimate advisory layer? | **Post-estimate advisory layer.** Estimator priority (`exact learned → exact log → related learned → Profile → cold-start → default`) is unchanged. |
+
+### Inputs
+
+| # | Question | Recommended default |
+|---|---|---|
+| I1 | Planned / logged / this-session / weekly / last-4-weeks fatigue, or a combination? | **Reuse the existing Fatigue Meter Phase 2 surface** (`utils/fatigue_data.build_fatigue_page_context`) — per-muscle, with the same this-session / this-week / last-4-weeks windows already shipped. Do not invent a new fatigue computation. |
+| I2 | Authoritative source when planned and logged disagree? | **Logged** when present (real evidence); fall back to planned only when no logged data exists. Surface both, never silently pick. |
+| I3 | Per-muscle / movement-pattern / set-volume landmarks / SFR / combined? | **Per-muscle % MRV** (already shipped + ranked) for the first slice. Defer movement-pattern and SFR-combined scoring. |
+| I4 | Unranked/unknown muscles or `"Unassigned"` — block, advisory text, or ignore? | **Advisory text / neutral `—`** (never block). The six unranked labels and `"Unassigned"` stay neutral, matching the shipped `fatigue == 0 → "—"` sentinel. |
+
+### Guardrails
+
+| # | Question | Recommended default |
+|---|---|---|
+| G1 | What thresholds let fatigue/volume influence a suggestion? | **None influence the number** in the first slice (advisory only). Use the existing shipped `*_FATIGUE_BANDS` strictly for the context label — no new thresholds, no tuning. |
+| G2 | Low-confidence learned calibration → disable fatigue text, or still apply to Profile/log/default? | **Always show fatigue context** regardless of strength source; it decorates, it does not gate. |
+| G3 | Should high fatigue ever override exact learned calibration? | **Never override.** Decorate with caution text only. |
+| G4 | Prevent double-counting when a reduced logged set already fed learned calibration? | Because the first slice **changes no number**, double-counting is structurally impossible. Copy must frame fatigue as *context about accumulated work*, distinct from the strength evidence the estimator already used. |
+
+### Trace / UX
+
+| # | Question | Recommended default |
+|---|---|---|
+| T1 | How visible is the fatigue/volume modifier in the Workout Controls trace? | A **separate, clearly-labeled advisory line** in the "show the math" trace, below the strength evidence — visually distinct, never merged into the strength explanation. |
+| T2 | Copy distinguishing strength evidence from fatigue/volume context? | Strength stays under "Learned/Profile source"; fatigue gets its own eyebrow, e.g. **"Fatigue context (advisory)"**. The two must never read as one combined recommendation. |
+| T3 | Separate `Fatigue adjusted` badge, or keep the existing source badge? | **Keep the existing source badge unchanged.** Add at most a neutral, non-source `Fatigue context` chip — never a badge that implies the number was adjusted. |
+| T4 | Can the user disable fatigue-aware suggestions independently of learned calibration? | **Yes** — an independent display toggle, defaulting **off**, separate from the learned-calibration mode switch. |
+
+### Scope boundaries
+
+| # | Question | Recommended default |
+|---|---|---|
+| S1 | Workout Controls only, or also Profile review/dashboard surfaces? | **Workout Controls only** for the first slice. |
+| S2 | Route/API changes, or entirely inside the estimate response trace? | **Inside the estimate response trace** (additive keys on the existing estimate endpoint). No new routes in 2D-A. |
+| S3 | E2E immediately, or backend trace/contract tests first? | **Backend trace/contract tests first** (2D-A), then E2E once the UI exists (2D-B). |
+| S4 | What is explicitly out of scope? | **All of:** plan-row writes, auto-apply, fatigue-threshold tuning, volume-landmark changes, calibration-formula changes, and any estimator-priority change. |
+
+### Fatigue-threshold tuning gate
+
+Phase 2D must **not** retune `utils/fatigue.py::MUSCLE_VOLUME_LANDMARKS` / `SESSION_FATIGUE_BANDS` / `WEEKLY_FATIGUE_BANDS`, must not edit `tests/test_fatigue.py` boundary tests, and must not tune `scripts/fatigue_calibration_report.py::SCENARIOS` — unless the existing Fatigue Meter Phase 2 **Stage 4 real-use evidence gate** is satisfied (≥2 same-direction real-use disagreements) **and** the owner gives a fresh go-ahead. Phase 2D consuming the shipped bands as a read-only label does not trip this gate.
+
+## Phase 2D Recommended Implementation Split
+
+To be sequenced **only after** the decision list above is answered by the owner. Each sub-phase is independently shippable and reviewable; later sub-phases are gated on the earlier ones proving stable.
+
+1. **2D-A — backend estimate trace only (no math change).** Add additive fatigue-context fields to the estimate response trace, sourced read-only from `utils.fatigue_data.build_fatigue_page_context`. No estimator-priority change, no number change, no new route. Backend trace/contract tests + a regression guard proving estimate weight/reps/sets are byte-for-byte unchanged.
+2. **2D-B — Workout Controls UI displays fatigue/volume context.** Render the 2D-A trace fields as a distinct advisory line under the strength evidence, gated behind an independent display toggle (default off). Focused Chromium E2E + optional scoped visual re-baseline.
+3. **2D-C — optional manual adjustment affordance (still no auto-apply).** A client-side "apply a fatigue-suggested adjustment" affordance the user must explicitly accept, populating Workout Controls inputs only — no persistence to `user_selection`, `workout_log`, or `user_profile_lifts`. Same client-side-only contract as the MVP `Apply suggestion`.
+4. **2D-D — actual suggestion modification (later, gated).** Only consider letting fatigue/volume change the suggested number after 2D-A..2D-C are stable, the owner approves, and Stage 4 real-use evidence supports it. Would require migration notes and a deliberate estimator-contract review.
 
 ## Phase 2A Related-Exercise Transfer Plan
 
