@@ -418,7 +418,9 @@ Owner-locked 2026-06-07 (see the "Owner answers" sections above). This split ref
 
 ## Phase 2D-A Technical Implementation Plan
 
-Implementation-ready preflight for **2D-A — Advisory Fatigue Context Foundation** (technical decisions locked 2026-06-07). Nothing here changes a suggested number or the estimator priority chain; it implements the owner-locked answers above as a strictly additive, post-estimate advisory layer. No app code is written yet.
+> **SHIPPED locally 2026-06-08 — commit `facd241` `feat(calibration): add advisory fatigue context`.** Implemented as planned below: new `fatigue_context_settings` table, `GET/POST /api/user_profile/fatigue_context_settings`, additive `fatigue_context` block attached after `estimate_for_exercise()`, independent Profile toggle, neutral chip + advisory section in Workout Controls "show the math". New `utils/fatigue_context.py`, `tests/test_fatigue_context.py` (24 cases), `e2e/fatigue-context.spec.ts` (5 specs). Verified locally 2026-06-08: pytest 53 + 159 passed across the calibration/profile/db/migration/harness/fatigue suites; Playwright (Chromium) 37 passed across `fatigue-context` + `learned-calibration` + `user-profile`. Committed to local `main` only — **not yet pushed**; a feature branch + PR + full pytest/CI is the next step before it reaches `origin/main`. Guardrails held: no suggestion-number change, no estimator-priority change, no fatigue-threshold/landmark/formula changes, no plan-row writes, no auto-apply.
+
+Implementation-ready preflight for **2D-A — Advisory Fatigue Context Foundation** (technical decisions locked 2026-06-07). Nothing here changes a suggested number or the estimator priority chain; it implements the owner-locked answers above as a strictly additive, post-estimate advisory layer.
 
 ### Locked technical decisions
 
