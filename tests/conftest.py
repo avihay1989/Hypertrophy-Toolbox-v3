@@ -8,6 +8,7 @@ from flask import Flask, jsonify
 from utils.database import (
     DatabaseHandler,
     add_body_composition_snapshots_table,
+    add_fatigue_context_settings_table,
     add_progression_goals_table,
     add_strength_calibration_tables,
     add_user_profile_tables,
@@ -45,6 +46,7 @@ def _initialize_test_database() -> None:
     add_user_profile_tables()
     add_body_composition_snapshots_table()
     add_strength_calibration_tables()
+    add_fatigue_context_settings_table()
     initialize_exercise_order()
     initialize_backup_tables()
 
@@ -116,6 +118,7 @@ def app(test_db_path):
                     'exercise_transfer_ratios',
                     'learned_strength_calibrations',
                     'user_calibration_settings',
+                    'fatigue_context_settings',
                     'user_profile_preferences',
                     'user_profile_lifts',
                     'user_profile',
@@ -181,6 +184,7 @@ def clean_db(db_handler):
             'exercise_transfer_ratios',
             'learned_strength_calibrations',
             'user_calibration_settings',
+            'fatigue_context_settings',
             'user_profile_preferences',
             'user_profile_lifts',
             'user_profile',

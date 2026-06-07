@@ -12,6 +12,13 @@ from utils.database import (
     upsert_user_profile_preference,
 )
 from utils.errors import error_response, success_response
+from utils.fatigue import VALID_PERIODS
+from utils.fatigue_context import (
+    VALID_FATIGUE_CONTEXT_SOURCES,
+    attach_fatigue_context,
+    get_fatigue_context_settings,
+    set_fatigue_context_settings,
+)
 from utils.logger import get_logger
 from utils.strength_calibration import (
     VALID_CALIBRATION_MODES,
@@ -291,10 +298,14 @@ def _load_profile_context(db: DatabaseHandler) -> dict[str, Any]:
     insights = _build_profile_insights(profile or {}, lift_rows)
     latest_body_composition = _load_latest_body_composition(db)
     calibration_settings = get_calibration_settings(db=db)
+    fatigue_context = get_fatigue_context_settings(db=db)
     return {
         "profile": profile or {},
         "calibration_mode": calibration_settings["mode"],
         "calibration_allow_related": calibration_settings["allow_related_exercise_learning"],
+        "fatigue_context_enabled": fatigue_context["enabled"],
+        "fatigue_context_source": fatigue_context["context_source"],
+        "fatigue_context_period": fatigue_context["context_period"],
         "reference_lifts": reference_lifts,
         "reference_lift_groups": reference_lift_groups,
         "reference_lift_groups_anterior": reference_lift_groups_anterior,
@@ -499,6 +510,11 @@ def get_user_profile_estimate():
     try:
         with DatabaseHandler() as db:
             estimate = estimate_for_exercise(exercise, db=db)
+            # Phase 2D-A: additive advisory layer. Attaches the optional
+            # `fatigue_context` key *after* the estimator returns — it never
+            # changes the suggested number, source, reason, or trace, and adds
+            # nothing when the (separate, default-off) toggle is disabled.
+            attach_fatigue_context(estimate, exercise, db=db)
         return jsonify(success_response(data=estimate))
     except Exception:
         logger.exception("Failed to estimate exercise", extra={"exercise": exercise})
@@ -545,6 +561,65 @@ def calibration_settings():
     except Exception:
         logger.exception("Failed to save calibration settings", extra={"payload": data})
         return error_response("INTERNAL_ERROR", "Failed to save calibration settings", 500)
+
+
+@user_profile_bp.route("/api/user_profile/fatigue_context_settings", methods=["GET", "POST"])
+def fatigue_context_settings():
+    """Read or update the advisory fatigue-context settings (Phase 2D-A).
+
+    A single-row, default-off feature switch kept **separate** from learned
+    calibration. ``enabled`` turns the advisory layer on; ``context_source``
+    (``planned`` / ``logged`` / ``both``) and ``context_period``
+    (``this_session`` / ``this_week`` / ``last_4_weeks``) pick the lens. This
+    never changes a suggested number or the estimator priority chain. See
+    ``docs/user_profile/LEARNED_CALIBRATION_PLAN.md`` §"Phase 2D-A".
+    """
+    if request.method == "GET":
+        try:
+            with DatabaseHandler() as db:
+                settings = get_fatigue_context_settings(db=db)
+            return jsonify(success_response(data=settings))
+        except Exception:
+            logger.exception("Failed to read fatigue context settings")
+            return error_response(
+                "INTERNAL_ERROR", "Failed to read fatigue context settings", 500
+            )
+
+    data = None
+    try:
+        data = _get_json_payload("fatigue_context_settings")
+        if not isinstance(data, dict):
+            raise ValueError("Invalid JSON data")
+        enabled = _optional_bool(data, "enabled")
+        source = _nullable_text(data.get("context_source"))
+        if source is not None and source not in VALID_FATIGUE_CONTEXT_SOURCES:
+            raise ValueError(
+                f"context_source must be one of {', '.join(VALID_FATIGUE_CONTEXT_SOURCES)}"
+            )
+        period = _nullable_text(data.get("context_period"))
+        if period is not None and period not in VALID_PERIODS:
+            raise ValueError(
+                f"context_period must be one of {', '.join(VALID_PERIODS)}"
+            )
+
+        with DatabaseHandler() as db:
+            saved = set_fatigue_context_settings(
+                db=db,
+                enabled=enabled,
+                context_source=source,
+                context_period=period,
+            )
+        return jsonify(
+            success_response(data=saved, message="Fatigue context settings saved")
+        )
+    except ValueError as exc:
+        logger.warning(
+            "Validation error saving fatigue context settings", extra={"error": str(exc)}
+        )
+        return error_response("VALIDATION_ERROR", str(exc), 400)
+    except Exception:
+        logger.exception("Failed to save fatigue context settings", extra={"payload": data})
+        return error_response("INTERNAL_ERROR", "Failed to save fatigue context settings", 500)
 
 
 @user_profile_bp.route("/api/user_profile/calibration/reset", methods=["POST"])

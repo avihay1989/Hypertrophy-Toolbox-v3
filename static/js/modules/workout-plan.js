@@ -813,6 +813,7 @@ function applyEstimateToWorkoutControls(estimate) {
     }
 
     updateLearnedBadge(resolved);
+    updateFatigueContextChip(resolved);
 
     const handHint = document.getElementById('weight-hand-hint');
     if (handHint) {
@@ -856,6 +857,25 @@ function updateLearnedBadge(estimate) {
             ? `Suggested from ${sampleCount} scored ${sampleCount === 1 ? 'log' : 'logs'} for this exercise`
             : 'Suggested from your scored logs';
     }
+}
+
+// Fatigue context (Phase 2D-A) — neutral, non-source chip next to the
+// provenance line. Shown only when the estimate carries the additive
+// `fatigue_context` advisory block (its own default-off Profile toggle). It is
+// deliberately NOT confidence-tinted and NEVER implies the number changed.
+function updateFatigueContextChip(estimate) {
+    const chip = document.getElementById('workout-estimate-fatigue-chip');
+    if (!chip) return;
+    const fatigue = estimate?.fatigue_context;
+    if (!fatigue) {
+        chip.hidden = true;
+        chip.removeAttribute('title');
+        return;
+    }
+    chip.hidden = false;
+    chip.title = fatigue.headline
+        ? `${fatigue.headline} ${fatigue.advisory || ''}`.trim()
+        : 'Fatigue context';
 }
 
 // Force the current learned suggestion into the Workout Controls inputs.
@@ -994,6 +1014,12 @@ function renderEstimateTrace(estimate) {
     }
     container.appendChild(list);
 
+    // Phase 2D-A — advisory fatigue context, rendered as its own distinct
+    // section BELOW the strength evidence. Never merged into the strength
+    // steps; always carries the "does not change your suggestion" line.
+    const fatigueSection = buildFatigueContextSection(estimate?.fatigue_context);
+    if (fatigueSection) container.appendChild(fatigueSection);
+
     if (trace.improvement_hint?.copy) {
         const hint = document.createElement('p');
         hint.className = 'workout-estimate-trace-hint';
@@ -1012,6 +1038,35 @@ function renderEstimateTrace(estimate) {
     if (['learned', 'related_learned'].includes(trace.source)) {
         container.appendChild(buildLearnedActions());
     }
+}
+
+// Build the advisory "Fatigue context" block for the trace details. Returns
+// null when the estimate carries no fatigue_context (toggle off / no muscle).
+// Read-only: an eyebrow, a headline, and the mandatory advisory line.
+function buildFatigueContextSection(fatigue) {
+    if (!fatigue) return null;
+    const section = document.createElement('div');
+    section.className = 'workout-estimate-fatigue';
+    section.setAttribute('data-fatigue-context', '');
+
+    const eyebrow = document.createElement('p');
+    eyebrow.className = 'workout-estimate-fatigue-eyebrow';
+    eyebrow.textContent = 'Fatigue context';
+    section.appendChild(eyebrow);
+
+    if (fatigue.headline) {
+        const headline = document.createElement('p');
+        headline.className = 'workout-estimate-fatigue-headline';
+        headline.textContent = fatigue.headline;
+        section.appendChild(headline);
+    }
+
+    const advisory = document.createElement('small');
+    advisory.className = 'workout-estimate-fatigue-advisory';
+    advisory.textContent = fatigue.advisory || 'This does not change your suggestion.';
+    section.appendChild(advisory);
+
+    return section;
 }
 
 // Apply / Keep / Reset row shown inside the learned-suggestion details. Apply

@@ -575,6 +575,64 @@
                     </div>
                 </div>
             </section>
+
+            {# Fatigue Context — Phase 2D-A. An independent, default-off
+               advisory toggle, separate from Learned Calibration. When on,
+               Workout Controls shows a read-only fatigue note inside "show the
+               math"; it never changes the suggested weight/reps/sets. See
+               docs/user_profile/LEARNED_CALIBRATION_PLAN.md §"Phase 2D-A". #}
+            <section class="collapsible-frame action-frame frame-calm-glass profile-fatigue-context" data-section="fatigue context">
+                <div class="frame-header frame-header-2025">
+                    <div class="frame-header-left">
+                        <span class="frame-title">Fatigue Context</span>
+                    </div>
+                    <div class="frame-header-right">
+                        <button class="collapse-toggle" type="button" title="Collapse fatigue context" aria-expanded="true" aria-controls="profile-fatigue-context-content">
+                            <i class="fas fa-chevron-up toggle-icon" aria-hidden="true"></i>
+                            <span class="toggle-text">Hide</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="frame-content" id="profile-fatigue-context-content">
+                    <p class="profile-calibration-copy">
+                        When enabled, Workout Controls adds a read-only fatigue note inside
+                        &ldquo;show the math&rdquo; for the muscle an exercise trains. It is
+                        advisory only &mdash; it never changes your suggested weight, reps, or
+                        sets, and it is separate from Learned Calibration above.
+                    </p>
+                    <form id="profile-fatigue-context-form" class="profile-form" aria-label="Fatigue context settings">
+                        <fieldset class="preference-group" data-setting="fatigue-context-enabled">
+                            <legend>Fatigue context</legend>
+                            <label class="profile-checkbox-option">
+                                <input type="checkbox" name="fatigue_context_enabled" {% if fatigue_context_enabled %}checked{% endif %}>
+                                <span>Show fatigue context in Workout Controls details</span>
+                            </label>
+                        </fieldset>
+                        <fieldset class="preference-group" data-setting="fatigue-context-source">
+                            <legend>Fatigue source</legend>
+                            <select name="fatigue_context_source" class="form-select input-calm-inset" aria-label="Fatigue context source" {% if not fatigue_context_enabled %}disabled{% endif %}>
+                                <option value="both" {% if fatigue_context_source == 'both' %}selected{% endif %}>Planned and logged</option>
+                                <option value="planned" {% if fatigue_context_source == 'planned' %}selected{% endif %}>Planned only</option>
+                                <option value="logged" {% if fatigue_context_source == 'logged' %}selected{% endif %}>Logged only</option>
+                            </select>
+                        </fieldset>
+                        <fieldset class="preference-group" data-setting="fatigue-context-period">
+                            <legend>Fatigue window</legend>
+                            <select name="fatigue_context_period" class="form-select input-calm-inset" aria-label="Fatigue context window" {% if not fatigue_context_enabled %}disabled{% endif %}>
+                                <option value="this_session" {% if fatigue_context_period == 'this_session' %}selected{% endif %}>Most recent session</option>
+                                <option value="this_week" {% if fatigue_context_period == 'this_week' %}selected{% endif %}>This week (Mon&ndash;Sun)</option>
+                                <option value="last_4_weeks" {% if fatigue_context_period == 'last_4_weeks' %}selected{% endif %}>Last 4 weeks</option>
+                            </select>
+                        </fieldset>
+                        <div class="profile-actions profile-actions-end">
+                            <div class="profile-autosave-status" data-fatigue-context-status="idle" role="status" aria-live="polite">
+                                <i class="fas fa-cloud-check profile-autosave-icon" aria-hidden="true"></i>
+                                <span class="profile-autosave-text" data-fatigue-context-text>Off &mdash; fatigue context is hidden</span>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </section>
         </div>
     </div>
 </main>
