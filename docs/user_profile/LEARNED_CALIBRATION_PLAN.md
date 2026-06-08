@@ -13,7 +13,7 @@ MVP + Phase 2A + Phase 2B + Phase 2C + Phase 2D-A + Phase 2D-B learned calibrati
 - PR #57 / `9fb1337`: Phase 2D-B Progression Fatigue Context Surface (merged 2026-06-09) — extends the advisory layer to the **Progression page (`/progression`) only**, reusing the 2D-A shared toggle, settings, and copy verbatim. `/get_exercise_suggestions` now attaches the same additive `fatigue_context` block as a **sibling to `data`** (the suggestions list is byte-for-byte unchanged), built via a new **batch helper** that performs **one** `build_fatigue_page_context` build per request (no per-exercise scan, no new fatigue math). Rendered as a distinct "Fatigue context" chip + section below the suggestion cards. Guardrails: no suggestion-number change, no progression-decision change, no estimator-priority change, no fatigue-threshold/landmark/formula change, no plan-row writes, no auto-apply; `utils/fatigue.py` untouched. Verified: focused pytest **115 passed**, broader affected pytest **217 passed**, full `pytest tests/` **1556 passed**; Chromium E2E progression **26 passed**, fatigue-context + user-profile **29 passed**; CI all 8 jobs green before merge.
 - PR #58 / `5bf4880`: Phase 2D-C Manual Fatigue-Context Nudge Controls (merged 2026-06-09) — a neutral manual-adjustment affordance inside the Workout Controls fatigue-context section. ± steppers for **Weight** and **Sets** plus **"Reset to suggestion"** — a **neutral manual nudge that steps each input by its own native step, not a fatigue-derived delta** (that mapping is gated to 2D-D). **Weight + sets only; reps deferred.** **Client-side only** — edits the Workout Controls inputs directly with no API/write path and no persistence to `user_selection` / `workout_log` / `user_profile_lifts` (same contract as the MVP `Apply suggestion`). **Reset restores the estimator suggestion exactly** (re-applies the last resolved estimate's weight + sets). **Reuses the shared 2D-A fatigue-context toggle** — the affordance only renders inside the existing fatigue-context section, so toggle-off hides it too. **No schema/backend behavior change.** Code: `static/js/modules/workout-plan.js`, `static/css/pages-workout-plan.css`, `e2e/fatigue-context.spec.ts` (+1 spec proving the per-input nudge / no-write / exact-reset cycle, +1 toggle-off absence assertion). Verified: full `pytest tests/` **1556 passed** (client-side-only slice — no pytest delta); Chromium E2E `fatigue-context` + `workout-plan` + `learned-calibration` + `progression` + `user-profile` **98 passed**; CI all 8 jobs green before merge. See §"Phase 2D-C Manual Adjustment Affordance" below. **2D-D remains out of scope and gated.**
 
-**Phases 2A, 2B, 2C, 2D-A, 2D-B, and 2D-C are complete (shipped to `main`).** Phase 2D design review is done (owner answers locked, `38d3b1c`); the first three 2D slices (2D-A, 2D-B, 2D-C) have shipped. Remaining 2D slice is **open but not started**: **2D-D** (actual suggestion modification — gated on owner approval + Stage 4 evidence). See §"Phase 2D-A Technical Implementation Plan", §"Phase 2D-B Progression Fatigue Context Surface", §"Phase 2D-C Manual Adjustment Affordance", and the 2D split below.
+**Phases 2A, 2B, 2C, 2D-A, 2D-B, and 2D-C are complete (shipped to `main`).** Phase 2D design review is done (owner answers locked, `38d3b1c`); the first three 2D slices (2D-A, 2D-B, 2D-C) have shipped. Remaining 2D slice is **2D-D** (actual suggestion modification) — **gate-reviewed 2026-06-09 and BLOCKED on insufficient Stage 4 real-use evidence; not started, do not start** (gated on explicit owner approval + ≥2 same-direction real-use disagreements). See §"Phase 2D-A Technical Implementation Plan", §"Phase 2D-B Progression Fatigue Context Surface", §"Phase 2D-C Manual Adjustment Affordance", §"Phase 2D-D Gate Review — BLOCKED (2026-06-09)", and the 2D split below.
 
 ## Goal
 
@@ -417,7 +417,7 @@ Owner-locked 2026-06-07 (see the "Owner answers" sections above). This split ref
    - Tests: backend trace/contract tests + a regression guard proving estimate weight/reps/sets are byte-for-byte unchanged, **plus** focused Chromium E2E in the **same PR** (the slice includes both API/settings behavior and visible UI behavior).
 2. **2D-B — broader app-wide fatigue-context surfaces. SHIPPED (PR #57, squash `9fb1337`, 2026-06-09).** Owner narrowed the first 2D-B surface to the **Progression page only** (`/get_exercise_suggestions`), reusing the 2D-A shared toggle/settings/copy and a new one-page-build batch helper. Still advisory-only; still no number or progression-decision change. See §"Phase 2D-B Progression Fatigue Context Surface". Further surfaces (Profile dashboard, etc.) remain a future option, not in this slice.
 3. **2D-C — optional manual adjustment affordance (still no auto-apply). SHIPPED (PR #58, squash `5bf4880`, 2026-06-09).** A client-side manual nudge the user must explicitly accept, populating Workout Controls inputs only — no persistence to `user_selection`, `workout_log`, or `user_profile_lifts`. Same client-side-only contract as the MVP `Apply suggestion`. Shipped as a neutral ± stepper for Weight + Sets (reps deferred) plus "Reset to suggestion", reusing the shared 2D-A toggle; the nudge steps each input by its own native step, **not** a fatigue-derived magnitude. See §"Phase 2D-C Manual Adjustment Affordance".
-4. **2D-D — actual suggestion modification (much later, gated).** Only consider letting fatigue/volume change the suggested number after 2D-A..2D-C are stable, the owner **explicitly approves**, and Stage 4 real-use evidence supports it. Would require migration notes and a deliberate estimator-contract review.
+4. **2D-D — actual suggestion modification (much later, gated). GATE-REVIEWED 2026-06-09 → BLOCKED on insufficient Stage 4 real-use evidence; not started.** Only consider letting fatigue/volume change the suggested number after 2D-A..2D-C are stable, the owner **explicitly approves**, and Stage 4 real-use evidence supports it. Would require migration notes and a deliberate estimator-contract review. As of 2026-06-09: `workout_log` 0 rows, no observer output, 0 of ≥2 same-direction real-use disagreements — see §"Phase 2D-D Gate Review — BLOCKED (2026-06-09)".
 
 ## Phase 2D-A Technical Implementation Plan
 
@@ -568,6 +568,42 @@ No suggested weight/reps/sets change *by the estimator* · no estimator-priority
 
 - Full `pytest tests/`: **1556 passed** (client-side-only slice — no new pytest cases, count unchanged from the 2D-B baseline).
 - Chromium E2E `fatigue-context.spec.ts` + `workout-plan.spec.ts` + `learned-calibration.spec.ts` + `progression.spec.ts` + `user-profile.spec.ts`: **98 passed**.
+
+## Phase 2D-D Gate Review — BLOCKED (2026-06-09)
+
+> **REVIEWED 2026-06-09 — BLOCKED. Not started, do not start.** Phase 2D-D ("actual suggestion modification" — letting fatigue/volume change the suggested **number**) was gate-reviewed on 2026-06-09 and is **blocked on insufficient Stage 4 real-use evidence**. 2D-D would be the **first advisory→prescriptive step** in the whole fatigue-context track (2D-A/2D-B/2D-C all keep the suggested number unchanged), so it must not proceed without **explicit owner approval** *and* supporting evidence. No implementation. No code, schema, or methodology change from this review — docs only.
+
+### What 2D-D would mean
+
+Per §"Phase 2D Recommended Implementation Split" item 4: letting fatigue/volume **change the suggested number** (weight / sets / reps), as opposed to the shipped advisory-only slices that only *display* fatigue context. This includes a fatigue-derived weight/sets/reps delta, a fatigue-scaled magnitude on the 2D-C nudge, or any second modifier that adjusts the final number based on fatigue — even when presented as a user-acceptable "suggested adjustment." Auto-apply, estimator-priority change, threshold/landmark/formula tuning, and plan-row writes are **out of scope of 2D-D itself** and separately forbidden.
+
+### Why it crosses a line the shipped slices did not
+
+2D-A/2D-B/2D-C are safe **because** the fatigue bands stay advisory — an uncalibrated band only mis-colors a read-only label. 2D-D would let those same bands move a number the user trains against, making the bands *consequential*. That requires the Stage 4 calibration the advisory slices never needed.
+
+### Current Stage 4 evidence (insufficient)
+
+- Live `workout_log`: **0 rows** (verified via `scripts/fatigue_stage4_status.py`).
+- `docs/fatigue_meter/stage4_calibration_log.csv`: **absent** — the Stage 4 observer has appended nothing.
+- Same-direction **real-use** band disagreements: **0 of the required ≥2** (Phase 1 §4.2 / PHASE2_PLANNING.md Stage 4 bar).
+- The one historical real anchor (W20, 2026-05-20 calibration-notes.md) **agreed** with the engine band; the lone `hard_4d` mismatch is **synthetic and explicitly ruled non-signal** (Hypothesis B). Synthetic mismatches do not count.
+
+There is, in fact, no evidence that fatigue bands need to influence numbers at all.
+
+### Missing unblock criteria (all required before reconsidering)
+
+1. A non-empty, **representative** real `workout_log` spanning multiple distinct weeks of varied stress.
+2. Observer / felt-label evidence showing **≥2 same-direction real-use disagreements** (engine band vs. owner felt label), recorded via the existing observer in `stage4_calibration_log.csv`.
+3. **Explicit owner approval** to cross the advisory→prescriptive line (reverses the standing advisory-only answers C1/C2; needs a fresh written decision).
+4. Owner decisions on: which output(s) 2D-D may touch (weight / sets / reps), the magnitude source (fixed single-band step vs. proportional-to-percent), and the **double-counting (G4)** resolution — how fatigue modification coexists with learned calibration that already absorbed reduced logged performance, without penalizing twice.
+
+### Conditional narrowest future sketch — NOT actionable
+
+If and only if every unblock criterion above is met, the minimum viable 2D-D to bring to the owner would be: **sets-only**, **user-accepted** (suggested, never auto-applied), **client-side only** (edits the input, same contract as 2D-C), **no persistence** to `user_selection` / `workout_log` / `user_profile_lifts`, a single coarse step (e.g. high/very-heavy band → suggest −1 set), bands consumed **read-only**, strictly post-estimate. This is a framing sketch, **not a recommendation to build** — the recommendation today is to keep 2D-D parked and let the observer accumulate evidence.
+
+### Guardrails (hold for this review and any future 2D-D work)
+
+No implementation without explicit owner approval after this review · no auto-apply · no estimator-priority change · no fatigue-threshold/band/landmark tuning (no edits to `utils/fatigue.py::MUSCLE_VOLUME_LANDMARKS` / `SESSION_FATIGUE_BANDS` / `WEEKLY_FATIGUE_BANDS`) · no volume-landmark changes · no calibration/e1RM-formula changes · no plan-row / `workout_log` / `user_profile_lifts` writes · `utils/fatigue.py` untouched · `data/database.db` not staged or committed.
 
 ## Phase 2A Related-Exercise Transfer Plan
 

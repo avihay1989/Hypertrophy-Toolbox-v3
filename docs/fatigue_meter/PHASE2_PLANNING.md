@@ -145,6 +145,8 @@ Pre-merge restore point retained: backup id 5, label `pre-fatigue-meter-phase-2-
 ### Stage 4 — Post-merge calibration window — ⏳ OPEN 2026-05-24
 ≥2 weeks of real use before any per-muscle threshold tweaks. Same "no tuning without ≥2 disagreements" bar as Phase 1 §4.2. Earliest close date: **2026-06-07**.
 
+**Downstream consumer — Learned Calibration Phase 2D-D gate (BLOCKED 2026-06-09).** The same Stage 4 real-use evidence bar gates Learned Calibration **2D-D** ("actual suggestion modification" — letting fatigue/volume change the suggested *number*; see [`docs/user_profile/LEARNED_CALIBRATION_PLAN.md`](../user_profile/LEARNED_CALIBRATION_PLAN.md) §"Phase 2D-D Gate Review — BLOCKED (2026-06-09)"). As of 2026-06-09 the evidence is **insufficient**: live `workout_log` **0 rows**, no `stage4_calibration_log.csv` observer output, **0 of the required ≥2** same-direction real-use disagreements; the one historical real anchor (W20) agreed with the engine and the synthetic `hard_4d` mismatch does not count. 2D-D therefore stays blocked. **This note records the gate result only — no threshold/band/landmark change, no `utils/fatigue.py` edit, no `SCENARIOS` tuning.**
+
 ---
 
 ## 6. Files likely touched
