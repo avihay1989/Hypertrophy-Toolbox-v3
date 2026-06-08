@@ -1151,6 +1151,86 @@ function bindCalibrationSettings() {
 }
 
 // =============================================================================
+// Phase 2D-A — Fatigue context settings (independent of learned calibration)
+// =============================================================================
+// Advisory-only toggle. Persists to /api/user_profile/fatigue_context_settings;
+// the estimate response then carries an additive `fatigue_context` block the
+// Plan page renders inside "show the math". No estimator math is touched here.
+
+function readFatigueContextForm(form) {
+    const enabled = Boolean(
+        form.querySelector('input[name="fatigue_context_enabled"]')?.checked,
+    );
+    const source = form.querySelector('select[name="fatigue_context_source"]')?.value || 'both';
+    const period = form.querySelector('select[name="fatigue_context_period"]')?.value || 'this_week';
+    return { enabled, context_source: source, context_period: period };
+}
+
+function syncFatigueContextControls(form, settings) {
+    const source = form.querySelector('select[name="fatigue_context_source"]');
+    const period = form.querySelector('select[name="fatigue_context_period"]');
+    if (source) source.disabled = !settings.enabled;
+    if (period) period.disabled = !settings.enabled;
+}
+
+function updateFatigueContextStatusText(settings) {
+    const text = document.querySelector('[data-fatigue-context-text]');
+    if (!text) return;
+    text.textContent = settings.enabled
+        ? 'On — fatigue context shown in Workout Controls details'
+        : 'Off — fatigue context is hidden';
+}
+
+function bindFatigueContextSettings() {
+    const form = document.getElementById('profile-fatigue-context-form');
+    if (!form) return;
+    let currentSettings = readFatigueContextForm(form);
+    syncFatigueContextControls(form, currentSettings);
+    updateFatigueContextStatusText(currentSettings);
+
+    form.addEventListener('change', async (event) => {
+        const input = event.target;
+        if (
+            !input
+            || ![
+                'fatigue_context_enabled',
+                'fatigue_context_source',
+                'fatigue_context_period',
+            ].includes(input.name)
+        ) return;
+        const previousSettings = currentSettings;
+        const settings = readFatigueContextForm(form);
+        syncFatigueContextControls(form, settings);
+        try {
+            const response = await api.post(
+                '/api/user_profile/fatigue_context_settings',
+                settings,
+            );
+            const saved = { ...settings, ...(response?.data || {}) };
+            currentSettings = saved;
+            syncFatigueContextControls(form, saved);
+            updateFatigueContextStatusText(saved);
+            showToast(
+                'success',
+                saved.enabled ? 'Fatigue context enabled' : 'Fatigue context turned off',
+            );
+        } catch (error) {
+            const enabledInput = form.querySelector('input[name="fatigue_context_enabled"]');
+            if (enabledInput) enabledInput.checked = previousSettings.enabled;
+            const sourceSel = form.querySelector('select[name="fatigue_context_source"]');
+            if (sourceSel) sourceSel.value = previousSettings.context_source;
+            const periodSel = form.querySelector('select[name="fatigue_context_period"]');
+            if (periodSel) periodSel.value = previousSettings.context_period;
+            syncFatigueContextControls(form, previousSettings);
+            updateFatigueContextStatusText(previousSettings);
+            showToast('error', error?.message || 'Failed to save fatigue context settings', {
+                requestId: error?.requestId,
+            });
+        }
+    });
+}
+
+// =============================================================================
 // Phase 2B — Learned calibration review/control surface
 // =============================================================================
 // Read/control-only: lists are populated from
@@ -1393,6 +1473,7 @@ export function initializeUserProfile() {
     bindInsightsAutoUpdate();
     bindCalibrationSettings();
     bindCalibrationReview();
+    bindFatigueContextSettings();
     initializeBodymap();
 }
 

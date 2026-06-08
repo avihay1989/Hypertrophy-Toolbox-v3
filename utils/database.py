@@ -685,6 +685,33 @@ def add_strength_calibration_tables() -> None:
         db.execute_query(ddl_ignored_transfers)
 
 
+def add_fatigue_context_settings_table() -> None:
+    """Ensure the fatigue-context settings table exists (additive + idempotent).
+
+    Phase 2D-A — a single-row feature switch kept **separate** from
+    ``user_calibration_settings`` so fatigue-context advice toggles
+    independently of learned calibration. Defaults to ``enabled = 0`` so
+    restoring a pre-2D backup leaves the advisory layer inert and the estimate
+    response byte-for-byte unchanged. See
+    ``docs/user_profile/LEARNED_CALIBRATION_PLAN.md`` §"Phase 2D-A".
+    """
+    ddl_fatigue_context = """
+        CREATE TABLE IF NOT EXISTS fatigue_context_settings (
+            id INTEGER PRIMARY KEY CHECK (id = 1),
+            enabled INTEGER NOT NULL DEFAULT 0,
+            context_source TEXT NOT NULL DEFAULT 'both' CHECK (
+                context_source IN ('planned', 'logged', 'both')
+            ),
+            context_period TEXT NOT NULL DEFAULT 'this_week' CHECK (
+                context_period IN ('this_session', 'this_week', 'last_4_weeks')
+            ),
+            updated_at DATETIME
+        )
+    """
+    with DatabaseHandler() as db:
+        db.execute_query(ddl_fatigue_context)
+
+
 def add_body_composition_snapshots_table() -> None:
     """Ensure the body_composition_snapshots table + index exist (Issue #21)."""
     ddl_table = """
