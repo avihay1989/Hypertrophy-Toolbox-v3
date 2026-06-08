@@ -3,6 +3,7 @@ from datetime import datetime
 
 from utils.database import DatabaseHandler
 from utils.errors import error_response, is_xhr_request, success_response
+from utils.fatigue_context import build_fatigue_context_batch
 from utils.logger import get_logger
 from utils.progression_plan import (
     get_exercise_history,
@@ -162,7 +163,26 @@ def get_suggestions():
         else:
             suggestions = generate_progression_suggestions(history, is_novice=is_novice)
 
-        return jsonify(success_response(data=suggestions))
+        payload = success_response(data=suggestions)
+        # Phase 2D-B: additive advisory fatigue context. Attached as a sibling
+        # to `data` (which stays the suggestions list, so the existing contract
+        # is byte-for-byte unchanged) and omitted entirely when the shared,
+        # default-off toggle is disabled. Uses the batch helper (one fatigue
+        # page build) and is fully guarded so it can never break suggestions —
+        # it changes no suggested number or progression decision.
+        try:
+            with DatabaseHandler() as db:
+                contexts = build_fatigue_context_batch([exercise], db=db)
+            block = contexts.get(exercise)
+            if block is not None:
+                payload["fatigue_context"] = block
+        except Exception:
+            logger.exception(
+                "Failed to attach fatigue context",
+                extra={"exercise": exercise},
+            )
+
+        return jsonify(payload)
     except ValueError as exc:
         logger.warning(
             "Validation error in get_suggestions",

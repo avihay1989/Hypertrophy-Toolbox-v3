@@ -348,3 +348,57 @@ def test_complete_progression_goal_returns_wrapped_404_for_missing_goal(client, 
     assert response.status_code == 404
     payload = response.get_json()
     assert_error_envelope(payload, "NOT_FOUND", "Goal not found")
+
+
+# --------------------------------------------------------------------------- #
+# Phase 2D-B — advisory fatigue context on /get_exercise_suggestions
+# --------------------------------------------------------------------------- #
+
+def _suggestions(client, exercise):
+    return client.post(
+        "/get_exercise_suggestions",
+        json={"exercise": exercise},
+        headers=XHR_HEADERS,
+    ).get_json()
+
+
+def test_suggestions_omit_fatigue_context_when_disabled(client, clean_db, exercise_factory):
+    exercise_factory("Barbell Bench Press", primary_muscle_group="Chest")
+    payload = _suggestions(client, "Barbell Bench Press")
+    assert_success_envelope(payload)
+    assert isinstance(payload["data"], list)
+    assert "fatigue_context" not in payload
+
+
+def test_suggestions_add_only_fatigue_context_when_enabled(
+    client, clean_db, exercise_factory
+):
+    exercise_factory("Barbell Bench Press", primary_muscle_group="Chest")
+
+    off = _suggestions(client, "Barbell Bench Press")
+    assert "fatigue_context" not in off
+
+    client.post(
+        "/api/user_profile/fatigue_context_settings",
+        json={"enabled": True},
+        headers=XHR_HEADERS,
+    )
+    on = _suggestions(client, "Barbell Bench Press")
+
+    # The additive block is present and carries the mandatory advisory...
+    assert on["fatigue_context"]["enabled"] is True
+    assert on["fatigue_context"]["advisory"] == "This does not change your suggestion."
+    # ...and the suggestions list itself (numbers + decisions) is unchanged.
+    assert on["data"] == off["data"]
+
+
+def test_suggestions_fatigue_context_unranked_fallback(client, clean_db, exercise_factory):
+    exercise_factory("Neck Curl", primary_muscle_group="Neck")
+    client.post(
+        "/api/user_profile/fatigue_context_settings",
+        json={"enabled": True},
+        headers=XHR_HEADERS,
+    )
+    payload = _suggestions(client, "Neck Curl")
+    assert payload["fatigue_context"]["is_advisory_fallback"] is True
+    assert "isn't ranked" in payload["fatigue_context"]["headline"]

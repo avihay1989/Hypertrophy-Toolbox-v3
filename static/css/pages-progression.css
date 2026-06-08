@@ -364,3 +364,58 @@
 #filters-form .col-sm-6 {
     padding: 0.5rem;
 }
+
+/* Phase 2D-B — advisory fatigue context (neutral, read-only). Visually
+   distinct from the suggestion cards: a dashed-top separator, an uppercase
+   neutral chip, the muscle headline, and the mandatory advisory line. Never
+   confidence-tinted — it does not imply the suggestion changed. */
+#suggestionsFatigueContext[hidden] {
+    display: none;
+}
+
+.progression-fatigue {
+    border-top: 1px dashed color-mix(in srgb, var(--ink-2, #4a5170) 22%, transparent);
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+}
+
+.progression-fatigue__chip {
+    align-items: center;
+    background: color-mix(in srgb, var(--ink-2, #4a5170) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--ink-2, #4a5170) 26%, transparent);
+    border-radius: 999px;
+    color: var(--ink-2, #4a5170);
+    display: inline-flex;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 0.15rem 0.6rem;
+    text-transform: uppercase;
+}
+
+.progression-fatigue__headline {
+    color: var(--ink-1, #22283a);
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin: 0.4rem 0 0.15rem;
+}
+
+.progression-fatigue__advisory {
+    color: var(--ink-2, #4a5170);
+    display: block;
+    font-size: 0.78rem;
+}
+
+[data-theme='dark'] .progression-fatigue__chip {
+    background: color-mix(in srgb, var(--ink-2, #b4bad0) 14%, transparent);
+    border-color: color-mix(in srgb, var(--ink-2, #b4bad0) 28%, transparent);
+    color: var(--ink-2, #b4bad0);
+}
+
+[data-theme='dark'] .progression-fatigue__headline {
+    color: var(--ink-1, #e8ebf5);
+}
+
+[data-theme='dark'] .progression-fatigue__advisory {
+    color: var(--ink-2, #b4bad0);
+}

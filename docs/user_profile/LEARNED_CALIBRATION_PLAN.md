@@ -2,7 +2,7 @@
 
 ## Status
 
-MVP + Phase 2A + Phase 2B + Phase 2C + Phase 2D-A learned calibration are shipped on `main`:
+MVP + Phase 2A + Phase 2B + Phase 2C + Phase 2D-A learned calibration are shipped on `main`; Phase 2D-B is implemented on `feat/calibration-phase-2d-b-progression-context` (PR open):
 
 - PR #37 / `fd2e2f5`: exact-exercise learned calibration backend, settings, estimator integration, Profile controls, Workout Controls source UI/actions, workout-log notifications, tests, and E2E.
 - PR #39 / `62db541`: separate profile-estimator dumbbell/total-load reference fix.
@@ -10,8 +10,9 @@ MVP + Phase 2A + Phase 2B + Phase 2C + Phase 2D-A learned calibration are shippe
 - PR #54 / `bad70c6`: Phase 2B read/control-only review surface on `/user_profile` — learned-calibration list, ignored related-transfer list with per-row unignore, confirmed bulk reset-all / clear-ignored. No estimator math or priority change, no `calibration_events` table, transfer ratios remain internal. Verified: full pytest `1509 passed`; scoped Playwright (`user-profile.spec.ts` + `learned-calibration.spec.ts`) `30 passed`; CI all 8 jobs green.
 - PR #55 / `d3cb404`: Phase 2C explicit promote-to-Profile action — exact learned rows can be promoted from the `/user_profile` review table into `user_profile_lifts` by writing the measured top set, basis-converted between dumbbell per-hand and total/system load. No schema change, no estimator-priority change, no silent overwrite (`REFERENCE_LIFT_EXISTS` guard + UI confirm). Verified: full pytest `1524 passed`; CI all 8 jobs green.
 - PR #56 / `39fdd17`: Phase 2D-A Advisory Fatigue Context Foundation (merged 2026-06-08) — additive, post-estimate, default-off advisory layer. New single-row `fatigue_context_settings` table (independent of learned calibration) + `GET/POST /api/user_profile/fatigue_context_settings`; the estimate response gains an optional `fatigue_context` block attached **after** `estimate_for_exercise()` returns (omitted when disabled → byte-for-byte unchanged); independent Profile toggle; neutral "Fatigue context" chip/details in Workout Controls; every variant ends with "This does not change your suggestion." Reuses the shipped Fatigue Meter bands/percentages — **no new fatigue math**. Guardrails: no suggestion-number change, no estimator-priority change, no fatigue-threshold/landmark/formula change, no plan-row writes, no auto-apply; `utils/fatigue.py` untouched. Verified: 53 + 159 targeted pytest, 37 Chromium E2E, full pytest **1548 passed**; CI all 8 jobs green before merge.
+- Phase 2D-B Progression Fatigue Context Surface (PR open, branch `feat/calibration-phase-2d-b-progression-context`) — extends the advisory layer to the **Progression page (`/progression`) only**, reusing the 2D-A shared toggle, settings, and copy verbatim. `/get_exercise_suggestions` now attaches the same additive `fatigue_context` block as a **sibling to `data`** (the suggestions list is byte-for-byte unchanged), built via a new **batch helper** that performs **one** `build_fatigue_page_context` build per request (no per-exercise scan, no new fatigue math). Rendered as a distinct "Fatigue context" chip + section below the suggestion cards. Guardrails: no suggestion-number change, no progression-decision change, no estimator-priority change, no fatigue-threshold/landmark/formula change, no plan-row writes, no auto-apply; `utils/fatigue.py` untouched. Verified 2026-06-08: focused pytest **115 passed**, broader affected pytest **217 passed**, full `pytest tests/` **1556 passed**; Chromium E2E progression **26 passed**, fatigue-context + user-profile **29 passed**.
 
-**Phases 2A, 2B, 2C, and 2D-A are complete.** Phase 2D design review is done (owner answers locked, `38d3b1c`) and the first 2D slice (2D-A) has shipped. The remaining 2D slices are **open but not started**: **2D-B** (broader app-wide fatigue-context surfaces), **2D-C** (optional manual-adjustment affordance, still no auto-apply), **2D-D** (actual suggestion modification — gated on owner approval + Stage 4 evidence). See §"Phase 2D-A Technical Implementation Plan" and the 2D split below.
+**Phases 2A, 2B, 2C, and 2D-A are complete; Phase 2D-B is implemented (PR open).** Phase 2D design review is done (owner answers locked, `38d3b1c`) and the first 2D slice (2D-A) has shipped. Remaining 2D slices: **2D-B** (progression-page advisory surface) is the open PR; **2D-C** (optional manual-adjustment affordance, still no auto-apply) and **2D-D** (actual suggestion modification — gated on owner approval + Stage 4 evidence) are **not started**. See §"Phase 2D-A Technical Implementation Plan", §"Phase 2D-B Progression Fatigue Context Surface", and the 2D split below.
 
 ## Goal
 
@@ -413,7 +414,7 @@ Owner-locked 2026-06-07 (see the "Owner answers" sections above). This split ref
    - Render the context inside the **"show the math" / details** in Workout Controls, below the strength evidence, under the label **"Fatigue context"**. A small neutral **"Fatigue context"** chip is allowed if useful; **do not** use a "Fatigue adjusted" badge (the number does not change). Keep the existing learned/profile/default source badge unchanged.
    - **Do not** change suggested weight / reps / sets. **Do not** change estimator priority (`exact learned → exact log → related learned → Profile → cold-start → default`). Read-only context only, e.g. "Chest fatigue: moderate. This does not change your suggestion."
    - Tests: backend trace/contract tests + a regression guard proving estimate weight/reps/sets are byte-for-byte unchanged, **plus** focused Chromium E2E in the **same PR** (the slice includes both API/settings behavior and visible UI behavior).
-2. **2D-B — broader app-wide fatigue-context surfaces.** Reuse the 2D-A settings, copy, and context block on additional surfaces (e.g. Profile review/dashboard) once the Workout Controls surface is stable. Still advisory-only; still no number change.
+2. **2D-B — broader app-wide fatigue-context surfaces. IMPLEMENTED (PR open, 2026-06-08).** Owner narrowed the first 2D-B surface to the **Progression page only** (`/get_exercise_suggestions`), reusing the 2D-A shared toggle/settings/copy and a new one-page-build batch helper. Still advisory-only; still no number or progression-decision change. See §"Phase 2D-B Progression Fatigue Context Surface". Further surfaces (Profile dashboard, etc.) remain a future option, not in this slice.
 3. **2D-C — optional manual adjustment affordance (still no auto-apply).** A client-side "apply a fatigue-suggested adjustment" affordance the user must explicitly accept, populating Workout Controls inputs only — no persistence to `user_selection`, `workout_log`, or `user_profile_lifts`. Same client-side-only contract as the MVP `Apply suggestion`.
 4. **2D-D — actual suggestion modification (much later, gated).** Only consider letting fatigue/volume change the suggested number after 2D-A..2D-C are stable, the owner **explicitly approves**, and Stage 4 real-use evidence supports it. Would require migration notes and a deliberate estimator-contract review.
 
@@ -504,6 +505,40 @@ CREATE TABLE IF NOT EXISTS fatigue_context_settings (
 1. Confirm the two-dimension lens (`context_source` + `context_period`) matches owner intent vs. a single flat selector.
 2. Per-estimate cost: `build_fatigue_page_context` does two full-table scans + all-muscle aggregation per call; the estimate endpoint fires on each exercise selection. Mitigate by computing only when enabled; if needed, a thin single-muscle read helper over the same query (no new fatigue math) is an in-slice optimization, not a scope change. Acceptable at single-user localhost scale.
 3. Verify exercise `primary_muscle_group` and the fatigue-bar muscle key normalize identically (e.g. `normalize_muscle()`), so a ranked muscle is not silently routed to the advisory-fallback path; cover with an explicit test.
+
+## Phase 2D-B Progression Fatigue Context Surface
+
+> **Implemented on `feat/calibration-phase-2d-b-progression-context` (PR open, 2026-06-08).** Owner-approved scope (D1–D5 locked): the second 2D slice extends the 2D-A advisory layer to the **Progression page only**. Strictly additive, advisory-only, default-off; reuses 2D-A wholesale. No new fatigue math, no suggestion-number change, no progression-decision change.
+
+### Scope (owner decisions D1–D5)
+
+- **D1 — Progression page only.** `/progression`'s per-exercise suggestions (`POST /get_exercise_suggestions`) are the single new surface. Not the Profile dashboard, not weekly/session summaries (those already show per-muscle fatigue and carry no live suggestion to contextualize).
+- **D2 — Distinct details section + neutral chip.** Rendered below the suggestion cards in `#suggestionsFatigueContext`, never merged into a card. Same neutral "Fatigue context" chip pattern as Workout Controls; never a "Fatigue adjusted" badge.
+- **D3 — Batch helper / one page build per request.** New `build_fatigue_context_batch(exercise_names, *, db)` in `utils/fatigue_context.py` reads settings once and calls the shipped `build_fatigue_page_context` **at most once** per request (lazily, only when a ranked muscle resolves) — no per-exercise scan. Per-exercise output is identical to `build_fatigue_context` (shared `_neutral_block` / `_block_from_page` helpers).
+- **D4 — One shared toggle.** Reuses the 2D-A `fatigue_context_settings` row and `GET/POST /api/user_profile/fatigue_context_settings`. No per-surface toggle.
+- **D5 — Copy reused verbatim.** Same `FATIGUE_CONTEXT_ADVISORY` and headline builder; mandatory "This does not change your suggestion." on every variant.
+
+### Response contract (additive, suggestions list unchanged)
+
+`POST /get_exercise_suggestions` keeps `data` as the suggestions **list** (existing contract, `Array.isArray` consumer unaffected) and attaches the advisory block as a **top-level sibling** `fatigue_context` on the response envelope — present only when the shared toggle is enabled and the exercise's primary muscle resolves; omitted entirely otherwise. The attach is exception-guarded so it can never break suggestions.
+
+### Files touched
+
+- **Backend**: `utils/fatigue_context.py` (extract `_neutral_block` + `_block_from_page`; add `build_fatigue_context_batch`); `routes/progression_plan.py` (attach sibling block, guarded).
+- **Frontend**: `templates/progression_plan.html` (`#suggestionsFatigueContext` host); `static/js/modules/progression-plan.js` (`renderProgressionFatigueContext` + wiring); `static/css/pages-progression.css` (neutral chip + advisory section, light + dark; hand-maintained route bundle — no SCSS rebuild).
+- **Tests**: `tests/test_fatigue_context.py` (+5 batch tests: disabled→`{}`, single↔batch parity, one page build for many exercises, unknown/blank omitted, NULL-muscle fallback without a page build); `tests/test_progression_plan_routes.py` (+3: omitted-when-disabled, additive-only-when-enabled with `data` byte-for-byte unchanged, unranked fallback); `e2e/progression.spec.ts` (+1 real-backend spec: toggle on → section + mandatory copy renders with cards present; toggle off → section absent — placed here because `progression.spec.ts` runs in CI, `fatigue-context.spec.ts` does not).
+
+### Guardrails (all hold)
+
+No suggested weight/reps/sets change · no progression-decision change (`data` proven byte-for-byte unchanged) · no estimator-priority change · no fatigue-threshold/landmark/formula change (`utils/fatigue.py` untouched) · no plan-row (`user_selection`) writes by the feature · no auto-apply · one shared toggle · 2D-C/2D-D out of scope.
+
+### Verification (2026-06-08)
+
+- Focused pytest (`test_fatigue_context` + `test_progression_plan_routes` + `test_progression_plan_utils` + `test_double_progression`): **115 passed**.
+- Broader affected pytest (`test_fatigue_context` + `test_user_profile_routes` + `test_fatigue` + `test_fatigue_routes` + `test_database_user_profile` + `test_db_migration` + `test_harness_isolation`): **217 passed**.
+- Full `pytest tests/`: **1556 passed** (1548 2D-A baseline + 8 new).
+- Chromium E2E `progression.spec.ts`: **26 passed** (incl. the new 2D-B test).
+- Chromium E2E `fatigue-context.spec.ts` + `user-profile.spec.ts`: **29 passed** (2D-A regression-clean after the engine refactor).
 
 ## Phase 2A Related-Exercise Transfer Plan
 
