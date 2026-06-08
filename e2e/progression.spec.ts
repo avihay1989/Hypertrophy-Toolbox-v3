@@ -649,3 +649,81 @@ test.describe('Progression Mobile Responsive', () => {
     expect(isScrollable !== null).toBeTruthy();
   });
 });
+
+/**
+ * Phase 2D-B: advisory fatigue context on the Progression page.
+ *
+ * Real backend (no mocks): the shared, default-off fatigue-context toggle
+ * (also surfaced on Profile) drives whether the additive block is attached to
+ * /get_exercise_suggestions. Enabled → a distinct "Fatigue context" section
+ * with the mandatory copy renders below the suggestion cards; disabled → it is
+ * absent. A plan row is seeded via the real API so the exercise dropdown has a
+ * selectable option (the functional seed wipes the plan).
+ */
+test.describe('Progression Plan — fatigue context (Phase 2D-B)', () => {
+  const FATIGUE_CONTEXT_SETTINGS = '/api/user_profile/fatigue_context_settings';
+  const PLAN_EXERCISE = {
+    routine: 'GYM - Full Body - Workout A',
+    exercise: 'Barbell Bench Press',
+    sets: 3,
+    min_rep_range: 8,
+    max_rep_range: 12,
+    rir: 2,
+    weight: 60,
+  };
+
+  test.beforeEach(async ({ page }) => {
+    await page.request.post(FATIGUE_CONTEXT_SETTINGS, { data: { enabled: false } });
+    await page.request.post('/clear_workout_plan');
+    await page.request.post('/add_exercise', { data: PLAN_EXERCISE });
+  });
+
+  test.afterEach(async ({ page }) => {
+    await page.request.post(FATIGUE_CONTEXT_SETTINGS, { data: { enabled: false } });
+    await page.request.post('/clear_workout_plan');
+  });
+
+  async function selectPlannedExercise(page: import('@playwright/test').Page) {
+    const suggestionsDone = page.waitForResponse((r) =>
+      r.url().includes('/get_exercise_suggestions'),
+    );
+    await page.locator('#exerciseSelect').selectOption(PLAN_EXERCISE.exercise);
+    await suggestionsDone;
+  }
+
+  test('toggle on shows the advisory section; toggle off hides it', async ({
+    page,
+    consoleErrors,
+  }) => {
+    consoleErrors.startCollecting();
+
+    // Enabled → the advisory section renders with the mandatory copy.
+    await page.request.post(FATIGUE_CONTEXT_SETTINGS, {
+      data: { enabled: true, context_source: 'both', context_period: 'this_week' },
+    });
+    await page.goto(ROUTES.PROGRESSION);
+    await waitForPageReady(page);
+    await selectPlannedExercise(page);
+
+    const fatigue = page.locator('#suggestionsFatigueContext [data-fatigue-context]');
+    await expect(fatigue).toBeVisible();
+    await expect(fatigue).toContainText('Fatigue context');
+    await expect(fatigue).toContainText('This does not change your suggestion.');
+
+    // The suggestion cards still render alongside it (advisory never replaces
+    // the suggestion).
+    await expect(page.locator('#suggestionsList .suggestion-card').first()).toBeVisible();
+
+    // Disabled → reload + reselect → the section is gone.
+    await page.request.post(FATIGUE_CONTEXT_SETTINGS, { data: { enabled: false } });
+    await page.goto(ROUTES.PROGRESSION);
+    await waitForPageReady(page);
+    await selectPlannedExercise(page);
+
+    await expect(
+      page.locator('#suggestionsFatigueContext [data-fatigue-context]'),
+    ).toHaveCount(0);
+
+    consoleErrors.assertNoErrors();
+  });
+});

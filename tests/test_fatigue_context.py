@@ -14,6 +14,7 @@ from utils.fatigue_context import (
     DEFAULT_FATIGUE_CONTEXT_PERIOD,
     DEFAULT_FATIGUE_CONTEXT_SOURCE,
     build_fatigue_context,
+    build_fatigue_context_batch,
     get_fatigue_context_settings,
     set_fatigue_context_settings,
 )
@@ -255,6 +256,89 @@ def test_build_null_primary_muscle_falls_back_without_page_build(
     assert block["planned"] is None
     assert block["logged"] is None
     assert block["disagree"] is False
+    assert "isn't ranked" in block["headline"]
+    assert block["advisory"] == "This does not change your suggestion."
+
+
+# --------------------------------------------------------------------------- #
+# build_fatigue_context_batch — Phase 2D-B (single page build + single parity)
+# --------------------------------------------------------------------------- #
+
+def test_batch_returns_empty_when_disabled(clean_db, exercise_factory):
+    exercise_factory("Barbell Bench Press", primary_muscle_group="Chest")
+    assert build_fatigue_context_batch(["Barbell Bench Press"], db=clean_db) == {}
+
+
+def test_batch_matches_single_for_ranked_muscle(clean_db, exercise_factory, monkeypatch):
+    # The batch block for one exercise must be identical to the single builder's.
+    exercise_factory("Barbell Bench Press", primary_muscle_group="Chest")
+    set_fatigue_context_settings(db=clean_db, enabled=True, context_source="both")
+    _patch_page(
+        monkeypatch,
+        planned=[_bar("Chest", "moderate")],
+        logged=[_bar("Chest", "light")],
+    )
+
+    single = build_fatigue_context("Barbell Bench Press", db=clean_db)
+    batch = build_fatigue_context_batch(["Barbell Bench Press"], db=clean_db)
+    assert batch["Barbell Bench Press"] == single
+
+
+def test_batch_builds_page_context_once_for_many_exercises(
+    clean_db, exercise_factory, monkeypatch
+):
+    # The efficiency contract: one planned+logged scan for the whole batch,
+    # never one per exercise.
+    exercise_factory("Barbell Bench Press", primary_muscle_group="Chest")
+    exercise_factory("Incline Bench Press", primary_muscle_group="Chest")
+    exercise_factory("Cable Fly", primary_muscle_group="Chest")
+    set_fatigue_context_settings(db=clean_db, enabled=True)
+
+    calls = {"n": 0}
+
+    def _counting_page(period, today=None):
+        calls["n"] += 1
+        return {"muscles_planned": [_bar("Chest", "moderate")], "muscles_logged": []}
+
+    monkeypatch.setattr(
+        fatigue_context_module, "build_fatigue_page_context", _counting_page
+    )
+
+    result = build_fatigue_context_batch(
+        ["Barbell Bench Press", "Incline Bench Press", "Cable Fly"], db=clean_db
+    )
+    assert set(result) == {"Barbell Bench Press", "Incline Bench Press", "Cable Fly"}
+    assert calls["n"] == 1
+
+
+def test_batch_omits_unknown_and_blank_exercises(clean_db, exercise_factory, monkeypatch):
+    exercise_factory("Barbell Bench Press", primary_muscle_group="Chest")
+    set_fatigue_context_settings(db=clean_db, enabled=True)
+    _patch_page(monkeypatch, planned=[_bar("Chest", "moderate")])
+
+    result = build_fatigue_context_batch(
+        ["Barbell Bench Press", "Does Not Exist", "   "], db=clean_db
+    )
+    assert "Barbell Bench Press" in result
+    assert "Does Not Exist" not in result
+    assert "   " not in result
+
+
+def test_batch_null_muscle_fallback_without_page_build(
+    clean_db, exercise_factory, monkeypatch
+):
+    # A batch of only NULL-muscle exercises must never call the page builder
+    # (here it would raise), proving the lazy single-build path.
+    exercise_factory("Mystery Lift", primary_muscle_group=None)
+    set_fatigue_context_settings(db=clean_db, enabled=True)
+    monkeypatch.setattr(
+        fatigue_context_module, "build_fatigue_page_context", _raise_page
+    )
+
+    result = build_fatigue_context_batch(["Mystery Lift"], db=clean_db)
+    block = result["Mystery Lift"]
+    assert block["muscle"] is None
+    assert block["is_advisory_fallback"] is True
     assert "isn't ranked" in block["headline"]
     assert block["advisory"] == "This does not change your suggestion."
 

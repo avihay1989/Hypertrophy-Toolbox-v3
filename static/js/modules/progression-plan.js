@@ -314,12 +314,19 @@ export function initializeProgressionPlan() {
             
             const suggestions = unwrapProgressionResponseData(response);
             console.log('Suggestions data:', suggestions);
-            
+
             if (!Array.isArray(suggestions)) {
                 throw new Error('Invalid suggestions data received');
             }
-            
-            displaySuggestions(suggestions, exercise);
+
+            // Phase 2D-B: optional additive advisory block, a sibling to
+            // `data` on the response envelope. Absent when the shared
+            // fatigue-context toggle is off.
+            const fatigueContext = (response && typeof response === 'object')
+                ? response.fatigue_context
+                : null;
+
+            displaySuggestions(suggestions, exercise, fatigueContext);
         } catch (error) {
             console.error('Error fetching suggestions:', error);
             suggestionsList.innerHTML = `
@@ -327,14 +334,15 @@ export function initializeProgressionPlan() {
                     Error loading suggestions: ${error.message}
                 </div>
             `;
+            renderProgressionFatigueContext(null);
             suggestionsContainer.style.display = 'block';
         }
     }
-    
-    function displaySuggestions(suggestions, exercise) {
+
+    function displaySuggestions(suggestions, exercise, fatigueContext) {
         console.log('Displaying suggestions for:', exercise);
         suggestionsList.innerHTML = '';
-        
+
         if (!suggestions || suggestions.length === 0) {
             suggestionsList.innerHTML = `
                 <div class="col-12">
@@ -343,10 +351,11 @@ export function initializeProgressionPlan() {
                     </div>
                 </div>
             `;
+            renderProgressionFatigueContext(fatigueContext);
             suggestionsContainer.style.display = 'block';
             return;
         }
-        
+
         suggestions.forEach(suggestion => {
             const card = document.createElement('div');
             card.className = 'col-md-6 col-lg-3 d-flex';
@@ -372,10 +381,51 @@ export function initializeProgressionPlan() {
             suggestionsList.appendChild(card);
             console.log('Added suggestion card:', suggestion.type);
         });
-        
+
+        renderProgressionFatigueContext(fatigueContext);
         suggestionsContainer.style.display = 'block';
     }
-    
+
+    // Phase 2D-B — advisory fatigue context, rendered as its own distinct
+    // section BELOW the suggestion cards (never merged into them), mirroring
+    // the Workout Controls treatment: a neutral "Fatigue context" chip, the
+    // muscle headline, and the mandatory "does not change your suggestion"
+    // line. Hidden entirely when the response carries no `fatigue_context`
+    // (toggle off / unknown muscle).
+    function renderProgressionFatigueContext(fatigue) {
+        const host = document.getElementById('suggestionsFatigueContext');
+        if (!host) return;
+        host.innerHTML = '';
+        if (!fatigue) {
+            host.hidden = true;
+            return;
+        }
+        host.hidden = false;
+
+        const section = document.createElement('div');
+        section.className = 'progression-fatigue';
+        section.setAttribute('data-fatigue-context', '');
+
+        const chip = document.createElement('span');
+        chip.className = 'progression-fatigue__chip';
+        chip.textContent = 'Fatigue context';
+        section.appendChild(chip);
+
+        if (fatigue.headline) {
+            const headline = document.createElement('p');
+            headline.className = 'progression-fatigue__headline';
+            headline.textContent = fatigue.headline;
+            section.appendChild(headline);
+        }
+
+        const advisory = document.createElement('small');
+        advisory.className = 'progression-fatigue__advisory';
+        advisory.textContent = fatigue.advisory || 'This does not change your suggestion.';
+        section.appendChild(advisory);
+
+        host.appendChild(section);
+    }
+
     // Handle focus trap in modal
     goalModalElement.addEventListener('keydown', function(e) {
         if (e.key === 'Tab') {
