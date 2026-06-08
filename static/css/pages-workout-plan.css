@@ -8328,6 +8328,82 @@ tr.superset-partner-dragging {
     color: var(--ink-2, #b4bad0);
 }
 
+/* Phase 2D-C — neutral manual nudge inside the fatigue context section.
+   Deliberately ink-toned (not accent/confidence colored) so it never reads as
+   a fatigue-driven change to the suggestion. */
+.workout-estimate-fatigue-nudge {
+    margin-top: 0.6rem;
+}
+
+.workout-estimate-fatigue-nudge-label {
+    color: var(--ink-2, #4a5170);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    margin: 0 0 0.35rem;
+    text-transform: uppercase;
+}
+
+.workout-estimate-fatigue-nudge-row {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.workout-estimate-fatigue-nudge-group {
+    align-items: center;
+    display: inline-flex;
+    gap: 0.3rem;
+}
+
+.workout-estimate-fatigue-nudge-name {
+    color: var(--ink-2, #4a5170);
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-right: 0.1rem;
+}
+
+.workout-estimate-fatigue-nudge-btn {
+    background: color-mix(in srgb, var(--surface-2, #f5f7fb) 70%, transparent);
+    border: 1px solid color-mix(in srgb, var(--ink-2, #4a5170) 26%, transparent);
+    border-radius: 7px;
+    color: var(--ink-2, #4a5170);
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1;
+    min-width: 1.9rem;
+    padding: 0.25rem 0.5rem;
+    transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.workout-estimate-fatigue-nudge-btn:hover {
+    background: color-mix(in srgb, var(--ink-2, #4a5170) 12%, transparent);
+    color: var(--ink-1, #22283a);
+}
+
+.workout-estimate-fatigue-nudge-btn:focus-visible {
+    outline: 2px solid var(--accent, #4c6ef5);
+    outline-offset: 2px;
+}
+
+[data-theme='dark'] .workout-estimate-fatigue-nudge-label,
+[data-theme='dark'] .workout-estimate-fatigue-nudge-name {
+    color: var(--ink-2, #b4bad0);
+}
+
+[data-theme='dark'] .workout-estimate-fatigue-nudge-btn {
+    background: color-mix(in srgb, var(--surface-1, #161a2d) 80%, black);
+    border-color: color-mix(in srgb, var(--ink-2, #b4bad0) 28%, transparent);
+    color: var(--ink-2, #b4bad0);
+}
+
+[data-theme='dark'] .workout-estimate-fatigue-nudge-btn:hover {
+    color: var(--ink-1, #e8ebf5);
+}
+
 .workout-estimate-trace-actions {
     display: flex;
     flex-wrap: wrap;

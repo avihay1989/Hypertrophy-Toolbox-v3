@@ -1066,7 +1066,112 @@ function buildFatigueContextSection(fatigue) {
     advisory.textContent = fatigue.advisory || 'This does not change your suggestion.';
     section.appendChild(advisory);
 
+    // Phase 2D-C — optional manual-adjustment affordance. Neutral ± steppers for
+    // Weight and Sets plus "Reset to suggestion". Client-side only: it edits the
+    // Workout Controls inputs and never persists or calls an API (mirrors the MVP
+    // `Apply suggestion` contract). It deliberately uses the inputs' own manual
+    // step — NOT a fatigue-derived magnitude (that mapping is gated to 2D-D).
+    section.appendChild(buildFatigueNudgeControls());
+
     return section;
+}
+
+// Resolve the manual step / floor of a Workout Controls number input from its
+// own attributes. `step="any"` (weight) and an absent step (sets) both fall back
+// to 1 — i.e. the input's native arrow-key step. No fatigue math here.
+function resolveControlStep(input) {
+    const raw = parseFloat(input.getAttribute('step'));
+    return Number.isFinite(raw) && raw > 0 ? raw : 1;
+}
+
+function resolveControlMin(input) {
+    const raw = parseFloat(input.getAttribute('min'));
+    return Number.isFinite(raw) ? raw : null;
+}
+
+// Step a Workout Controls input up/down by its own manual step, clamped to the
+// input's `min`. Client-side only — sets the value directly (no input event, so
+// it never marks the weight "user-dirty" or triggers a re-estimate).
+function nudgeWorkoutControl(id, direction) {
+    const field = document.getElementById(id);
+    if (!field) return;
+    const step = resolveControlStep(field);
+    const min = resolveControlMin(field);
+    const current = parseFloat(field.value);
+    const base = Number.isFinite(current) ? current : (min ?? 0);
+    let next = base + (direction === 'down' ? -step : step);
+    if (min !== null && next < min) next = min;
+    next = Number(next.toFixed(2));
+    setWorkoutControlValue(id, next);
+}
+
+// Restore the estimator's original Weight + Sets exactly from the last estimate.
+// `latestTracePayload` is the resolved estimate that was applied to the inputs,
+// so this re-applies the suggestion the user is choosing to step away from.
+function resetWorkoutControlsToSuggestion() {
+    const estimate = latestTracePayload;
+    if (!estimate) return;
+    setWorkoutControlValue('weight', estimate.weight);
+    setWorkoutControlValue('sets', estimate.sets);
+}
+
+// Build one labeled ± stepper group for a single Workout Controls input.
+function buildFatigueNudgeGroup(id, label) {
+    const group = document.createElement('div');
+    group.className = 'workout-estimate-fatigue-nudge-group';
+
+    const name = document.createElement('span');
+    name.className = 'workout-estimate-fatigue-nudge-name';
+    name.textContent = label;
+    group.appendChild(name);
+
+    for (const direction of ['down', 'up']) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'workout-estimate-fatigue-nudge-btn';
+        btn.setAttribute('data-nudge', id);
+        btn.setAttribute('data-nudge-dir', direction);
+        btn.setAttribute(
+            'aria-label',
+            `${direction === 'down' ? 'Decrease' : 'Increase'} ${label.toLowerCase()}`,
+        );
+        btn.textContent = direction === 'down' ? '−' : '+';
+        btn.addEventListener('click', () => nudgeWorkoutControl(id, direction));
+        group.appendChild(btn);
+    }
+    return group;
+}
+
+// Build the manual nudge block appended to the fatigue context section. Only
+// renders a stepper for a control that actually exists in Workout Controls
+// (weight + sets per Phase 2D-C scope; reps deferred to a later slice).
+function buildFatigueNudgeControls() {
+    const wrap = document.createElement('div');
+    wrap.className = 'workout-estimate-fatigue-nudge';
+    wrap.setAttribute('data-fatigue-nudge', '');
+
+    const label = document.createElement('p');
+    label.className = 'workout-estimate-fatigue-nudge-label';
+    label.textContent = 'Adjust manually';
+    wrap.appendChild(label);
+
+    const row = document.createElement('div');
+    row.className = 'workout-estimate-fatigue-nudge-row';
+    for (const spec of [{ id: 'weight', label: 'Weight' }, { id: 'sets', label: 'Sets' }]) {
+        if (!document.getElementById(spec.id)) continue;
+        row.appendChild(buildFatigueNudgeGroup(spec.id, spec.label));
+    }
+    wrap.appendChild(row);
+
+    const reset = document.createElement('button');
+    reset.type = 'button';
+    reset.className = 'workout-estimate-trace-action is-reset';
+    reset.setAttribute('data-fatigue-nudge-reset', '');
+    reset.textContent = 'Reset to suggestion';
+    reset.addEventListener('click', resetWorkoutControlsToSuggestion);
+    wrap.appendChild(reset);
+
+    return wrap;
 }
 
 // Apply / Keep / Reset row shown inside the learned-suggestion details. Apply
