@@ -181,6 +181,80 @@ test.describe('Fatigue Context — Workout Controls', () => {
     consoleErrors.assertNoErrors();
   });
 
+  test('Phase 2D-C: neutral manual nudge edits only the intended input, no write, reset restores', async ({
+    page,
+    consoleErrors,
+  }) => {
+    consoleErrors.startCollecting();
+    await page.route(`**${ESTIMATE}**`, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(
+          estimateWithFatigue({
+            enabled: true,
+            muscle: 'Chest',
+            muscle_label: 'Chest',
+            has_landmarks: true,
+            source: 'both',
+            period: 'this_week',
+            period_label: 'This week (Mon–Sun)',
+            planned: { band: 'moderate', percent_of_mrv: 60, has_landmarks: true },
+            logged: { band: 'moderate', percent_of_mrv: 58, has_landmarks: true },
+            disagree: false,
+            is_advisory_fallback: false,
+            headline: 'Chest fatigue: moderate.',
+            advisory: 'This does not change your suggestion.',
+          }),
+        ),
+      });
+    });
+
+    await page.goto(ROUTES.WORKOUT_PLAN);
+    await waitForPageReady(page);
+    await selectFirstExercise(page);
+
+    await page.locator('#workout-estimate-trace-toggle').click();
+    const fatigue = page.locator('#workout-estimate-trace [data-fatigue-context]');
+    await expect(fatigue).toBeVisible();
+
+    // The nudge affordance lives inside the fatigue section.
+    const nudge = fatigue.locator('[data-fatigue-nudge]');
+    await expect(nudge).toBeVisible();
+
+    // Inputs start at the estimator's suggestion, untouched by the advisory.
+    await expect(page.locator('#weight')).toHaveValue('60');
+    await expect(page.locator('#sets')).toHaveValue('3');
+    await expect(page.locator('#min_rep')).toHaveValue('6');
+
+    // Record any non-GET request — the affordance must be client-side only.
+    const writes: string[] = [];
+    page.on('request', (req) => {
+      if (req.method() !== 'GET') writes.push(`${req.method()} ${req.url()}`);
+    });
+
+    // Nudge weight up by one manual step → ONLY weight changes.
+    await nudge.locator('[data-nudge="weight"][data-nudge-dir="up"]').click();
+    await expect(page.locator('#weight')).toHaveValue('61');
+    await expect(page.locator('#sets')).toHaveValue('3');
+    await expect(page.locator('#min_rep')).toHaveValue('6');
+
+    // Nudge sets down → ONLY sets changes.
+    await nudge.locator('[data-nudge="sets"][data-nudge-dir="down"]').click();
+    await expect(page.locator('#sets')).toHaveValue('2');
+    await expect(page.locator('#weight')).toHaveValue('61');
+
+    // Reset restores the estimator's original Weight + Sets exactly.
+    await nudge.locator('[data-fatigue-nudge-reset]').click();
+    await expect(page.locator('#weight')).toHaveValue('60');
+    await expect(page.locator('#sets')).toHaveValue('3');
+
+    // No persistence: not a single write request fired across the whole cycle.
+    expect(writes).toEqual([]);
+
+    consoleErrors.assertNoErrors();
+  });
+
   test('renders neutral advisory copy for an unranked muscle', async ({ page, consoleErrors }) => {
     consoleErrors.startCollecting();
     await page.route(`**${ESTIMATE}**`, async (route) => {
@@ -241,6 +315,11 @@ test.describe('Fatigue Context — Workout Controls', () => {
     await expect(page.locator('#workout-estimate-trace')).toBeVisible();
     await expect(
       page.locator('#workout-estimate-trace [data-fatigue-context]'),
+    ).toHaveCount(0);
+    // With no fatigue context (toggle off → block omitted), the 2D-C manual
+    // nudge affordance is absent too.
+    await expect(
+      page.locator('#workout-estimate-trace [data-fatigue-nudge]'),
     ).toHaveCount(0);
 
     consoleErrors.assertNoErrors();
