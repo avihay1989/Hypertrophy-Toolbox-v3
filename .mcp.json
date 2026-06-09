@@ -3,11 +3,6 @@
     "context7": {
       "type": "http",
       "url": "https://mcp.context7.com/mcp"
-    },
-    "puppeteer": {
-      "type": "stdio",
-      "command": "cmd",
-      "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-puppeteer"]
     }
   }
 }
