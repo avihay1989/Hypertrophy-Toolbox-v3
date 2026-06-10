@@ -2,7 +2,7 @@
 
 ## Status
 
-MVP + Phase 2A + Phase 2B + Phase 2C + Phase 2D-A + Phase 2D-B learned calibration are shipped on `main`:
+MVP + Phase 2A + Phase 2B + Phase 2C + Phase 2D-A + Phase 2D-B + Phase 2D-C learned calibration are shipped on `main`:
 
 - PR #37 / `fd2e2f5`: exact-exercise learned calibration backend, settings, estimator integration, Profile controls, Workout Controls source UI/actions, workout-log notifications, tests, and E2E.
 - PR #39 / `62db541`: separate profile-estimator dumbbell/total-load reference fix.
