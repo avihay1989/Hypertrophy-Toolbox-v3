@@ -591,7 +591,7 @@ class TestPlanGeneratorIntegration:
             overwrite=True,
         )
         
-        assert result.get("persisted") == True
+        assert result.get("persisted") is True
         
         # Verify data is in database
         conn = sqlite3.connect(test_db)
