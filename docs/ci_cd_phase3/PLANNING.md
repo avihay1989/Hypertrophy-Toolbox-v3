@@ -155,3 +155,13 @@
 ## Follow-up — flake8 flip (2026-06-10, A8)
 
 Executed the first rung of the flake8 "path to blocking": `F811,E711,E712` (the meaningful rules already sitting at ~0) added to the blocking `--select=E9,F63,F7,F82` line in the `lint` job, plus the one mechanical E712 fix (`tests/test_plan_generator.py:594` `== True` → `is True`). The blocking step's `--exclude` was aligned with the measure-only `EXCL`. **F401 is now the only remaining flip candidate** in the measure-only diagnostics — its flip still needs a guardrailed cleanup PR first (`utils/__init__.py` re-exports + `app.py` side-effects are load-bearing). pyright/tsc criteria unchanged.
+
+## Follow-up — pyright baseline-allowlist flip (2026-06-10, A9)
+
+Implemented the pyright flip criterion from the v2 backlog table ("baseline-allowlist: snapshot, block only new-vs-snapshot") **without fixing any existing error**:
+
+- **Committed baseline**: `docs/ci_cd_phase3/pyright-baseline.json` — snapshot generated under the committed `pyrightconfig.json` (py3.12 + Windows, pyright 1.1.410). **190 diagnostics / 58 distinct keys.** The v2 table's `138` predates the learned-calibration (2A–2D-C) + fatigue Stage-4 + body-composition code growth; `190` is the current count for the same config, not a config change.
+- **Reusable script**: `scripts/pyright_baseline_diff.py` — parses `--outputjson`, normalizes the `file` field to a repo-relative POSIX path (so Windows-dev vs Linux-CI keys match), keys each diagnostic by `file+rule+message+severity`, and counts as a **multiset** so duplicate identical diagnostics are not hidden. Fails only when a key's current count **exceeds** its baseline count; resolved baseline diagnostics never fail. `--write-baseline` regenerates the snapshot for an intentional, reviewed shift. Stdlib-only.
+- **CI**: the `typecheck` job keeps the measure-only pyright count + artifact, then runs the baseline-diff as a **blocking** step (consumes the same `pyright.json`). Job renamed `Type Check (tsc blocking + pyright baseline-gated)`.
+- **Tests**: `tests/test_pyright_baseline_diff.py` — 13 cases incl. multiset duplicate-count, resolved-baseline pass, net-new/exceeded-count fail, path normalization, `information`-severity exclusion, baseline round-trip, and `main()` end-to-end.
+- **Reproducibility note**: every current diagnostic is an intrinsic type issue (`reportOptionalSubscript`/`reportArgumentType`/…), **zero** `reportMissingImports`, so the snapshot does not depend on installed third-party stubs and reproduces on the CI fresh-venv runner. The py3.11-vs-3.12 config reconciliation remains out of scope (A12).
