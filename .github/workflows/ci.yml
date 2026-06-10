@@ -194,14 +194,16 @@ jobs:
 
     # Deterministic functional/product specs only. Excluded by design (see
     # e2e/CLAUDE.md "CI inclusion contract"): visual + visual-baseline-thumbnails
-    # (cross-OS rendering), accessibility (manual deep gate), nav-dropdown (known
-    # red), fatigue-stage4-smokes + volume-progress (geometry/sub-pixel), and
-    # program-backup (runs isolated in e2e-backup). No --reporter flag: the
-    # CI-gated reporters in playwright.config.ts (list + html + junit) must all
-    # emit so the artifact upload below has a report to publish.
+    # (cross-OS rendering), nav-dropdown (known red), and program-backup (runs
+    # isolated in e2e-backup). accessibility + fatigue-stage4-smokes +
+    # volume-progress were promoted here in A10 after a 5x-repeat ubuntu stability
+    # probe (225/225 green, zero flakes). No --reporter flag: the CI-gated
+    # reporters in playwright.config.ts (list + html + junit) must all emit so the
+    # artifact upload below has a report to publish.
     - name: Run functional specs
       run: |
         npx playwright test --project=chromium \
+          e2e/accessibility.spec.ts \
           e2e/api-integration.spec.ts \
           e2e/body-composition.spec.ts \
           e2e/browser-navigation-state.spec.ts \
@@ -209,6 +211,7 @@ jobs:
           e2e/empty-states.spec.ts \
           e2e/error-handling.spec.ts \
           e2e/exercise-interactions.spec.ts \
+          e2e/fatigue-stage4-smokes.spec.ts \
           e2e/fatigue.spec.ts \
           e2e/learned-calibration.spec.ts \
           e2e/progression.spec.ts \
@@ -219,6 +222,7 @@ jobs:
           e2e/ui-hardening.spec.ts \
           e2e/user-profile.spec.ts \
           e2e/validation-boundary.spec.ts \
+          e2e/volume-progress.spec.ts \
           e2e/volume-splitter.spec.ts \
           e2e/workout-log.spec.ts \
           e2e/workout-plan.spec.ts
