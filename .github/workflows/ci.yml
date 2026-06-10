@@ -321,12 +321,24 @@ jobs:
 
   # Static typing gate (Phase 3, docs/ci_cd_phase3/PLANNING.md).
   #   tsc --noEmit -> BLOCKING (backlog cleared to 0 in the tsc fast-follow).
-  #   pyright      -> measure-only / non-blocking; surfaces its count to the job
-  #                   summary + artifact. Path to blocking: baseline-allowlist
-  #                   (block only NEW errors vs the uploaded snapshot).
+  #   pyright      -> count is still surfaced measure-only to the job summary +
+  #                   artifact (full backlog), AND gated blocking via a
+  #                   baseline-allowlist (leftovers A9): the committed baseline
+  #                   docs/ci_cd_phase3/pyright-baseline.json allowlists the
+  #                   existing backlog; scripts/pyright_baseline_diff.py fails the
+  #                   job only on NET-NEW diagnostics. Existing errors never red
+  #                   the build; a regression does.
   # The recorded pyright count is 1.1.410 under the committed pyrightconfig.json
-  # (py3.12 + Windows platform) — approximate, not 3.11-runtime-authoritative.
+  # (py3.12 + Windows platform). The baseline-diff keys on file+rule+message+
+  # severity (repo-relative POSIX path), counted as a multiset, so it reproduces
+  # across Windows/Linux. Regenerate the baseline with --write-baseline when an
+  # intentional, reviewed change shifts the backlog.
   typecheck:
+    # NOTE: this job name is a branch-protection *required status check* context —
+    # keep it byte-for-byte ("Type Check (tsc blocking + pyright measure-only)").
+    # Renaming it orphans the required check and blocks every PR. pyright is now
+    # also baseline-gated (see the blocking diff step below); the name stays for
+    # protection-matching, not because pyright is purely measure-only.
     name: Type Check (tsc blocking + pyright measure-only)
     runs-on: ubuntu-latest
 
@@ -357,17 +369,28 @@ jobs:
     - name: Install npm dependencies
       run: npm ci
 
-    - name: pyright (non-blocking, measure-only)
+    - name: pyright (measure-only count)
       continue-on-error: true
       run: |
         npx pyright@1.1.410 --outputjson > pyright.json 2> pyright.stderr.txt || true
         COUNT=$(python -c "import json; print(json.load(open('pyright.json'))['summary']['errorCount'])" 2>/dev/null || echo "unknown")
-        echo "::notice title=pyright (non-blocking)::pyright 1.1.410 reported $COUNT errors (py3.12 config, not 3.11-runtime-authoritative)"
+        echo "::notice title=pyright (measure-only count)::pyright 1.1.410 reported $COUNT errors (py3.12 config); the baseline-diff step gates NET-NEW errors only"
         {
-          echo "### pyright (non-blocking — measure-only)"
-          echo "- **errors**: $COUNT (pyright 1.1.410, py3.12 + Windows-platform config — approximate)"
-          echo "- Path to blocking: baseline-allowlist (block only new-vs-snapshot)."
+          echo "### pyright (measure-only count + baseline-gated)"
+          echo "- **total errors**: $COUNT (pyright 1.1.410, py3.12 + Windows-platform config)"
+          echo "- Blocking gate: net-new vs docs/ci_cd_phase3/pyright-baseline.json (next step)."
         } >> "$GITHUB_STEP_SUMMARY"
+
+    # BLOCKING (leftovers A9): fail only on NET-NEW pyright diagnostics vs the
+    # committed baseline. Consumes pyright.json from the measure-only step above
+    # (written even though that step is continue-on-error). The committed baseline
+    # allowlists the existing backlog, so this never reds the build on current
+    # code — only a regression (new error or an increased count for a key) fails.
+    - name: pyright baseline diff (blocking)
+      run: |
+        python scripts/pyright_baseline_diff.py \
+          --current pyright.json \
+          --baseline docs/ci_cd_phase3/pyright-baseline.json
 
     # BLOCKING: backlog was cleared to 0 in the tsc fast-follow. A non-zero count
     # fails the job. The count is still written to the summary + uploaded (the

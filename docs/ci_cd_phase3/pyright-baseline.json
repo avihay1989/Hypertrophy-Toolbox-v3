@@ -1,0 +1,416 @@
+{
+  "_meta": {
+    "tool": "pyright",
+    "note": "Baseline-allowlist for the typecheck CI gate (leftovers A9). Generated under the committed pyrightconfig.json (pythonVersion 3.12, pythonPlatform Windows). Regenerate with scripts/pyright_baseline_diff.py --write-baseline. Do NOT edit by hand to silence a real regression.",
+    "total_diagnostics": 190,
+    "distinct_keys": 58
+  },
+  "diagnostics": [
+    {
+      "file": "routes/body_composition.py",
+      "severity": "error",
+      "rule": "reportArgumentType",
+      "message": "Argument of type \"float | None\" cannot be assigned to parameter \"neck_cm\" of type \"float\" in function \"compute_navy\"\n  Type \"float | None\" is not assignable to type \"float\"\n    \"None\" is not assignable to \"float\"",
+      "count": 1
+    },
+    {
+      "file": "routes/body_composition.py",
+      "severity": "error",
+      "rule": "reportArgumentType",
+      "message": "Argument of type \"float | None\" cannot be assigned to parameter \"waist_cm\" of type \"float\" in function \"compute_navy\"\n  Type \"float | None\" is not assignable to type \"float\"\n    \"None\" is not assignable to \"float\"",
+      "count": 1
+    },
+    {
+      "file": "routes/fatigue.py",
+      "severity": "error",
+      "rule": "reportCallIssue",
+      "message": "Expected 0 positional arguments",
+      "count": 1
+    },
+    {
+      "file": "routes/progression_plan.py",
+      "severity": "error",
+      "rule": "reportPossiblyUnboundVariable",
+      "message": "\"query\" is possibly unbound",
+      "count": 1
+    },
+    {
+      "file": "routes/session_summary.py",
+      "severity": "error",
+      "rule": "reportArgumentType",
+      "message": "Argument of type \"tuple[str | None, str | None] | None\" cannot be assigned to parameter \"time_window\" of type \"Tuple[str, str] | None\" in function \"calculate_session_summary\"\n  Type \"tuple[str | None, str | None] | None\" is not assignable to type \"Tuple[str, str] | None\"\n    Type \"tuple[str | None, str | None]\" is not assignable to type \"Tuple[str, str] | None\"\n      \"tuple[str | None, str | None]\" is not assignable to \"Tuple[str, str]\"\n        Tuple entry 1 is incorrect type\n          Type \"str | None\" is not assignable to type \"str\"\n      \"tuple[str | None, str | None]\" is not assignable to \"None\"",
+      "count": 1
+    },
+    {
+      "file": "routes/volume_splitter.py",
+      "severity": "error",
+      "rule": "reportOptionalMemberAccess",
+      "message": "\"cell\" is not a known attribute of \"None\"",
+      "count": 4
+    },
+    {
+      "file": "routes/volume_splitter.py",
+      "severity": "error",
+      "rule": "reportOptionalMemberAccess",
+      "message": "\"column_dimensions\" is not a known attribute of \"None\"",
+      "count": 1
+    },
+    {
+      "file": "routes/volume_splitter.py",
+      "severity": "error",
+      "rule": "reportOptionalMemberAccess",
+      "message": "\"title\" is not a known attribute of \"None\"",
+      "count": 1
+    },
+    {
+      "file": "routes/volume_splitter.py",
+      "severity": "error",
+      "rule": "reportPossiblyUnboundVariable",
+      "message": "\"data\" is possibly unbound",
+      "count": 2
+    },
+    {
+      "file": "routes/volume_splitter.py",
+      "severity": "error",
+      "rule": "reportPossiblyUnboundVariable",
+      "message": "\"mode\" is possibly unbound",
+      "count": 2
+    },
+    {
+      "file": "routes/workout_plan.py",
+      "severity": "error",
+      "rule": "reportArgumentType",
+      "message": "Argument of type \"dict[str, Unknown] | None\" cannot be assigned to parameter \"params\" of type \"dict[Unknown, Unknown]\" in function \"_update_execution_style_db\"\n  Type \"dict[str, Unknown] | None\" is not assignable to type \"dict[Unknown, Unknown]\"\n    \"None\" is not assignable to \"dict[Unknown, Unknown]\"",
+      "count": 1
+    },
+    {
+      "file": "routes/workout_plan.py",
+      "severity": "error",
+      "rule": "reportOptionalSubscript",
+      "message": "Object of type \"None\" is not subscriptable",
+      "count": 8
+    },
+    {
+      "file": "scripts/build_workout_cool_svgs.py",
+      "severity": "error",
+      "rule": "reportOptionalMemberAccess",
+      "message": "\"split\" is not a known attribute of \"None\"",
+      "count": 1
+    },
+    {
+      "file": "scripts/seed_visual_baseline.py",
+      "severity": "error",
+      "rule": "reportOptionalSubscript",
+      "message": "Object of type \"None\" is not subscriptable",
+      "count": 3
+    },
+    {
+      "file": "tests/conftest.py",
+      "severity": "error",
+      "rule": "reportOptionalSubscript",
+      "message": "Object of type \"None\" is not subscriptable",
+      "count": 1
+    },
+    {
+      "file": "tests/test_calibration_integration.py",
+      "severity": "error",
+      "rule": "reportOptionalSubscript",
+      "message": "Object of type \"None\" is not subscriptable",
+      "count": 6
+    },
+    {
+      "file": "tests/test_database_user_profile.py",
+      "severity": "error",
+      "rule": "reportOptionalSubscript",
+      "message": "Object of type \"None\" is not subscriptable",
+      "count": 1
+    },
+    {
+      "file": "tests/test_db_migration.py",
+      "severity": "error",
+      "rule": "reportOptionalSubscript",
+      "message": "Object of type \"None\" is not subscriptable",
+      "count": 1
+    },
+    {
+      "file": "tests/test_db_migration.py",
+      "severity": "error",
+      "rule": "reportReturnType",
+      "message": "Type \"dict[Any, dict[str, Any]]\" is not assignable to return type \"dict[str, Row]\"",
+      "count": 1
+    },
+    {
+      "file": "tests/test_exercise_manager.py",
+      "severity": "error",
+      "rule": "reportOptionalSubscript",
+      "message": "Object of type \"None\" is not subscriptable",
+      "count": 7
+    },
+    {
+      "file": "tests/test_fatigue.py",
+      "severity": "error",
+      "rule": "reportOperatorIssue",
+      "message": "Operator \"-\" not supported for types \"date | None\" and \"date | None\"\n  Operator \"-\" not supported for types \"date\" and \"None\"\n  Operator \"-\" not supported for types \"None\" and \"date\"\n  Operator \"-\" not supported for types \"None\" and \"None\"",
+      "count": 1
+    },
+    {
+      "file": "tests/test_fatigue_context.py",
+      "severity": "error",
+      "rule": "reportOptionalSubscript",
+      "message": "Object of type \"None\" is not subscriptable",
+      "count": 29
+    },
+    {
+      "file": "tests/test_fatigue_stage4_observer.py",
+      "severity": "error",
+      "rule": "reportOptionalSubscript",
+      "message": "Object of type \"None\" is not subscriptable",
+      "count": 1
+    },
+    {
+      "file": "tests/test_free_exercise_db_mapping.py",
+      "severity": "error",
+      "rule": "reportOptionalSubscript",
+      "message": "Object of type \"None\" is not subscriptable",
+      "count": 6
+    },
+    {
+      "file": "tests/test_program_backup.py",
+      "severity": "error",
+      "rule": "reportAttributeAccessIssue",
+      "message": "Cannot assign to attribute \"connection\" for class \"CommitCountingDatabaseHandler*\"\n  \"CommitCountingConnection\" is not assignable to \"Connection\"",
+      "count": 1
+    },
+    {
+      "file": "tests/test_program_backup.py",
+      "severity": "error",
+      "rule": "reportOptionalSubscript",
+      "message": "Object of type \"None\" is not subscriptable",
+      "count": 12
+    },
+    {
+      "file": "tests/test_strength_calibration.py",
+      "severity": "error",
+      "rule": "reportOptionalSubscript",
+      "message": "Object of type \"None\" is not subscriptable",
+      "count": 16
+    },
+    {
+      "file": "tests/test_user_profile_routes.py",
+      "severity": "error",
+      "rule": "reportArgumentType",
+      "message": "Argument of type \"None\" cannot be assigned to parameter \"bfp_navy\" of type \"float\" in function \"_seed_body_composition_snapshot\"\n  \"None\" is not assignable to \"float\"",
+      "count": 1
+    },
+    {
+      "file": "tests/test_volume_progress.py",
+      "severity": "error",
+      "rule": "reportArgumentType",
+      "message": "Argument of type \"None\" cannot be assigned to parameter \"primary\" of type \"str\" in function \"_create_exercise\"\n  \"None\" is not assignable to \"str\"",
+      "count": 2
+    },
+    {
+      "file": "tests/test_volume_progress.py",
+      "severity": "error",
+      "rule": "reportArgumentType",
+      "message": "Argument of type \"None\" cannot be assigned to parameter \"secondary\" of type \"str\" in function \"_create_exercise\"\n  \"None\" is not assignable to \"str\"",
+      "count": 8
+    },
+    {
+      "file": "tests/test_volume_progress.py",
+      "severity": "error",
+      "rule": "reportArgumentType",
+      "message": "Argument of type \"None\" cannot be assigned to parameter \"tertiary\" of type \"str\" in function \"_create_exercise\"\n  \"None\" is not assignable to \"str\"",
+      "count": 8
+    },
+    {
+      "file": "tests/test_volume_progress.py",
+      "severity": "error",
+      "rule": "reportArgumentType",
+      "message": "Argument of type \"int | None\" cannot be assigned to parameter \"plan_id\" of type \"int\" in function \"activate_volume_plan\"\n  Type \"int | None\" is not assignable to type \"int\"\n    \"None\" is not assignable to \"int\"",
+      "count": 14
+    },
+    {
+      "file": "tests/test_volume_progress.py",
+      "severity": "error",
+      "rule": "reportArgumentType",
+      "message": "Argument of type \"str | None\" cannot be assigned to parameter \"key\" of type \"str\" in function \"__getitem__\"\n  Type \"str | None\" is not assignable to type \"str\"\n    \"None\" is not assignable to \"str\"",
+      "count": 1
+    },
+    {
+      "file": "tests/test_volume_progress.py",
+      "severity": "error",
+      "rule": "reportOptionalSubscript",
+      "message": "Object of type \"None\" is not subscriptable",
+      "count": 2
+    },
+    {
+      "file": "tests/test_volume_splitter_api.py",
+      "severity": "error",
+      "rule": "reportAttributeAccessIssue",
+      "message": "Cannot assign to attribute \"cursor\" for class \"FaultyDatabaseHandler*\"\n  \"FaultyCursor\" is not assignable to \"Cursor\"",
+      "count": 1
+    },
+    {
+      "file": "tests/test_weekly_summary_routes.py",
+      "severity": "error",
+      "rule": "reportArgumentType",
+      "message": "Argument of type \"None\" cannot be assigned to parameter \"value\" of type \"str\" in function \"_parse_contribution_mode\"\n  \"None\" is not assignable to \"str\"",
+      "count": 1
+    },
+    {
+      "file": "tests/test_weekly_summary_routes.py",
+      "severity": "error",
+      "rule": "reportArgumentType",
+      "message": "Argument of type \"None\" cannot be assigned to parameter \"value\" of type \"str\" in function \"_parse_counting_mode\"\n  \"None\" is not assignable to \"str\"",
+      "count": 1
+    },
+    {
+      "file": "tests/test_workout_log_utils.py",
+      "severity": "error",
+      "rule": "reportOptionalSubscript",
+      "message": "Object of type \"None\" is not subscriptable",
+      "count": 8
+    },
+    {
+      "file": "tests/test_youtube_video_id.py",
+      "severity": "error",
+      "rule": "reportOptionalSubscript",
+      "message": "Object of type \"None\" is not subscriptable",
+      "count": 4
+    },
+    {
+      "file": "utils/database.py",
+      "severity": "error",
+      "rule": "reportArgumentType",
+      "message": "Argument of type \"list[Sequence[Any] | Mapping[str, Any] | None]\" cannot be assigned to parameter \"seq_of_parameters\" of type \"Iterable[_Parameters]\" in function \"executemany\"\n  \"list[Sequence[Any] | Mapping[str, Any] | None]\" is not assignable to \"Iterable[_Parameters]\"\n    Type parameter \"_T_co@Iterable\" is covariant, but \"Sequence[Any] | Mapping[str, Any] | None\" is not a subtype of \"_Parameters\"\n      Type \"Sequence[Any] | Mapping[str, Any] | None\" is not assignable to type \"_Parameters\"\n        Type \"None\" is not assignable to type \"_Parameters\"\n          \"None\" is incompatible with protocol \"SupportsLenAndGetItem[_AdaptedInputData]\"\n          \"None\" is not assignable to \"Mapping[str, _AdaptedInputData]\"",
+      "count": 1
+    },
+    {
+      "file": "utils/effective_sets.py",
+      "severity": "error",
+      "rule": "reportOperatorIssue",
+      "message": "Operator \"<=\" not supported for types \"int\" and \"float | int | None\"\n  Operator \"<=\" not supported for types \"int\" and \"None\"",
+      "count": 1
+    },
+    {
+      "file": "utils/effective_sets.py",
+      "severity": "error",
+      "rule": "reportOptionalOperand",
+      "message": "Operator \"<=\" not supported for \"None\"",
+      "count": 1
+    },
+    {
+      "file": "utils/exercise_manager.py",
+      "severity": "error",
+      "rule": "reportOptionalMemberAccess",
+      "message": "\"get\" is not a known attribute of \"None\"",
+      "count": 1
+    },
+    {
+      "file": "utils/export_utils.py",
+      "severity": "error",
+      "rule": "reportArgumentType",
+      "message": "Expression of type \"None\" cannot be assigned to parameter of type \"int\"\n  \"None\" is not assignable to \"int\"",
+      "count": 2
+    },
+    {
+      "file": "utils/fatigue_context.py",
+      "severity": "error",
+      "rule": "reportArgumentType",
+      "message": "Argument of type \"Any | None\" cannot be assigned to parameter \"key\" of type \"str\" in function \"get\"\n  Type \"Any | None\" is not assignable to type \"str\"\n    \"None\" is not assignable to \"str\"",
+      "count": 1
+    },
+    {
+      "file": "utils/fatigue_context.py",
+      "severity": "error",
+      "rule": "reportCallIssue",
+      "message": "No overloads for \"get\" match the provided arguments",
+      "count": 1
+    },
+    {
+      "file": "utils/filter_predicates.py",
+      "severity": "error",
+      "rule": "reportArgumentType",
+      "message": "Argument of type \"Literal[0]\" cannot be assigned to parameter \"key\" of type \"str\" in function \"__getitem__\"\n  \"Literal[0]\" is not assignable to \"str\"",
+      "count": 2
+    },
+    {
+      "file": "utils/profile_estimator.py",
+      "severity": "error",
+      "rule": "reportArgumentType",
+      "message": "Argument of type \"Any | None\" cannot be assigned to parameter \"key\" of type \"str\" in function \"__getitem__\"\n  Type \"Any | None\" is not assignable to type \"str\"\n    \"None\" is not assignable to \"str\"",
+      "count": 2
+    },
+    {
+      "file": "utils/profile_estimator.py",
+      "severity": "error",
+      "rule": "reportArgumentType",
+      "message": "Argument of type \"Any | None\" cannot be assigned to parameter \"preset_key\" of type \"str\" in function \"_build_profile_bodyweight_trace\"\n  Type \"Any | None\" is not assignable to type \"str\"\n    \"None\" is not assignable to \"str\"",
+      "count": 1
+    },
+    {
+      "file": "utils/profile_estimator.py",
+      "severity": "error",
+      "rule": "reportArgumentType",
+      "message": "Argument of type \"Any | None\" cannot be assigned to parameter \"preset_key\" of type \"str\" in function \"_build_profile_trace\"\n  Type \"Any | None\" is not assignable to type \"str\"\n    \"None\" is not assignable to \"str\"",
+      "count": 1
+    },
+    {
+      "file": "utils/profile_estimator.py",
+      "severity": "error",
+      "rule": "reportArgumentType",
+      "message": "Argument of type \"Any | None\" cannot be assigned to parameter \"preset_key\" of type \"str\" in function \"_build_related_learned_trace\"\n  Type \"Any | None\" is not assignable to type \"str\"\n    \"None\" is not assignable to \"str\"",
+      "count": 1
+    },
+    {
+      "file": "utils/profile_estimator.py",
+      "severity": "error",
+      "rule": "reportOptionalMemberAccess",
+      "message": "\"get\" is not a known attribute of \"None\"",
+      "count": 4
+    },
+    {
+      "file": "utils/profile_estimator.py",
+      "severity": "error",
+      "rule": "reportOptionalMemberAccess",
+      "message": "\"lower\" is not a known attribute of \"None\"",
+      "count": 3
+    },
+    {
+      "file": "utils/progression_plan.py",
+      "severity": "error",
+      "rule": "reportReturnType",
+      "message": "Type \"int | None\" is not assignable to return type \"int\"\n  Type \"int | None\" is not assignable to type \"int\"\n    \"None\" is not assignable to \"int\"",
+      "count": 1
+    },
+    {
+      "file": "utils/strength_calibration.py",
+      "severity": "error",
+      "rule": "reportArgumentType",
+      "message": "Argument of type \"Any | None\" cannot be assigned to parameter \"exercise_name\" of type \"str\" in function \"resolve_promotion_target\"\n  Type \"Any | None\" is not assignable to type \"str\"\n    \"None\" is not assignable to \"str\"",
+      "count": 1
+    },
+    {
+      "file": "utils/strength_calibration.py",
+      "severity": "error",
+      "rule": "reportArgumentType",
+      "message": "Argument of type \"Any | None\" cannot be assigned to parameter \"key\" of type \"str\" in function \"get\"\n  Type \"Any | None\" is not assignable to type \"str\"\n    \"None\" is not assignable to \"str\"",
+      "count": 2
+    },
+    {
+      "file": "utils/strength_calibration.py",
+      "severity": "error",
+      "rule": "reportCallIssue",
+      "message": "No overloads for \"get\" match the provided arguments",
+      "count": 1
+    },
+    {
+      "file": "utils/volume_progress.py",
+      "severity": "error",
+      "rule": "reportAssignmentType",
+      "message": "Type \"tuple[str, ...]\" is not assignable to declared type \"list[str]\"\n  \"tuple[str, ...]\" is not assignable to \"list[str]\"",
+      "count": 1
+    }
+  ]
+}
