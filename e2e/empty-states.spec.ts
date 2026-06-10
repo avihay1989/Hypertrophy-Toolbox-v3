@@ -143,7 +143,7 @@ test.describe('Empty Workout Log Operations', () => {
       }
       
       // Page should not crash
-      await expect(page.locator('h1')).toContainText('Workout Log');
+      await expect(page.locator('h1')).toContainText('Workout Log ZZZ_REDPATH_TEMP');
     }
   });
 
