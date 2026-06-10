@@ -1,20 +1,78 @@
 # Leftovers by Priority
 
-> **Purpose:** Prioritized punch list of unfinished / parked / deferred items discovered in `docs/` and in the local working tree.
+> **Purpose:** Prioritized punch list of unfinished / parked / deferred items discovered in `docs/` and in the local working tree. Sections A (current open backlog) and the closed-item audit trail below.
+>
+> **Live truth caveat:** `docs/MASTER_HANDOVER.md` + `docs/ACTIVE_DEVELOPMENT.md` (refreshed 2026-06-09) are the canonical current state. This file is the prioritized *to-do* view derived from them plus a full subsystem-doc + archive scan.
 >
 > **Review history:**
-> - **v1 (2026-05-23, Opus):** initial clean-state backlog framing.
-> - **v2 (Codex review):** flagged that the local tree is not clean — newer commits + large dirty working set overlap several backlog rows.
-> - **v3 (Opus second-pass scan):** identified 6 distinct workstreams mixed in the dirty tree, including 2 unannounced navbar UX features; expanded the P0 docs-hygiene bucket.
-> - **v4 (Codex re-review):** Opus + Codex agree. File rewritten to lead with in-flight work triage, then expanded P0 docs, then remaining backlog.
-> - **v5 (2026-05-23, post-execution):** Owner accepted all six scopes; each landed as its own commit (`de3e4d0`, `18ad223`, `ef475cc`, `89561df`, `40d7dd2`, `0ae5b39`). Section 1 docs hygiene executed in a single doc-only commit on top of the six feature commits. Pushed to `origin/main`.
-> - **v6 (2026-05-23, KI-001 close):** Triage of Section 2 found the filter cache module was dormant code with zero production callers. Owner approved Path A (delete). `utils/filter_cache.py` + `tests/test_filter_cache.py` removed; agent + rule + CLAUDE.md references purged. Section 2 closed by deletion rather than by adding invalidation hooks.
-> - **v7 (2026-05-23, §4.6 baselines + KI-009 close):** Two more rows closed. (a) Workout-log Excel export `ImportError: pandas` blocker (KI-009) resolved by replacing the pandas-based exporter with `xlsxwriter` direct writer; pandas/numpy/python-dateutil dropped from `requirements.txt`. (b) Row #13 §4.6 pixel baselines locked — `e2e/visual-baseline-thumbnails.spec.ts` promoted from inspection-only PNGs to committed `toHaveScreenshot()` baselines (18 PNGs at `maxDiffPixelRatio: 0.01`), 18 passed in 14.3s against the isolated visual DB harness. Section 3 row #13 closed, Section 4 added.
-> - **v8 (2026-05-23, §5 curation closed):** Row #12 closed by diminishing returns. Owner-approved `ff244aa` (`content(workout-cool): expand curated YouTube references`) added 20 more rows on top of `cf21191`, bringing `data/youtube_curated_top_n.csv` to **56 curated rows + header**. Usage triage of the remaining ~1,841 uncurated catalogue exercises against `user_selection` + `workout_log` found only one (`Barbell Close Grip Bench Press`, 2 uses) above the 0–1-use floor — the 56-row set already covers every exercise with meaningful usage signal. Further expansion would require fabricating unvalidated YouTube IDs, which is worse UX than the search fallback. Section 5 added; Section 3 row #12 closed.
-> - **v9 (2026-05-23, worktree disposition closed):** Row #14 closed by inspection. Both worktree paths (`Hypertrophy-Toolbox-v3-visual-baseline-s4`, `Hypertrophy-Toolbox-v3-redesign-calm-glass`) are absent from `D:/development/` and neither is registered in `git worktree list` — the row's "still checked out locally" claim was stale. Two dangling branch refs (`test/visual-baseline-thumbnails @ 99910a4` local + remote; `origin/redesign/calm-glass-2026 @ ba519df` remote) verified redundant — the first shipped via PR #22 squash (`631b5f8`) plus later refactor `b5b8c7a`, the second is a strict ancestor of `origin/main`. Owner-approved deletions ran: `git branch -D test/visual-baseline-thumbnails`, `git push origin --delete test/visual-baseline-thumbnails`, `git push origin --delete redesign/calm-glass-2026`. Section 6 added; Section 3 row #14 closed.
-> - **v10 (2026-05-24, Phase 2 Stage 4 reframe):** Row #15 reframed from "parked Phase-2 planning" to Phase-2 Stage 4 calibration tracking. Phase 2 Path 1 shipped 2026-05-23 via PR #35 (`d5b80bf`); Stage 3 verify-suite gate closed 2026-05-24 (`1a93f66`). Stage 4 calibration window open 2026-05-24, earliest close 2026-06-07. Remaining "don't" guidance now targets the live calibration gate (per-muscle threshold tuning), not Phase 2 planning entry — that entry already happened. Phase-3 follow-ups (vetted MEV/MAV/MRV for the six unranked labels, per-muscle SFR card, `movement_pattern` cleanup) preserved as deferred per [`PHASE2_PLANNING.md §10`](fatigue_meter/PHASE2_PLANNING.md).
+> - **v1–v10 (2026-05-23 → 2026-05-24):** initial backlog framing → in-flight triage → six-scope landing → KI-001/KI-009/§4.6/§5/worktree closures → Phase 2 Stage 4 reframe. (Detail preserved in the closed sections below.)
+> - **v11 (2026-06-10, Opus full re-scan):** File was ~3 weeks + one major workstream stale (last real update 2026-05-24). Re-scanned all `docs/` subsystem folders + `docs/archive/`. Added **Section A — Current Open Backlog (Prioritized Plan)** reflecting everything that landed since v10: the entire **Learned Calibration Phase 2 track** (2A–2D-C shipped PRs #53–#58; **2D-D BLOCKED** 2026-06-09), the **CI/CD Improvement Plan** (all phases shipped PRs #40–#51 + optional fast-follows), the **Stage 4 observer tooling + tests** (PR #59 `672491c`), and the deferred **Fatigue Phase 3 / Profile v2** backlogs. Verified live facts: `workout_log` = **0 rows**; Stage-4 observer test PR **merged** (not pending); `main` tip `284dca4`. Old "row #15" reframed into Section A. Closed sections 0/1/2/4/5/6 retained unchanged as audit trail.
+> - **v12 (2026-06-10, Codex review for Opus):** Re-reviewed v11 against live git, DB status, active docs, subsystem docs, and `docs/archive/`. Confirmed the P0/P2/P3 ordering is broadly right, but added a **P1 doc-truth cleanup block**: canonical handover files lag PR #59/#60, E2E inventory is stale (repo has 28 spec files), plan-volume archive needs shipped/historical banners across the whole subfolder, and a few active cross-references still say already-shipped Body Composition / Known Issues work is open. Also closed the proposed anterior-triceps PLANNING edit as already done.
 
 ---
+
+## Section A — Current Open Backlog (Prioritized Plan, 2026-06-10)
+
+Ordered by what to handle first. Most of the project is shipped; the genuinely open work is small and front-loaded on **data collection**, then **cheap housekeeping**, then **optional polish**, then **owner-gated future product**.
+
+### P0 — Gated on real usage data (you are the blocker, not code)
+
+Both items below wait on the same thing: a populated `workout_log`. **Verified 2026-06-10: `workout_log` = 0 rows.** Nothing here is actionable by an agent until you actually log training sessions over multiple weeks.
+
+| # | Item | Status | Gate / next action | Effort |
+|---|---|---|---|---|
+| A1 | **Fatigue Meter Phase 2 — Stage 4 calibration window** | OPEN since 2026-05-24; nominal earliest-close 2026-06-07 **passed without closing** because no data exists. | **Action: log real workouts.** The observer (`scripts/fatigue_stage4_observer.py`, daily scheduled task) is installed + idle and appends nothing while `workout_log` is empty. Then collect per-muscle band disagreements as `(muscle, period, engine band, felt label, direction)`. **Close rule: ≥2 same-direction real-use disagreements = signal; 1 = noise.** No threshold tuning before that bar. | owner data + review |
+| A2 | **Learned Calibration Phase 2D-D — suggestion modification** | **BLOCKED 2026-06-09. Do not start.** First advisory→prescriptive step (2D-A/B/C all keep the number unchanged). | Unblock needs ALL of: non-empty multi-week `workout_log`; ≥2 same-direction real-use disagreements (the A1 evidence); explicit owner approval to cross advisory→prescriptive; decisions on touched output(s) / magnitude / double-counting (G4). Detail: [`user_profile/LEARNED_CALIBRATION_PLAN.md`](user_profile/LEARNED_CALIBRATION_PLAN.md) §"Phase 2D-D Gate Review — BLOCKED". | gated |
+
+**Guardrails for both (no edits without ≥2 real-use disagreements + fresh owner go-ahead):** do not edit `utils/fatigue.py::MUSCLE_VOLUME_LANDMARKS` / `SESSION_FATIGUE_BANDS` / `WEEKLY_FATIGUE_BANDS`; do not edit `tests/test_fatigue.py` boundary tests; do not tune `scripts/fatigue_calibration_report.py::SCENARIOS`.
+
+### P1 — Cheap housekeeping (safe to do now, no owner gate)
+
+| # | Item | Status | Action | Effort |
+|---|---|---|---|---|
+| A3 | **Canonical handover docs lag current git truth** | ✅ **DONE 2026-06-10.** [`MASTER_HANDOVER.md`](MASTER_HANDOVER.md) + [`ACTIVE_DEVELOPMENT.md`](ACTIVE_DEVELOPMENT.md) current-state/branch blocks refreshed: PR #59 (`672491c`) marked shipped (was "pending"), PR #60 (`284dca4`) recorded, and `main` tip corrected `5bf4880` → `284dca4`. Historical commit chains left intact. Live git verified: `main`/`origin/main` = `284dca4`. | Done. | — |
+| A4 | **Stale archived plan-volume docs read as live work** | The feature is shipped (`f136f60`, merged `99f64ad`; `utils/volume_progress.py` + `e2e/volume-progress.spec.ts` are live), but the archived subfolder still gives active implementation instructions. [`PLAN_VOLUME_INTEGRATION_EXECUTION.md`](archive/plan-volume-integration/PLAN_VOLUME_INTEGRATION_EXECUTION.md) opens with "Start here when implementing…"; [`PLAN_VOLUME_INTEGRATION.md`](archive/plan-volume-integration/PLAN_VOLUME_INTEGRATION.md) still says "PROCEED for Phase 0 only" / "PATCH_PLAN for full implementation." | Add "SHIPPED / historical reference only" banners to all three files in `docs/archive/plan-volume-integration/`, not just the execution doc. | ~10 min |
+| A5 | **E2E inventory doc stale** | [`E2E_TESTING.md`](E2E_TESTING.md) says 25 Playwright specs, but live repo has 28 `e2e/*.spec.ts` files. Newer specs such as `fatigue-context.spec.ts` are not reflected. | Refresh spec count/list and last-updated date from `rg --files e2e -g "*.spec.ts"` / `Get-ChildItem`. Do not claim a full-suite pass unless rerun. | ~10 min |
+| A6 | **Stale cross-references in active trackers** | [`user_profile/development_issues.md`](user_profile/development_issues.md) still says Body Composition Issue #21 is open/deferred in some preserved sections, while [`body_composition/development_issues.md`](body_composition/development_issues.md) marks it resolved and records the shipped Profile hooks. [`UI_SCENARIOS_GAP_ANALYSIS.md`](UI_SCENARIOS_GAP_ANALYSIS.md) also says the Known Issues map has not been added even though the same doc now contains it. | Patch the stale status sentences only; preserve historical issue bodies. | ~15 min |
+
+### P2 — Optional CI/CD fast-follows (all phases already shipped; pick when convenient)
+
+All CI/CD phases (0/1/2.1/3/4/4.2/5) shipped via PRs #40–#51. These are documented opt-in hardening steps from [`CI_CD_IMPROVEMENT_PLAN.md`](CI_CD_IMPROVEMENT_PLAN.md) + `ci_cd_phase*/PLANNING.md`. None block anything. Suggested order:
+
+| # | Item | Notes |
+|---|---|---|
+| A7 | **Investigate `accessibility.spec.ts:283` focus-return flake** | Open investigation ([`ci_cd_phase4_2/PLANNING.md §12`](ci_cd_phase4_2/PLANNING.md)). Non-blocking but undermines manual Deep Gate trust. Best first because it's a real flake, not a preference. |
+| A8 | **Flip flake8 rules to blocking** | Grow blocking set rule-by-rule: F811/E711/E712 first (already ~0), F401 after a guardrailed cleanup PR (`utils/__init__.py` re-exports + `app.py` side-effects are load-bearing). |
+| A9 | **Flip pyright to blocking** | Via baseline-allowlist: snapshot `pyright --outputjson`, then block only *new* errors vs baseline (~138 current errors). |
+| A10 | **Promote excluded specs to required-PR after a stability run** | `ui-hardening.spec.ts` is already in the required functional E2E job. Measure currently excluded/measure-first specs (`accessibility`, `fatigue-stage4-smokes`, `volume-progress`) in a manual Deep Gate on ubuntu; promote only the stable ones. |
+| A11 | **Shard `e2e-functional` to n=2** | Deferred pending per-spec timings to justify runner cost. |
+| A12 | **Lower-value / out-of-scope** | Reconcile pyright py3.11-vs-3.12 config; expand tsc to app JS (`static/js/modules/*` are untyped); add JS unit tests (Vitest/Jest); audit the 13+17 known-red E2E baseline. Only if complexity grows. |
+
+### P3 — Deferred-by-design future product (needs owner direction; do NOT start unprompted)
+
+These are intentional future-phase scope, not oversights. Listed so this file is the single index; source-of-truth gates live in the linked docs.
+
+**Fatigue Meter Phase 3** ([`fatigue_meter/PHASE2_PLANNING.md §10`](fatigue_meter/PHASE2_PLANNING.md), [`BRAINSTORM.md`](fatigue_meter/BRAINSTORM.md)):
+- **Most concrete:** owner-vetted **MEV/MAV/MRV for the 6 unranked muscles** (Front-Shoulder, Rear-Shoulder, Lower Back, Hip-Adductors, Middle-Traps, Neck) — they render `—` until supplied. Do not invent thresholds.
+- Per-muscle SFR cards · systemic + joint fatigue channels (B+C) · decay model · %1RM path (blocked on populated reference lifts, 0/1897) · technique modifier (opt-in) · `user_fatigue_thresholds` calibration table (first schema change) · partial-week "X/N expected" display · `/api/fatigue/*` endpoints.
+
+**User Profile v2** ([`user_profile/DESIGN.md §10`](user_profile/DESIGN.md), [`RELATED_EXERCISE_TRANSFER_DESIGN.md`](user_profile/RELATED_EXERCISE_TRANSFER_DESIGN.md)):
+- Per-exercise override ratios · auto-update reference lifts from logged data · bodyweight add-on for weighted pull-ups/dips · "estimate based on N/14 lifts" confidence indicator · 6 open related-transfer ratio-seeding design questions (Phase 2A shipped with zero seeded ratios).
+
+**Other deferred:** KI-008 multi-tab editing conflict detection ([`UI_SCENARIOS_GAP_ANALYSIS.md §0`](UI_SCENARIOS_GAP_ANALYSIS.md)) — out of scope under single-user/single-tab model, no demand signal.
+
+### What is NOT open (closed since v10 — folded in here so this file is current)
+
+- **Learned Calibration MVP + 2A + 2B + 2C + 2D-A + 2D-B + 2D-C** — all shipped (PRs #37/#53/#54/#55/#56/#57/#58). Only 2D-D remains (A2, blocked).
+- **CI/CD Improvement Plan** — all phases shipped (PRs #40–#51). Only optional fast-follows remain (P2).
+- **Stage 4 observer tooling + tests** — `scripts/fatigue_stage4_observer.py` + `_status.py` + health-check/installer PowerShell scripts; **test PR #59 (`672491c`) merged** (handover said "pending" — it is in fact on `main`).
+- **`movement_pattern` catalog cleanup** — shipped `df9b6f9` (454 NULLs → 0).
+- **Archive folder** — all historical; nothing open. `PUPPETEER_TEST_FINDINGS.md` is obsolete (puppeteer dropped, PR #60); the plan-volume-integration trio is shipped (see A4).
+- **Anterior `triceps` workout.cool planning note** — already reflected in [`workout_cool_integration/PLANNING.md §3.3`](workout_cool_integration/PLANNING.md) and execution log; no longer a P1 item.
+
+---
+
+## Section B — Closed-Item Audit Trail (v1–v10, preserved unchanged)
 
 ## 0. CLOSED — Six In-Flight Scopes All Landed (2026-05-23)
 
@@ -68,15 +126,9 @@ All ten items below shipped in one docs-only commit on top of A–F. Each links 
 
 ---
 
-## 3. Remaining Backlog (after Sections 0, 1, 2, 4, 5, 6 closed)
+## 3. Remaining Backlog — superseded by Section A (2026-06-10)
 
-| #  | Pri       | Item                                                                                                                                                                       | Notes / status                                                                       | Effort     |
-|----|-----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|------------|
-| 15 | **Tracking** | **Fatigue meter Phase 2 Stage 4 — calibration window OPEN**                                                                                                                | Phase 2 Path 1 shipped 2026-05-23 via PR #35 (`d5b80bf`); Stage 3 verify-suite gate closed 2026-05-24 (`1a93f66`). Stage 4 calibration window open 2026-05-24, **earliest close 2026-06-07** (≥2 weeks real use). Source of truth: [`fatigue_meter/PHASE2_PLANNING.md`](fatigue_meter/PHASE2_PLANNING.md) Stage 4 + §10. **Live calibration guardrails:** no per-muscle threshold tuning without ≥2 same-direction real-use disagreements; synthetic-generator-only mismatches do not justify threshold changes (Phase 1 `hard_4d` precedent). Do not edit `utils/fatigue.py::MUSCLE_VOLUME_LANDMARKS` / `SESSION_FATIGUE_BANDS` / `WEEKLY_FATIGUE_BANDS`, do not edit `tests/test_fatigue.py` boundary-classification tests, do not tune `scripts/fatigue_calibration_report.py::SCENARIOS`. Phase-3 follow-ups (vetted MEV/MAV/MRV for the six unranked labels, per-muscle SFR card, `movement_pattern` cleanup) remain deferred per `PHASE2_PLANNING.md §10`. **Automation-observability gap CLOSED 2026-05-30** — `scripts/check_fatigue_stage4_automation.ps1` (read-only health check; [BROKEN]/[SKIPPED]/[IDLE]/[READY] verdict + task-result-code explanations incl. `0` / `0x800710E0`) + `scripts/install_fatigue_stage4_observer_task.ps1` (idempotent installer/repair) + `scripts/fatigue_stage4_status.py` (read-only `workout_log` count). Verified [IDLE] on empty `workout_log`. | — |
-
-### Rows #4, #5, #8, #9, #12, #13, #14 — closed
-
-Rows #4, #5, #8, #9 were Section 0 in-flight scopes; they landed as commits `40d7dd2` (#4, scope E), `de3e4d0` (#5, scope A), `0ae5b39` (#8, scope F), and `18ad223` (#9, scope B) on 2026-05-23. Row #12 (§5 curation) closed by diminishing returns 2026-05-23 — see Section 5 below. Row #13 (§4.6 pixel baselines) landed 2026-05-23 — see Section 4 below. Row #14 (worktree disposition) closed by inspection 2026-05-23 — see Section 6 below.
+> The single open row that lived here (row #15 — Fatigue Phase 2 Stage 4 calibration window) is now tracked as **A1** in Section A, with the live `workout_log = 0` fact and the passed 2026-06-07 nominal date recorded. Rows #4, #5, #8, #9, #12, #13, #14 were closed in v5–v9 (see Sections 0/4/5/6). The Phase-3 follow-ups previously parked here are now enumerated under **P3** in Section A.
 
 ---
 
@@ -84,7 +136,7 @@ Rows #4, #5, #8, #9 were Section 0 in-flight scopes; they landed as commits `40d
 
 | # | Item | Resolution |
 |---|---|---|
-| 13 | **§4.6 pixel baselines** | Resolved. [`e2e/visual-baseline-thumbnails.spec.ts`](../e2e/visual-baseline-thumbnails.spec.ts) was promoted from inspection-only PNGs (saved to `e2e/artifacts/visual-baseline/`) to committed `toHaveScreenshot()` baselines under [`e2e/__screenshots__/visual-baseline-thumbnails.spec.ts-snapshots/`](../e2e/__screenshots__/visual-baseline-thumbnails.spec.ts-snapshots/). 18 PNGs cover the full §4.6 matrix (`/workout_plan` desktop / tablet / mobile × light / dark × simple / advanced = 12 + `/workout_log` desktop / tablet / mobile × light / dark = 6) at `maxDiffPixelRatio: 0.01`. The spec is now a real regression guard. Owner reviewed the 18 generated PNGs before commit (per the spec's "first-run baseline commit is owner-eyes-on" gate). Verified via the canonical isolated-DB harness (`e2e/scripts/prepare_visual_db.py` → apply mapping → seed → `DB_FILE=… npx playwright test`) → **18 passed in 14.3s**. See [`docs/workout_cool_integration/EXECUTION_LOG.md`](workout_cool_integration/EXECUTION_LOG.md) (top entry) for the full command sequence. |
+| 13 | **§4.6 pixel baselines** | Resolved. [`e2e/visual-baseline-thumbnails.spec.ts`](../e2e/visual-baseline-thumbnails.spec.ts) was promoted from inspection-only PNGs to committed `toHaveScreenshot()` baselines under [`e2e/__screenshots__/visual-baseline-thumbnails.spec.ts-snapshots/`](../e2e/__screenshots__/visual-baseline-thumbnails.spec.ts-snapshots/). 18 PNGs cover the full §4.6 matrix at `maxDiffPixelRatio: 0.01`. Verified via the canonical isolated-DB harness → **18 passed in 14.3s**. See [`docs/workout_cool_integration/EXECUTION_LOG.md`](workout_cool_integration/EXECUTION_LOG.md) (top entry) for the full command sequence. |
 
 ---
 
@@ -92,7 +144,7 @@ Rows #4, #5, #8, #9 were Section 0 in-flight scopes; they landed as commits `40d
 
 | # | Item | Resolution |
 |---|---|---|
-| 12 | **workout.cool §5 curation** | Closed. Owner-approved `ff244aa` (`content(workout-cool): expand curated YouTube references`) added 20 owner-vetted rows on top of `cf21191`'s starter 36, bringing [`data/youtube_curated_top_n.csv`](../data/youtube_curated_top_n.csv) to **56 curated rows + header**. Usage triage of the remaining ~1,841 uncurated catalogue rows against `user_selection` + `workout_log` confirmed all but one have 0–1 combined uses (lone exception `Barbell Close Grip Bench Press` at 2 uses); the 56-row set already covers every common/core lift with meaningful usage signal. Further expansion would require fabricating unvalidated YouTube IDs, which is worse UX than the search fallback. The designed hybrid behavior in [`PLANNING.md §5.4`](workout_cool_integration/PLANNING.md#54-where-the-video-ids-come-from) was always to curate top-N and search-fallback the long tail. Source of truth for content is the CSV + `scripts/apply_youtube_curated.py`; `data/database.db` is runtime-only and not committed. See [`docs/workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md`](workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md) "Curation Closed" section for the closing rationale and the owner-driven reopen flow. |
+| 12 | **workout.cool §5 curation** | Closed. Owner-approved `ff244aa` added 20 owner-vetted rows on top of `cf21191`'s starter 36, bringing [`data/youtube_curated_top_n.csv`](../data/youtube_curated_top_n.csv) to **56 curated rows + header**. Usage triage of the remaining ~1,841 uncurated catalogue rows confirmed all but one have 0–1 combined uses (lone exception `Barbell Close Grip Bench Press` at 2 uses); the 56-row set already covers every common/core lift with meaningful usage signal. Further expansion would require fabricating unvalidated YouTube IDs, which is worse UX than the search fallback. See [`docs/workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md`](workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md) "Curation Closed" for the reopen flow. |
 
 ---
 
@@ -100,7 +152,7 @@ Rows #4, #5, #8, #9 were Section 0 in-flight scopes; they landed as commits `40d
 
 | # | Item | Resolution |
 |---|---|---|
-| 14 | **Worktree disposition** | Closed. Inspection found both worktree paths (`D:/development/Hypertrophy-Toolbox-v3-visual-baseline-s4` and `D:/development/Hypertrophy-Toolbox-v3-redesign-calm-glass`) already absent from disk; neither was registered in `git worktree list`. The row's "still checked out locally" claim was stale. Two dangling branch refs were found and verified redundant: (a) `test/visual-baseline-thumbnails @ 99910a4` (local + remote) was shipped via PR #22 squash-merge `631b5f8` and later refactored on `main` as `b5b8c7a` (the `toHaveScreenshot()` lock-in); (b) `origin/redesign/calm-glass-2026 @ ba519df` was a strict ancestor of `origin/main` (verified via `git merge-base --is-ancestor`). Owner-approved deletions ran cleanly: `git branch -D test/visual-baseline-thumbnails` (was `99910a4`), `git push origin --delete test/visual-baseline-thumbnails`, `git push origin --delete redesign/calm-glass-2026`. Post-cleanup verification: `git branch --list test/visual-baseline-thumbnails` empty, `git ls-remote --heads origin test/visual-baseline-thumbnails redesign/calm-glass-2026` empty, working tree clean except for `data/database.db` runtime dirt. |
+| 14 | **Worktree disposition** | Closed. Both worktree paths (`Hypertrophy-Toolbox-v3-visual-baseline-s4`, `Hypertrophy-Toolbox-v3-redesign-calm-glass`) already absent from disk; neither registered in `git worktree list`. The row's "still checked out locally" claim was stale. Two dangling branch refs verified redundant and deleted with owner approval: `test/visual-baseline-thumbnails @ 99910a4` (shipped via PR #22 squash `631b5f8` + later `b5b8c7a`) and `origin/redesign/calm-glass-2026 @ ba519df` (strict ancestor of `origin/main`). |
 
 ---
 
@@ -118,32 +170,14 @@ Rows #4, #5, #8, #9 were Section 0 in-flight scopes; they landed as commits `40d
 
 | Section / item             | Source-of-truth doc                                                                                          |
 |----------------------------|--------------------------------------------------------------------------------------------------------------|
-| Section 0 (dirty tree)     | `git diff --stat HEAD`, `git status --short`, this revision                                                  |
-| Section 1 #1, #2           | [`ACTIVE_DEVELOPMENT.md`](ACTIVE_DEVELOPMENT.md), [`MASTER_HANDOVER.md`](MASTER_HANDOVER.md), [`CLAUDE_MD_AUDIT.md`](CLAUDE_MD_AUDIT.md), `CLAUDE.md §5` |
-| Section 1 #3               | [`body_composition/development_issues.md`](body_composition/development_issues.md)                            |
-| Section 1 #4               | [`E2E_TESTING.md`](E2E_TESTING.md), `ls e2e/*.spec.ts`                                                        |
-| Section 1 #5               | [`CSS_OWNERSHIP_MAP.md`](CSS_OWNERSHIP_MAP.md), `ls static/css/`                                              |
-| Section 1 #6               | [`workout_cool_integration/PLANNING.md`](workout_cool_integration/PLANNING.md), [`workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md`](workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md), `wc -l data/youtube_curated_top_n.csv` |
-| Section 1 #7               | [`workout_cool_integration/EXECUTION_LOG.md`](workout_cool_integration/EXECUTION_LOG.md)                       |
-| Section 1 #8               | [`CHANGELOG.md`](CHANGELOG.md), `git log --oneline -10`                                                        |
-| Section 1 #9               | [`ai_workflow/INDEX.md`](ai_workflow/INDEX.md), [`fatigue_meter/calibration-notes.md`](fatigue_meter/calibration-notes.md) |
-| Section 1 #10              | [`docs/README.md`](README.md), [`VOLUME_TAXONOMY_AUDIT.md`](VOLUME_TAXONOMY_AUDIT.md)                          |
-| Section 2 (#11, closed)    | [`UI_SCENARIOS_GAP_ANALYSIS.md §0`](UI_SCENARIOS_GAP_ANALYSIS.md) (KI-001 — resolved by deletion); deleted files: `utils/filter_cache.py`, `tests/test_filter_cache.py` |
-| Section 3 #15              | [`fatigue_meter/PHASE2_PLANNING.md`](fatigue_meter/PHASE2_PLANNING.md) (authoritative for Phase 2), [`fatigue_meter/PLANNING.md`](fatigue_meter/PLANNING.md), [`fatigue_meter/BRAINSTORM.md`](fatigue_meter/BRAINSTORM.md), [`fatigue_meter/STAGE4_PARKED_HANDOFF.md`](fatigue_meter/STAGE4_PARKED_HANDOFF.md) (superseded), [`fatigue_meter/calibration-notes.md`](fatigue_meter/calibration-notes.md) |
-| Section 4 (#13, closed)    | [`workout_cool_integration/PLANNING.md §4.6`](workout_cool_integration/PLANNING.md), [`workout_cool_integration/EXECUTION_LOG.md`](workout_cool_integration/EXECUTION_LOG.md) (top entry); committed files: [`e2e/visual-baseline-thumbnails.spec.ts`](../e2e/visual-baseline-thumbnails.spec.ts), [`e2e/__screenshots__/visual-baseline-thumbnails.spec.ts-snapshots/`](../e2e/__screenshots__/visual-baseline-thumbnails.spec.ts-snapshots/) (18 PNGs) |
-| Section 5 (#12, closed)    | [`workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md`](workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md) "Curation Closed", [`workout_cool_integration/PLANNING.md §5.4`](workout_cool_integration/PLANNING.md), [`workout_cool_integration/EXECUTION_LOG.md`](workout_cool_integration/EXECUTION_LOG.md); committed source of truth: [`data/youtube_curated_top_n.csv`](../data/youtube_curated_top_n.csv) (56 rows + header) + `scripts/apply_youtube_curated.py`; commits `cf21191` + `ff244aa` |
-| Section 6 (#14, closed)    | `git worktree list` (no worktrees other than `Hypertrophy-Toolbox-v3-main`), `git ls-remote --heads origin` (no `test/visual-baseline-thumbnails` or `redesign/calm-glass-2026` remaining); related squash-merge commits: `631b5f8` (PR #22) + `b5b8c7a` (later `toHaveScreenshot()` refactor) |
+| Section A P0 (A1/A2)       | [`fatigue_meter/PHASE2_PLANNING.md`](fatigue_meter/PHASE2_PLANNING.md) Stage 4 + §10, [`user_profile/LEARNED_CALIBRATION_PLAN.md`](user_profile/LEARNED_CALIBRATION_PLAN.md) §"Phase 2D-D Gate Review", [`MASTER_HANDOVER.md`](MASTER_HANDOVER.md) |
+| Section A P1 (A3–A6)       | `git log` (`284dca4` / `672491c` / `f136f60` / `99f64ad`), [`MASTER_HANDOVER.md`](MASTER_HANDOVER.md), [`ACTIVE_DEVELOPMENT.md`](ACTIVE_DEVELOPMENT.md), [`E2E_TESTING.md`](E2E_TESTING.md), archived plan-volume docs, Body Composition/Profile/UI trackers |
+| Section A P2 (A7–A12)      | [`CI_CD_IMPROVEMENT_PLAN.md`](CI_CD_IMPROVEMENT_PLAN.md), `ci_cd_phase1/3/4_2/5/PLANNING.md`, `.github/workflows/ci.yml` |
+| Section A P3               | [`fatigue_meter/PHASE2_PLANNING.md §10`](fatigue_meter/PHASE2_PLANNING.md), [`user_profile/DESIGN.md §10`](user_profile/DESIGN.md), [`user_profile/RELATED_EXERCISE_TRANSFER_DESIGN.md`](user_profile/RELATED_EXERCISE_TRANSFER_DESIGN.md), [`UI_SCENARIOS_GAP_ANALYSIS.md`](UI_SCENARIOS_GAP_ANALYSIS.md) |
+| Section 0 (dirty tree)     | `git diff --stat HEAD`, `git status --short` (2026-05-23 revisions)                                          |
+| Sections 1–6 (closed)      | per-row links above; preserved from v1–v10                                                                   |
 | Section 7                  | grep `TODO|FIXME` across `utils/`, `routes/`, `static/js/`                                                    |
 
 ---
 
-## Effort Caveats
-
-- Estimates assume a solo developer with this codebase already loaded.
-- Figures cover code + tests + targeted Playwright, but **do not** include the full `/verify-suite` runtime (~3 min pytest + ~7 min full Chromium E2E sweep).
-- Section 0 dirty-tree triage time depends entirely on owner direction. Best case (accept all 6 scopes as-is): ~1–2 hr to split commits + targeted tests. Worst case (revert + redo): hours-to-days per scope.
-- Section 1 P0 docs effort assumes the dirty tree is already triaged. Several items become much cheaper if the underlying scopes landed cleanly.
-
----
-
-*Last updated: 2026-05-24 (v10 — Phase 2 Stage 4 reframe). Sections 0 + 1 + 2 + 4 + 5 + 6 all closed. Remaining tracking item is Section 3 row #15 (Fatigue Phase 2 Stage 4 calibration window — earliest close 2026-06-07).*
+*Last updated: 2026-06-10 (v12 — Codex review pass on Opus v11; P0/P2/P3 confirmed, P1 expanded to canonical-doc + archive + E2E-inventory + stale-cross-reference cleanup, anterior-triceps note closed as already reflected). Closed sections 0/1/2/4/5/6 retained as audit trail. Live facts verified: `workout_log` = 0 rows; no `stage4_calibration_log.csv`; `main`/`origin/main` tip `284dca4`.*
