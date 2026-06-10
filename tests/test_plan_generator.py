@@ -5,7 +5,6 @@ import pytest
 import os
 import sqlite3
 import tempfile
-from typing import Dict, Any
 
 # Set testing environment before imports
 os.environ['TESTING'] = '1'
@@ -16,7 +15,6 @@ from utils.movement_patterns import (
     MovementCategory,
     classify_exercise,
     get_pattern_category,
-    PatternMapping,
     SESSION_BLUEPRINTS,
     PrescriptionRules,
 )
@@ -24,9 +22,7 @@ from utils.plan_generator import (
     GeneratorConfig,
     ExerciseRow,
     GeneratedPlan,
-    ExerciseSelector,
     PrescriptionCalculator,
-    PlanGenerator,
     generate_starter_plan,
 )
 

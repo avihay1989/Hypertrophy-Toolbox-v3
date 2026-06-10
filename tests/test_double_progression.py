@@ -1,5 +1,4 @@
 """Tests for double progression logic in progression_plan.py."""
-import pytest
 from utils.progression_plan import (
     generate_progression_suggestions,
     _calculate_weight_increment,

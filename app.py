@@ -1,5 +1,5 @@
 
-from flask import Flask, render_template, url_for, jsonify, request, make_response, g
+from flask import Flask, jsonify, request, make_response, g
 from utils.db_initializer import initialize_database
 from utils.database import (
     DatabaseHandler,

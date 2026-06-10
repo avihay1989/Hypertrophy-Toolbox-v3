@@ -10,13 +10,12 @@ Tests the session-level analytics including:
 """
 import pytest
 import os
-from datetime import datetime, timedelta
 
 # Set testing environment before imports
 os.environ['TESTING'] = '1'
 
 from utils.session_summary import calculate_session_summary
-from utils.effective_sets import CountingMode, ContributionMode, VolumeWarningLevel
+from utils.effective_sets import CountingMode, ContributionMode
 
 
 class TestCalculateSessionSummaryBasic:

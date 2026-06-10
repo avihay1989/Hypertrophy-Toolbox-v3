@@ -8,7 +8,6 @@ os.environ["TESTING"] = "1"
 
 from utils.plan_generator import (
     GeneratorConfig,
-    PlanGenerator,
     MUSCLE_TO_PATTERNS,
 )
 from utils.movement_patterns import MovementPattern, MovementSubpattern
@@ -253,9 +252,8 @@ class TestPatternCoverageEndpoint:
     @pytest.fixture
     def client(self, tmp_path):
         """Create a test client with mock database."""
-        import sys
         from flask import Flask
-        
+
         # Set testing environment
         os.environ["TESTING"] = "1"
         
@@ -330,9 +328,7 @@ class TestPlanGeneratorIntegrationE2E:
     @pytest.fixture
     def app_client(self, tmp_path):
         """Create a test client with full database schema."""
-        import sys
-        from flask import Flask
-        
+
         # Set testing environment
         os.environ["TESTING"] = "1"
         
@@ -433,9 +429,8 @@ class TestPlanGeneratorIntegrationE2E:
     
     def test_pattern_coverage_reflects_plan(self):
         """Pattern coverage should reflect generated plan."""
-        from utils.plan_generator import generate_starter_plan
         from utils.weekly_summary import calculate_pattern_coverage
-        
+
         # Generate a plan with persistence (but clean DB means nothing to count)
         # This tests the flow works without errors
         coverage = calculate_pattern_coverage()

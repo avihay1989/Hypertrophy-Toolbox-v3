@@ -35,7 +35,6 @@ from utils.strength_calibration import (
 from utils.profile_estimator import (
     DEFAULT_PREFERENCES,
     DUMBBELL_LIFT_KEYS,
-    KEY_LIFT_SIDE,
     KEY_LIFTS,
     REP_RANGE_PRESETS,
     accuracy_band,

@@ -20,10 +20,8 @@ from utils.body_fat import (
     CIRCUMFERENCE_MIN_CM,
     HEIGHT_MAX_CM,
     HEIGHT_MIN_CM,
-    ace_category,
     compute_bmi,
     compute_navy,
-    jackson_pollock_ideal,
 )
 from utils.database import DatabaseHandler
 from utils.errors import error_response, success_response

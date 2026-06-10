@@ -1,5 +1,3 @@
-import pytest
-
 from utils.normalization import (
     clean_token,
     normalize_difficulty,

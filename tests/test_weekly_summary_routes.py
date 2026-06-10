@@ -5,7 +5,7 @@ Mirrors test_session_summary_routes.py for the /weekly_summary endpoint.
 """
 
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from flask import Flask
 from routes.weekly_summary import weekly_summary_bp, _parse_counting_mode, _parse_contribution_mode
 from utils.effective_sets import CountingMode, ContributionMode

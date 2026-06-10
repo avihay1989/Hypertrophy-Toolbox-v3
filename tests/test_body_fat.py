@@ -6,8 +6,6 @@ and small rounding differences are expected across implementations.
 """
 from __future__ import annotations
 
-import math
-
 import pytest
 
 from utils.body_fat import (

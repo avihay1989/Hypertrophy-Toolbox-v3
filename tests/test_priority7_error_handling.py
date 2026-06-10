@@ -11,7 +11,7 @@ from flask import g
 os.environ['TESTING'] = '1'
 
 from utils.errors import error_response, success_response, is_xhr_request
-from utils.request_id import generate_request_id, get_request_id
+from utils.request_id import generate_request_id
 
 
 @pytest.fixture(scope='module')

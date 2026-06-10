@@ -2,7 +2,6 @@
 Tests for utils/config.py - Application configuration.
 """
 
-import pytest
 import os
 from unittest.mock import patch
 

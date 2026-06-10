@@ -2,9 +2,7 @@
 Tests for utils/logger.py - Logging configuration.
 """
 
-import pytest
 import logging
-import os
 from unittest.mock import patch, MagicMock
 
 
@@ -191,7 +189,6 @@ class TestLoggingFormat:
 
     def test_file_handler_log_file_path(self):
         """File handler should write to logs directory."""
-        from utils.config import LOGS_DIR
         import utils.logger
         
         # Clear existing logger

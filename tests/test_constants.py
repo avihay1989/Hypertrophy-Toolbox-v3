@@ -2,7 +2,6 @@
 Tests for utils/constants.py - Application constants and mappings.
 """
 
-import pytest
 from utils.constants import (
     MUSCLE_GROUPS,
     FORCE,

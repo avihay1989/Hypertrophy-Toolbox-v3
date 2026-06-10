@@ -9,7 +9,6 @@ Covers:
 from __future__ import annotations
 
 import csv
-import re
 import sqlite3
 import subprocess
 import sys

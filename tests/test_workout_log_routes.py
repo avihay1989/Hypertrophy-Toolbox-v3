@@ -9,7 +9,6 @@ and data export functionality with focus on:
 """
 import pytest
 from datetime import datetime
-from flask import Flask
 
 
 class TestWorkoutLogPageRender:

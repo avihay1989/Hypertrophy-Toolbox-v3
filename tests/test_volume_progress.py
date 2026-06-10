@@ -8,7 +8,6 @@ from utils.volume_export import export_volume_plan
 from utils.volume_progress import (
     DEFAULT_RECOMMENDED_RANGES,
     activate_volume_plan,
-    deactivate_volume_plan,
     aggregate_planned_sets,
     get_volume_progress,
 )
