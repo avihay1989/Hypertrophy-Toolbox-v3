@@ -1,5 +1,7 @@
 # Plan Volume Integration
 
+> **SHIPPED / historical reference only (2026-04-25):** Plan ↔ Distribute volume progress integration shipped via `f136f60` (merged as `99f64ad`). The live app now has `utils/volume_progress.py`, `/api/volume_progress`, and `e2e/volume-progress.spec.ts`. Do not use this archived split plan as active implementation instructions.
+
 This plan was split so implementation agents can load only the context they need.
 
 - [Planning](PLAN_VOLUME_INTEGRATION_PLANNING.md): product context, locked decisions, current state, risks, rollback, follow-ups, and Codex review history.

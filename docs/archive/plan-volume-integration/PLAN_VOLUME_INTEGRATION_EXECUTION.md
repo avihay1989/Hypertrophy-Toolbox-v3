@@ -1,5 +1,7 @@
 # Plan Volume Integration - Execution
 
+> **SHIPPED / historical reference only (2026-04-25):** Plan ↔ Distribute volume progress integration shipped via `f136f60` (merged as `99f64ad`). The live app now has `utils/volume_progress.py`, `/api/volume_progress`, and `e2e/volume-progress.spec.ts`. Do not use this archived execution plan as active implementation instructions.
+
 > Start here when implementing the Plan <-> Distribute volume progress panel.
 > Planning context, product rationale, and review history live in `PLAN_VOLUME_INTEGRATION_PLANNING.md`.
 > Sections 5-13 are preserved from the original document because the review notes refer to those section numbers.

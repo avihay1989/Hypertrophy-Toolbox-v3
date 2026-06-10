@@ -1,6 +1,6 @@
 # E2E Testing
 
-Last updated: 2026-05-23
+Last updated: 2026-06-10
 
 This document tracks the current Playwright setup and spec inventory. Treat counts as an inventory snapshot, not a promise that every suite was rerun during this docs refresh.
 
@@ -42,7 +42,7 @@ Validated from `package.json`, `playwright.config.ts`, and `scripts/run-playwrig
 
 ## Current Playwright Spec Inventory
 
-There are currently **25** Playwright spec files in `e2e/`:
+There are currently **28** Playwright spec files in `e2e/`:
 
 | Spec file | Primary coverage |
 |-----------|------------------|
@@ -54,7 +54,10 @@ There are currently **25** Playwright spec files in `e2e/`:
 | `empty-states.spec.ts` | Empty plan/log/export flows |
 | `error-handling.spec.ts` | Server/network failure handling |
 | `exercise-interactions.spec.ts` | Delete, replace, superset, inline interactions |
+| `fatigue-context.spec.ts` | Fatigue context payload and per-muscle UI integration |
 | `fatigue-stage4-smokes.spec.ts` | Fatigue badge presence, band states, calm-glass styling |
+| `fatigue.spec.ts` | Fatigue meter rendering, drivers, and fatigue-related interactions |
+| `learned-calibration.spec.ts` | Learned calibration UI states and safety gates |
 | `nav-dropdown.spec.ts` | Navbar hover-dropdown, Backup Center, icon accent colors and motion |
 | `program-backup.spec.ts` | Backup Center and program snapshot flows |
 | `progression.spec.ts` | Progression page flows and goal interactions |
@@ -67,7 +70,7 @@ There are currently **25** Playwright spec files in `e2e/`:
 | `validation-boundary.spec.ts` | Invalid form and boundary-value behavior |
 | `visual-baseline-thumbnails.spec.ts` | §4.6 thumbnail inspection matrix (plan + log × viewport × theme × mode) |
 | `visual.spec.ts` | Deterministic visual snapshots across routes, themes, and viewports |
-| `volume-progress.spec.ts` | Plan-page volume progress badge and weekly trend |
+| `volume-progress.spec.ts` | Plan-page volume progress drawer/panel and target progress |
 | `volume-splitter.spec.ts` | Volume splitter inputs, modes, and results |
 | `workout-log.spec.ts` | Workout log table, editing, filters, import/clear flows |
 | `workout-plan.spec.ts` | Workout plan CRUD and routine-building flows |
