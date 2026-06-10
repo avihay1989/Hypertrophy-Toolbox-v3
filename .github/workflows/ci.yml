@@ -157,10 +157,24 @@ jobs:
     - name: Run smoke spec
       run: npx playwright test e2e/smoke-navigation.spec.ts --project=chromium --reporter=line
 
-  e2e-functional:
-    name: E2E Functional (Chromium)
+  # Sharded functional E2E (leftovers A11). The deterministic functional set is
+  # split across a 2-way matrix (`--shard=i/2`); each matrix leg is its own
+  # runner with its own setup, server, and freshly-seeded throwaway DB (seeded by
+  # playwright.config.ts's webServer command per server start), so cross-shard is
+  # clean by construction and within-shard serial order-safety (fullyParallel:
+  # false / workers:1) is unchanged. These per-shard contexts ("E2E Functional
+  # Shard 1/2", "E2E Functional Shard 2/2") are NOT branch-protection required
+  # checks — the single required context "E2E Functional (Chromium)" is preserved
+  # by the e2e-functional fan-in gate below. fail-fast:false so a red in one shard
+  # still lets the other finish (full failure picture + both artifacts).
+  e2e-functional-shard:
+    name: E2E Functional Shard ${{ matrix.shard }}/2
     runs-on: ubuntu-latest
     needs: frontend-build
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
 
     steps:
     - name: Checkout code
@@ -197,12 +211,13 @@ jobs:
     # (cross-OS rendering), nav-dropdown (known red), and program-backup (runs
     # isolated in e2e-backup). accessibility + fatigue-stage4-smokes +
     # volume-progress were promoted here in A10 after a 5x-repeat ubuntu stability
-    # probe (225/225 green, zero flakes). No --reporter flag: the CI-gated
-    # reporters in playwright.config.ts (list + html + junit) must all emit so the
-    # artifact upload below has a report to publish.
-    - name: Run functional specs
+    # probe (225/225 green, zero flakes). The explicit spec list is identical to
+    # the pre-A11 single job; only `--shard=${{ matrix.shard }}/2` is added.
+    # No --reporter flag: the CI-gated reporters in playwright.config.ts (list +
+    # html + junit) must all emit so the artifact upload below has a report.
+    - name: Run functional specs (shard ${{ matrix.shard }}/2)
       run: |
-        npx playwright test --project=chromium \
+        npx playwright test --project=chromium --shard=${{ matrix.shard }}/2 \
           e2e/accessibility.spec.ts \
           e2e/api-integration.spec.ts \
           e2e/body-composition.spec.ts \
@@ -231,9 +246,36 @@ jobs:
       if: failure()
       uses: actions/upload-artifact@v4
       with:
-        name: playwright-functional
+        name: playwright-functional-shard-${{ matrix.shard }}-of-2
         path: artifacts/playwright
         retention-days: 7
+
+  # Fan-in gate (leftovers A11). This job is the SINGLE branch-protection
+  # required status check for functional E2E — its name "E2E Functional
+  # (Chromium)" must stay byte-for-byte (renaming it orphans the required check
+  # and blocks every PR; same rule as the typecheck job). It contains no test
+  # logic: it just aggregates the matrix result. `needs.<matrix-job>.result` is
+  # 'success' only when ALL shards succeeded, so this gate is green iff both
+  # shards passed. `if: always()` makes the gate run (and post its status) even
+  # when a shard fails, so the required check turns red instead of staying
+  # pending. Do NOT add the per-shard "E2E Functional Shard i/2" contexts to
+  # branch protection — this gate is the contract.
+  e2e-functional:
+    name: E2E Functional (Chromium)
+    runs-on: ubuntu-latest
+    needs: e2e-functional-shard
+    if: always()
+
+    steps:
+    - name: Require all functional shards to pass
+      run: |
+        result="${{ needs.e2e-functional-shard.result }}"
+        echo "e2e-functional-shard matrix aggregate result: $result"
+        if [ "$result" != "success" ]; then
+          echo "::error title=E2E Functional gate::One or more E2E Functional shards did not pass (result=$result)"
+          exit 1
+        fi
+        echo "All E2E Functional shards passed."
 
   e2e-backup:
     name: E2E Backup (Chromium, isolated)
