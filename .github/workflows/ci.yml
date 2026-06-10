@@ -334,7 +334,12 @@ jobs:
   # across Windows/Linux. Regenerate the baseline with --write-baseline when an
   # intentional, reviewed change shifts the backlog.
   typecheck:
-    name: Type Check (tsc blocking + pyright baseline-gated)
+    # NOTE: this job name is a branch-protection *required status check* context —
+    # keep it byte-for-byte ("Type Check (tsc blocking + pyright measure-only)").
+    # Renaming it orphans the required check and blocks every PR. pyright is now
+    # also baseline-gated (see the blocking diff step below); the name stays for
+    # protection-matching, not because pyright is purely measure-only.
+    name: Type Check (tsc blocking + pyright measure-only)
     runs-on: ubuntu-latest
 
     steps:
