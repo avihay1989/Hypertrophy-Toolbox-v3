@@ -1,5 +1,7 @@
 # Plan Volume Integration - Planning
 
+> **SHIPPED / historical reference only (2026-04-25):** Plan ↔ Distribute volume progress integration shipped via `f136f60` (merged as `99f64ad`). The live app now has `utils/volume_progress.py`, `/api/volume_progress`, and `e2e/volume-progress.spec.ts`. Do not use this archived split plan as active implementation instructions.
+
 > Split from `docs/PLAN_VOLUME_INTEGRATION.md` to keep agent context smaller.
 > Use `PLAN_VOLUME_INTEGRATION_EXECUTION.md` for the implementation checklist and active phase gates.
 > Original section numbers are preserved where useful so historical review references still resolve.

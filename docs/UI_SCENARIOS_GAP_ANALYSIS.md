@@ -54,7 +54,7 @@
 
 - Multi-tab conflict handling remains backlog-only under the current operating model.
 - Medium-risk UX hardening items such as toast stacking, form-state persistence, and modal keyboard polish remain open quality work, not release blockers.
-- A concise "Known Issues / Reported Bugs" map is still useful future cleanup, but it has not been added yet.
+- The concise "Known Issues / Reported Bugs" map now exists in [§0](#0-known-issues--reported-bugs); keep it current as new real reports appear.
 
 ---
 
@@ -306,7 +306,7 @@ If starting one targeted code improvement now:
 
 ### Must Do (Before Next Release)
 1. Keep browser-navigation behavior locked to **Option 2: Stateless** in docs/tests.
-2. Add a short "Known Issues / Reported Bugs" map to separate real issues from theoretical risks.
+2. ✅ Done (2026-05-23) — Added a short "Known Issues / Reported Bugs" map to separate real issues from theoretical risks.
 3. Review Open Questions in Section 10.4 and close any that are no longer relevant.
 
 ### Should Do (Next Sprint)
