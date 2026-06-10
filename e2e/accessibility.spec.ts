@@ -10,6 +10,29 @@
  * - Color contrast (manual checks noted)
  */
 import { test, expect, ROUTES, SELECTORS, waitForPageReady } from './fixtures';
+import type { Page } from '@playwright/test';
+
+async function waitForBootstrapModalEvent(page: Page, selector: string, eventName: 'shown.bs.modal' | 'hidden.bs.modal'): Promise<void> {
+  await page.evaluate(
+    ({ selector, eventName }) => new Promise<void>((resolve, reject) => {
+      const modal = document.querySelector(selector);
+      if (!modal) {
+        reject(new Error(`Modal not found: ${selector}`));
+        return;
+      }
+
+      const timeoutId = window.setTimeout(() => {
+        reject(new Error(`Timed out waiting for ${eventName} on ${selector}`));
+      }, 5000);
+
+      modal.addEventListener(eventName, () => {
+        window.clearTimeout(timeoutId);
+        resolve();
+      }, { once: true });
+    }),
+    { selector, eventName }
+  );
+}
 
 test.describe('Keyboard Navigation', () => {
   test.beforeEach(async ({ page, consoleErrors }) => {
@@ -291,20 +314,21 @@ test.describe('Focus Management', () => {
       return;
     }
     
+    const shownPromise = waitForBootstrapModalEvent(page, '#generatePlanModal', 'shown.bs.modal');
     await generateBtn.click();
+    await shownPromise;
 
     const modal = page.locator('#generatePlanModal');
     await expect(modal).toBeVisible({ timeout: 5000 });
 
     // Close modal via close button for reliability
     const closeBtn = modal.locator('.btn-close').first();
+    const hiddenPromise = waitForBootstrapModalEvent(page, '#generatePlanModal', 'hidden.bs.modal');
     await closeBtn.click();
+    await hiddenPromise;
     await expect(modal).not.toBeVisible({ timeout: 3000 });
 
-    // Focus should return to trigger element or be somewhere reasonable
-    const activeElement = await page.evaluate(() => document.activeElement?.id || document.activeElement?.tagName);
-    // Accept any reasonable focus state after modal closes
-    expect(activeElement === 'generate-plan-btn' || activeElement === '' || activeElement === 'BODY').toBeTruthy();
+    await expect(generateBtn).toBeFocused();
   });
 });
 
