@@ -156,7 +156,7 @@
 4. Open PR; let the new jobs run on the PR's own CI. Iterate until **green on ubuntu/Chromium with zero retries consumed** on the functional + backup jobs across **2 consecutive runs**.
 5. Do **not** enable branch protection (Phase 5). Update `docs/CI_CD_IMPROVEMENT_PLAN.md` Phase 1 status + CLAUDE.md §5 counts after green.
 
-**Deferred to fast-follow (post-Phase-1, pre-Phase-5):** shard `e2e-functional` to n=2 once per-spec timings from step 4 show it's worth it; re-evaluate promoting `fatigue-stage4-smokes` / `volume-progress` / `accessibility` after a measured ubuntu stability run.
+**Deferred to fast-follow (post-Phase-1, pre-Phase-5):** ~~shard `e2e-functional` to n=2 once per-spec timings from step 4 show it's worth it~~ (**DONE — leftovers A11, see below**); re-evaluate promoting `fatigue-stage4-smokes` / `volume-progress` / `accessibility` after a measured ubuntu stability run (**DONE — leftovers A10, 2026-06-11**).
 
 **Expected gates**
 - pytest: unchanged — full `tests/` still green (no Python logic touched).
@@ -170,3 +170,17 @@
 - [x] Every finding has a disposition.
 - [x] User approved Plan v2 (2026-06-05: follow council — no sharding in Phase 1; accept council spec scope).
 - [x] Ready to implement.
+
+---
+
+## Fast-follow: shard `e2e-functional` to n=2 (leftovers A11, 2026-06-11)
+
+The Phase-1 deferral is now closed. Pre-A11 the single `e2e-functional` job ran the full functional set serially (~13 min on the PR #70 run); per-spec timings from the green Phase-1 baseline justified the runner-cost trade.
+
+**Design (no Playwright-config change; no branch-protection change):**
+- `e2e-functional-shard` — matrix job, `name: E2E Functional Shard ${{ matrix.shard }}/2`, `strategy.fail-fast: false`, `strategy.matrix.shard: [1, 2]`, `needs: frontend-build`. Same setup steps as the pre-A11 job and the **identical explicit spec list** — the only change is `--shard=${{ matrix.shard }}/2` appended to the `npx playwright test` invocation. Per-shard failure artifacts upload as `playwright-functional-shard-${{ matrix.shard }}-of-2`.
+- `e2e-functional` — **fan-in gate**, `name: E2E Functional (Chromium)` (byte-for-byte unchanged → the existing branch-protection required check is preserved), `needs: e2e-functional-shard`, `if: always()`. No test logic: it fails unless `needs.e2e-functional-shard.result == 'success'` (the matrix aggregate is `success` only when both shards pass).
+- The new `E2E Functional Shard 1/2` / `Shard 2/2` contexts are **not** required checks. Branch protection is untouched.
+- Order-safety preserved: each matrix leg is its own runner → its own server + freshly-seeded throwaway DB; `fullyParallel: false` / `workers: 1` keeps within-shard execution serial, exactly as the single job behaved.
+
+**Validation:** green path (both shards pass, shard counts sum to the full functional total, fan-in green) + red path (a deliberately-broken assertion fails its shard and the fan-in gate) confirmed on the PR's own CI before merge; realized shard runtimes + wall-clock savings recorded in the PR. Remaining: A12 (pyright py3.11-vs-3.12 reconcile, tsc → app JS, JS unit tests, known-red E2E baseline audit).
