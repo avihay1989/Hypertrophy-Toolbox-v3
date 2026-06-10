@@ -3,7 +3,7 @@ Tests for utils/maintenance.py - Database maintenance and normalization.
 """
 
 import pytest
-from unittest.mock import patch, MagicMock, call
+from unittest.mock import patch, MagicMock
 import sqlite3
 from utils.maintenance import (
     _exec_many,

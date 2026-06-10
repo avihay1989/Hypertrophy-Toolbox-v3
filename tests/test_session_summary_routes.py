@@ -3,7 +3,7 @@ Tests for routes/session_summary.py - Session summary API endpoints.
 """
 
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from flask import Flask
 from routes.session_summary import session_summary_bp, _parse_counting_mode, _parse_contribution_mode
 from utils.effective_sets import CountingMode, ContributionMode

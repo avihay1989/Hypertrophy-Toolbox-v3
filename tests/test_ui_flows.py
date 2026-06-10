@@ -7,7 +7,6 @@ testing common flows that a typical user would perform.
 Note: Template-rendering endpoints are skipped in the test environment
 as templates are not loaded for unit tests. These should be tested manually.
 """
-import pytest
 
 
 class TestWorkoutPlanningFlow:

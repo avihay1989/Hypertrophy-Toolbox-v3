@@ -1,8 +1,7 @@
 """
 Priority 0 Tests: Filter Whitelist Validation (SQL Injection Protection)
 """
-import pytest
-from routes.filters import ALLOWED_TABLES, ALLOWED_COLUMNS, validate_table_name, validate_column_name
+from routes.filters import validate_table_name, validate_column_name
 from utils.db_initializer import (
     _trim_exercise_name_whitespace,
     initialize_database,

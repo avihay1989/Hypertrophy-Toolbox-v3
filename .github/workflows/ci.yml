@@ -59,34 +59,29 @@ jobs:
       run: |
         # Stop the build if there are Python syntax errors or undefined names, plus
         # the flipped-to-blocking rules: F811 (redefinition), E711 (== None),
-        # E712 (== True/False). These were measure-only and sat at ~0; F401 is the
-        # only remaining flip candidate (needs a guardrailed cleanup PR first).
-        flake8 . --count --select=E9,F63,F7,F82,F811,E711,E712 --show-source --statistics --exclude=.venv,venv,env,.git,__pycache__,node_modules
+        # E712 (== True/False), F401 (unused import). F811/E711/E712 sat at ~0;
+        # F401 was flipped after a guardrailed cleanup PR drove its 56 findings to
+        # 0 (removed unused test/source imports + deleted the stray replace.py).
+        flake8 . --count --select=E9,F63,F7,F82,F811,E711,E712,F401 --show-source --statistics --exclude=.venv,venv,env,.git,__pycache__,node_modules
         # Exit-zero treats all errors as warnings
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude=.venv,venv,env,.git,__pycache__,node_modules
 
     # MEASURE-ONLY / NON-BLOCKING (Phase 3, docs/ci_cd_phase3/PLANNING.md). Surfaces
-    # the hardened-diagnostic backlog without failing the build. F811/E711/E712 are
-    # now BLOCKING in the "Lint with flake8" step above, so F401 (unused import) is
-    # the only remaining flip candidate — its flip needs a guardrailed cleanup PR
-    # first (`utils/__init__.py` re-exports + `app.py` side-effects are load-bearing).
-    # F841 is the expected `except ... as e` logging idiom (logger.exception captures
-    # the active exception implicitly) — reported on its own line, NOT a flip candidate.
+    # the hardened-diagnostic backlog without failing the build. F811/E711/E712/F401
+    # are now ALL BLOCKING in the "Lint with flake8" step above. The remaining
+    # measured-only diagnostic is F841 — the expected `except ... as e` logging idiom
+    # (logger.exception captures the active exception implicitly), NOT a flip candidate.
     - name: Flake8 diagnostics (non-blocking, measure-only)
       continue-on-error: true
       run: |
         EXCL=".venv,venv,env,.git,__pycache__,node_modules"
-        flake8 . --select=F401 --count --statistics --exclude="$EXCL" > flake8_meaningful.txt 2>&1 || true
         flake8 . --select=F841 --count --statistics --exclude="$EXCL" > flake8_idiom.txt 2>&1 || true
-        MEANINGFUL=$(tail -1 flake8_meaningful.txt | tr -d '[:space:]')
         IDIOM=$(tail -1 flake8_idiom.txt | tr -d '[:space:]')
-        echo "::notice title=flake8 diagnostics (non-blocking)::flip candidate (F401)=$MEANINGFUL ; F841 idiom=$IDIOM"
+        echo "::notice title=flake8 diagnostics (non-blocking)::F841 idiom=$IDIOM"
         {
           echo "### flake8 diagnostics (non-blocking — measure-only)"
-          echo "- **Flip candidate (F401)**: $MEANINGFUL — needs guardrailed cleanup PR before blocking"
           echo "- **F841**: $IDIOM — expected \`except ... as e\` idiom, not a flip candidate"
         } >> "$GITHUB_STEP_SUMMARY"
-        echo "===== F401 (flip candidate) ====="; cat flake8_meaningful.txt
         echo "===== F841 (idiom) ====="; cat flake8_idiom.txt
 
     - name: Upload flake8 diagnostics
@@ -95,7 +90,6 @@ jobs:
       with:
         name: static-analysis-flake8
         path: |
-          flake8_meaningful.txt
           flake8_idiom.txt
         retention-days: 14
 

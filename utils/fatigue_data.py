@@ -29,7 +29,6 @@ from utils.effective_sets import (
     calculate_effective_sets,
 )
 from utils.fatigue import (
-    DEFAULT_PERIOD,
     MuscleFatigueResult,
     PERIOD_LABELS,
     SessionFatigueResult,

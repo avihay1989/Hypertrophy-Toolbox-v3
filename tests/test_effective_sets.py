@@ -30,17 +30,11 @@ from utils.effective_sets import (
     aggregate_weekly_volumes,
     # Formatting functions
     format_volume_summary,
-    # Data classes
-    EffectiveSetResult,
-    SessionVolumeResult,
     # Utility functions
     rpe_to_rir,
     rir_to_rpe,
     # Constants
     DEFAULT_MULTIPLIER,
-    EFFORT_FACTOR_BUCKETS,
-    REP_RANGE_FACTOR_BUCKETS,
-    MUSCLE_CONTRIBUTION_WEIGHTS,
 )
 
 

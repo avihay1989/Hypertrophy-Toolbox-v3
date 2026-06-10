@@ -9,7 +9,6 @@ Tests cover:
 """
 import pytest
 import os
-import json
 
 # Set testing environment before imports
 os.environ['TESTING'] = '1'
@@ -20,7 +19,6 @@ from utils.plan_generator import (
     generate_starter_plan,
     ExerciseRow,
 )
-from utils.movement_patterns import MovementPattern
 
 
 class TestExecutionStyles:

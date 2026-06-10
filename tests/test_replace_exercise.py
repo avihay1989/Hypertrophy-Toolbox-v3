@@ -2,7 +2,6 @@
 Tests for the Replace/Swap Exercise feature.
 Tests the POST /replace_exercise endpoint functionality.
 """
-import pytest
 
 
 class TestReplaceExerciseEndpoint:

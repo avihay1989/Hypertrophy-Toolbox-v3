@@ -13,7 +13,6 @@ import sqlite3
 from datetime import datetime
 import utils.program_backup as program_backup_module
 from utils.program_backup import (
-    initialize_backup_tables,
     create_backup,
     list_backups,
     get_backup_details,

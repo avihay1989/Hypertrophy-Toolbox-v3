@@ -9,8 +9,6 @@ from __future__ import annotations
 import sqlite3
 from pathlib import Path
 
-import pytest
-
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 LIVE_DB = REPO_ROOT / "data" / "database.db"

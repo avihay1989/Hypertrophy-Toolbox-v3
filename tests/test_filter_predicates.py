@@ -5,7 +5,6 @@ SECURITY CRITICAL: These tests verify SQL injection prevention and
 proper query parameterization.
 """
 
-import pytest
 from unittest.mock import patch, MagicMock
 from utils.filter_predicates import (
     FilterPredicates,

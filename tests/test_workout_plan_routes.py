@@ -8,7 +8,6 @@ superset handling, and plan generation with focus on:
 - Error responses (404, 400, 500)
 """
 import pytest
-from flask import Flask
 
 
 class TestWorkoutPlanPage:

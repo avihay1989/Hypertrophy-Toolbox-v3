@@ -2,7 +2,6 @@
 Tests for utils/volume_classifier.py - Volume classification utilities.
 """
 
-import pytest
 from utils.volume_classifier import (
     get_volume_class,
     get_volume_label,
@@ -12,7 +11,6 @@ from utils.volume_classifier import (
     get_category_tooltip,
     get_subcategory_tooltip,
 )
-from utils.effective_sets import VolumeWarningLevel
 
 
 class TestGetVolumeClass:

@@ -44,7 +44,7 @@ import re
 import sys
 import urllib.request
 from pathlib import Path
-from typing import Iterable, NamedTuple
+from typing import NamedTuple
 
 # ----------------------------------------------------------------------------
 # Pinned upstream

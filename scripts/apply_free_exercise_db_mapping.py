@@ -60,7 +60,6 @@ from utils.database import DatabaseHandler  # noqa: E402
 from utils.media_path import (  # noqa: E402
     VENDOR_BASE_REL,
     explain_media_path_shape_failure,
-    is_valid_media_path_shape,
     media_path_resolves,
 )
 

@@ -3,7 +3,6 @@ Tests for the Superset feature.
 
 Tests the ability to link/unlink exercises as supersets within the same routine.
 """
-import pytest
 
 
 class TestSupersetLinkEndpoint:
