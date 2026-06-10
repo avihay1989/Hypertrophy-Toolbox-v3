@@ -698,10 +698,12 @@ Constraints confirmed:
 - Visual specs remain `workflow_dispatch`-only and opt-in via the Deep Gate
   inputs.
 
-Known follow-up:
-- One manual-deep full-E2E run during PR #51 exposed an unrelated
-  `accessibility.spec.ts:283` focus-return flake. It is not caused by the
-  PNG-only PR #51 and did not block Phase 4.2, but it should be investigated
-  separately to keep the manual Deep Gate trustworthy.
+Resolved follow-up:
+- 2026-06-10: The unrelated `accessibility.spec.ts:283` focus-return flake
+  exposed during a manual-deep full-E2E run was reproduced locally and traced
+  to the test closing `#generatePlanModal` before Bootstrap's show transition
+  completed. The spec now waits for `shown.bs.modal` / `hidden.bs.modal`
+  before asserting focus returns to `#generate-plan-btn`. Verification:
+  targeted repeat 10/10 passed; full `e2e/accessibility.spec.ts` 24/24 passed.
 
 *End of Plan v2 + implementation record.*

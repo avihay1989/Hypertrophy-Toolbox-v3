@@ -9,6 +9,7 @@
 > - **v11 (2026-06-10, Opus full re-scan):** File was ~3 weeks + one major workstream stale (last real update 2026-05-24). Re-scanned all `docs/` subsystem folders + `docs/archive/`. Added **Section A — Current Open Backlog (Prioritized Plan)** reflecting everything that landed since v10: the entire **Learned Calibration Phase 2 track** (2A–2D-C shipped PRs #53–#58; **2D-D BLOCKED** 2026-06-09), the **CI/CD Improvement Plan** (all phases shipped PRs #40–#51 + optional fast-follows), the **Stage 4 observer tooling + tests** (PR #59 `672491c`), and the deferred **Fatigue Phase 3 / Profile v2** backlogs. Verified live facts: `workout_log` = **0 rows**; Stage-4 observer test PR **merged** (not pending); `main` tip `284dca4`. Old "row #15" reframed into Section A. Closed sections 0/1/2/4/5/6 retained unchanged as audit trail.
 > - **v12 (2026-06-10, Codex review for Opus):** Re-reviewed v11 against live git, DB status, active docs, subsystem docs, and `docs/archive/`. Confirmed the P0/P2/P3 ordering is broadly right, but added a **P1 doc-truth cleanup block**: canonical handover files lag PR #59/#60, E2E inventory is stale (repo has 28 spec files), plan-volume archive needs shipped/historical banners across the whole subfolder, and a few active cross-references still say already-shipped Body Composition / Known Issues work is open. Also closed the proposed anterior-triceps PLANNING edit as already done.
 > - **v13 (2026-06-10, Codex A4-A6 cleanup):** Closed the remaining P1 doc-truth housekeeping: plan-volume archive banners added to all three files, `E2E_TESTING.md` refreshed from 25 → 28 spec files, and stale Body Composition / Known Issues cross-reference sentences patched. `HEAD`/`origin/main` verified at `6acc537`; only P0 data-gated work, P2 optional CI fast-follows, and P3 owner-gated product remain.
+> - **v14 (2026-06-10, Codex A7 cleanup):** Reproduced the `accessibility.spec.ts:283` focus-return flake locally (1/10 repeat failure), traced it to closing `#generatePlanModal` before Bootstrap's show transition finished, and patched the spec to wait for `shown.bs.modal` / `hidden.bs.modal` before asserting focus returns to `#generate-plan-btn`. Verified targeted repeat 10/10 and full `e2e/accessibility.spec.ts` 24/24. `HEAD`/`origin/main` before this local change: `89062d1`.
 
 ---
 
@@ -38,11 +39,11 @@ Both items below wait on the same thing: a populated `workout_log`. **Verified 2
 
 ### P2 — Optional CI/CD fast-follows (all phases already shipped; pick when convenient)
 
-All CI/CD phases (0/1/2.1/3/4/4.2/5) shipped via PRs #40–#51. These are documented opt-in hardening steps from [`CI_CD_IMPROVEMENT_PLAN.md`](CI_CD_IMPROVEMENT_PLAN.md) + `ci_cd_phase*/PLANNING.md`. None block anything. Suggested order:
+All CI/CD phases (0/1/2.1/3/4/4.2/5) shipped via PRs #40–#51. These are documented opt-in hardening steps from [`CI_CD_IMPROVEMENT_PLAN.md`](CI_CD_IMPROVEMENT_PLAN.md) + `ci_cd_phase*/PLANNING.md`. None block anything. A7 is now closed; suggested next order starts at A8/A9 depending whether you want lint or typing hardening first.
 
 | # | Item | Notes |
 |---|---|---|
-| A7 | **Investigate `accessibility.spec.ts:283` focus-return flake** | Open investigation ([`ci_cd_phase4_2/PLANNING.md §12`](ci_cd_phase4_2/PLANNING.md)). Non-blocking but undermines manual Deep Gate trust. Best first because it's a real flake, not a preference. |
+| A7 | **Investigate `accessibility.spec.ts:283` focus-return flake** | ✅ **DONE 2026-06-10.** Reproduced locally, then fixed test timing in [`e2e/accessibility.spec.ts`](../e2e/accessibility.spec.ts) by waiting for Bootstrap modal lifecycle events before close/focus assertions. Verification: `npx playwright test e2e/accessibility.spec.ts -g "focus returns after modal closes" --project=chromium --repeat-each=10` = 10 passed; `npx playwright test e2e/accessibility.spec.ts --project=chromium` = 24 passed. |
 | A8 | **Flip flake8 rules to blocking** | Grow blocking set rule-by-rule: F811/E711/E712 first (already ~0), F401 after a guardrailed cleanup PR (`utils/__init__.py` re-exports + `app.py` side-effects are load-bearing). |
 | A9 | **Flip pyright to blocking** | Via baseline-allowlist: snapshot `pyright --outputjson`, then block only *new* errors vs baseline (~138 current errors). |
 | A10 | **Promote excluded specs to required-PR after a stability run** | `ui-hardening.spec.ts` is already in the required functional E2E job. Measure currently excluded/measure-first specs (`accessibility`, `fatigue-stage4-smokes`, `volume-progress`) in a manual Deep Gate on ubuntu; promote only the stable ones. |
@@ -65,7 +66,7 @@ These are intentional future-phase scope, not oversights. Listed so this file is
 ### What is NOT open (closed since v10 — folded in here so this file is current)
 
 - **Learned Calibration MVP + 2A + 2B + 2C + 2D-A + 2D-B + 2D-C** — all shipped (PRs #37/#53/#54/#55/#56/#57/#58). Only 2D-D remains (A2, blocked).
-- **CI/CD Improvement Plan** — all phases shipped (PRs #40–#51). Only optional fast-follows remain (P2).
+- **CI/CD Improvement Plan** — all phases shipped (PRs #40–#51). Optional fast-follow A7 is closed; A8-A12 remain.
 - **Stage 4 observer tooling + tests** — `scripts/fatigue_stage4_observer.py` + `_status.py` + health-check/installer PowerShell scripts; **test PR #59 (`672491c`) merged** (handover said "pending" — it is in fact on `main`).
 - **`movement_pattern` catalog cleanup** — shipped `df9b6f9` (454 NULLs → 0).
 - **Archive folder** — all historical; nothing open. `PUPPETEER_TEST_FINDINGS.md` is obsolete (puppeteer dropped, PR #60); the plan-volume-integration trio is shipped and now carries shipped/historical banners.
@@ -173,7 +174,7 @@ All ten items below shipped in one docs-only commit on top of A–F. Each links 
 |----------------------------|--------------------------------------------------------------------------------------------------------------|
 | Section A P0 (A1/A2)       | [`fatigue_meter/PHASE2_PLANNING.md`](fatigue_meter/PHASE2_PLANNING.md) Stage 4 + §10, [`user_profile/LEARNED_CALIBRATION_PLAN.md`](user_profile/LEARNED_CALIBRATION_PLAN.md) §"Phase 2D-D Gate Review", [`MASTER_HANDOVER.md`](MASTER_HANDOVER.md) |
 | Section A P1 (A3–A6)       | `git log` (`6acc537` / `284dca4` / `672491c` / `f136f60` / `99f64ad`), [`MASTER_HANDOVER.md`](MASTER_HANDOVER.md), [`ACTIVE_DEVELOPMENT.md`](ACTIVE_DEVELOPMENT.md), [`E2E_TESTING.md`](E2E_TESTING.md), archived plan-volume docs, Body Composition/Profile/UI trackers |
-| Section A P2 (A7–A12)      | [`CI_CD_IMPROVEMENT_PLAN.md`](CI_CD_IMPROVEMENT_PLAN.md), `ci_cd_phase1/3/4_2/5/PLANNING.md`, `.github/workflows/ci.yml` |
+| Section A P2 (A7–A12)      | [`CI_CD_IMPROVEMENT_PLAN.md`](CI_CD_IMPROVEMENT_PLAN.md), `ci_cd_phase1/3/4_2/5/PLANNING.md`, `.github/workflows/ci.yml`, [`e2e/accessibility.spec.ts`](../e2e/accessibility.spec.ts) |
 | Section A P3               | [`fatigue_meter/PHASE2_PLANNING.md §10`](fatigue_meter/PHASE2_PLANNING.md), [`user_profile/DESIGN.md §10`](user_profile/DESIGN.md), [`user_profile/RELATED_EXERCISE_TRANSFER_DESIGN.md`](user_profile/RELATED_EXERCISE_TRANSFER_DESIGN.md), [`UI_SCENARIOS_GAP_ANALYSIS.md`](UI_SCENARIOS_GAP_ANALYSIS.md) |
 | Section 0 (dirty tree)     | `git diff --stat HEAD`, `git status --short` (2026-05-23 revisions)                                          |
 | Sections 1–6 (closed)      | per-row links above; preserved from v1–v10                                                                   |
@@ -181,4 +182,4 @@ All ten items below shipped in one docs-only commit on top of A–F. Each links 
 
 ---
 
-*Last updated: 2026-06-10 (v13 — Codex closed P1 A4-A6: archive banners, E2E 28-spec inventory, and stale cross-reference fixes). Closed sections 0/1/2/4/5/6 retained as audit trail. Live facts verified: `workout_log` = 0 rows; no `stage4_calibration_log.csv`; `main`/`origin/main` tip `6acc537`.*
+*Last updated: 2026-06-10 (v14 — Codex closed P2 A7 accessibility focus-return flake investigation/fix). Closed sections 0/1/2/4/5/6 retained as audit trail. Live facts verified: `workout_log` = 0 rows; no `stage4_calibration_log.csv`; `main`/`origin/main` tip before local A7 changes `89062d1`.*
