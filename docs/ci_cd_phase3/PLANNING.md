@@ -149,3 +149,9 @@
 - [x] Every finding has a disposition.
 - [x] User approved Plan v2 (2026-06-05: "Approve v2 as written" — measure-only, zero fixes, tsc stays non-blocking).
 - [x] Ready to implement.
+
+---
+
+## Follow-up — flake8 flip (2026-06-10, A8)
+
+Executed the first rung of the flake8 "path to blocking": `F811,E711,E712` (the meaningful rules already sitting at ~0) added to the blocking `--select=E9,F63,F7,F82` line in the `lint` job, plus the one mechanical E712 fix (`tests/test_plan_generator.py:594` `== True` → `is True`). The blocking step's `--exclude` was aligned with the measure-only `EXCL`. **F401 is now the only remaining flip candidate** in the measure-only diagnostics — its flip still needs a guardrailed cleanup PR first (`utils/__init__.py` re-exports + `app.py` side-effects are load-bearing). pyright/tsc criteria unchanged.
