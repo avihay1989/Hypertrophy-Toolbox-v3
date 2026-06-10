@@ -420,3 +420,65 @@ jobs:
           tsc.txt
         retention-days: 14
 
+  # =====================================================================
+  # TEMPORARY — A10 stability probe (leftovers A10). DELETE before merge.
+  # Measures the cross-OS stability of the three excluded promotion
+  # candidates (accessibility / fatigue-stage4-smokes / volume-progress) by
+  # running ONLY them on ubuntu/Chromium with --repeat-each=5, surfacing
+  # intermittent sub-pixel / geometry flakes that a single run would miss.
+  # This job is NOT a required status check and MUST NOT be promoted or
+  # renamed into one. It lives only on the throwaway branch
+  # probe/a10-e2e-promotion-stability and is never merged to main.
+  # =====================================================================
+  a10-stability-probe:
+    name: A10 Stability Probe (TEMPORARY - not required)
+    runs-on: ubuntu-latest
+    needs: frontend-build
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Install npm dependencies
+      run: npm ci
+
+    - name: Build Bootstrap-customized CSS
+      run: npm run build:css
+
+    - name: Install Playwright Chromium
+      run: npx playwright install --with-deps chromium
+
+    # Only the three A10 candidates, repeated 5x each, to expose intermittent
+    # cross-OS flakes. No promotion, no required-context change.
+    - name: Probe candidate specs (repeat-each=5)
+      run: |
+        npx playwright test --project=chromium --repeat-each=5 \
+          e2e/accessibility.spec.ts \
+          e2e/fatigue-stage4-smokes.spec.ts \
+          e2e/volume-progress.spec.ts
+
+    - name: Upload Playwright artifacts
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: a10-stability-probe
+        path: artifacts/playwright
+        retention-days: 7
+
