@@ -389,61 +389,6 @@ export function handleTableSort() {
     });
 }
 
-export function initializeDataTables() {
-    // DataTables removed - using native table sorting instead
-    // If you need advanced table features, consider a lightweight vanilla JS alternative
-    const tables = document.querySelectorAll('.data-table');
-    tables.forEach(table => {
-        initializeTableSorting(table);
-    });
-}
-
-function initializeTableSorting(table) {
-    const headers = table.querySelectorAll('th[data-sortable]');
-    headers.forEach((header, index) => {
-        header.style.cursor = 'pointer';
-        header.addEventListener('click', () => {
-            sortTable(table, index);
-        });
-    });
-}
-
-function sortTable(table, columnIndex) {
-    const tbody = table.querySelector('tbody');
-    const rows = Array.from(tbody.querySelectorAll('tr'));
-    const header = table.querySelectorAll('th')[columnIndex];
-    const isAscending = header.classList.contains('sort-asc');
-    
-    // Remove sort classes from all headers
-    table.querySelectorAll('th').forEach(h => {
-        h.classList.remove('sort-asc', 'sort-desc');
-    });
-    
-    // Add appropriate sort class
-    header.classList.add(isAscending ? 'sort-desc' : 'sort-asc');
-    
-    rows.sort((a, b) => {
-        const aValue = a.cells[columnIndex].textContent.trim();
-        const bValue = b.cells[columnIndex].textContent.trim();
-        
-        // Try to parse as number
-        const aNum = parseFloat(aValue);
-        const bNum = parseFloat(bValue);
-        
-        if (!isNaN(aNum) && !isNaN(bNum)) {
-            return isAscending ? bNum - aNum : aNum - bNum;
-        }
-        
-        // String comparison
-        return isAscending ? 
-            bValue.localeCompare(aValue) : 
-            aValue.localeCompare(bValue);
-    });
-    
-    // Re-append sorted rows
-    rows.forEach(row => tbody.appendChild(row));
-}
-
 export function initializeCharts() {
     const chartContainers = document.querySelectorAll('[data-chart]');
     chartContainers.forEach(container => {
