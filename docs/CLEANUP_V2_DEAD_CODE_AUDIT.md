@@ -338,8 +338,9 @@ These three are mechanical, zero-reference, and ready to delete whenever.
 **Deletions applied (Claude):**
 - `utils/constants.py` — removed `NULL_TOKENS`, `PST_SYNONYMS` (Tier 1a).
 - `static/js/app.js` — removed 4 dead import bindings: `updateWorkoutPlanUI`, `initializeWorkoutLogFilters`,
-  `initializeDataTables`, `initializeNavHighlighting` (Tier 1c). The underlying functions stay live in
-  their own modules; only the unused `app.js` bindings were trimmed.
+  `initializeDataTables`, `initializeNavHighlighting` (Tier 1c). At that point, only the unused `app.js`
+  bindings were trimmed; a later loose-end pass deleted the now-confirmed-dead `initializeDataTables()`
+  function itself.
 - Removed 3 orphaned images (Tier 1d): `static/images/add_icon.png`, `button_icon.png`, `icons8-week-50.png`.
 - `static/js/modules/routine-cascade.js` — **finished** the Tier 1b intent: deleted 4 functions that the
   earlier pass had *privatized* but left unreferenced (`validateCascadeSelection`, `setCascadeFromComposite`,
@@ -368,6 +369,24 @@ pass), Tier 2 test-coupled Python deletions (`get_pattern_category`, `utils/user
 `data/database.db` left dirty/unstaged (runtime/test artifact).
 
 — Claude (Opus 4.8)
+
+---
+
+## Execution Record — Tier 1c loose-end close — 2026-06-12
+
+**Applied (Codex):**
+- Removed the now-confirmed-dead `initializeDataTables()` export from `static/js/modules/ui-handlers.js`.
+- Removed its private-only helpers `initializeTableSorting()` and `sortTable()`; no live caller reached them.
+
+**Verification — GREEN:**
+| Check | Result |
+|---|---|
+| Residual grep for `initializeDataTables` / helper names in live code | clean; remaining `sortTableByColumn` in `workout-log.js` is unrelated |
+| `tsc --noEmit` | clean |
+| Vulture strict | clean |
+| Blocking flake8 (F401/F811/E711/E712) | 0 |
+
+`F841` cleanup remains intentionally out of scope as lint hygiene, not reachability cleanup.
 
 ---
 
