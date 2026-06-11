@@ -16,7 +16,7 @@ from typing import List, Dict, Any, Generator
 from datetime import datetime
 from flask import Response, make_response
 
-from utils.config import MAX_EXPORT_ROWS, EXPORT_BATCH_SIZE, MAX_FILENAME_LENGTH, STREAMING_THRESHOLD
+from utils.config import MAX_EXPORT_ROWS, MAX_FILENAME_LENGTH, STREAMING_THRESHOLD
 from utils.logger import get_logger
 
 # Note: xlsxwriter is lazy-loaded in functions that need it to improve startup time
@@ -405,38 +405,6 @@ def create_excel_workbook(
                 logger.debug(f"Cleaned up temporary file: {temp_file_path}")
         except Exception as e:
             logger.warning(f"Failed to remove temporary file {temp_file_path}: {e}")
-
-
-def batch_query_results(
-    query_func,
-    batch_size: int = None
-) -> Generator[List[Dict[str, Any]], None, None]:
-    """
-    Generator to batch large query results for memory-efficient processing.
-    
-    Args:
-        query_func: Function that executes the query and returns results
-        batch_size: Number of rows to fetch per batch (default from config)
-        
-    Yields:
-        Batches of query results
-    """
-    if batch_size is None:
-        batch_size = EXPORT_BATCH_SIZE
-    
-    offset = 0
-    while True:
-        batch = query_func(limit=batch_size, offset=offset)
-        if not batch:
-            break
-        
-        yield batch
-        
-        if len(batch) < batch_size:
-            # Last batch
-            break
-        
-        offset += batch_size
 
 
 def estimate_export_size(row_count: int, col_count: int) -> int:

@@ -308,7 +308,7 @@ export function initializeAdvancedFilters() {
     });
 }
 
-export function updateFilteredView(category, value) {
+function updateFilteredView(category, value) {
     const rows = document.querySelectorAll('tr[data-category]');
     rows.forEach(row => {
         if (!value || row.dataset.category === value) {

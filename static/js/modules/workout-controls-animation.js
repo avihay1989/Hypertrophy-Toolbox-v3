@@ -173,14 +173,3 @@ export function initializeWorkoutControlsAnimation() {
     
     console.log('[WorkoutControlsAnimation] Initialized value-changed animations for workout controls');
 }
-
-/**
- * Manually trigger the animation on a specific input (useful for programmatic changes).
- * @param {string} inputId - The ID of the input to animate
- */
-export function triggerAnimationById(inputId) {
-    const input = document.getElementById(inputId);
-    if (input) {
-        triggerValueChangedAnimation(input);
-    }
-}

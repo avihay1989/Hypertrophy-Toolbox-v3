@@ -148,7 +148,7 @@ Document corrections made in this revision:
 ## 2. HIGH-RISK SCENARIOS (Wrong Output/Broken Features)
 
 ### 2.1 Validation Boundaries
-**File**: `validation.js`, `exercises.js`
+**File**: `exercises.js`, `workout-log.js`, `workout-plan.js`
 | Scenario | Current Behavior | Status |
 |----------|------------------|--------|
 | Weight = 0 entered | Allowed for bodyweight use cases | ✅ |
@@ -333,7 +333,7 @@ If starting one targeted code improvement now:
 
 > **Reviewer**: Claude Opus 4.6
 > **Scope**: Full document review — accuracy, priorities, and actionability.
-> **File references verified** against `static/js/modules/`: All referenced JS files (`fetch-wrapper.js`, `routine-cascade.js`, `workout-dropdowns.js`, `validation.js`, `filters.js`, `toast.js`, `exercises.js`, `exports.js`, `workout-plan.js`, `workout-log.js`) confirmed present in repository.
+> **File references verified** against `static/js/modules/`: All referenced JS files (`fetch-wrapper.js`, `routine-cascade.js`, `filters.js`, `toast.js`, `exercises.js`, `exports.js`, `workout-plan.js`, `workout-log.js`) confirmed present in repository.
 
 ### 9.1 Priority Reassessments
 

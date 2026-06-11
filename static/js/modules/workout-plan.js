@@ -603,79 +603,12 @@ function applyRoutineTabFilter(exercises, routineFilter) {
     return exercises.filter(ex => ex.routine === routineFilter);
 }
 
-/**
- * Gets the current routine tab filter value (for external modules if needed)
- * @returns {string} Current routine filter
- */
-export function getCurrentRoutineTabFilter() {
-    return currentRoutineTabFilter;
-}
-
-/**
- * Resets the routine tab filter to 'all' (for external modules if needed)
- */
-export function resetRoutineTabFilter() {
-    currentRoutineTabFilter = 'all';
-    const tabsContainer = document.getElementById('routine-tabs');
-    if (tabsContainer) {
-        tabsContainer.querySelectorAll('.routine-tab-btn').forEach(btn => {
-            const isAll = btn.getAttribute('data-routine') === 'all';
-            btn.classList.toggle('active', isAll);
-            btn.setAttribute('aria-selected', isAll ? 'true' : 'false');
-        });
-    }
-}
-
     const WORKOUT_PLAN_DEBUG = false;
     const workoutPlanDebugLog = (...args) => {
         if (WORKOUT_PLAN_DEBUG) {
             console.log(...args);
         }
     };
-export function reloadWorkoutPlan(data) {
-    const workoutTable = document.querySelector("#workout-plan-table tbody");
-    if (!workoutTable) {
-        console.error("Workout plan table not found in the DOM");
-        return;
-    }
-
-    // Clear existing rows
-    workoutTable.innerHTML = "";
-
-    // Add all exercises to the table
-    data.forEach((item) => {
-        if (!item.id) {
-            console.error("Missing ID for exercise:", item);
-            return;
-        }
-
-        const row = document.createElement("tr");
-        row.innerHTML = `
-            <td>${item.id}</td>
-            <td>${item.routine || "N/A"}</td>
-            <td>${item.exercise || "N/A"}</td>
-            <td>${transformMuscleDisplay(item.primary_muscle_group, 'primary', item.advanced_isolated_muscles)}</td>
-            <td>${transformMuscleDisplay(item.secondary_muscle_group, 'primary', item.advanced_isolated_muscles)}</td>
-            <td>${transformMuscleDisplay(item.tertiary_muscle_group, 'primary', item.advanced_isolated_muscles)}</td>
-            <td>${transformMuscleDisplay(item.advanced_isolated_muscles, 'isolated')}</td>
-            <td>${item.utility || "N/A"}</td>
-            <td>${item.sets || "N/A"}</td>
-            <td>${item.min_rep_range || "N/A"}</td>
-            <td>${item.max_rep_range || "N/A"}</td>
-            <td>${item.rir || "N/A"}</td>
-            <td>${item.rpe !== null ? item.rpe : "N/A"}</td>
-            <td>${item.weight || "N/A"}</td>
-            <td>${item.grips || "N/A"}</td>
-            <td>${item.stabilizers || "N/A"}</td>
-            <td>${item.synergists || "N/A"}</td>
-            <td>
-                <button class="btn btn-danger btn-sm text-white btn-calm-danger" onclick="removeExercise(${item.id})">
-                    <i class="fas fa-trash"></i> Remove
-                </button>
-            </td>`;
-        workoutTable.appendChild(row);
-    });
-}
 
 export async function updateExerciseDetails(exercise) {
     if (!exercise) return;
@@ -781,7 +714,7 @@ function setWorkoutControlValue(id, value) {
 // user's value (Issue #5).
 let weightUserDirty = false;
 
-export function resetWeightDirtyForTests() {
+function resetWeightDirtyForTests() {
     weightUserDirty = false;
 }
 
@@ -789,7 +722,7 @@ function markWeightUserDirty() {
     weightUserDirty = true;
 }
 
-export function initializeWeightDirtyTracking() {
+function initializeWeightDirtyTracking() {
     const weightInput = document.getElementById('weight');
     if (!weightInput || weightInput.dataset.dirtyTracked === 'true') return;
     weightInput.addEventListener('input', markWeightUserDirty);
@@ -1258,7 +1191,7 @@ export async function applyUserProfileEstimateForSelectedExercise() {
     }
 }
 
-export function handleExerciseSelection() {
+function handleExerciseSelection() {
     const exerciseSelect = document.getElementById('exercise');
     if (!exerciseSelect) return;
 

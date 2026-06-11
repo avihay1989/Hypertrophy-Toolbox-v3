@@ -20,7 +20,7 @@ Server-rendered Jinja templates. Every user-facing page extends `base.html`; par
 
 ## Conventions
 - All pages start with `{% extends "base.html" %}`. Add nav links in `base.html` navbar block.
-- **8 global CSS bundles** are loaded by `base.html`; **8 route bundles** are loaded by individual templates. Do **not** add new runtime `styles_*.css` files or per-feature `<link>` tags — extend the matching bundle.
+- **8 global CSS bundles** are loaded by `base.html`; **10 route bundles** are loaded by individual templates. Do **not** add new runtime `styles_*.css` files or per-feature `<link>` tags — extend the matching bundle.
 - Use `{{ url_for('static', filename='...') }}` for asset URLs and `{{ url_for('blueprint.endpoint') }}` for route URLs.
 - Load JS as ES6 modules: `<script type="module" src="{{ url_for('static', filename='js/modules/X.js') }}"></script>`.
 

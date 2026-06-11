@@ -156,41 +156,6 @@ def _initialize_isolated_muscles_table(db: DatabaseHandler) -> None:
     )
 
 
-def _rebuild_isolated_muscles_mapping(db: DatabaseHandler) -> None:
-    """Rebuild exercise_isolated_muscles from the advanced_isolated_muscles column."""
-    try:
-        db.execute_query("DELETE FROM exercise_isolated_muscles")
-        db.execute_query(
-            """
-            WITH RECURSIVE split(exercise_name, rest, part) AS (
-              SELECT exercise_name,
-                     REPLACE(COALESCE(advanced_isolated_muscles,''), ';', ',') || ',',
-                     ''
-              FROM exercises
-              WHERE advanced_isolated_muscles IS NOT NULL
-                AND TRIM(advanced_isolated_muscles) <> ''
-
-              UNION ALL
-              SELECT exercise_name,
-                     substr(rest, instr(rest, ',') + 1),
-                     TRIM(substr(rest, 1, instr(rest, ',') - 1))
-              FROM split
-              WHERE rest <> ''
-            )
-            INSERT OR IGNORE INTO exercise_isolated_muscles (exercise_name, muscle)
-            SELECT exercise_name, 
-                   LOWER(REPLACE(REPLACE(TRIM(part), ' ', '-'), '_', '-'))
-            FROM split
-            WHERE part <> ''
-            """
-        )
-        row = db.fetch_one("SELECT COUNT(*) AS count FROM exercise_isolated_muscles")
-        count = int(row["count"]) if row and row.get("count") is not None else 0
-        logger.info("Rebuilt exercise_isolated_muscles with %s mappings", count)
-    except sqlite3.Error:
-        logger.exception("Failed to rebuild exercise_isolated_muscles mapping")
-
-
 def _initialize_user_selection_table(db: DatabaseHandler) -> None:
     if os.getenv("TESTING") == "1":
         db.execute_query("DROP TABLE IF EXISTS user_selection")

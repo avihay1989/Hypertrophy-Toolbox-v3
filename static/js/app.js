@@ -5,9 +5,8 @@ import { initializeFilters, initializeAdvancedFilters, initializeSearchFilter, i
 import { addExercise, removeExercise, clearWorkoutPlan } from './modules/exercises.js';
 import { initializeUIHandlers, initializeFormHandlers, initializeTooltips, initializeDropdowns, handleTableSort } from './modules/ui-handlers.js';
 import { exportToExcel, exportToWorkoutLog, exportSummary } from './modules/exports.js';
-import { initializeWorkoutPlanHandlers, updateWorkoutPlanUI } from './modules/workout-plan.js';
-import { initializeWorkoutLogFilters } from './modules/workout-log.js';
-import { initializeDataTables, initializeCharts } from './modules/ui-handlers.js';
+import { initializeWorkoutPlanHandlers } from './modules/workout-plan.js';
+import { initializeCharts } from './modules/ui-handlers.js';
 import { 
     fetchWeeklySummary,
     fetchSessionSummary 
@@ -21,7 +20,6 @@ import {
     checkProgressionStatus,
     initializeProgressionChecks 
 } from './modules/workout-log.js';
-import { initializeNavHighlighting } from './modules/navbar.js';
 import { initializeNavbar } from './modules/navbar.js';
 import { initializeNavbarEnhancements } from './modules/navbar-enhancements.js';
 import { initializeProgressionPlan } from './modules/progression-plan.js';

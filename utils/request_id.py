@@ -3,7 +3,6 @@ Request ID middleware for request tracking and log correlation.
 """
 import uuid
 from flask import request, g
-from functools import wraps
 
 
 def generate_request_id():
@@ -44,26 +43,4 @@ def add_request_id_middleware(app):
         if request_id:
             response.headers['X-Request-ID'] = request_id
         return response
-
-
-def log_with_request_id(logger):
-    """
-    Decorator to add request ID to log messages.
-    
-    Args:
-        logger: Logger instance
-    
-    Returns:
-        Decorated function
-    """
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            request_id = get_request_id()
-            if request_id:
-                # Add request ID to log context
-                logger.info(f"[{request_id}] Executing {func.__name__}")
-            return func(*args, **kwargs)
-        return wrapper
-    return decorator
 

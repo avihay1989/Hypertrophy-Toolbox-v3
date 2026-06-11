@@ -414,7 +414,7 @@ class DatabaseHandler:
     def __enter__(self) -> "DatabaseHandler":
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+    def __exit__(self, exc_type, _exc_val, _exc_tb) -> None:
         try:
             if getattr(self, "connection", None):
                 if exc_type:

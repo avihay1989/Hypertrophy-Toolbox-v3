@@ -556,7 +556,7 @@ export function validateScoredValue(value, field) {
     }
 }
 
-export function checkProgressiveOverload(logId) {
+function checkProgressiveOverload(logId) {
     const row = document.querySelector(`tr[data-log-id="${logId}"]`);
     if (!row) {
         console.error('Row not found for log ID:', logId);
@@ -592,7 +592,7 @@ export function checkProgressiveOverload(logId) {
     }
 }
 
-export function initializeEditableCells() {
+function initializeEditableCells() {
     document.querySelectorAll('.editable-cell').forEach(cell => {
         const input = cell.querySelector('input');
         const display = cell.querySelector('.display-value');

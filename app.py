@@ -306,7 +306,7 @@ if __name__ == "__main__":
     atexit.register(cleanup_on_exit)
     
     # Handle SIGTERM (Ctrl+C) gracefully
-    def signal_handler(sig, frame):
+    def signal_handler(_sig, _frame):
         logger.info("Received shutdown signal, cleaning up...")
         cleanup_on_exit()
         import sys

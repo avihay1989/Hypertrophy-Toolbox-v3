@@ -27,7 +27,7 @@ export function escapeHtml(value) {
         .replace(/'/g, '&#39;');
 }
 
-export function isValidMediaPathShape(value) {
+function isValidMediaPathShape(value) {
     if (typeof value !== 'string') return false;
     if (value === '') return false;
     if (value.startsWith('/') || value.startsWith('\\')) return false;

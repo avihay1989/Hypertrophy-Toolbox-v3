@@ -1,0 +1,28 @@
+[tool.vulture]
+paths = [
+    "app.py",
+    "app_launcher.py",
+    "routes",
+    "utils",
+    "scripts",
+    "tests",
+]
+min_confidence = 100
+sort_by_size = true
+ignore_names = [
+    "broken_database",
+    "clean_database",
+    "database_with_rows",
+    "large_workout_log",
+    "many_workout_logs",
+    "multiple_workout_logs",
+    "sample_workout_log",
+    "sample_workout_plan",
+    "setup_antagonist_exercises",
+    "setup_partial_workout_plan",
+    "setup_supersetted_exercises",
+    "setup_workout_plan",
+    "test_db_with_exercises",
+    "workout_log_fixture",
+    "workout_log_with_history",
+]

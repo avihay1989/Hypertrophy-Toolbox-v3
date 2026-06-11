@@ -315,22 +315,6 @@ def normalize_isolated_token(token: str) -> str:
     return normalized.strip("-")
 
 
-def coarse_to_basic(coarse: str) -> str:
-    """Return the Basic bucket for a coarse P/S/T value; raises on gaps."""
-    key = canonical_pst(coarse)
-    if key is None:
-        raise KeyError(coarse)
-    return COARSE_TO_BASIC[key]
-
-
-def coarse_to_representative_advanced(coarse: str) -> str:
-    """Return the Advanced representative for a coarse P/S/T value."""
-    key = canonical_pst(coarse)
-    if key is None:
-        raise KeyError(coarse)
-    return COARSE_TO_REPRESENTATIVE_ADVANCED[key]
-
-
 def advanced_to_basic(advanced: str) -> str:
     """Return the Basic bucket for an Advanced splitter key."""
     return ADVANCED_TO_BASIC[advanced]
@@ -341,19 +325,3 @@ def expand_umbrella(token: str) -> tuple[str, ...] | None:
     return DISTRIBUTED_UMBRELLA_TOKENS.get(normalize_isolated_token(token))
 
 
-def advanced_token_belongs_to_coarse(token: str, coarse: str) -> bool:
-    """Return whether an isolated token maps to the same Basic bucket as coarse."""
-    coarse_key = canonical_pst(coarse)
-    if coarse_key is None or coarse_key not in COARSE_TO_BASIC:
-        return False
-
-    coarse_basic = COARSE_TO_BASIC[coarse_key]
-    normalized = normalize_isolated_token(token)
-    expanded = expand_umbrella(normalized)
-    if expanded:
-        return all(ADVANCED_TO_BASIC.get(advanced) == coarse_basic for advanced in expanded)
-
-    advanced = TOKEN_TO_ADVANCED.get(normalized)
-    if advanced is None:
-        return False
-    return ADVANCED_TO_BASIC.get(advanced) == coarse_basic
