@@ -78,7 +78,7 @@
 - F7/F5 (nit): keeping `E2E Smoke` required is fine; separate the verbatim required-context list from the rationale table to avoid editing a load-bearing string.
 
 ### test-strategist (agent ae8ae426da4817259) — verdict: Needs revision
-- Confirmed: 8 names match ci.yml char-for-char; `retries:2` is real; **no known-red family is in any required job** (nav-dropdown/visual/geometry excluded; program-backup runs isolated).
+- Confirmed at Phase 5 time: 8 names matched ci.yml char-for-char; `retries:2` was real; **no known-red family was in any required job** (nav-dropdown was still excluded then, visual/geometry excluded; program-backup runs isolated). Follow-up 2026-06-11 fixed and promoted nav-dropdown.
 - **B1 (BLOCKING): `E2E Backup` is the flakiest required member** (documented sequential-DB flake; isolation is the mitigation). Require it only with a recorded green-run count, or stage it in after the other 7.
 - **B2 (BLOCKING): strict mode OFF.** Strict forces every other open PR to re-run the full required set (incl. 3 E2E jobs at retries:2) on every merge — compounding flake exposure and fighting auto-merge — for ~zero value on a solo serial repo.
 - **B3 (BLOCKING): document the auto-merge flake-recovery path** (`gh run rerun --failed` → admin-merge escalation), not just an "emergency" override.

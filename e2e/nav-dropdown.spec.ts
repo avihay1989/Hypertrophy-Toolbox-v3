@@ -39,10 +39,7 @@ async function openMobileNavbar(page: Page): Promise<void> {
 }
 
 async function clickDarkModeToggle(page: Page): Promise<void> {
-  await page.evaluate(() => {
-    const toggle = document.querySelector('#darkModeToggle') as HTMLElement | null;
-    toggle?.click();
-  });
+  await page.locator(SELECTORS.DARK_MODE_TOGGLE).click();
 }
 
 test.describe('P5 navbar dropdown and backup navigation', () => {

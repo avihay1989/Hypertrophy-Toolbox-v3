@@ -31,18 +31,18 @@ Full per-spec test count map: `.claude/rules/testing.md`.
 - Seeding lives in the web-server command (not `globalSetup`) on purpose: Playwright starts `webServer` **before** `globalSetup`, so seeding in `globalSetup` races `app.py`'s first DB open (fails in CI on a fresh checkout).
 - `e2e/scripts/prepare_e2e_db.py` snapshots the committed seed (`fixtures/database.visual.seed.db`), applies migrations, ensures the learned-calibration tables exist, then **wipes all user-state** (profile, reference lifts, plan, logs, calibration, backups) — full exercise catalog preserved. Every run starts from an identical clean slate; tests must not depend on ambient saved data.
 - With `PW_REUSE_SERVER=1` and a server already running, the command (and reseed) is skipped — the reused server owns its own DB.
-- Off-viewport navbar toggles (`#muscleModeToggle`, `#darkModeToggle`) can't be reached by actionability clicks at desktop width — dispatch via `page.evaluate(() => el?.click())` (see `clickMuscleModeToggle` in `workout-plan.spec.ts`, `clickDarkModeToggle` in `nav-dropdown.spec.ts`).
+- `nav-dropdown.spec.ts` uses a real Playwright click for `#darkModeToggle`; keep it that way so desktop navbar actionability stays guarded. `workout-plan.spec.ts` still dispatches `#muscleModeToggle` because that broader workflow has its own historical layout note.
 
 ## CI inclusion contract (`e2e-functional-shard` matrix + `e2e-functional` gate / `e2e-backup` jobs)
 The GitHub Actions gate runs a curated, deterministic subset on **ubuntu/Chromium** (not every spec). Auditable contract for all specs:
 
 | Spec | CI placement | Reason |
 |---|---|---|
-| `accessibility`, `api-integration`, `body-composition`, `browser-navigation-state`, `dark-mode`, `empty-states`, `error-handling`, `exercise-interactions`, `fatigue`, `fatigue-stage4-smokes`, `learned-calibration`, `progression`, `replace-exercise-errors`, `smoke-navigation`, `summary-pages`, `superset-edge-cases`, `ui-hardening`, `user-profile`, `validation-boundary`, `volume-progress`, `volume-splitter`, `workout-log`, `workout-plan` | `e2e-functional-shard` matrix job (`--shard=i/2`) | Deterministic functional/product coverage |
+| `accessibility`, `api-integration`, `body-composition`, `browser-navigation-state`, `dark-mode`, `empty-states`, `error-handling`, `exercise-interactions`, `fatigue`, `fatigue-stage4-smokes`, `learned-calibration`, `nav-dropdown`, `progression`, `replace-exercise-errors`, `smoke-navigation`, `summary-pages`, `superset-edge-cases`, `ui-hardening`, `user-profile`, `validation-boundary`, `volume-progress`, `volume-splitter`, `workout-log`, `workout-plan` | `e2e-functional-shard` matrix job (`--shard=i/2`) | Deterministic functional/product coverage |
 | `smoke-navigation` | also `e2e-smoke` job | Fast standalone "is the app up" signal |
 | `program-backup` | `e2e-backup` job (isolated) | Live backup/restore mutations — own server + fresh seed avoids intra-run sequential-DB pollution without any between-spec reset |
 | `accessibility`, `fatigue-stage4-smokes`, `volume-progress` | **promoted to `e2e-functional` (A10, 2026-06-11)** | Were measure-first (a11y run-cost; geometry/sub-pixel asserts). Promoted after a 5×-repeat ubuntu stability probe (225/225 green, zero flakes) + the 2026-06-05 deep-gate full-e2e green. Their asserts are coarse thresholds (tap-target ≥32/≥44, viewport-bound ±1px, overflow boolean), not pixel-exact snapshots. Watch the first ~10 PR runs for any geometry flake; revert that one spec line if one appears. |
-| `nav-dropdown` | excluded | Documented current red (off-viewport toggle) |
+| `nav-dropdown` | **promoted to `e2e-functional` (2026-06-11)** | Fixed the 1440px dark-mode-toggle actionability red with compact desktop navbar utility chrome; spec now uses a real Playwright click. |
 | `visual`, `visual-baseline-thumbnails` | manual deep gate only (`visual-linux` job) | Cross-OS rendering: compared against Linux baselines, never a required PR check. See "Visual spec contract" below. |
 
 - The functional/backup specs assert **current shipped behavior**. A future intentional behavior change (e.g. a fatigue Stage-4 threshold tweak) must update the spec deliberately — it should not be treated as "CI caught a regression."
@@ -59,7 +59,6 @@ The GitHub Actions gate runs a curated, deterministic subset on **ubuntu/Chromiu
 - **Runner image is pinned** (`ubuntu-24.04`, not `ubuntu-latest`): the generate and compare runs must share one image so the Chromium/freetype/font renderer matches by construction. A deliberate runner bump requires a re-baseline (`generate`); a silent `ubuntu-latest` promotion must not move pixels.
 
 ## Gotchas
-- **Known current red (out-of-scope)**: `nav-dropdown.spec.ts:117` — dark-mode toggle off-viewport at 1440 width. Do not "fix" this without an explicit task.
 - **Known historical flake**: `program-backup.spec.ts` (`Backup Center Page` describe block) — sequential DB-pollution flake observed in earlier full runs; passes in isolation. This is why CI runs it in the isolated `e2e-backup` job (see CI inclusion contract above), not alongside other DB-mutating specs.
 - Visual snapshot regressions need an intentional re-baseline. Don't blanket-`--update-snapshots`.
 - Chromium is the only configured project (`playwright.config.ts`).

@@ -68,7 +68,6 @@ Both end with `/handover` to record what shipped.
 ## Known exceptions to treat as pre-existing
 
 Current full-suite baseline (2026-05-10):
-- `e2e/nav-dropdown.spec.ts:117` — dark-mode toggle off-viewport at 1440 width; current known red.
 - `e2e/program-backup.spec.ts:79` — historical DB-state-pollution flake; passed in the 2026-05-10 full run and passes in isolation.
 
-If the nav-dropdown failure is the only red, do not block unrelated work on it; note it in the handover entry. Treat any reappearance of the program-backup flake as known but record whether it passes in isolation.
+Treat any reappearance of the program-backup flake as known but record whether it passes in isolation. `nav-dropdown.spec.ts` is no longer a known red as of 2026-06-11; failures there should block navbar/theme changes.

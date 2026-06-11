@@ -4,6 +4,11 @@ All notable changes to Hypertrophy Toolbox v3.
 
 ## Unreleased - May 23, 2026
 
+### Navbar E2E Known-Red Fix
+
+- Fixed issue #8's `nav-dropdown.spec.ts` dark-mode toggle actionability red at the 1440px desktop breakpoint. The navbar now hides decorative utility chrome in the cramped desktop band so the dark-mode toggle remains in-viewport, and the spec uses a real Playwright click again.
+- Promoted `e2e/nav-dropdown.spec.ts` into the required functional E2E shard list. Verification: `npx playwright test e2e/nav-dropdown.spec.ts --project=chromium --reporter=line` → 7 passed.
+
 ### Fatigue Meter — Phase 2 Stage 2 (Path 1)
 
 - New dedicated `/fatigue` page with **per-muscle local-fatigue accumulator**, **two Stimulus-to-Fatigue Ratio cards** (planned + logged), and a **period selector** (`this session` / `this week` / `last 4 weeks`). Implements the locked Path 1 scope from PR #33 — additive only, no schema change, no `/api/fatigue/*`, no edits to Phase-1 fatigue math, calibration scenarios, or volume modules.

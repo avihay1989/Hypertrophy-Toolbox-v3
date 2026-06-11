@@ -202,11 +202,11 @@ jobs:
 
     # Deterministic functional/product specs only. Excluded by design (see
     # e2e/CLAUDE.md "CI inclusion contract"): visual + visual-baseline-thumbnails
-    # (cross-OS rendering), nav-dropdown (known red), and program-backup (runs
-    # isolated in e2e-backup). accessibility + fatigue-stage4-smokes +
+    # (cross-OS rendering), and program-backup (runs isolated in e2e-backup).
+    # accessibility + fatigue-stage4-smokes +
     # volume-progress were promoted here in A10 after a 5x-repeat ubuntu stability
-    # probe (225/225 green, zero flakes). The explicit spec list is identical to
-    # the pre-A11 single job; only `--shard=${{ matrix.shard }}/2` is added.
+    # probe (225/225 green, zero flakes). nav-dropdown was promoted after the
+    # issue #8 1440px actionability fix; sharding remains `--shard=${{ matrix.shard }}/2`.
     # No --reporter flag: the CI-gated reporters in playwright.config.ts (list +
     # html + junit) must all emit so the artifact upload below has a report.
     - name: Run functional specs (shard ${{ matrix.shard }}/2)
@@ -223,6 +223,7 @@ jobs:
           e2e/fatigue-stage4-smokes.spec.ts \
           e2e/fatigue.spec.ts \
           e2e/learned-calibration.spec.ts \
+          e2e/nav-dropdown.spec.ts \
           e2e/progression.spec.ts \
           e2e/replace-exercise-errors.spec.ts \
           e2e/smoke-navigation.spec.ts \

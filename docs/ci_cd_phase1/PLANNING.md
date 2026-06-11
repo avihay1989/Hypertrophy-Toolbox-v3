@@ -18,7 +18,7 @@
   - Branch protection / required-check enforcement (Phase 5).
   - Visual specs (`visual.spec.ts`, `visual-baseline-thumbnails.spec.ts`) — cross-OS rendering, deferred to Phase 4 manual deep gate.
   - `accessibility.spec.ts` as required — plan §4 keeps it manual-deep "initially".
-  - `nav-dropdown.spec.ts` — documented current red (off-viewport toggle).
+  - `nav-dropdown.spec.ts` — documented current red at the time; fixed and promoted later on 2026-06-11.
   - pyright / tsc / flake8 hardening (Phase 3).
   - Any `schedule`/`cron` trigger (explicitly forbidden by plan §0).
   - Any production-code or app-behavior change.
@@ -35,7 +35,7 @@
 **Effort**: M · **Owner**: Claude · **Depends on**: Phase 0 (done), Phase 2.1 (done)
 
 **Sequence**
-1. **1.1 — Inclusion contract.** Adopt the §4 per-spec table. Required-PR functional set (proposed): `api-integration`, `body-composition`, `browser-navigation-state`, `dark-mode`, `empty-states`, `error-handling`, `exercise-interactions`, `fatigue`, `learned-calibration`, `progression`, `replace-exercise-errors`, `smoke-navigation`, `summary-pages`, `superset-edge-cases`, `user-profile`, `validation-boundary`, `volume-splitter`, `workout-log`, `workout-plan`. **Candidates needing a stability run first** (included in the job but flagged, not yet relied on for Phase 5): `fatigue-stage4-smokes`, `ui-hardening`, `volume-progress`, `program-backup`. **Excluded**: `accessibility` (manual-deep), `nav-dropdown` (known red), `visual`, `visual-baseline-thumbnails` (cross-OS).
+1. **1.1 — Inclusion contract.** Adopt the §4 per-spec table. Required-PR functional set (proposed): `api-integration`, `body-composition`, `browser-navigation-state`, `dark-mode`, `empty-states`, `error-handling`, `exercise-interactions`, `fatigue`, `learned-calibration`, `progression`, `replace-exercise-errors`, `smoke-navigation`, `summary-pages`, `superset-edge-cases`, `user-profile`, `validation-boundary`, `volume-splitter`, `workout-log`, `workout-plan`. **Candidates needing a stability run first** (included in the job but flagged, not yet relied on for Phase 5): `fatigue-stage4-smokes`, `ui-hardening`, `volume-progress`, `program-backup`. **Excluded at Phase 1 time**: `accessibility` (manual-deep), `nav-dropdown` (known red then; fixed/promoted 2026-06-11), `visual`, `visual-baseline-thumbnails` (cross-OS).
 2. **1.2a first (de-risk before wiring the matrix).** Decide the shard-safety mechanism. Three options to evaluate:
    - (a) **Order-safe single-shard-group** — keep `fullyParallel: false`, run the functional set in one job (no matrix), rely on the existing once-per-run seed. Simplest; slowest (~8–10 min); doesn't solve in-run mutation flakes, only avoids cross-shard nondeterminism.
    - (b) **Per-spec reset** — add a mechanism to re-wipe user-state between spec files (e.g. a `globalSetup`-independent reset call, or a test-only reset route hit in `beforeAll`). Removes sequential-DB pollution entirely; most robust; most work.
@@ -137,7 +137,7 @@
 
 **Excluded from Phase 1 CI (with reason):**
 - `accessibility` — manual-deep (Phase 4), run-cost not yet measured.
-- `nav-dropdown` — documented current red (off-viewport toggle).
+- `nav-dropdown` — documented current red at Phase 1 time; fixed and promoted later on 2026-06-11.
 - `visual`, `visual-baseline-thumbnails` — cross-OS rendering + visual-DB preflight (Phase 4).
 - `fatigue-stage4-smokes`, `volume-progress` — geometry/sub-pixel assertions, measure-first before any inclusion.
 
