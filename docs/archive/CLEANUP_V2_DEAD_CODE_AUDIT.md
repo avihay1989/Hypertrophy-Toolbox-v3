@@ -3,7 +3,7 @@
 **Date:** 2026-06-11
 **Author:** Claude (Opus 4.8) — deep scan, parallel agents + manual grep verification
 **For:** Codex review + execution
-**Status:** Findings verified, awaiting cleanup decision
+**Status:** CLOSED 2026-06-12 — all tiers (1/2/3) + both HOLD items shipped to `main` (PRs #81, #82). See the Execution Records at the foot of this file. Archived.
 
 ---
 
