@@ -34,6 +34,7 @@
 <body>
     <!-- Navbar -->
     <header id="navbar" data-component="navbar" data-testid="navbar" class="navbar navbar-expand-lg navbar-dark bg-dark" aria-label="Main navigation">
+        <a class="nb-skip-link" href="#main-content">Skip to main content</a>
         <div class="container-fluid">
             <!-- Updated Brand with Icon -->
             <a class="navbar-brand nav-link" 
@@ -215,7 +216,7 @@
     </header>
 
     <!-- Main Content Area -->
-    <div class="container-fluid mt-4">
+    <div id="main-content" class="container-fluid mt-4">
         {% block content %}
         <!-- Default Fallback Content -->
         <div class="alert alert-info text-center" role="alert">
