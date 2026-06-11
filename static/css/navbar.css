@@ -1245,24 +1245,23 @@ body:not(:has(#navbar)) .navbar {
   }
 }
 
-@media (min-width: 1360px) and (max-width: 1380px) {
+@media (min-width: 1360px) and (max-width: 1500px) {
   #navbar > .container-fluid {
     padding-inline: var(--s-4, 16px);
   }
 
-  #navbar .nav-signature-link {
-    justify-content: center;
-    min-width: 40px;
-    padding-inline: 10px;
+  #navbar .nav-signature,
+  #navbar .nav-divider,
+  #navbar .nav-item:has(.scale-control-compact) {
+    display: none !important;
   }
 
+  #navbar #darkModeToggle,
   #navbar #muscleModeToggle {
     justify-content: center;
     min-width: 40px;
   }
 
-  #navbar .nav-signature-link .signature-text,
-  #navbar .nav-signature-link .signature-name,
   #navbar #muscleModeToggle .muscle-mode-label {
     display: none !important;
   }

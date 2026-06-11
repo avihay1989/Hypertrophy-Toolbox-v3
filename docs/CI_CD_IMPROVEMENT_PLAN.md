@@ -178,7 +178,7 @@ deliberate, correct cost of `main` being trustworthy.
   | `fatigue-stage4-smokes.spec.ts` | required-pr candidate | Recent feature smoke; verify CI stability before branch protection. |
   | `fatigue.spec.ts` | required-pr | Recent analytics/product feature coverage. |
   | `learned-calibration.spec.ts` | required-pr | Recent profile/calibration feature coverage. |
-  | `nav-dropdown.spec.ts` | manual-deep / excluded until fixed | Known current red around off-viewport navbar toggle. |
+  | `nav-dropdown.spec.ts` | required-pr | Fixed 2026-06-11; guards navbar dropdowns and real dark-mode-toggle actionability. |
   | `program-backup.spec.ts` | required-pr after shard-safety | High-value data-loss-adjacent flow; known historical sequential DB flake means it must wait for reset/order-safe grouping. |
   | `progression.spec.ts` | required-pr | Core progress workflow. |
   | `replace-exercise-errors.spec.ts` | required-pr | Edge/error states for replace flow. |
