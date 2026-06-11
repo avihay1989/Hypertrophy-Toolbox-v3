@@ -1979,13 +1979,11 @@ already established for the Plan-page improvement hint.
 **Resolution (2026-04-28):** Implemented.
 
 - **Shared SVG module** — added
-  `static/js/modules/bodymap-svg.js` exporting `VENDOR_SLUG_TO_CANONICAL`,
-  `BODYMAP_COVERAGE_MUSCLES` (front + back vendor-slug → backend-muscle
-  mapping), `COVERAGE_MUSCLE_CHAIN` (mirror of `MUSCLE_TO_KEY_LIFT`),
-  `COVERAGE_LIFT_LABELS`, `loadBodymapSvg(side)` (with in-memory cache),
-  and `annotateBodymapPolygons(svgRoot, side)` (writes
-  `data-canonical-muscle` + `data-bodymap-muscle` + `data-bodymap-label`
-  attributes on each polygon). The starter-plan generator's existing
+  `static/js/modules/bodymap-svg.js` with `COVERAGE_MUSCLE_CHAIN` (mirror of
+  `MUSCLE_TO_KEY_LIFT`), `COVERAGE_LIFT_LABELS`, `loadWorkoutCoolBodymapSvg()`,
+  `annotateWorkoutCoolBodymapPolygons()`, and
+  `CANONICAL_SIMPLE_TO_COVERAGE_MUSCLES` for Profile coverage. The
+  starter-plan generator's existing
   `static/js/modules/muscle-selector.js` module is loaded as a classic
   `<script>` on `/workout_plan` (so it can't `import`); it keeps its
   own copy of `VENDOR_SLUG_TO_CANONICAL` with a lockstep comment, and

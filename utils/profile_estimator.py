@@ -2297,14 +2297,15 @@ def coverage_donut(
 
 # Issue #19 — bodymap coverage view.
 #
-# Each backend muscle key drives one or more polygons on the
-# react-body-highlighter SVG (anterior + posterior). Polygons not in this
-# table render as "not_assessed" and the coverage helper does not emit a
-# state for them — the view layer renders them as a dim outline.
+# Each backend muscle key drives one or more polygons on the workout-cool SVG
+# (anterior + posterior). Polygons without a coverage chain render as
+# "not_assessed" and the coverage helper does not emit a state for them — the
+# view layer renders them as a dim outline.
 #
-# KEEP THIS LIST IN SYNC with `BODYMAP_COVERAGE_MUSCLES` /
+# KEEP THIS LIST IN SYNC with `CANONICAL_SIMPLE_TO_COVERAGE_MUSCLES` /
 # `COVERAGE_MUSCLE_CHAIN` in `static/js/modules/bodymap-svg.js`. The
-# `test_bodymap_canonical_in_sync` test enforces drift detection.
+# `test_workout_cool_back_region_multi_key_mapping_matches_python_keys` and
+# related bodymap tests enforce drift detection.
 BODYMAP_MUSCLE_KEYS: tuple[str, ...] = (
     "Chest",
     "Front-Shoulder",

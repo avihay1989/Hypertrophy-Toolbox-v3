@@ -464,7 +464,7 @@ export function initializeCharts() {
     });
 }
 
-export function initializeSummaryMethodHandlers() {
+function initializeSummaryMethodHandlers() {
     const methodSelect = document.getElementById('summary-method');
     if (!methodSelect) return;
 

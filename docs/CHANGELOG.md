@@ -30,7 +30,7 @@ All notable changes to Hypertrophy Toolbox v3.
 
 ### Profile Coverage Bodymap — workout-cool Art (§3.6)
 
-- Switched the Profile coverage card from `react-body-highlighter` to the vendored workout-cool SVG art. New `loadWorkoutCoolBodymapSvg()` + `annotateWorkoutCoolBodymapPolygons()` + `CANONICAL_SIMPLE_TO_COVERAGE_MUSCLES` table in `static/js/modules/bodymap-svg.js`; the original react-body-highlighter exports remain in place for `muscle-selector.js`'s Advanced view. Local commit `18ad223`.
+- Switched the Profile coverage card from `react-body-highlighter` to the vendored workout-cool SVG art. New `loadWorkoutCoolBodymapSvg()` + `annotateWorkoutCoolBodymapPolygons()` + `CANONICAL_SIMPLE_TO_COVERAGE_MUSCLES` table in `static/js/modules/bodymap-svg.js`; `muscle-selector.js` owns its react-body-highlighter loader/mapping locally for the Plan page's Advanced view. Local commit `18ad223`.
 - Multi-muscle BACK regions (workout-cool ships `lats,upper-back,lowerback`) now carry both `data-bodymap-muscle` (representative singular) and `data-bodymap-muscles` (plural, comma-joined). `aggregateCoverageForRegion()` returns the worst coverage state across the set so the polygon fill reflects the least-confident muscle. Locked by `tests/test_profile_estimator.py::test_workout_cool_*` and `e2e/user-profile.spec.ts` (§3.6 case).
 
 ### Navbar — Hover Dropdowns + Icon Polish

@@ -1460,7 +1460,7 @@ function bindCalibrationReview() {
     refreshCalibrationReview(review);
 }
 
-export function initializeUserProfile() {
+function initializeUserProfile() {
     bindAutosaveForm('profile-demographics-form', profilePayload, '/api/user_profile');
     bindAutosaveForm('profile-lifts-form', liftPayload, '/api/user_profile/lifts');
     bindAutosaveForm(

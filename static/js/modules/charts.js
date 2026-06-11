@@ -57,11 +57,3 @@ export function createProgressChart(container, data) {
         showToast('Failed to create progress chart', true);
     }
 }
-
-export function updateChartData(chart, newData) {
-    if (!chart) return;
-    
-    chart.data.labels = newData.labels;
-    chart.data.datasets[0].data = newData.values;
-    chart.update();
-} 

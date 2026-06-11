@@ -9,10 +9,10 @@ paths:
 # Frontend guide
 
 ## CSS structure
-- Runtime CSS is capped at 17 app bundles: 8 global bundles in `templates/base.html` plus 9 route bundles loaded from child templates.
+- Runtime CSS is capped at 18 app bundles: 8 global bundles in `templates/base.html` plus 10 route bundles loaded from child templates.
 - Global bundles: `tokens.css`, `motion.css`, `base.css`, `layout.css`, `components.css`, `navbar.css`, `theme-dark.css`, `a11y.css`.
-- Route bundles: `pages-welcome.css`, `pages-workout-plan.css`, `pages-workout-log.css`, `pages-weekly-summary.css`, `pages-session-summary.css`, `pages-progression.css`, `pages-user-profile.css`, `pages-body-composition.css`, `pages-volume-splitter.css`.
-- `bootstrap.custom.min.css` stays separate as the Bootstrap build artifact and is excluded from the 17-file cap.
+- Route bundles: `pages-welcome.css`, `pages-workout-plan.css`, `pages-workout-log.css`, `pages-weekly-summary.css`, `pages-session-summary.css`, `pages-progression.css`, `pages-user-profile.css`, `pages-body-composition.css`, `pages-volume-splitter.css`, `pages-backup.css`.
+- `bootstrap.custom.min.css` stays separate as the Bootstrap build artifact and is excluded from the 18-file cap.
 - Do not add new runtime `styles_*.css` files or new direct `<link>` tags for feature CSS in templates. Extend the appropriate global bundle or the matching route bundle instead.
 
 ## Adding a JS module + CSS

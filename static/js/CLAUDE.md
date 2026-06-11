@@ -9,7 +9,6 @@ Vanilla ES6 modules, no framework. `modules/` holds feature-scoped modules; the 
 | `app.js` | Top-level entry hooked from `base.html` |
 | `darkMode.js` | Theme toggle + `localStorage` persistence |
 | `accessibility.js` | Skip-links, keyboard helpers |
-| `populateRoutines.js` | Routine cascade entry |
 | `table-responsiveness.js` | Mobile table re-layout |
 | `modules/fetch-wrapper.js` | **API client.** Exports `apiFetch` (low-level) and `api` (convenience) |
 | `modules/toast.js` | `showToast()` notifications |
@@ -21,7 +20,7 @@ Vanilla ES6 modules, no framework. `modules/` holds feature-scoped modules; the 
 | `modules/volume-splitter.js`, `modules/plan_volume_panel.js` | Distribute |
 | `modules/user-profile.js`, `modules/bodymap-svg.js`, `modules/muscle-selector.js` | Profile + body map |
 | `modules/program-backup.js`, `modules/backup-center.js` | Backups |
-| `modules/exports.js`, `modules/validation.js`, `modules/ui-handlers.js`, `modules/workout-controls-animation.js` | Cross-cutting |
+| `modules/exports.js`, `modules/ui-handlers.js`, `modules/workout-controls-animation.js` | Cross-cutting |
 
 ## Conventions
 - All JSON calls go through `apiFetch` / `api` from `fetch-wrapper.js` — they normalize the `{ok, status, data, error}` shape and unify error handling. Do **not** call raw `fetch()` for app endpoints.

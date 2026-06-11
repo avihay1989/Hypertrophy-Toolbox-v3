@@ -58,7 +58,7 @@ function checkRange(value, lo, hi, field) {
     }
 }
 
-export function computeNavy({ gender, heightCm, neckCm, waistCm, hipCm = null }) {
+function computeNavy({ gender, heightCm, neckCm, waistCm, hipCm = null }) {
     const sex = String(gender || '').trim().toUpperCase();
     if (sex !== 'M' && sex !== 'F') {
         throw new Error("gender must be 'M' or 'F'");
@@ -88,7 +88,7 @@ export function computeNavy({ gender, heightCm, neckCm, waistCm, hipCm = null })
     return 495.0 / (1.29579 - 0.35004 * log10(delta) + 0.22100 * log10(heightCm)) - 450.0;
 }
 
-export function computeBmi({ gender, ageYears, heightCm, bodyweightKg }) {
+function computeBmi({ gender, ageYears, heightCm, bodyweightKg }) {
     const sex = String(gender || '').trim().toUpperCase();
     if (sex !== 'M' && sex !== 'F') {
         throw new Error("gender must be 'M' or 'F'");
@@ -110,7 +110,7 @@ export function computeBmi({ gender, ageYears, heightCm, bodyweightKg }) {
     return { bmi, bfp };
 }
 
-export function aceCategory(bfp, gender) {
+function aceCategory(bfp, gender) {
     const sex = String(gender || '').trim().toUpperCase();
     if (sex !== 'M' && sex !== 'F') {
         throw new Error("gender must be 'M' or 'F'");
@@ -129,7 +129,7 @@ export function aceCategory(bfp, gender) {
     return bands[bands.length - 1][0];
 }
 
-export function jacksonPollockIdeal(ageYears, gender) {
+function jacksonPollockIdeal(ageYears, gender) {
     const sex = String(gender || '').trim().toUpperCase();
     if (sex !== 'M' && sex !== 'F') {
         throw new Error("gender must be 'M' or 'F'");
