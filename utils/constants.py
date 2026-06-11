@@ -225,34 +225,6 @@ ADVANCED_SET = {
     "upper-trapezius",
 }
 
-# Tokens to treat as nulls
-NULL_TOKENS = {"", "nan", "none", "n/a", "na", "null", "-"}
-
-# P/S/T alias map (case-insensitive keys) → canonical
-PST_SYNONYMS = {
-    "shoulders": "Delts",
-    "rear shoulders": "Rear-Shoulder",
-    "posterior deltoid": "Rear-Shoulder",
-    "posterior delts": "Rear-Shoulder",
-    "rear delts": "Rear-Shoulder",
-    "anterior deltoid": "Front-Shoulder",
-    "front delts": "Front-Shoulder",
-    "front shoulder": "Front-Shoulder",
-    "lateral deltoid": "Middle-Shoulder",
-    "lateral delts": "Middle-Shoulder",
-    "middle delts": "Middle-Shoulder",
-    "medial delts": "Middle-Shoulder",
-    "inner thigh": "Hip-Adductors",
-    "groin": "Hip-Adductors",
-    "rectus femoris": "Quadriceps",
-    "tibialis": "Calves",
-    "feet": "Calves",
-    "lower abdominals": "Abs/Core",
-    "upper traps": "Upper Traps",
-    "lower traps": "Traps",
-    "latissimus dorsi": "Latissimus-Dorsi",
-}
-
 # Advanced alias map (case-insensitive keys) → canonical advanced
 ADV_SYNONYMS = {
     "upper pectoralis": "upper-pectoralis",

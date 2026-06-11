@@ -457,8 +457,7 @@ class ExerciseSelector:
         
         difficulty_ranks = {"beginner": 1, "intermediate": 2, "advanced": 3}
         exercise_rank = difficulty_ranks.get(difficulty, 2)
-        user_rank = difficulty_ranks.get(level, 1)
-        
+
         # Novice can't do advanced exercises
         if level == "novice" and exercise_rank > 2:
             return False

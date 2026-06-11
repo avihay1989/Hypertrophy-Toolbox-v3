@@ -52,11 +52,6 @@ def _attr(html: str, cls: str) -> str:
     return m.group(1).strip() if m else ""
 
 
-def extract_card_class(html: str) -> str:
-    m = re.search(r'<div class="card fatigue-badge ([^"]*)"', html)
-    return m.group(1).strip() if m else ""
-
-
 def extract_fatigue_block(html: str) -> str:
     """Extract the full fatigue-badge card from <div class="card fatigue-badge..."
     through its matching closing </div> by counting div tags."""

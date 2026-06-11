@@ -147,7 +147,7 @@ def main():
         rC_data.get("restored_count") == 0,
         f"restored={rC_data.get('restored_count')} skipped={rC_data.get('skipped')}",
     )
-    mid_cols, mid_rows = snapshot_user_selection()
+    _mid_cols, mid_rows = snapshot_user_selection()
     show(
         "Step C: user_selection now empty",
         len(mid_rows) == 0,

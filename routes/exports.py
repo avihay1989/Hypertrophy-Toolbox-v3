@@ -228,65 +228,6 @@ def reorder_and_rename_columns(data, column_config, view_mode='simple'):
 
 # Removed verbose before_request logging - using logger only
 
-def calculate_volume_for_category(category, muscle_group):
-    """Calculate total volume for a muscle group category."""
-    try:
-        with DatabaseHandler() as db:
-            query = """
-            SELECT SUM(scored_weight * scored_max_reps * planned_sets) as total_volume
-            FROM workout_log wl
-            JOIN exercises e ON wl.exercise = e.exercise_name
-            WHERE (
-                e.primary_muscle_group = ? 
-                OR e.secondary_muscle_group = ?
-                OR e.tertiary_muscle_group = ?
-                OR EXISTS (
-                    SELECT 1
-                    FROM exercise_isolated_muscles m
-                    WHERE m.exercise_name = e.exercise_name
-                      AND m.muscle = ?
-                )
-            )
-            AND scored_weight IS NOT NULL
-            AND scored_max_reps IS NOT NULL
-            AND planned_sets IS NOT NULL
-            """
-            result = db.fetch_one(query, (muscle_group, muscle_group, muscle_group, muscle_group))
-            return result['total_volume'] if result and result['total_volume'] else 0
-    except Exception as e:
-        logger.exception("Error calculating volume for muscle_group=%s: %s", muscle_group, e)
-        return 0
-
-def calculate_frequency_for_category(category, muscle_group):
-    """Calculate training frequency for a muscle group category."""
-    try:
-        with DatabaseHandler() as db:
-            query = """
-            SELECT COUNT(DISTINCT date(created_at)) as frequency
-            FROM workout_log wl
-            JOIN exercises e ON wl.exercise = e.exercise_name
-            WHERE (
-                e.primary_muscle_group = ? 
-                OR e.secondary_muscle_group = ?
-                OR e.tertiary_muscle_group = ?
-                OR EXISTS (
-                    SELECT 1
-                    FROM exercise_isolated_muscles m
-                    WHERE m.exercise_name = e.exercise_name
-                      AND m.muscle = ?
-                )
-            )
-            AND created_at >= date('now', '-7 days')
-            """
-            result = db.fetch_one(query, (muscle_group, muscle_group, muscle_group, muscle_group))
-            return result['frequency'] if result and result['frequency'] else 0
-    except Exception as e:
-        logger.exception("Error calculating frequency for muscle_group=%s: %s", muscle_group, e)
-        return 0
-
-# Test route to verify blueprint is working
-# Test route removed - no longer needed
-
 def _recalculate_exercise_order(db):
     """Check dataset state and recalculate sequential order if needed."""
     from routes.workout_plan import column_exists
