@@ -158,34 +158,6 @@ MUSCLE_ALIAS = {
 
 
 # -- Muscle reconciliation canonical sets -----------------------------------
-# Canonical primary/secondary/tertiary labels
-PRIMARY_SET = {
-    "Abs/Core",
-    "Anterior Delts",
-    "Biceps",
-    "Calves",
-    "Chest",
-    "Delts",
-    "Forearms",
-    "Glutes",
-    "Hamstrings",
-    "Hip-Adductors",
-    "Latissimus-Dorsi",
-    "Lower Back",
-    "Medial Delts",
-    "Mid/Upper Back",
-    "Middle-Traps",
-    "Neck",
-    "Obliques",
-    "Quadriceps",
-    "Rear Delts",
-    "Traps",
-    "Triceps",
-    "Upper Traps",
-    "Front-Shoulder",
-    "Middle-Shoulder",
-    "Rear-Shoulder",
-}
 
 # Canonical advanced tokens (lowercase, hyphenated)
 ADVANCED_SET = {

@@ -193,7 +193,7 @@ Round the `pct_1rm × 1RM × tier_ratio` product before returning it.
 
 ## 7. Reference-lift mapping (`MUSCLE_TO_KEY_LIFT`)
 
-Keys are the canonical primary-muscle labels found in `MUSCLE_GROUPS` (`utils/constants.py:4-25`) **and** the `PRIMARY_SET` aliases (`utils/constants.py:162-188`). Values are an ordered fallback chain of `lift_key` slugs — first hit wins.
+Keys are the canonical primary-muscle labels found in `MUSCLE_GROUPS` (`utils/constants.py:4-25`) plus common aliases (e.g. `"Glutes"`, `"Latissimus-Dorsi"`, `"Abs/Core"`). Values are an ordered fallback chain of `lift_key` slugs — first hit wins.
 
 ```python
 MUSCLE_TO_KEY_LIFT = {
