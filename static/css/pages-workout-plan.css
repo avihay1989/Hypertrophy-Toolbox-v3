@@ -1,7 +1,5 @@
 /* Dropdown Z-Index Fix - ensure dropdowns escape frame containers */
-.filters-section,
-.filters-frame,
-.filter-exercises-frame {
+.filters-section {
     position: relative;
     z-index: 100;
     /* Prevent stacking context conflicts with navbar */
@@ -2037,20 +2035,6 @@ select.filter-dropdown:focus {
     }
   }
 
-  #workout[data-page="workout-plan"] .action-buttons-group {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: var(--wp-gap);
-    align-items: center;
-    flex-shrink: 0;
-  }
-
-  @media (max-width: 991.98px) {
-    #workout[data-page="workout-plan"] .action-buttons-group {
-      flex-wrap: wrap;
-    }
-  }
-
   /* ========================================================================
      Inline Controls Row - Single Line Layout
      ======================================================================== */
@@ -2065,13 +2049,12 @@ select.filter-dropdown:focus {
     flex-wrap: nowrap !important;
   }
 
-  /* Keep Bootstrap row but ensure inline-controls-row breaks out */
+  /* Keep Bootstrap row but ensure controls break out */
   #workout[data-page="workout-plan"] #filters-form.row {
     display: flex !important;
     flex-wrap: wrap !important;
   }
 
-  #workout[data-page="workout-plan"] .inline-controls-row,
   #workout[data-page="workout-plan"] .buttons-row,
   #workout[data-page="workout-plan"] #action-buttons-row {
     display: flex !important;
@@ -2101,7 +2084,6 @@ select.filter-dropdown:focus {
   }
 
   /* Ensure all inline-control-items align at the bottom with consistent baseline */
-  #workout[data-page="workout-plan"] .inline-controls-row .inline-control-item,
   #workout[data-page="workout-plan"] .buttons-row .inline-control-item,
   #workout[data-page="workout-plan"] #action-buttons-row .inline-control-item {
     align-self: flex-start !important;
@@ -2149,18 +2131,6 @@ select.filter-dropdown:focus {
   #workout[data-page="workout-plan"] .routine-selector .form-select,
   #workout[data-page="workout-plan"] .exercise-selector .form-select {
     min-height: 44px;
-  }
-
-  /* Buttons - ensure same alignment as dropdowns */
-  #workout[data-page="workout-plan"] .inline-controls-row .inline-control-item[data-order="3"],
-  #workout[data-page="workout-plan"] .inline-controls-row .inline-control-item[data-order="4"],
-  #workout[data-page="workout-plan"] .inline-controls-row .inline-control-item[data-order="5"],
-  #workout[data-page="workout-plan"] .inline-controls-row .inline-control-item[data-order="6"] {
-    margin-top: 0 !important;
-    margin-bottom: 0 !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-    align-self: flex-end !important;
   }
 
   /* Buttons - Compact width, don't grow, add invisible label spacer for alignment */
@@ -2275,10 +2245,6 @@ select.filter-dropdown:focus {
   }
 
   @media (max-width: 991.98px) {
-    #workout[data-page="workout-plan"] .inline-controls-row {
-      flex-wrap: wrap;
-    }
-
     #workout[data-page="workout-plan"] .inline-control-item {
       flex: 1 1 calc(50% - var(--wp-gap));
       min-width: 140px;
@@ -2305,39 +2271,6 @@ select.filter-dropdown:focus {
       padding-left: 0;
       padding-right: 0;
       justify-content: flex-start;
-    }
-  }
-
-  /* ========================================================================
-     Export Buttons Row - Under Difficulty Dropdown
-     ======================================================================== */
-  #workout[data-page="workout-plan"] .export-buttons-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr;
-    gap: var(--wp-gap);
-    width: 100%;
-  }
-
-  #workout[data-page="workout-plan"] .export-buttons-row .btn,
-  #workout[data-page="workout-plan"] .export-buttons-row a.btn {
-    width: 100%;
-    min-height: 44px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1rem;
-    font-size: clamp(0.875rem, 0.3vw + 0.8rem, 0.95rem);
-    font-weight: 500;
-    white-space: nowrap;
-    text-align: center;
-  }
-
-  @media (max-width: 767.98px) {
-    #workout[data-page="workout-plan"] .export-buttons-row {
-      grid-template-columns: 1fr;
-      grid-template-rows: repeat(2, 1fr);
     }
   }
 
@@ -2816,36 +2749,6 @@ select.filter-dropdown:focus {
 /* ========================================================================
      Workout Controls Buttons - 2026 Glass/Neumorphic Style
      ======================================================================== */
-#workout[data-page="workout-plan"] .action-buttons-group .btn {
-  /* Base Glass/Neumorphic Styling */
-  min-width: auto;
-  min-height: 44px;
-  /* Accessibility: minimum touch target */
-  padding: 12px 24px;
-  border-radius: 16px;
-  /* Modern rounded corners */
-  font-weight: 600;
-  font-size: 0.95rem;
-  letter-spacing: 0.3px;
-  line-height: 1.4;
-  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
-  /* Glass depth with inset highlights */
-  box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.08),
-    0 2px 6px rgba(0, 0, 0, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  position: relative;
-  overflow: hidden;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
 /* Add Exercise Button - Seafoam/Teal Glass */
 #workout[data-page="workout-plan"] #add_exercise_btn.btn {
   background: linear-gradient(135deg,
@@ -2947,8 +2850,7 @@ select.filter-dropdown:focus {
 }
 
 /* Export All Tables Button - Fuchsia/Pink Glass */
-#workout[data-page="workout-plan"] .btn-export-excel.btn,
-#workout[data-page="workout-plan"] .action-buttons-group .btn-export-excel {
+#workout[data-page="workout-plan"] .btn-export-excel.btn {
   background: linear-gradient(135deg,
     rgba(252, 228, 236, 0.95) 0%,
     rgba(248, 187, 208, 0.98) 100%);
@@ -2961,8 +2863,7 @@ select.filter-dropdown:focus {
     inset 0 -1px 0 rgba(216, 27, 96, 0.1);
 }
 
-#workout[data-page="workout-plan"] .btn-export-excel.btn:hover:not(:disabled),
-#workout[data-page="workout-plan"] .action-buttons-group .btn-export-excel:hover:not(:disabled) {
+#workout[data-page="workout-plan"] .btn-export-excel.btn:hover:not(:disabled) {
   background: linear-gradient(135deg,
     rgba(248, 187, 208, 0.98) 0%,
     rgba(244, 143, 177, 1) 100%);
@@ -2976,8 +2877,7 @@ select.filter-dropdown:focus {
   transform: translateY(-2px);
 }
 
-#workout[data-page="workout-plan"] .btn-export-excel.btn:active:not(:disabled),
-#workout[data-page="workout-plan"] .action-buttons-group .btn-export-excel:active:not(:disabled) {
+#workout[data-page="workout-plan"] .btn-export-excel.btn:active:not(:disabled) {
   transform: translateY(0) scale(0.98);
   box-shadow:
     0 2px 8px rgba(216, 27, 96, 0.18),
@@ -3103,33 +3003,6 @@ select.filter-dropdown:focus {
   transform: translateY(-2px);
 }
 
-/* Button Group Styles */
-#workout[data-page="workout-plan"] .action-buttons-group .btn-group {
-  display: flex;
-  gap: 8px;
-}
-
-/* Focus States - High Contrast for Accessibility */
-#workout[data-page="workout-plan"] .action-buttons-group .btn:focus-visible {
-  outline: 3px solid var(--wp-accent);
-  outline-offset: 3px;
-  box-shadow: 0 0 0 4px rgba(79, 140, 255, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-/* Disabled State */
-#workout[data-page="workout-plan"] .action-buttons-group .btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-/* Icon Spacing */
-#workout[data-page="workout-plan"] .action-buttons-group .btn i {
-  font-size: 1rem;
-  line-height: 1;
-}
-
 /* Dark Mode Support */
 [data-theme='dark'] #workout[data-page="workout-plan"] #add_exercise_btn.btn {
   background: linear-gradient(135deg, rgba(152, 223, 214, 0.25) 0%, rgba(131, 209, 196, 0.25) 100%);
@@ -3189,8 +3062,7 @@ select.filter-dropdown:focus {
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-[data-theme='dark'] #workout[data-page="workout-plan"] .btn-export-excel.btn,
-[data-theme='dark'] #workout[data-page="workout-plan"] .action-buttons-group .btn-export-excel {
+[data-theme='dark'] #workout[data-page="workout-plan"] .btn-export-excel.btn {
   background: linear-gradient(135deg, rgba(252, 228, 236, 0.2) 0%, rgba(248, 187, 208, 0.2) 100%);
   color: #f8bbd0;
   border: 1px solid rgba(248, 187, 208, 0.2);
@@ -3200,8 +3072,7 @@ select.filter-dropdown:focus {
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
-[data-theme='dark'] #workout[data-page="workout-plan"] .btn-export-excel.btn:hover:not(:disabled),
-[data-theme='dark'] #workout[data-page="workout-plan"] .action-buttons-group .btn-export-excel:hover:not(:disabled) {
+[data-theme='dark'] #workout[data-page="workout-plan"] .btn-export-excel.btn:hover:not(:disabled) {
   background: linear-gradient(135deg, rgba(248, 187, 208, 0.3) 0%, rgba(244, 143, 177, 0.3) 100%);
   color: #fce4ec;
   border-color: rgba(248, 187, 208, 0.3);
@@ -3280,21 +3151,6 @@ select.filter-dropdown:focus {
   background: linear-gradient(135deg, rgba(252, 165, 165, 0.3) 0%, rgba(248, 113, 113, 0.3) 100%) !important;
   color: #fee2e2 !important;
   border-color: rgba(248, 113, 113, 0.35) !important;
-}
-
-/* Reduce Motion */
-@media (prefers-reduced-motion: reduce) {
-  #workout[data-page="workout-plan"] .action-buttons-group .btn {
-    transition: opacity 0.2s ease;
-  }
-
-  #workout[data-page="workout-plan"] .action-buttons-group .btn:hover:not(:disabled) {
-    transform: none;
-  }
-
-  #workout[data-page="workout-plan"] .action-buttons-group .btn:active:not(:disabled) {
-    transform: none;
-  }
 }
 
 /* ========================================================================
@@ -3666,16 +3522,6 @@ select.filter-dropdown:focus {
   #workout[data-page="workout-plan"] .horizontal-layout {
     flex-direction: column;
     align-items: stretch;
-  }
-
-  #workout[data-page="workout-plan"] .action-buttons-group {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  #workout[data-page="workout-plan"] .action-buttons-group .btn {
-    width: 100%;
-    justify-content: center;
   }
 
   #workout[data-page="workout-plan"] .input-fields-group {
@@ -4744,16 +4590,6 @@ tr.superset-selected {
 
 tr.superset-selected td {
   background-color: rgba(124, 58, 237, 0.12) !important;
-}
-
-tr.superset-selected.different-routine {
-  outline-color: var(--wp-bad) !important;
-  background-color: rgba(220, 53, 69, 0.12) !important;
-  box-shadow: inset 0 0 0 1px var(--wp-bad);
-}
-
-tr.superset-selected.different-routine td {
-  background-color: rgba(220, 53, 69, 0.1) !important;
 }
 
 /* Hover effect on superset rows */
@@ -6031,13 +5867,6 @@ tr.superset-partner-dragging {
     contain: layout style paint;
 }
 
-/* Summary Controls Section */
-.summary-controls {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 1rem;
-}
-
 /* Summary Tables Section */
 .summary-tables {
     width: 100%;
@@ -6122,10 +5951,6 @@ tr.superset-partner-dragging {
 @media (max-width: 1200px) {
     .summary-frame {
         padding: 1rem;
-    }
-
-    .summary-controls {
-        padding: 0 0.5rem;
     }
 }
 
@@ -6322,14 +6147,6 @@ tr.superset-partner-dragging {
     margin-top: 0.5rem;
     margin-bottom: 1rem;
     overflow: visible;
-    transition: all 0.3s ease-in-out;
-}
-
-/* Split layout for frames */
-.split-layout {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
     transition: all 0.3s ease-in-out;
 }
 

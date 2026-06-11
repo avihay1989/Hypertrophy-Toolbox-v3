@@ -204,36 +204,6 @@ body:has(.workout-log-page) {
     text-overflow: clip !important;
 }
 
-/* Legacy classes - kept for backwards compatibility */
-/* Planned columns styling */
-.planned-column {
-    background-color: #e3f2fd !important; /* Light blue background for light mode */
-    color: #1565c0;
-    font-weight: 500;
-}
-
-/* Dark mode styles for planned columns */
-[data-theme='dark'] .planned-column {
-    background-color: #1a237e !important; /* Darker blue background */
-    color: #fff !important; /* White text */
-}
-
-/* Scored columns styling */
-.scored-column {
-    background-color: #f3e5f5 !important; /* Light purple background */
-    color: #7b1fa2;
-    font-weight: 500;
-    min-width: 80px;
-    position: relative;
-}
-
-/* Highlight columns styling */
-.highlight-column {
-    background-color: #fff3e0 !important; /* Light orange background */
-    color: #e65100;
-    font-weight: 500;
-}
-
 /* Table header styling - 2026 Glass Style (matching workout plan) */
 .workout-log-table thead th,
 .workout-log-frame .workout-log-table thead th,
@@ -999,18 +969,6 @@ input.number-input[type="number"]::-webkit-outer-spin-button {
 /* Ensure text remains visible in dark mode */
 [data-theme='dark'] .workout-log-table {
     color: #fff;
-}
-
-/* Scored columns in dark mode */
-[data-theme='dark'] .scored-column {
-    background-color: #4a148c !important; /* Darker purple */
-    color: #fff !important;
-}
-
-/* Highlight columns in dark mode */
-[data-theme='dark'] .highlight-column {
-    background-color: #e65100 !important; /* Darker orange */
-    color: #fff !important;
 }
 
 /* ======================================
@@ -2707,13 +2665,6 @@ table.workout-log-table tbody tr:nth-child(even) td.metric-lane,
     contain: layout style paint;
 }
 
-/* Summary Controls Section */
-.summary-controls {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 1rem;
-}
-
 /* Summary Tables Section */
 .summary-tables {
     width: 100%;
@@ -2798,10 +2749,6 @@ table.workout-log-table tbody tr:nth-child(even) td.metric-lane,
 @media (max-width: 1200px) {
     .summary-frame {
         padding: 1rem;
-    }
-
-    .summary-controls {
-        padding: 0 0.5rem;
     }
 }
 
@@ -2998,14 +2945,6 @@ table.workout-log-table tbody tr:nth-child(even) td.metric-lane,
     margin-top: 0.5rem;
     margin-bottom: 1rem;
     overflow: visible;
-    transition: all 0.3s ease-in-out;
-}
-
-/* Split layout for frames */
-.split-layout {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
     transition: all 0.3s ease-in-out;
 }
 

@@ -368,3 +368,53 @@ pass), Tier 2 test-coupled Python deletions (`get_pattern_category`, `utils/user
 `data/database.db` left dirty/unstaged (runtime/test artifact).
 
 — Claude (Opus 4.8)
+
+---
+
+## Execution Record — Tier 3 CSS selector sweep (clean redo) — 2026-06-12
+
+**Background.** A first Tier 3 execution (separate session) was **reverted before commit**: its script-based
+removal mishandled every *mixed comma-group* — where a dead selector shared a rule with live ones — orphaning
+the live selectors and merging them into adjacent rules. Confirmed-corrupted live rules in that attempt:
+`.dropdown-item:focus` (components.css, merged into `*:focus-visible`), `.uniform-dropdown` mobile width
+(layout.css, dangling comma → invalid CSS), and `.btn-export-excel.btn` base/hover/active in **both** light and
+dark (pages-workout-plan.css, merged into `#export-to-log-btn`). That changeset was discarded via
+`git checkout HEAD -- static/css/`; the committed HOLD work (`b16020b`) was untouched.
+
+**This pass (Claude, Opus 4.8) — manual, edit-by-edit, no script.** Removed all 27 audited Tier 3 selectors.
+Mixed comma-groups were handled by keeping the live selector(s) with a valid `{ }` and dropping only the dead
+names:
+- `.filters-section, .filters-frame, .filter-exercises-frame` → kept `.filters-section`
+- `.page-link:focus, .accordion-button:focus, .dropdown-item:focus, .list-group-item:focus` → kept
+  `.dropdown-item:focus` (also kept `.form-select/.form-range/.nav-link` etc.)
+- `.uniform-dropdown, .wide-input, .large-input, .small-input` → kept `.uniform-dropdown`
+- `#workout… .btn-export-excel.btn, #workout… .action-buttons-group .btn-export-excel` (×3 light + ×2 dark) →
+  kept the `.btn-export-excel.btn` selectors
+- inline-controls-row item groups → kept the live `.buttons-row` / `#action-buttons-row` siblings
+Pure-dead rules were removed together with their now-orphaned leading comments; emptied `@media {}` blocks
+(action-buttons reduced-motion, export-buttons responsive, etc.) were deleted whole.
+
+**Scope extension found during the sweep:** `page-link` / `accordion-button` / `list-group-item` — which the
+audit scoped to `components.css` — also appear as dead lines in a large mixed focus-reset group in
+**`a11y.css`** (lines 474/475/478). Removed those three lines there too for consistency; the rest of that group
+(many live selectors) is intact.
+
+**Skipped (per audit):** `body-outline` (vendored/bodymap SVGs) and `uniform-input` (E2E visual helper) — both
+still present, untouched.
+
+**Diff:** 8 files, **9 insertions / 847 deletions** (the insertions are the rewritten live selectors preserved
+from mixed groups — contrast the reverted attempt's 1 insertion / 866 deletions, which destroyed them).
+
+**Verification — GREEN:**
+| Check | Result |
+|---|---|
+| Brace balance (per file, exact `{`/`}` char counts) | all 8 files balanced |
+| Residual dead-selector scan across `static/css/` | **clean** (0 hits) |
+| Dangling-selector scan (comma before `{` / `@` / `}`) | **0** |
+| Live selectors preserved | `.filters-section` (24), `.dropdown-item:focus` (×2 files), `.btn-export-excel.btn` (5) |
+| `e2e/visual.spec.ts` (Chromium, 48 cases) | **16 passed / 32 failed** — **identical pass/fail set to clean `HEAD`** (verified via `git stash`), i.e. the 32 are pre-existing environment baseline drift, **zero new reds from this change** |
+
+`data/database.db` left dirty/unstaged (runtime/test artifact). This closes Tier 3; the audit's remaining
+deferrals are now empty.
+
+— Claude (Opus 4.8)

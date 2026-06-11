@@ -39,19 +39,6 @@
     gap: var(--space-xs, 0.375rem);
 }
 
-/* Legend Container */
-.legend-container {
-    background-color: #f5f5f5;
-    border: 1px solid #d0d0d0;
-    padding: var(--space-md, 0.875rem);
-}
-
-.legend-container .gap-3 {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-sm, 0.75rem) !important;
-}
-
 /* Volume Legend */
 .volume-legend {
     font-size: var(--font-size-sm, 0.85rem);
@@ -67,13 +54,6 @@
 /* ============================================
    DARK MODE STYLES FOR VOLUME COMPONENTS
    ============================================ */
-
-/* Dark mode for legend container */
-[data-theme='dark'] .legend-container {
-    background-color: #2d2d2d;
-    border-color: #404040;
-    color: #e0e0e0;
-}
 
 /* Dark mode for volume legend */
 [data-theme='dark'] .volume-legend {
@@ -904,13 +884,6 @@
     contain: layout style paint;
 }
 
-/* Summary Controls Section */
-.summary-controls {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 1rem;
-}
-
 /* Summary Tables Section */
 .summary-tables {
     width: 100%;
@@ -995,10 +968,6 @@
 @media (max-width: 1200px) {
     .summary-frame {
         padding: 1rem;
-    }
-
-    .summary-controls {
-        padding: 0 0.5rem;
     }
 }
 
@@ -1195,14 +1164,6 @@
     margin-top: 0.5rem;
     margin-bottom: 1rem;
     overflow: visible;
-    transition: all 0.3s ease-in-out;
-}
-
-/* Split layout for frames */
-.split-layout {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
     transition: all 0.3s ease-in-out;
 }
 

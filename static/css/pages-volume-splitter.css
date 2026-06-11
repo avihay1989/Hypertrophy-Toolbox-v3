@@ -1003,19 +1003,6 @@
     gap: var(--space-xs, 0.375rem);
 }
 
-/* Legend Container */
-.legend-container {
-    background-color: #f5f5f5;
-    border: 1px solid #d0d0d0;
-    padding: var(--space-md, 0.875rem);
-}
-
-.legend-container .gap-3 {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-sm, 0.75rem) !important;
-}
-
 /* Volume Legend */
 .volume-legend {
     font-size: var(--font-size-sm, 0.85rem);
@@ -1031,13 +1018,6 @@
 /* ============================================
    DARK MODE STYLES FOR VOLUME COMPONENTS
    ============================================ */
-
-/* Dark mode for legend container */
-[data-theme='dark'] .legend-container {
-    background-color: #2d2d2d;
-    border-color: #404040;
-    color: #e0e0e0;
-}
 
 /* Dark mode for volume legend */
 [data-theme='dark'] .volume-legend {
@@ -1064,47 +1044,12 @@
     color: #e0e0e0;
 }
 
-/* Muscle Group Styles */
-.muscle-group-primary,
-.muscle-group-secondary,
-.muscle-group-tertiary,
-.advanced-isolated-muscles {
-    padding: 0.5rem;
-    margin: 0.25rem 0;
-    border-radius: 4px;
-}
-
-.muscle-group-primary {
-    background-color: #e3f2fd;
-    color: #1565c0;
-}
-
-.muscle-group-secondary {
-    background-color: #f3e5f5;
-    color: #6a1b9a;
-}
-
-.muscle-group-tertiary {
-    background-color: #e8f5e9;
-    color: #2e7d32;
-}
-
-.advanced-isolated-muscles {
-    background-color: #fff3e0;
-    color: #ef6c00;
-}
-
 /* Filter Styles */
 #isolated_muscles_filter {
     width: 100%;
     padding: 8px;
     border-radius: 4px;
     border: 1px solid #d0d0d0;
-}
-
-.advanced-isolated-muscles-column {
-    background-color: #fff3e0;
-    color: #ef6c00;
 }
 
 label[for="isolated_muscles_filter"] {
