@@ -113,7 +113,7 @@ def counts_to_baseline(counter: Counter) -> dict:
             "note": (
                 "Baseline-allowlist for the typecheck CI gate (leftovers A9). "
                 "Generated under the committed pyrightconfig.json "
-                "(pythonVersion 3.12, pythonPlatform Windows). Regenerate with "
+                "(pythonVersion 3.11, pythonPlatform Windows). Regenerate with "
                 "scripts/pyright_baseline_diff.py --write-baseline. Do NOT edit "
                 "by hand to silence a real regression."
             ),

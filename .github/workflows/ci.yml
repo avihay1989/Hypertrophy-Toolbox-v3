@@ -369,7 +369,8 @@ jobs:
   #                   job only on NET-NEW diagnostics. Existing errors never red
   #                   the build; a regression does.
   # The recorded pyright count is 1.1.410 under the committed pyrightconfig.json
-  # (py3.12 + Windows platform). The baseline-diff keys on file+rule+message+
+  # (py3.11 + Windows platform — pythonVersion aligned to the CI runtime, A12).
+  # The baseline-diff keys on file+rule+message+
   # severity (repo-relative POSIX path), counted as a multiset, so it reproduces
   # across Windows/Linux. Regenerate the baseline with --write-baseline when an
   # intentional, reviewed change shifts the backlog.
@@ -389,7 +390,10 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.12'
+        # Aligned to the CI runtime python (3.11) so pyright type-checks against
+        # the version the tests actually run on (A12 reconcile). Diagnostic set is
+        # identical under 3.11 vs the prior 3.12 (verified: 190 diags, 0 delta).
+        python-version: '3.11'
         cache: 'pip'
 
     - name: Set up Node.js
@@ -414,10 +418,10 @@ jobs:
       run: |
         npx pyright@1.1.410 --outputjson > pyright.json 2> pyright.stderr.txt || true
         COUNT=$(python -c "import json; print(json.load(open('pyright.json'))['summary']['errorCount'])" 2>/dev/null || echo "unknown")
-        echo "::notice title=pyright (measure-only count)::pyright 1.1.410 reported $COUNT errors (py3.12 config); the baseline-diff step gates NET-NEW errors only"
+        echo "::notice title=pyright (measure-only count)::pyright 1.1.410 reported $COUNT errors (py3.11 config); the baseline-diff step gates NET-NEW errors only"
         {
           echo "### pyright (measure-only count + baseline-gated)"
-          echo "- **total errors**: $COUNT (pyright 1.1.410, py3.12 + Windows-platform config)"
+          echo "- **total errors**: $COUNT (pyright 1.1.410, py3.11 + Windows-platform config)"
           echo "- Blocking gate: net-new vs docs/ci_cd_phase3/pyright-baseline.json (next step)."
         } >> "$GITHUB_STEP_SUMMARY"
 
