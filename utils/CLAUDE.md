@@ -9,7 +9,7 @@ All business logic and DB access. Routes call into here; nothing in here imports
 | **DB / persistence** | `database.py` (DatabaseHandler), `db_initializer.py` (schema), `config.py` (env), `auto_backup.py`, `program_backup.py` |
 | **Calculation engines** | `effective_sets.py`, `weekly_summary.py`, `session_summary.py`, `progression_plan.py`, `volume_classifier.py`, `volume_taxonomy.py`, `volume_progress.py`, `volume_export.py`, `volume_ai.py`, `fatigue.py`, `fatigue_data.py` |
 | **Filters & catalogs** | `filter_predicates.py`, `normalization.py`, `constants.py`, `movement_patterns.py` |
-| **Domain helpers** | `workout_log.py`, `user_selection.py`, `exercise_manager.py`, `plan_generator.py`, `profile_estimator.py` |
+| **Domain helpers** | `workout_log.py`, `exercise_manager.py`, `plan_generator.py`, `profile_estimator.py` |
 | **Infra** | `logger.py`, `errors.py`, `request_id.py`, `maintenance.py`, `export_utils.py` |
 
 ## Conventions

@@ -12,9 +12,7 @@ os.environ['TESTING'] = '1'
 from utils.movement_patterns import (
     MovementPattern,
     MovementSubpattern,
-    MovementCategory,
     classify_exercise,
-    get_pattern_category,
     SESSION_BLUEPRINTS,
     PrescriptionRules,
 )
@@ -380,32 +378,6 @@ class TestGeneratedPlan:
         )
         
         assert plan.total_sets_per_routine["A"] == 7
-
-
-class TestPatternCategory:
-    """Tests for pattern category mapping."""
-    
-    def test_lower_body_patterns(self):
-        """Test lower body patterns are categorized correctly."""
-        assert get_pattern_category(MovementPattern.SQUAT) == MovementCategory.LOWER_BODY
-        assert get_pattern_category(MovementPattern.HINGE) == MovementCategory.LOWER_BODY
-    
-    def test_upper_body_patterns(self):
-        """Test upper body patterns are categorized correctly."""
-        assert get_pattern_category(MovementPattern.HORIZONTAL_PUSH) == MovementCategory.UPPER_BODY
-        assert get_pattern_category(MovementPattern.VERTICAL_PUSH) == MovementCategory.UPPER_BODY
-        assert get_pattern_category(MovementPattern.HORIZONTAL_PULL) == MovementCategory.UPPER_BODY
-        assert get_pattern_category(MovementPattern.VERTICAL_PULL) == MovementCategory.UPPER_BODY
-    
-    def test_core_patterns(self):
-        """Test core patterns are categorized correctly."""
-        assert get_pattern_category(MovementPattern.CORE_STATIC) == MovementCategory.CORE
-        assert get_pattern_category(MovementPattern.CORE_DYNAMIC) == MovementCategory.CORE
-    
-    def test_isolation_patterns(self):
-        """Test isolation patterns are categorized correctly."""
-        assert get_pattern_category(MovementPattern.UPPER_ISOLATION) == MovementCategory.ISOLATION
-        assert get_pattern_category(MovementPattern.LOWER_ISOLATION) == MovementCategory.ISOLATION
 
 
 class TestPlanGeneratorIntegration:

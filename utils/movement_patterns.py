@@ -504,23 +504,3 @@ def classify_exercise(
     
     return None, None
 
-
-def get_pattern_category(pattern: MovementPattern) -> MovementCategory:
-    """Get the category for a movement pattern."""
-    lower_patterns = {MovementPattern.SQUAT, MovementPattern.HINGE}
-    upper_patterns = {
-        MovementPattern.HORIZONTAL_PUSH,
-        MovementPattern.VERTICAL_PUSH,
-        MovementPattern.HORIZONTAL_PULL,
-        MovementPattern.VERTICAL_PULL,
-    }
-    core_patterns = {MovementPattern.CORE_STATIC, MovementPattern.CORE_DYNAMIC}
-    
-    if pattern in lower_patterns:
-        return MovementCategory.LOWER_BODY
-    elif pattern in upper_patterns:
-        return MovementCategory.UPPER_BODY
-    elif pattern in core_patterns:
-        return MovementCategory.CORE
-    else:
-        return MovementCategory.ISOLATION

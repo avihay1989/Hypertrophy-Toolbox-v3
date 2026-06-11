@@ -41,9 +41,6 @@ from .workout_log import (
     check_progression
 )
 
-# User selection handling
-from .user_selection import get_user_selection
-
 # Plan generator
 from .plan_generator import generate_starter_plan
 
@@ -77,9 +74,6 @@ __all__ = [
     
     # Workout log
     "check_progression",
-    
-    # User selection
-    "get_user_selection",
     
     # Plan generator
     "generate_starter_plan",

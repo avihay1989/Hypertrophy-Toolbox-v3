@@ -307,6 +307,32 @@ These three are mechanical, zero-reference, and ready to delete whenever.
 
 ---
 
+## Execution Record — Tier 2 + legacy CSS follow-up — 2026-06-11
+
+**Applied (Codex):**
+- Removed `get_pattern_category()` from `utils/movement_patterns.py` and deleted the paired
+  `TestPatternCategory` assertions from `tests/test_plan_generator.py`.
+- Deleted the legacy `utils/user_selection.py` helper module and its paired
+  `tests/test_user_selection_helper.py`; removed the stale package-level re-export from
+  `utils/__init__.py`. The live `/get_user_selection` route in `routes/workout_plan.py` remains
+  untouched.
+- Removed the Tier 1e legacy program-split CSS cluster from `static/css/components.css`,
+  `static/css/pages-workout-plan.css`, and `static/css/pages-progression.css`.
+- Updated `utils/CLAUDE.md` so the deleted helper is no longer listed as a domain helper.
+
+**Residual checks:**
+- `get_pattern_category` and `utils.user_selection` now have zero live references; remaining
+  `get_user_selection` references are the Flask route and its route tests.
+- The removed program-split selector names have zero live CSS/JS/template references; remaining
+  matches for the word `nested` are unrelated comments.
+
+**Deferred:**
+- Tier 3 selector deletion remains a separate visual-aware pass. During re-check, `body-outline`
+  was found in vendored/bodymap SVG files and `uniform-input` is referenced by an E2E visual helper,
+  so the optional Tier 3 list should not be applied blindly.
+
+---
+
 ## Execution Record — Tier 1 close + diff review — 2026-06-11
 
 **Deletions applied (Claude):**

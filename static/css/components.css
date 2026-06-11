@@ -830,71 +830,6 @@ textarea:focus-visible,
     color: #6a1b9a;
 }
 
-/* Category Colors */
-.category-split-programs {
-    color: #5d4037 !important;
-    background-color: #efebe9 !important;
-}
-
-.category-basic-splits {
-    color: #455a64 !important;
-    background-color: #eceff1 !important;
-}
-
-/* Program Type Colors and their children */
-/* Full Body - Green Theme */
-.program-full-body,
-.program-full-body ~ .routine-option {
-    color: #2e7d32 !important;
-    background-color: #e8f5e9 !important;
-}
-
-/* 4 Week Split - Orange Theme */
-.program-4-week-split,
-.program-4-week-split ~ .routine-option {
-    color: #ef6c00 !important;
-    background-color: #fff3e0 !important;
-}
-
-/* Push Pull Legs - Indigo Theme */
-.program-push-pull-legs,
-.program-push-pull-legs ~ .routine-option {
-    color: #303f9f !important;
-    background-color: #e8eaf6 !important;
-}
-
-/* 2 Days Split - Blue Theme */
-.program-2-days-split,
-.program-2-days-split ~ .routine-option {
-    color: #0277bd !important;
-    background-color: #e1f5fe !important;
-}
-
-/* Upper Lower - Red Theme */
-.program-upper-lower,
-.program-upper-lower ~ .routine-option {
-    color: #c62828 !important;
-    background-color: #ffebee !important;
-}
-
-/* 3 Days Split - Teal Theme */
-.program-3-days-split,
-.program-3-days-split ~ .routine-option {
-    color: #00695c !important;
-    background-color: #e0f2f1 !important;
-}
-
-/* Routine Options - Base Styles */
-.routine-option {
-    padding: 4px 36px;
-    transition: background-color 0.2s;
-    font-family: 'Helvetica Neue', Arial, sans-serif;
-}
-
-.routine-option.nested {
-    padding-left: 48px;
-}
-
 /* Hover and Selection States */
 .uniform-dropdown option:not([disabled]):hover {
     filter: brightness(0.95);
@@ -904,22 +839,6 @@ textarea:focus-visible,
 .uniform-dropdown option:checked {
     background-color: #1976d2 !important;
     color: white !important;
-}
-
-/* Visual hierarchy improvements */
-.category-header {
-    font-size: 1.05rem;
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: 10px 12px !important;
-    font-family: 'Helvetica Neue', Arial, sans-serif;
-}
-
-.program-header {
-    font-weight: 600;
-    padding: 8px 24px !important;
-    font-family: 'Helvetica Neue', Arial, sans-serif;
 }
 
 /* Indentation and spacing */
