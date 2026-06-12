@@ -30,7 +30,7 @@ from utils.volume_taxonomy import (
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 LIVE_DB = REPO_ROOT / "data" / "database.db"
-AUDIT_DOC = REPO_ROOT / "docs" / "VOLUME_TAXONOMY_AUDIT.md"
+AUDIT_DOC = REPO_ROOT / "docs" / "archive" / "VOLUME_TAXONOMY_AUDIT.md"
 
 
 def _connect() -> sqlite3.Connection:

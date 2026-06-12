@@ -4,6 +4,12 @@ All notable changes to Hypertrophy Toolbox v3.
 
 ## Unreleased - May 23, 2026
 
+### Docs — CI/CD Plan Archived
+
+- Moved the completed CI/CD Improvement Plan and its per-phase council docs (Phases 0–5, shipped via PRs #40–#51) into `docs/archive/ci_cd/` (`CI_CD_IMPROVEMENT_PLAN.md` + `phase1/3/4_2/5/PLANNING.md`). The live CI artifact `docs/ci_cd_phase3/pyright-baseline.json` stays in the active tree — it is referenced by a hardcoded path in `.github/workflows/ci.yml` and `scripts/pyright_baseline_diff.py`. Repointed all references in `ci.yml`, `deep-gate.yml`, `docs/README.md`, and `docs/LEFTOVERS_BY_PRIORITY.md`. Deleted the obsolete `docs/archive/PUPPETEER_TEST_FINDINGS.md` (Puppeteer was replaced by Playwright).
+- Archived the completed Body Composition Issue #21 tracker → `docs/archive/body_composition/development_issues.md` (spec-of-record: Navy/BMI formulas, ACE & Jackson-Pollock reference tables, schema, citations). Deleted the spent `docs/body_composition/OPUS_START_PROMPT.md` kickoff prompt. Repointed references in `MASTER_HANDOVER.md`, `ai_workflow/INDEX.md`, `LEFTOVERS_BY_PRIORITY.md`, `user_profile/development_issues.md`, and this changelog.
+- Archived two completed one-off audits: `VOLUME_TAXONOMY_AUDIT.md` (Phase 0 live-DB audit, decisions already shipped) → `docs/archive/`, and `workout_cool_integration/checkpoint3_coverage.md` (pre-curation mapper-coverage baseline) → `docs/archive/workout_cool_integration/`. Repointed the `ai_workflow/INDEX.md` + `README.md` links. The `user_profile/` and `fatigue_meter/` folders were deliberately left active — they still have parked-open tails (Learned Calibration 2D-D blocked; Fatigue Stage 4 calibration window open).
+
 ### Navbar E2E Known-Red Fix
 
 - Fixed issue #8's `nav-dropdown.spec.ts` dark-mode toggle actionability red at the 1440px desktop breakpoint. The navbar now hides decorative utility chrome in the cramped desktop band so the dark-mode toggle remains in-viewport, and the spec uses a real Playwright click again.
@@ -80,7 +86,7 @@ All notable changes to Hypertrophy Toolbox v3.
 - New pure-math module `utils/body_fat.py` with the four formulas (`compute_navy`, `compute_bmi`, `ace_category`, `jackson_pollock_ideal`) carrying the "must match JS mirror" comment from Issue #17. New JS mirror in `static/js/modules/body-composition.js`.
 - New migration `add_body_composition_snapshots_table()` (14 columns; 6 NOT NULL; descending captured_at index) registered in the startup sequence and in `tests/conftest.py`.
 - New tests: `tests/test_body_fat.py` (42 cases), `tests/test_body_composition_routes.py` (18 cases), `tests/test_db_migration.py` (7 cases), `e2e/body-composition.spec.ts` (4 Chromium specs).
-- Source of truth: `docs/body_composition/development_issues.md` (Issue #21, now Resolved).
+- Source of truth: `docs/archive/body_composition/development_issues.md` (Issue #21, now Resolved).
 
 ### Fatigue Badge Polish (PR #28)
 

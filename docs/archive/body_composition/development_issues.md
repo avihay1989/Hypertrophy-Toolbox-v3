@@ -8,7 +8,7 @@ tracking.
 
 This feature was originally specced as a section on the Profile page and
 tracked as **Issue #21** in
-[`docs/user_profile/development_issues.md`](../user_profile/development_issues.md).
+[`docs/user_profile/development_issues.md`](../../user_profile/development_issues.md).
 On **2026-04-28** the scope changed: it was promoted to a standalone tab
 (see the scope-change note inside the issue body) and moved to its own
 docs folder. Issue numbering is preserved (so the issue keeps the same
@@ -234,7 +234,7 @@ CREATE INDEX idx_body_composition_snapshots_captured_at
 `add_body_composition_snapshots_table()` migration in
 `utils/database.py`, registered in `app.py` startup sequence next to
 `add_user_profile_tables()`. Follow the same pattern documented in
-[`.claude/rules/database.md`](../../.claude/rules/database.md).
+[`.claude/rules/database.md`](../../../.claude/rules/database.md).
 
 **No retention cap** in v1 — single user, local DB, no compliance
 constraints. The user can manually delete snapshots from the UI.

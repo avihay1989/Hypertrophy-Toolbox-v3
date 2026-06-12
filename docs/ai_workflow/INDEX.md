@@ -13,7 +13,7 @@
 - [workout.cool integration](../workout_cool_integration/PLANNING.md) — §3 + §3.6 + §4 + §4.6 + §5 all shipped (§3.6 Profile bodymap landed 2026-05-23, `18ad223`; §5 first curated batch landed 2026-05-22, `cf21191`)
 - [YouTube reference videos](../workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md) — closed 2026-05-23 (`cf21191` 36 rows + `ff244aa` +20 rows = **56 curated rows**); long tail uses the search fallback by design
 - [User profile](../user_profile/PLANNING.md) — questionnaire + bodymap + insights card + Body Composition display hooks (#17/#18) all shipped
-- [Body Composition Issue #21](../body_composition/development_issues.md) — Resolved 2026-05-23; PR #31 (`20b4b24`) + PR #32 (`94482d7`) + Profile hooks (`de3e4d0`)
+- [Body Composition Issue #21](../archive/body_composition/development_issues.md) — Resolved 2026-05-23; PR #31 (`20b4b24`) + PR #32 (`94482d7`) + Profile hooks (`de3e4d0`)
 
 ## History & decisions
 - [CHANGELOG](../CHANGELOG.md)
@@ -22,7 +22,7 @@
 - [CLAUDE.md audit](../CLAUDE_MD_AUDIT.md)
 - [E2E testing notes](../E2E_TESTING.md)
 - [CSS ownership map](../CSS_OWNERSHIP_MAP.md)
-- [Volume taxonomy audit](../VOLUME_TAXONOMY_AUDIT.md)
+- [Volume taxonomy audit](../archive/VOLUME_TAXONOMY_AUDIT.md)
 
 ## Workflow artifacts
 - [Quality Gate](QUALITY_GATE.md) — change-type → required tests/reviewers map
