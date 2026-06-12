@@ -56,9 +56,6 @@ export function initializeWorkoutLog() {
     // Initialize editable cells
     initializeEditableCells();
 
-    // Initialize filters
-    initializeWorkoutLogFilters();
-
     // §5 — wire reference-video play buttons in server-rendered rows.
     initializeVideoPlayButtons();
 
@@ -615,78 +612,6 @@ function initializeEditableCells() {
             });
         }
     });
-}
-
-export function initializeWorkoutLogFilters() {
-    const dateFilter = document.getElementById('date-filter');
-    const routineFilter = document.getElementById('routine-filter');
-    
-    if (dateFilter) {
-        dateFilter.addEventListener('change', filterWorkoutLogs);
-    }
-    if (routineFilter) {
-        routineFilter.addEventListener('change', filterWorkoutLogs);
-    }
-}
-
-async function filterWorkoutLogs() {
-    try {
-        const date = document.getElementById('date-filter')?.value;
-        const routine = document.getElementById('routine-filter')?.value;
-
-        const response = await api.post('/filter_workout_logs', { date, routine }, { showLoading: false, showErrorToast: false });
-        
-        // response.data contains the logs array
-        const data = response.data !== undefined ? response.data : response;
-        updateWorkoutLogTable(data);
-    } catch (error) {
-        console.error('Error filtering workout logs:', error);
-        showToast('error', 'Failed to filter workout logs');
-    }
-}
-
-function updateWorkoutLogTable(data) {
-    const tbody = document.querySelector('#workout-log-table tbody');
-    if (!tbody) return;
-
-    tbody.innerHTML = data.length ? 
-        data.map(log => createWorkoutLogRow(log)).join('') :
-        '<tr><td colspan="8" class="text-center">No workout logs found</td></tr>';
-}
-
-function createWorkoutLogRow(log) {
-    return `
-        <tr data-log-id="${log.id}">
-            <td>${log.date}</td>
-            <td>${log.routine}</td>
-            <td>${log.exercise}</td>
-            <td class="editable-cell" data-field="scored_sets">
-                <span class="editable-text">${log.scored_sets || 'Click to edit'}</span>
-                <input type="number" class="editable-input form-control input-calm-inset"
-                    value="${log.scored_sets || ''}" style="display: none;">
-            </td>
-            <td class="editable-cell" data-field="scored_reps">
-                <span class="editable-text">${log.scored_reps || 'Click to edit'}</span>
-                <input type="number" class="editable-input form-control input-calm-inset"
-                    value="${log.scored_reps || ''}" style="display: none;">
-            </td>
-            <td class="editable-cell" data-field="scored_weight">
-                <span class="editable-text">${log.scored_weight || 'Click to edit'}</span>
-                <input type="number" class="editable-input form-control input-calm-inset"
-                    value="${log.scored_weight || ''}" style="display: none;">
-            </td>
-            <td>
-                <span class="badge ${log.progression_status === 'Achieved' ? 'bg-success' : 'bg-warning'}">
-                    ${log.progression_status}
-                </span>
-            </td>
-            <td>
-                <button class="btn btn-danger btn-sm" onclick="deleteWorkoutLog(${log.id})">
-                    Delete
-                </button>
-            </td>
-        </tr>
-    `;
 }
 
 export async function checkProgressionStatus(logId) {
