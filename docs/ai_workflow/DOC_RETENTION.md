@@ -28,8 +28,9 @@ Archive a document only when all of these are true:
 
 1. Create `docs/archive/<year>/<feature>/` if it does not already exist.
 2. Move the stale document there with its filename preserved unless the old name is misleading.
-3. Update links in `docs/README.md`, `docs/ai_workflow/INDEX.md`, and any affected feature docs.
-4. Add a short changelog or handover note if the archived document was previously part of an active workstream.
+3. Grep the **whole repo** for the filename, not just docs — `*.py`/`*.ts`/`*.json`/`.github/workflows/*.yml` can hardcode a doc path (e.g. a test asserting an audit doc exists, or a CI step reading a baseline file). A doc-only link sweep misses these and the move reds CI. Fix every code/workflow reference, or keep the file in place if a build/test depends on its path.
+4. Update links in `docs/README.md`, `docs/ai_workflow/INDEX.md`, and any affected feature docs.
+5. Add a short changelog or handover note if the archived document was previously part of an active workstream.
 
 ## Keep Active Procedure
 
