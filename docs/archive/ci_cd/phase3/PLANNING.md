@@ -154,7 +154,11 @@
 
 ## Follow-up — flake8 flip (2026-06-10, A8)
 
-Executed the first rung of the flake8 "path to blocking": `F811,E711,E712` (the meaningful rules already sitting at ~0) added to the blocking `--select=E9,F63,F7,F82` line in the `lint` job, plus the one mechanical E712 fix (`tests/test_plan_generator.py:594` `== True` → `is True`). The blocking step's `--exclude` was aligned with the measure-only `EXCL`. **F401 is now the only remaining flip candidate** in the measure-only diagnostics — its flip still needs a guardrailed cleanup PR first (`utils/__init__.py` re-exports + `app.py` side-effects are load-bearing). pyright/tsc criteria unchanged.
+Executed the first rung of the flake8 "path to blocking": `F811,E711,E712` (the meaningful rules already sitting at ~0) added to the blocking `--select=E9,F63,F7,F82` line in the `lint` job, plus the one mechanical E712 fix (`tests/test_plan_generator.py:594` `== True` → `is True`). The blocking step's `--exclude` was aligned with the measure-only `EXCL`. At the time, **F401 was the only remaining flip candidate** in the measure-only diagnostics — its flip still needed a guardrailed cleanup PR first (`utils/__init__.py` re-exports + `app.py` side-effects are load-bearing). pyright/tsc criteria unchanged. **(Superseded — F401 was flipped to blocking on 2026-06-11; see the A8-close follow-up below.)**
+
+## Follow-up — flake8 A8 FULLY CLOSED, F401 flipped to blocking (2026-06-11)
+
+The final rung of the flake8 "path to blocking" is done. After a guardrailed **56 → 0** unused-import cleanup (the load-bearing `utils/__init__.py` re-exports and `app.py` blueprint side-effect imports were preserved, not stripped) plus deletion of a stray `replace.py`, **F401 was added to the blocking `--select` line** in the `lint` job (PR #74 `18de45e`; docs sync PR #75). **No measure-only flake8 flip candidates remain** — every meaningful correctness rule (F401/F811/E711/E712 + the original E9/F63/F7/F82) is now blocking. F841 stays measure-only by design (expected `except … as e` idiom — never a flip candidate). pyright (baseline-allowlist) and tsc (already at 0) criteria unchanged.
 
 ## Follow-up — pyright baseline-allowlist flip (2026-06-10, A9)
 

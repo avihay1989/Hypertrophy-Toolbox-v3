@@ -127,7 +127,7 @@ re-baselines would be frequent. Absent that, Option A.
 ## 3. `snapshotPathTemplate` change + how existing Windows baselines move
 
 ### 3.1 The template change
-Today ([playwright.config.ts:57](../../playwright.config.ts#L57)):
+Today ([playwright.config.ts:57](../../../../playwright.config.ts#L57)):
 
 ```ts
 snapshotPathTemplate: '{testDir}/__screenshots__/{testFilePath}-snapshots/{arg}{ext}',
@@ -217,7 +217,7 @@ path:
 
 ### 4.1 venv requirement
 `playwright.config.ts` prefers `.venv/bin/python` and falls back to `python` if
-absent ([playwright.config.ts:5-8](../../playwright.config.ts#L5-L8)). The
+absent ([playwright.config.ts:5-8](../../../../playwright.config.ts#L5-L8)). The
 deep-gate jobs today install into the system Python and have no `.venv`, so the
 fallback `python` is used — fine. The visual job follows the same pattern (no
 `.venv` needed); just confirm `python` on PATH has the deps. **Decision:** do
@@ -246,7 +246,7 @@ This is the sharp edge. The two visual specs have **different** DB-seeding
 behavior:
 
 - `visual.spec.ts` **self-seeds**: its `test.beforeAll`
-  ([visual.spec.ts:32-43](../../e2e/visual.spec.ts#L32-L43)) runs
+  ([visual.spec.ts:32-43](../../../../e2e/visual.spec.ts#L32-L43)) runs
   `e2e/scripts/prepare_visual_db.py --output $DB_FILE`, snapshotting the full
   committed visual seed (`e2e/fixtures/database.visual.seed.db`) and applying
   migrations. It does not depend on the webServer's seed.
@@ -360,7 +360,7 @@ Artifact upload paths:
   artifact the owner commits).
 - `artifacts/playwright` → `visual-linux-report` (on failure; HTML report +
   `test-results` actual/expected/diff PNGs from `outputDir`, per
-  [playwright.config.ts:56](../../playwright.config.ts#L56)).
+  [playwright.config.ts:56](../../../../playwright.config.ts#L56)).
 
 **Privacy:** safe by the same reasoning as the existing E2E artifact contract
 (`e2e/CLAUDE.md`) — visual specs run only against the committed

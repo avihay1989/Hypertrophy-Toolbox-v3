@@ -31,14 +31,15 @@ These files are historical reference only. They should not be treated as active 
 
 - **[archive/MISSING_TESTS_CHECKLIST.md](archive/MISSING_TESTS_CHECKLIST.md)** - Historical missing-tests tracker
 - **[archive/MISSING_TESTS_PART2.md](archive/MISSING_TESTS_PART2.md)** - Follow-up historical test tracker
-- **[archive/PUPPETEER_TEST_FINDINGS.md](archive/PUPPETEER_TEST_FINDINGS.md)** - Earlier Puppeteer findings
 - **[archive/SUPERSET_FEATURE.md](archive/SUPERSET_FEATURE.md)** - Completed superset feature implementation notes
 - **[archive/PLAN_GENERATOR_IMPLEMENTATION.md](archive/PLAN_GENERATOR_IMPLEMENTATION.md)** - Completed starter-plan implementation tracker
 - **[archive/DOCS_AUDIT_PLAN.md](archive/DOCS_AUDIT_PLAN.md)** - Archived docs/code audit rollout record
-- **[VOLUME_TAXONOMY_AUDIT.md](VOLUME_TAXONOMY_AUDIT.md)** - Phase 0 live database audit (2026-04-25). Completed audit; kept at top level for cross-reference but no longer active backlog.
+- **[archive/ci_cd/](archive/ci_cd/)** - Completed CI/CD Improvement Plan + per-phase council plans (Phases 0–5, shipped via PRs #40–#51). Note: the live `docs/ci_cd_phase3/pyright-baseline.json` CI artifact stays in the active tree (referenced by `.github/workflows/ci.yml`), not archived.
+- **[archive/VOLUME_TAXONOMY_AUDIT.md](archive/VOLUME_TAXONOMY_AUDIT.md)** - Phase 0 live database audit (2026-04-25). Completed audit, now archived.
+- **[archive/workout_cool_integration/checkpoint3_coverage.md](archive/workout_cool_integration/checkpoint3_coverage.md)** - Completed free-exercise-db mapper coverage baseline (pre-curation snapshot).
 
 ## Removed From Active Docs
 
 The old Backup Center hardening plan, Calm Glass redesign plan/audit/mockup, seed-fix plan, and spring-cleanup Phase 4/5 execution plans were completed and superseded by the current source, changelog, CSS map, and Backup Center docs.
 
-Last updated: 2026-05-23
+Last updated: 2026-06-12 (archived the completed CI/CD plan + per-phase council docs under `archive/ci_cd/`; deleted the stale Puppeteer findings doc).

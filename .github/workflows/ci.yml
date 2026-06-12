@@ -66,7 +66,7 @@ jobs:
         # Exit-zero treats all errors as warnings
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude=.venv,venv,env,.git,__pycache__,node_modules
 
-    # MEASURE-ONLY / NON-BLOCKING (Phase 3, docs/ci_cd_phase3/PLANNING.md). Surfaces
+    # MEASURE-ONLY / NON-BLOCKING (Phase 3, docs/archive/ci_cd/phase3/PLANNING.md). Surfaces
     # the hardened-diagnostic backlog without failing the build. F811/E711/E712/F401
     # are now ALL BLOCKING in the "Lint with flake8" step above. The remaining
     # measured-only diagnostic is F841 — the expected `except ... as e` logging idiom
@@ -360,7 +360,7 @@ jobs:
   # informational and doesn't belong on the required PR path. It was never a
   # required status check, so branch protection is unaffected.
 
-  # Static typing gate (Phase 3, docs/ci_cd_phase3/PLANNING.md).
+  # Static typing gate (Phase 3, docs/archive/ci_cd/phase3/PLANNING.md).
   #   tsc --noEmit -> BLOCKING (backlog cleared to 0 in the tsc fast-follow).
   #   pyright      -> count is still surfaced measure-only to the job summary +
   #                   artifact (full backlog), AND gated blocking via a

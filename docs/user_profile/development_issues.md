@@ -729,7 +729,7 @@ workout-plan specs 26 passed (~36s).
 | 18 | "How the system sees you" card should be visual stats + peer-range comparisons, not text-only | 🟢 Enhancement | Profile HTML + JS + CSS + estimator | Resolved (2026-04-28) |
 | 19 | Reuse the bodymap SVG to visualise reference-lift coverage on the Profile page | 🟢 Enhancement | Profile HTML + JS + estimator | Resolved (2026-04-28) |
 | 20 | Calves / Glutes-Hips / Lower-Back have too few reference-lift options | 🟢 Enhancement | `profile_estimator.py` + Profile HTML | Resolved (2026-04-28) |
-| 21 | Body Composition tab — BFP / Lean Mass / longitudinal snapshots on a standalone `/body_composition` tab | 🟢 Enhancement | New blueprint + template + `body_fat.py` + DB table | **Moved 2026-04-28 → [`docs/body_composition/development_issues.md`](../body_composition/development_issues.md)**; resolved there 2026-05-23 |
+| 21 | Body Composition tab — BFP / Lean Mass / longitudinal snapshots on a standalone `/body_composition` tab | 🟢 Enhancement | New blueprint + template + `body_fat.py` + DB table | **Moved 2026-04-28 → [`docs/archive/body_composition/development_issues.md`](../archive/body_composition/development_issues.md)**; resolved there 2026-05-23 |
 | 22 | Coverage map card: SVG and front/back toggles not centered; "About this page" Demographics copy stale post-#16 | 🟡 UX gap | Profile HTML + CSS | Resolved (2026-04-28) |
 | 23 | Coverage map legend swatches barely visible; replace 3 Save buttons with auto-save | 🟡 UX gap | Profile HTML + JS + CSS + E2E | Resolved (2026-04-28) |
 | 24 | Reference Lifts: split questionnaire into anterior + posterior side-by-side cards mirroring the Coverage map | 🟢 Enhancement | Profile HTML + CSS + `profile_estimator.py` partition | Resolved (2026-04-28) |
@@ -759,7 +759,7 @@ the sticky 64 px navbar). Follow-up queue (resolved 2026-05-23):
 re-specced as a standalone `/body_composition` tab so the longitudinal
 snapshot UX has its own surface and the Profile page stays focused on
 strength inputs. The full issue body now lives at
-[`docs/body_composition/development_issues.md`](../body_composition/development_issues.md);
+[`docs/archive/body_composition/development_issues.md`](../archive/body_composition/development_issues.md);
 the standalone page shipped via PR #31/#32, and the two original
 Profile-page display hooks (Issue #18 cohort-tile *Lean mass* sub-line
 and Issue #17 *Body fat* line) later shipped via `de3e4d0`.
@@ -2331,7 +2331,7 @@ Out of scope (consider follow-ups):
 ## Issue #21 — Body Composition tab (moved)
 
 > **Moved 2026-04-28** to its own tracker at
-> [`docs/body_composition/development_issues.md`](../body_composition/development_issues.md).
+> [`docs/archive/body_composition/development_issues.md`](../archive/body_composition/development_issues.md).
 > Following the 2026-04-28 scope change (standalone `/body_composition`
 > tab instead of a Profile-page section), the issue is now peer-level
 > with this tracker rather than a sub-issue of `/user_profile`. The
@@ -2342,12 +2342,12 @@ Out of scope (consider follow-ups):
 > via PR #31/#32, and the two original Profile-page display hooks
 > (Issue #18 bodyweight-tile *Lean mass* sub-line and Issue #17
 > *"Body fat: X % · {ACE band}"* line) shipped 2026-05-23 via `de3e4d0`;
-> see [`docs/body_composition/development_issues.md`](../body_composition/development_issues.md).
+> see [`docs/archive/body_composition/development_issues.md`](../archive/body_composition/development_issues.md).
 
 ---
 
 <!-- Issue #21 body archived; the canonical version lives in
-docs/body_composition/development_issues.md. The placeholder above
+docs/archive/body_composition/development_issues.md. The placeholder above
 preserves the heading anchor (#issue-21--body-composition-tab-moved)
 for any inbound link from prior commits. -->
 
