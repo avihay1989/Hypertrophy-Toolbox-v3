@@ -32,6 +32,18 @@ These three are independent and can ship in any order. No DB-schema/JSON-contrac
 
 ## 3. Body Map — Hybrid Swap (Decision: Option 1)
 
+> **⚠️ SUPERSEDED 2026-06-13.** This §3/§3.6 design (Simple=workout-cool,
+> Advanced=react-body-highlighter, Profile=react, with a Simple/Advanced toggle)
+> has been **fully replaced**. The app now uses a **single MuscleMap
+> (melihcolpan/MuscleMap, MIT) figure** for the plan-modal selector AND the
+> Profile coverage map, with **no Simple/Advanced toggle**. Both `workout-cool`
+> and `react-body-highlighter` body art, their build scripts, and the
+> `VENDOR_SLUG_TO_CANONICAL` layer were retired. **Do not re-implement anything
+> below.** Current design: [`docs/muscle_selector.md`](../muscle_selector.md),
+> [`docs/muscle_selector_vendor.md`](../muscle_selector_vendor.md),
+> [`static/bodymaps/hypertrophy-advanced/README.md`](../../static/bodymaps/hypertrophy-advanced/README.md).
+> (The workout.cool **exercise media** features §4/§5 are unaffected and remain live.)
+
 ### 3.1 Why hybrid
 
 workout.cool's body SVG has only **13 simple-level muscle groups** (`ABDOMINALS, BACK, BICEPS, CALVES, CHEST, FOREARMS, GLUTES, HAMSTRINGS, OBLIQUES, QUADRICEPS, SHOULDERS, TRAPS, TRICEPS`).

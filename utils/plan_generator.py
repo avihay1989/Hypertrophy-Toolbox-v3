@@ -25,6 +25,22 @@ from utils.movement_patterns import (
 logger = get_logger()
 
 
+GENERATOR_ROUTINE_PROGRAMS: Dict[int, Tuple[str, List[str]]] = {
+    1: ("Full Body", ["Workout A"]),
+    2: ("2 Days Split", ["Workout A", "Workout B"]),
+    3: ("3 Days Split", ["Workout A", "Workout B", "Workout C"]),
+    4: ("Upper Lower", ["Upper 1", "Lower 1", "Upper 2", "Lower 2"]),
+    5: ("5 Days Split", ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5"]),
+}
+
+
+def get_generator_routine_names(training_days: int, environment: str) -> List[str]:
+    """Return generator routine names using the Plan tab's cascade labels."""
+    program, workouts = GENERATOR_ROUTINE_PROGRAMS[training_days]
+    env_prefix = "Home" if environment == "home" else "GYM"
+    return [f"{env_prefix} - {program} - {workout}" for workout in workouts]
+
+
 # Estimated starting weights (in kg) by movement pattern and experience level
 # These provide reasonable initial values instead of N/A or 0
 # Values are conservative to encourage proper form before adding weight
@@ -713,7 +729,44 @@ class PlanGenerator:
     
     def _get_blueprint(self) -> Dict[str, List[SlotDefinition]]:
         """Get the session blueprint for the configured training days."""
-        return SESSION_BLUEPRINTS.get(self.config.training_days, SESSION_BLUEPRINTS[2])
+        blueprint = SESSION_BLUEPRINTS.get(self.config.training_days, SESSION_BLUEPRINTS[2])
+        routine_names = get_generator_routine_names(
+            self.config.training_days,
+            self.config.environment,
+        )
+        return {
+            routine_name: slots
+            for routine_name, slots in zip(routine_names, blueprint.values())
+        }
+
+    def _get_overwrite_routine_names(self, routine_names: List[str]) -> List[str]:
+        """Return current and legacy generator routine names to replace."""
+        legacy_names = SESSION_BLUEPRINTS.get(
+            self.config.training_days,
+            SESSION_BLUEPRINTS[2],
+        ).keys()
+        return list(dict.fromkeys([*routine_names, *legacy_names]))
+
+    def _delete_routine_family(self, db: DatabaseHandler, routine: str) -> None:
+        """Delete a generated routine and no-overwrite copies of that routine."""
+        routine_copy_glob = f"{routine}_gen[0-9]*"
+        for where_clause, params in (
+            ("routine = ?", (routine,)),
+            ("routine GLOB ?", (routine_copy_glob,)),
+        ):
+            db.execute_query(
+                f"""
+                DELETE FROM workout_log
+                WHERE workout_plan_id IN (
+                    SELECT id FROM user_selection WHERE {where_clause}
+                )
+                """,
+                params,
+            )
+            db.execute_query(
+                f"DELETE FROM user_selection WHERE {where_clause}",
+                params,
+            )
     
     def _build_routine(self, routine_name: str, slots: List[SlotDefinition]) -> List[ExerciseRow]:
         """Build a single routine from its slot definitions."""
@@ -1209,22 +1262,8 @@ class PlanGenerator:
                 # Handle overwrite behavior
                 if self.config.overwrite:
                     # Delete existing rows for the routines we're about to create
-                    for routine in routine_names:
-                        # First delete related workout logs
-                        db.execute_query(
-                            """
-                            DELETE FROM workout_log 
-                            WHERE workout_plan_id IN (
-                                SELECT id FROM user_selection WHERE routine = ?
-                            )
-                            """,
-                            (routine,),
-                        )
-                        # Then delete the user_selection rows
-                        db.execute_query(
-                            "DELETE FROM user_selection WHERE routine = ?",
-                            (routine,),
-                        )
+                    for routine in self._get_overwrite_routine_names(routine_names):
+                        self._delete_routine_family(db, routine)
                 else:
                     # Generate new routine names to avoid clobbering
                     # Check for existing routines and add suffix

@@ -141,6 +141,34 @@ class TestGetWorkoutPlan:
         data = resp.get_json()
         assert len(data["data"]) >= 1
 
+    def test_get_workout_plan_uses_media_path_fallback_from_mapping(
+        self, client, clean_db, exercise_factory, workout_plan_factory
+    ):
+        """Plan rows should get a thumbnail path even before DB mapping is applied."""
+        exercise_factory("Seated Leg Curl")
+        workout_plan_factory(exercise_name="Seated Leg Curl")
+
+        resp = client.get("/get_workout_plan")
+        assert resp.status_code == 200
+        data = resp.get_json()
+        target = next(row for row in data["data"] if row["exercise"] == "Seated Leg Curl")
+        assert target["media_path"] == "Seated_Leg_Curl/0.jpg"
+
+    def test_get_workout_plan_media_path_manual_override_for_plan_rows(
+        self, client, clean_db, exercise_factory, workout_plan_factory
+    ):
+        """Fallback covers common Plan rows whose CSV entry is blank/rejected."""
+        exercise_factory("Machine Assisted Neutral Chin Up")
+        workout_plan_factory(exercise_name="Machine Assisted Neutral Chin Up")
+
+        resp = client.get("/get_workout_plan")
+        assert resp.status_code == 200
+        data = resp.get_json()
+        target = next(
+            row for row in data["data"] if row["exercise"] == "Machine Assisted Neutral Chin Up"
+        )
+        assert target["media_path"] == "Chin-Up/0.jpg"
+
 
 class TestRemoveExercise:
     """Tests for POST /remove_exercise endpoint."""
@@ -387,6 +415,57 @@ class TestGenerateStarterPlan:
         })
         # May succeed or fail depending on available exercises
         assert resp.status_code in (200, 400, 500)
+
+    def test_generate_starter_plan_overwrite_replaces_legacy_routine_names(
+        self, client, clean_db, exercise_factory
+    ):
+        """Overwrite should not leave A/A_gen1 style starter-plan routines behind."""
+        from utils.plan_generator import get_generator_routine_names
+
+        for name in (
+            "Deadlift",
+            "Bench Press",
+            "Barbell Row",
+            "Squat",
+            "Plank",
+            "Leg Curl",
+            "Bicep Curl",
+            "Lat Pulldown",
+            "Shoulder Press",
+            "Hip Thrust",
+            "Crunch",
+            "Tricep Extension",
+            "Calf Raise",
+        ):
+            exercise_factory(name)
+        exercise_factory("Legacy Exercise")
+
+        for routine in ("A", "A_gen1", "B", "B_gen1"):
+            clean_db.execute_query(
+                """
+                INSERT INTO user_selection
+                    (routine, exercise, sets, min_rep_range, max_rep_range, rir, rpe, weight)
+                VALUES (?, 'Legacy Exercise', 3, 8, 12, 2, 8.0, 50.0)
+                """,
+                (routine,),
+            )
+
+        resp = client.post("/generate_starter_plan", json={
+            "training_days": 2,
+            "environment": "gym",
+            "persist": True,
+            "overwrite": True,
+        })
+
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data["ok"] is True
+        assert list(data["data"]["routines"].keys()) == get_generator_routine_names(2, "gym")
+
+        legacy = clean_db.fetch_one(
+            "SELECT COUNT(*) AS count FROM user_selection WHERE routine IN ('A', 'A_gen1', 'B', 'B_gen1')"
+        )
+        assert legacy["count"] == 0
 
 
 # Fixtures for workout_plan tests

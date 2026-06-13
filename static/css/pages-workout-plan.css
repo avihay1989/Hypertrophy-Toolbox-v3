@@ -7399,6 +7399,29 @@ tr.superset-partner-dragging {
     stroke-width: 0.6;
 }
 
+/* Advanced-mode (MuscleMap) SVGs use a ~727-wide viewBox vs workout-cool's
+   ~268, so the shared stroke-widths above render ~2.7x too thin. Scale them
+   up, scoped to the advanced body ids. Colours still come from the rules
+   above (incl. dark mode), so only the widths are overridden here. */
+svg[id^="body-anterior-hypertrophy-advanced"] .muscle-region,
+svg[id^="body-posterior-hypertrophy-advanced"] .muscle-region {
+    stroke-width: 0.9;
+}
+svg[id^="body-anterior-hypertrophy-advanced"] .muscle-region:hover,
+svg[id^="body-anterior-hypertrophy-advanced"] .muscle-region.hover,
+svg[id^="body-posterior-hypertrophy-advanced"] .muscle-region:hover,
+svg[id^="body-posterior-hypertrophy-advanced"] .muscle-region.hover {
+    stroke-width: 1.8;
+}
+svg[id^="body-anterior-hypertrophy-advanced"] .muscle-region.selected,
+svg[id^="body-posterior-hypertrophy-advanced"] .muscle-region.selected {
+    stroke-width: 1.4;
+}
+svg[id^="body-anterior-hypertrophy-advanced"] .muscle-region.partial,
+svg[id^="body-posterior-hypertrophy-advanced"] .muscle-region.partial {
+    stroke-width: 1.2;
+}
+
 /* ============================================================================
    TOOLTIP
    ============================================================================ */

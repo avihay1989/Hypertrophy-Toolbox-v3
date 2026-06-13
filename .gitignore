@@ -53,6 +53,7 @@ playwright-report/
 debug/
 /artifacts/
 e2e/artifacts/
+.playwright-mcp/
 /baseline*.txt
 /phase*.txt
 /cleanup*.txt
@@ -78,6 +79,11 @@ build/
 
 # Body-map scratch / reference output
 static/bodymaps/GPT/
+# Root-level debug screenshots (musclemap/preview scratch — never commit)
+/advmap-*.png
+/compare-*.png
+/coverage-*.png
+/preview*.png
 
 # AI workflow scratch (see .claude/SHARED_PLAN.md Appendix A1.1, A2.1)
 MASTER_HANDOVER.local.md

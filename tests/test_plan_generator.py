@@ -22,6 +22,7 @@ from utils.plan_generator import (
     GeneratedPlan,
     PrescriptionCalculator,
     generate_starter_plan,
+    get_generator_routine_names,
 )
 
 
@@ -258,6 +259,22 @@ class TestGeneratorConfig:
         """Test invalid goal raises error."""
         with pytest.raises(ValueError):
             GeneratorConfig(goal="powerlifting")
+
+    def test_generated_routine_names_match_plan_cascade(self):
+        """Generated routines should use the same labels as the Plan cascade."""
+        assert get_generator_routine_names(4, "gym") == [
+            "GYM - Upper Lower - Upper 1",
+            "GYM - Upper Lower - Lower 1",
+            "GYM - Upper Lower - Upper 2",
+            "GYM - Upper Lower - Lower 2",
+        ]
+        assert get_generator_routine_names(5, "home") == [
+            "Home - 5 Days Split - Day 1",
+            "Home - 5 Days Split - Day 2",
+            "Home - 5 Days Split - Day 3",
+            "Home - 5 Days Split - Day 4",
+            "Home - 5 Days Split - Day 5",
+        ]
     
     def test_volume_scale_validation(self):
         """Test volume scale validation."""
@@ -502,12 +519,13 @@ class TestPlanGeneratorIntegration:
         )
         
         assert "routines" in result
-        assert "A" in result["routines"]
-        assert "B" in result["routines"]
+        routine_a, routine_b = get_generator_routine_names(2, "gym")
+        assert routine_a in result["routines"]
+        assert routine_b in result["routines"]
         
         # Each routine should have exercises
-        assert len(result["routines"]["A"]) > 0
-        assert len(result["routines"]["B"]) > 0
+        assert len(result["routines"][routine_a]) > 0
+        assert len(result["routines"][routine_b]) > 0
     
     def test_generate_single_day_plan(self, test_db):
         """Test generating a 1-day plan."""
@@ -519,8 +537,9 @@ class TestPlanGeneratorIntegration:
             persist=False,
         )
         
-        assert "A" in result["routines"]
-        assert len(result["routines"]["A"]) >= 6
+        routine_a = get_generator_routine_names(1, "gym")[0]
+        assert routine_a in result["routines"]
+        assert len(result["routines"][routine_a]) >= 6
     
     def test_generate_three_day_plan(self, test_db):
         """Test generating a 3-day plan."""
@@ -532,9 +551,7 @@ class TestPlanGeneratorIntegration:
             persist=False,
         )
         
-        assert "A" in result["routines"]
-        assert "B" in result["routines"]
-        assert "C" in result["routines"]
+        assert list(result["routines"].keys()) == get_generator_routine_names(3, "gym")
     
     def test_home_environment_filtering(self, test_db):
         """Test that home environment filters equipment appropriately."""
@@ -564,7 +581,11 @@ class TestPlanGeneratorIntegration:
         # Verify data is in database
         conn = sqlite3.connect(test_db)
         cursor = conn.cursor()
-        cursor.execute("SELECT COUNT(*) FROM user_selection WHERE routine IN ('A', 'B')")
+        routine_a, routine_b = get_generator_routine_names(2, "gym")
+        cursor.execute(
+            "SELECT COUNT(*) FROM user_selection WHERE routine IN (?, ?)",
+            (routine_a, routine_b),
+        )
         count = cursor.fetchone()[0]
         conn.close()
         
@@ -572,21 +593,42 @@ class TestPlanGeneratorIntegration:
     
     def test_overwrite_behavior(self, test_db):
         """Test overwrite behavior removes old data."""
+        conn = sqlite3.connect(test_db)
+        cursor = conn.cursor()
+        for routine in ("A", "A_gen1", "B", "B_gen1"):
+            cursor.execute(
+                """
+                INSERT INTO user_selection
+                    (routine, exercise, sets, min_rep_range, max_rep_range, rir, rpe, weight)
+                VALUES (?, 'Legacy Exercise', 3, 8, 12, 2, 8.0, 50.0)
+                """,
+                (routine,),
+            )
+        conn.commit()
+        conn.close()
+
         # First generation
         generate_starter_plan(training_days=2, persist=True, overwrite=True)
         
         conn = sqlite3.connect(test_db)
         cursor = conn.cursor()
-        cursor.execute("SELECT COUNT(*) FROM user_selection WHERE routine = 'A'")
+        routine_a = get_generator_routine_names(2, "gym")[0]
+        cursor.execute("SELECT COUNT(*) FROM user_selection WHERE routine = ?", (routine_a,))
         first_count = cursor.fetchone()[0]
+        cursor.execute(
+            "SELECT COUNT(*) FROM user_selection WHERE routine IN ('A', 'A_gen1', 'B', 'B_gen1')"
+        )
+        legacy_count = cursor.fetchone()[0]
         conn.close()
+
+        assert legacy_count == 0
         
         # Second generation with overwrite
         generate_starter_plan(training_days=2, persist=True, overwrite=True)
         
         conn = sqlite3.connect(test_db)
         cursor = conn.cursor()
-        cursor.execute("SELECT COUNT(*) FROM user_selection WHERE routine = 'A'")
+        cursor.execute("SELECT COUNT(*) FROM user_selection WHERE routine = ?", (routine_a,))
         second_count = cursor.fetchone()[0]
         conn.close()
         

@@ -1,16 +1,17 @@
 // Shared bodymap-SVG helpers for the Profile-page coverage viewer.
 //
-// workout-cool anatomy art (MIT, vendored under static/vendor/workout-cool/).
-// Regions ship pre-canonicalized with `data-canonical-muscles="<simple-key>[,...]"`.
-const WORKOUT_COOL_SVG_PATHS = {
-    front: '/static/vendor/workout-cool/body_anterior.svg',
-    back: '/static/vendor/workout-cool/body_posterior.svg',
+// MuscleMap anatomy art (melihcolpan/MuscleMap, MIT), generated into
+// static/bodymaps/hypertrophy-advanced/. Regions ship pre-canonicalized with
+// `data-canonical-muscles="<key>"`.
+const BODYMAP_SVG_PATHS = {
+    front: '/static/bodymaps/hypertrophy-advanced/body_anterior.svg',
+    back: '/static/bodymaps/hypertrophy-advanced/body_posterior.svg',
 };
 
 const svgCache = new Map();
 
-export async function loadWorkoutCoolBodymapSvg(side) {
-    const path = WORKOUT_COOL_SVG_PATHS[side];
+export async function loadBodymapSvg(side) {
+    const path = BODYMAP_SVG_PATHS[side];
     if (!path) throw new Error(`Unknown body side: ${side}`);
     if (svgCache.has(path)) return svgCache.get(path);
     const response = await fetch(path);
@@ -187,42 +188,38 @@ export const COVERAGE_LIFT_LABELS = {
     jefferson_curl: 'Jefferson Curl',
 };
 
-// workout-cool simple canonical key → backend coverage muscle(s).
+// MuscleMap region key → backend coverage muscle(s).
 //
 // Keys mirror the `data-canonical-muscles` values in
-// `static/vendor/workout-cool/body_{anterior,posterior}.svg`. Values are
-// arrays of backend muscle names from `COVERAGE_MUSCLE_CHAIN` (above) /
+// `static/bodymaps/hypertrophy-advanced/body_{anterior,posterior}.svg`. Values
+// are backend muscle names from `COVERAGE_MUSCLE_CHAIN` (above) /
 // `BODYMAP_MUSCLE_KEYS` (Python). An empty array means "no coverage chain
-// exists for this region" (e.g. forearms, lats) — the polygon still renders
-// but in the `not_assessed` state.
-//
-// Multi-entry expansions only happen for back regions whose
-// `data-canonical-muscles` lists multiple simple keys
-// (`lats,upper-back,lowerback`). The annotator below flattens those
-// region-level keys through this table before tagging the polygon.
+// exists for this region" (e.g. forearms, neck, adductors) — the polygon still
+// renders but in the `not_assessed` state. The lat-wing region (`lats`) is
+// mapped to Upper Back coverage, the only back-width chain that exists.
 const CANONICAL_SIMPLE_TO_COVERAGE_MUSCLES = {
     // Anterior (front)
     'chest': ['Chest'],
-    'front-shoulders': ['Front-Shoulder'],
+    'front-deltoid': ['Front-Shoulder'],
     'biceps': ['Biceps'],
+    'triceps': ['Triceps'],
     'forearms': [],
-    'abdominals': ['Abs/Core'],
+    'abs': ['Abs/Core'],
     'obliques': ['Obliques'],
-    'quads': ['Quadriceps'],
+    'quadriceps': ['Quadriceps'],
+    'adductors': [],
+    'neck': [],
     'calves': ['Calves'],
     // Posterior (back)
-    'traps': ['Trapezius'],
-    'rear-shoulders': ['Rear-Shoulder'],
-    'triceps': ['Triceps'],
-    'lats': [],
-    'upper-back': ['Upper Back'],
-    'lowerback': ['Lower Back'],
-    'glutes': ['Gluteus Maximus'],
-    'hamstrings': ['Hamstrings'],
+    'trapezius': ['Trapezius'],
+    'rear-deltoid': ['Rear-Shoulder'],
+    'lats': ['Upper Back'],
+    'lower-back': ['Lower Back'],
+    'gluteal': ['Gluteus Maximus'],
+    'hamstring': ['Hamstrings'],
 };
 
-// Friendly labels for each backend muscle. Used by the workout-cool annotator
-// for region labelling when the SVG carries no per-region `data-muscle` slug.
+// Friendly labels for each backend coverage muscle, used by the annotator.
 const COVERAGE_MUSCLE_LABELS = {
     'Chest': 'Chest',
     'Front-Shoulder': 'Front Delts',
@@ -240,21 +237,15 @@ const COVERAGE_MUSCLE_LABELS = {
     'Hamstrings': 'Hamstrings',
 };
 
-// Annotate every `<path class="muscle-region">` inside a workout-cool SVG
-// with the same `data-bodymap-muscle` / `data-bodymap-label` attributes the
-// Profile coverage applier expects. Pre-canonicalized regions carry
-// `data-canonical-muscles="<simple-key>[,...]"`; we flatten those simple
-// keys through `CANONICAL_SIMPLE_TO_COVERAGE_MUSCLES` to derive the backend
-// coverage muscle(s) the region represents.
-//
-// For multi-muscle regions (back: lats,upper-back,lowerback → Upper Back +
-// Lower Back, since Lats has no chain), we also write a comma-joined
-// `data-bodymap-muscles` (plural) so the applier can aggregate worst-state
-// across the set. The singular `data-bodymap-muscle` keeps a representative
-// muscle name so existing selectors (e.g. the Issue #19 E2E
-// `[data-bodymap-muscle="Chest"]`) still match single-muscle regions.
-// Idempotent.
-export function annotateWorkoutCoolBodymapPolygons(svgRoot, side) {
+// Annotate every `<path class="muscle-region">` inside a MuscleMap SVG with the
+// `data-bodymap-muscle` / `data-bodymap-label` attributes the Profile coverage
+// applier expects. Regions carry `data-canonical-muscles="<key>"`; we map those
+// through `CANONICAL_SIMPLE_TO_COVERAGE_MUSCLES` to the backend coverage
+// muscle(s) the region represents. The comma-joined `data-bodymap-muscles`
+// (plural) supports multi-muscle regions; the singular `data-bodymap-muscle`
+// keeps a representative name so selectors like `[data-bodymap-muscle="Chest"]`
+// still match. Idempotent.
+export function annotateBodymapPolygons(svgRoot, side) {
     void side; // reserved for future side-specific annotation differences
     svgRoot.querySelectorAll('.muscle-region[data-canonical-muscles]').forEach(region => {
         const simpleKeys = region.dataset.canonicalMuscles

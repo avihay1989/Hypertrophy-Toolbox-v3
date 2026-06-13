@@ -624,14 +624,14 @@ test.describe('Plan Generator v1.5.0 Features', () => {
 });
 
 // ============================================================================
-// Muscle selector — workout-cool body map (PLANNING.md §3)
+// Muscle selector — single MuscleMap body map
 //
-// Simple mode loads workout-cool's anatomy art (multi-key BACK region);
-// Advanced mode loads first-party sub-muscle SVGs. Switching modes must
-// reload the SVG variant and preserve `selectedMuscles` across the swap.
+// One MuscleMap anatomy figure (id="body-{anterior,posterior}-hypertrophy-advanced")
+// is used for both front and back. There is no Simple/Advanced toggle; regions
+// are single-key (data-canonical-muscles) and select exactly their muscle.
 // ============================================================================
 
-test.describe('Muscle selector body-map variants', () => {
+test.describe('Muscle selector body map', () => {
   test.beforeEach(async ({ page, consoleErrors }) => {
     consoleErrors.startCollecting();
     await page.goto(ROUTES.WORKOUT_PLAN);
@@ -649,121 +649,51 @@ test.describe('Muscle selector body-map variants', () => {
     consoleErrors.assertNoErrors();
   });
 
-  test('Simple mode loads workout-cool art; Advanced reloads first-party sub-muscle art; selection survives swap', async ({ page }) => {
+  test('mounts the MuscleMap figure with no Simple/Advanced toggle', async ({ page }) => {
+    const svg = page.locator('#muscle-selector-container #svg-container svg');
+    await expect(svg).toHaveAttribute('id', /body-anterior-hypertrophy-advanced/);
+    // The Simple/Advanced toggle has been removed.
+    await expect(page.locator('#muscle-selector-container [data-view]')).toHaveCount(0);
+  });
+
+  test('clicking a region selects exactly that muscle, not neighbours', async ({ page }) => {
+    await page
+      .locator('#muscle-selector-container svg [data-canonical-muscles="chest"]')
+      .first()
+      .click();
+
+    await expect(
+      page.locator('#muscle-selector-container .legend-item[data-muscle="chest"] .legend-checkbox.checked')
+    ).toBeVisible();
+    for (const other of ['abs', 'biceps']) {
+      await expect(
+        page.locator(`#muscle-selector-container .legend-item[data-muscle="${other}"] .legend-checkbox.checked`)
+      ).toHaveCount(0);
+    }
+  });
+
+  test('back tab loads the posterior figure and front selection persists', async ({ page }) => {
     const svg = page.locator('#muscle-selector-container #svg-container svg');
 
-    // Default mode is simple. Workout-cool art ships with id="body-anterior-workoutcool".
-    await expect(svg).toHaveAttribute('id', /body-anterior-workoutcool/);
-
-    // Pick an arbitrary single-key region (chest) so we have something to verify
-    // selection survives across the variant swap.
+    // Select a front muscle.
     await page.locator('#muscle-selector-container svg [data-canonical-muscles="chest"]').first().click();
     await expect(
       page.locator('#muscle-selector-container .legend-item[data-muscle="chest"] .legend-checkbox.checked')
     ).toBeVisible();
 
-    // Switch to advanced — must trigger an SVG variant reload, not just a legend re-render.
-    await page.locator('#muscle-selector-container [data-view="advanced"]').click();
+    // Back tab → posterior MuscleMap figure; select the glutes region.
+    await page.locator('#muscle-selector-container [data-side="back"]').click();
+    await expect(svg).toHaveAttribute('id', /body-posterior-hypertrophy-advanced/);
+    await page.locator('#muscle-selector-container svg [data-canonical-muscles="gluteal"]').first().click();
+    await expect(
+      page.locator('#muscle-selector-container .legend-item[data-muscle="glutes"] .legend-checkbox.checked')
+    ).toBeVisible();
+
+    // Front selection survives the tab round trip.
+    await page.locator('#muscle-selector-container [data-side="front"]').click();
     await expect(svg).toHaveAttribute('id', /body-anterior-hypertrophy-advanced/);
-
-    // Selection state preserved (advanced legend renders one row per child of chest).
-    for (const child of ['upper-chest', 'mid-chest', 'lower-chest']) {
-      await expect(
-        page.locator(`#muscle-selector-container .legend-item[data-muscle="${child}"] .legend-checkbox.checked`)
-      ).toBeVisible();
-    }
-
-    // Switch back to simple — workout-cool art must reload and chest stays selected.
-    await page.locator('#muscle-selector-container [data-view="simple"]').click();
-    await expect(svg).toHaveAttribute('id', /body-anterior-workoutcool/);
     await expect(
       page.locator('#muscle-selector-container .legend-item[data-muscle="chest"] .legend-checkbox.checked')
-    ).toBeVisible();
-  });
-
-  test('Multi-key BACK region click cascades to all five advanced children', async ({ page }) => {
-    // Move to the back tab where workout-cool exposes the multi-key BACK region.
-    await page.locator('#muscle-selector-container [data-side="back"]').click();
-    await expect(
-      page.locator('#muscle-selector-container #svg-container svg')
-    ).toHaveAttribute('id', /body-posterior-workoutcool/);
-
-    const backRegion = page
-      .locator('#muscle-selector-container svg [data-canonical-muscles="lats,upper-back,lowerback"]')
-      .first();
-    await expect(backRegion).toBeVisible();
-
-    // First click: all three simple legend items (lats, upper-back, lowerback)
-    // must become fully checked because every advanced child of every simple
-    // key is now in selectedMuscles.
-    await backRegion.click();
-    for (const simpleKey of ['lats', 'upper-back', 'lowerback']) {
-      await expect(
-        page.locator(`#muscle-selector-container .legend-item[data-muscle="${simpleKey}"] .legend-checkbox.checked`)
-      ).toBeVisible();
-    }
-
-    // Second click: clears all five advanced children — every legend item
-    // returns to plain (no checked / partial class).
-    await backRegion.click();
-    for (const simpleKey of ['lats', 'upper-back', 'lowerback']) {
-      await expect(
-        page.locator(`#muscle-selector-container .legend-item[data-muscle="${simpleKey}"] .legend-checkbox.checked`)
-      ).toHaveCount(0);
-      await expect(
-        page.locator(`#muscle-selector-container .legend-item[data-muscle="${simpleKey}"] .legend-checkbox.partial`)
-      ).toHaveCount(0);
-    }
-  });
-
-  test('Selecting only one upper-back child in Advanced renders BACK as partial back in Simple', async ({ page }) => {
-    // Switch to advanced, navigate to back tab, select only `rhomboids` (one
-    // of three children of upper-back). This is the regression case from
-    // PLANNING.md §3.4.1 / §3.7: BACK must show `partial` because not every
-    // advanced child of {lats, upper-back, lowerback} is selected.
-    await page.locator('#muscle-selector-container [data-view="advanced"]').click();
-    await page.locator('#muscle-selector-container [data-side="back"]').click();
-
-    await page.locator('#muscle-selector-container .legend-item[data-muscle="rhomboids"]').click();
-    await expect(
-      page.locator('#muscle-selector-container .legend-item[data-muscle="rhomboids"] .legend-checkbox.checked')
-    ).toBeVisible();
-
-    // Back to simple — BACK region must render with .partial.
-    await page.locator('#muscle-selector-container [data-view="simple"]').click();
-    await expect(
-      page.locator('#muscle-selector-container #svg-container svg')
-    ).toHaveAttribute('id', /body-posterior-workoutcool/);
-
-    const backRegion = page
-      .locator('#muscle-selector-container svg [data-canonical-muscles="lats,upper-back,lowerback"]')
-      .first();
-    await expect(backRegion).toHaveClass(/partial/);
-    await expect(backRegion).not.toHaveClass(/selected(?!\.partial)/);
-  });
-
-  test('Advanced map region selects a single sub-muscle without selecting siblings', async ({ page }) => {
-    await page.locator('#muscle-selector-container [data-view="advanced"]').click();
-    await expect(
-      page.locator('#muscle-selector-container #svg-container svg')
-    ).toHaveAttribute('id', /body-anterior-hypertrophy-advanced/);
-
-    await page
-      .locator('#muscle-selector-container svg [data-canonical-muscles="upper-chest"]')
-      .first()
-      .click();
-
-    await expect(
-      page.locator('#muscle-selector-container .legend-item[data-muscle="upper-chest"] .legend-checkbox.checked')
-    ).toBeVisible();
-    await expect(
-      page.locator('#muscle-selector-container .legend-item[data-muscle="mid-chest"] .legend-checkbox.checked')
-    ).toHaveCount(0);
-    await expect(
-      page.locator('#muscle-selector-container .legend-item[data-muscle="lower-chest"] .legend-checkbox.checked')
-    ).toHaveCount(0);
-    await expect(
-      page.locator('#muscle-selector-container .legend-group-header[data-parent="chest"] .legend-checkbox.partial')
     ).toBeVisible();
   });
 });
