@@ -3,6 +3,9 @@ import { api, isHandledApiError, logApiError } from './fetch-wrapper.js';
 import { notifyVolumeAffectingPlanChange } from './workout-plan-events.js';
 import { buildPlayButton } from './exercise-video-modal.js';
 import { escapeHtml, resolveExerciseMediaSrc } from './exercise-helpers.js';
+import { initializeExerciseImagePreview } from './exercise-image-preview.js';
+
+initializeExerciseImagePreview();
 
 /**
  * Transform muscle display value based on current view mode (Simple/Advanced)
@@ -1792,7 +1795,7 @@ export function updateWorkoutPlanTable(exercises) {
         const exerciseName = exercise.exercise || 'N/A';
         const mediaSrc = resolveExerciseMediaSrc(exercise.media_path);
         const thumbnailHtml = mediaSrc
-            ? `<img class="exercise-thumbnail" src="${escapeHtml(mediaSrc)}" alt="${escapeHtml(exerciseName)} reference" loading="lazy" width="32" height="32">`
+            ? `<img class="exercise-thumbnail" src="${escapeHtml(mediaSrc)}" alt="${escapeHtml(exerciseName)} reference" data-preview-label="${escapeHtml(exerciseName)}" loading="lazy" width="32" height="32" tabindex="0">`
             : '';
 
         // Add checkbox column, drag handle and other cells with priority classes and data-labels

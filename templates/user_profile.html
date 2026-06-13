@@ -407,8 +407,13 @@
                                 {% for lift in group.lifts %}
                                 <div class="reference-lift-row{% if lift.is_dumbbell %} reference-lift-row-dumbbell{% endif %}" data-lift-key="{{ lift.lift_key }}" data-side="{{ side }}"{% if lift.is_dumbbell %} data-dumbbell="true"{% endif %}>
                                     <div class="reference-lift-label">
-                                        <span>{{ lift.label }}</span>
-                                        <small>your recent hard set</small>
+                                        {% if lift.image_path %}
+                                        <img class="reference-lift-icon" src="{{ url_for('static', filename='vendor/free-exercise-db/exercises/' ~ lift.image_path) }}" alt="{{ lift.label }} reference" data-preview-label="{{ lift.label }}" loading="lazy" decoding="async" width="40" height="40" tabindex="0">
+                                        {% endif %}
+                                        <div class="reference-lift-label-text">
+                                            <span>{{ lift.label }}</span>
+                                            <small>your recent hard set</small>
+                                        </div>
                                     </div>
                                     <div class="profile-field">
                                         <label for="lift-{{ lift.lift_key }}-weight" class="form-label">Weight{% if lift.is_dumbbell %}<small id="lift-{{ lift.lift_key }}-hand-hint" class="reference-lift-hand-hint" title="Per hand — one dumbbell"> (per hand)</small>{% endif %}</label>

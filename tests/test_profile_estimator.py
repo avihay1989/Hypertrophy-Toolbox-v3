@@ -1524,7 +1524,9 @@ def test_bodymap_coverage_lift_labels_cover_every_chain_slug():
 
 
 # ---------------------------------------------------------------------------
-# §3.6 — Profile coverage bodymap on workout-cool SVG art.
+# Profile coverage bodymap on the MuscleMap SVG art (workout-cool /
+# react-body-highlighter body art retired 2026-06-13; see
+# docs/muscle_selector_vendor.md).
 # ---------------------------------------------------------------------------
 
 def _parse_canonical_simple_to_coverage_muscles(js_text: str) -> dict:
@@ -1550,9 +1552,9 @@ def _parse_canonical_simple_to_coverage_muscles(js_text: str) -> dict:
     return out
 
 
-def test_workout_cool_canonical_keys_map_to_bodymap_muscles():
-    """Every distinct `data-canonical-muscles` simple key in the workout-cool
-    SVGs (Profile bodymap art, §3.6) must appear as a key in
+def test_musclemap_canonical_keys_map_to_bodymap_muscles():
+    """Every distinct `data-canonical-muscles` region key in the MuscleMap
+    Profile bodymap SVGs must appear as a key in
     `CANONICAL_SIMPLE_TO_COVERAGE_MUSCLES`, and every backend muscle name on
     its right-hand side must be in `BODYMAP_MUSCLE_KEYS` so the JS coverage
     applier can resolve it."""
@@ -1569,10 +1571,9 @@ def test_workout_cool_canonical_keys_map_to_bodymap_muscles():
     assert mapping, "CANONICAL_SIMPLE_TO_COVERAGE_MUSCLES is empty"
 
     svg_keys: set[str] = set()
+    bodymap_dir = repo / "static" / "bodymaps" / "hypertrophy-advanced"
     for name in ("body_anterior.svg", "body_posterior.svg"):
-        svg_text = (repo / "static" / "vendor" / "workout-cool" / name).read_text(
-            encoding="utf-8"
-        )
+        svg_text = (bodymap_dir / name).read_text(encoding="utf-8")
         for value in re.findall(r'data-canonical-muscles="([^"]+)"', svg_text):
             for key in value.split(","):
                 key = key.strip()
@@ -1581,7 +1582,7 @@ def test_workout_cool_canonical_keys_map_to_bodymap_muscles():
 
     missing = svg_keys - set(mapping)
     assert not missing, (
-        f"workout-cool SVG uses canonical key(s) not in "
+        f"MuscleMap SVG uses canonical key(s) not in "
         f"CANONICAL_SIMPLE_TO_COVERAGE_MUSCLES: {sorted(missing)}"
     )
 
@@ -1594,14 +1595,13 @@ def test_workout_cool_canonical_keys_map_to_bodymap_muscles():
             )
 
 
-def test_workout_cool_back_region_expands_to_upper_and_lower_back():
-    """The workout-cool posterior SVG ships a multi-key BACK region
-    (`data-canonical-muscles="lats,upper-back,lowerback"`). When flattened
-    through `CANONICAL_SIMPLE_TO_COVERAGE_MUSCLES`, that region must
-    represent both `Upper Back` and `Lower Back`; `lats` has no backend
-    chain so it contributes nothing. Profile worst-state aggregation
-    depends on this — losing either muscle means the polygon stops
-    visualizing partial coverage of the back."""
+def test_musclemap_back_regions_cover_upper_and_lower_back():
+    """The MuscleMap posterior SVG ships the back as separate regions rather
+    than the old workout-cool multi-key BACK region: `lats` maps to
+    `Upper Back` (the only back-width coverage chain that exists) and
+    `lower-back` maps to `Lower Back`. Profile worst-state aggregation
+    depends on both chains remaining present — losing either means the
+    corresponding polygon stops visualizing partial coverage of the back."""
     from pathlib import Path
 
     repo = Path(__file__).resolve().parents[1]
@@ -1610,13 +1610,5 @@ def test_workout_cool_back_region_expands_to_upper_and_lower_back():
     )
     mapping = _parse_canonical_simple_to_coverage_muscles(js_text)
 
-    flattened: list[str] = []
-    for key in ("lats", "upper-back", "lowerback"):
-        flattened.extend(mapping[key])
-
-    assert mapping["lats"] == [], "lats has no backend coverage chain"
-    assert "Upper Back" in flattened
-    assert "Lower Back" in flattened
-    # Order matters for popover "muscles[0]" rep — Upper Back comes first
-    # because that's the simple-key order in the SVG attribute.
-    assert flattened == ["Upper Back", "Lower Back"]
+    assert mapping["lats"] == ["Upper Back"]
+    assert mapping["lower-back"] == ["Lower Back"]

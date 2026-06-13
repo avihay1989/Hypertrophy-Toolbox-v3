@@ -7,10 +7,11 @@ from utils.exercise_manager import (
     get_exercises,
 )
 from utils.errors import success_response, error_response
+from utils.exercise_media import resolve_exercise_media_path
 from utils.logger import get_logger
 from routes.filters import ALLOWED_COLUMNS, validate_column_name
 from utils.constants import DIFFICULTY, MECHANIC, UTILITY, ANTAGONIST_PAIRS
-from utils.plan_generator import generate_starter_plan
+from utils.plan_generator import GENERATOR_ROUTINE_PROGRAMS, generate_starter_plan
 from utils.volume_progress import get_volume_progress
 
 workout_plan_bp = Blueprint('workout_plan', __name__)
@@ -295,7 +296,12 @@ def get_workout_plan():
             {order_by_clause}
             """
             
-            results = db.fetch_all(query)
+            results = [dict(row) for row in db.fetch_all(query)]
+            for row in results:
+                row["media_path"] = resolve_exercise_media_path(
+                    row.get("exercise"),
+                    row.get("media_path"),
+                )
             
             logger.info(
                 "Workout plan fetched",
@@ -745,7 +751,7 @@ def generate_starter_plan_route():
         
         # Extract and validate parameters
         training_days = data.get('training_days', 3)
-        if not isinstance(training_days, int) or training_days < 1 or training_days > 5:
+        if not isinstance(training_days, int) or training_days not in GENERATOR_ROUTINE_PROGRAMS:
             return error_response(
                 "VALIDATION_ERROR",
                 "training_days must be an integer between 1 and 5",
@@ -863,12 +869,11 @@ def get_generator_options():
         options = {
             "training_days": {
                 "min": 1,
-                "max": 3,
-                "default": 2,
+                "max": 5,
+                "default": 3,
                 "descriptions": {
-                    1: "Single full-body session per week",
-                    2: "A/B split (2 sessions per week)",
-                    3: "A/B/C rotation (3 sessions per week)",
+                    days: f"{program}: {', '.join(workouts)}"
+                    for days, (program, workouts) in GENERATOR_ROUTINE_PROGRAMS.items()
                 }
             },
             "environments": ["gym", "home"],

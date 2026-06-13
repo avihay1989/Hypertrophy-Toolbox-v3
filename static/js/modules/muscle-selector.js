@@ -1,100 +1,57 @@
 /**
  * Muscle Group Selector Module v3.0
- * SVG-based anatomically accurate body diagram for muscle group selection
- * 
- * Simple mode uses workout-cool SVGs (MIT License).
- * Advanced mode uses first-party Hypertrophy Toolbox SVGs.
- * 
+ * SVG-based anatomically accurate body diagram for muscle group selection.
+ *
+ * A single MuscleMap (melihcolpan/MuscleMap, MIT) anatomy figure is used for
+ * both front and back; regions ship pre-canonicalized `data-canonical-muscles`.
+ *
  * Features:
  * - SVG muscle regions with canonical keys baked into data attributes
- * - Simple/Advanced view modes with proper parent-child mapping
- * - Front/Back tab navigation  
+ * - Front/Back tab navigation
  * - Bilateral synchronization (both sides highlight/select together)
- * - Robust mapping layer: upstream slugs → canonical keys → backend names
+ * - Group → leaf flattening via SIMPLE_TO_ADVANCED_MAP; backend mapping for the
+ *   /generate_starter_plan priority_muscles payload
  * - Debug mode for development
  */
-
-// ============================================================================
-// VENDOR SVG MAPPING LAYER
-// ============================================================================
-
-/**
- * Maps upstream react-body-highlighter slugs to our canonical muscle keys.
- * 
- * Upstream slugs (from vendor SVGs):
- *   Front: head, neck, front-deltoids, chest, biceps, triceps, abs, obliques, 
- *          forearm, abductors, quadriceps, knees, calves
- *   Back:  head, trapezius, back-deltoids, upper-back, triceps, lower-back,
- *          forearm, gluteal, abductor, hamstring, knees, calves, left-soleus, right-soleus
- * 
- * View mode determines which canonical keys are active:
- *   Simple: Higher-level muscle groups for quick selection
- *   Advanced: Detailed muscle subdivisions for precise targeting
- */
-
-// Upstream slug → Canonical key mapping (for SVG data-muscle attributes).
-// MIRROR of `static/js/modules/bodymap-svg.js`. This file is loaded as a
-// classic <script> on /workout_plan, so it can't import the ES-module
-// version directly. Any change here must also be made in `bodymap-svg.js`.
-// `tests/test_profile_estimator.py::test_bodymap_canonical_in_sync` enforces this.
-const VENDOR_SLUG_TO_CANONICAL = {
-    // ===== FRONT (Anterior) =====
-    'head': null,  // Not selectable for workout targeting
-    'neck': 'neck',
-    'front-deltoids': 'front-shoulders',  // Simple: front-shoulders
-    'chest': 'chest',
-    'biceps': 'biceps',
-    'triceps': 'triceps',
-    'abs': 'abdominals',
-    'obliques': 'obliques',
-    'forearm': 'forearms',
-    'abductors': 'adductors',  // Note: upstream calls these "abductors" but they're inner thigh
-    'quadriceps': 'quads',
-    'knees': null,  // Not selectable
-    'calves': 'calves',
-    
-    // ===== BACK (Posterior) =====
-    'trapezius': 'traps',
-    'back-deltoids': 'rear-shoulders',  // Simple: rear-shoulders
-    'upper-back': 'upper-back',
-    'lower-back': 'lowerback',
-    'gluteal': 'glutes',
-    'abductor': 'hip-abductors',  // Hip abductors (different from front thigh adductors)
-    'hamstring': 'hamstrings',
-    'left-soleus': 'calves',  // Map soleus to calves
-    'right-soleus': 'calves'
-};
 
 /**
  * Simple → Advanced mapping.
  * When simple group is selected, ALL children become selected.
  * When switching Advanced → Simple, parent shows selected if ANY child is selected.
  */
+// Advanced mode uses the MuscleMap (melihcolpan/MuscleMap, MIT) anatomy art.
+// Its clean, human-shaped regions are parent-level, so each simple group maps
+// to MuscleMap's actual muscle region(s) rather than the old fine-grained
+// sub-muscle taxonomy. Leaf keys here MUST match the data-canonical-muscles
+// values emitted by scripts/build_musclemap_svgs.py into the advanced SVGs.
+// `upper-back` and `hip-abductors` have no distinct MuscleMap geometry (the
+// lat-wing/glute regions cover them) so they are legend-only — clickable in
+// the checklist, no figure region. See static/bodymaps/hypertrophy-advanced/.
 const SIMPLE_TO_ADVANCED_MAP = {
     // Front body - Simple groups
-    'front-shoulders': ['anterior-deltoid', 'lateral-deltoid'],
-    'chest': ['upper-chest', 'mid-chest', 'lower-chest'],
-    'biceps': ['long-head-bicep', 'short-head-bicep'],
-    'forearms': ['wrist-flexors', 'wrist-extensors', 'brachioradialis'],
-    'abdominals': ['upper-abs', 'lower-abs'],
-    'obliques': ['obliques'],  // No subdivision
-    'quads': ['rectus-femoris', 'vastus-lateralis', 'vastus-medialis', 'vastus-intermedius'],
+    'front-shoulders': ['front-deltoid'],
+    'chest': ['chest'],
+    'biceps': ['biceps'],
+    'forearms': ['forearms'],
+    'abdominals': ['abs'],
+    'obliques': ['obliques'],
+    'quads': ['quadriceps'],
     'adductors': ['adductors'],  // Inner thigh
     'neck': ['neck'],
-    
+
     // Back body - Simple groups
-    'rear-shoulders': ['posterior-deltoid', 'lateral-deltoid'],
-    'traps': ['upper-traps', 'mid-traps', 'lower-traps'],
-    'upper-back': ['rhomboids', 'teres-major', 'teres-minor'],
+    'rear-shoulders': ['rear-deltoid'],
+    'traps': ['trapezius'],
+    'upper-back': ['upper-back'],      // legend-only (no MuscleMap region)
     'lats': ['lats'],
-    'lowerback': ['erector-spinae'],
-    'triceps': ['lateral-head-triceps', 'long-head-triceps', 'medial-head-triceps'],
-    'glutes': ['gluteus-maximus', 'gluteus-medius', 'gluteus-minimus'],
-    'hip-abductors': ['tensor-fasciae-latae'],
-    'hamstrings': ['biceps-femoris', 'semitendinosus', 'semimembranosus'],
-    
+    'lowerback': ['lower-back'],
+    'triceps': ['triceps'],
+    'glutes': ['gluteal'],
+    'hip-abductors': ['hip-abductors'],  // legend-only (no MuscleMap region)
+    'hamstrings': ['hamstring'],
+
     // Shared
-    'calves': ['gastrocnemius', 'soleus', 'tibialis-anterior']
+    'calves': ['calves']
 };
 
 /**
@@ -135,51 +92,15 @@ const MUSCLE_LABELS = {
     'hip-abductors': 'Hip Abductors',
     'hamstrings': 'Hamstrings',
     
-    // ===== ADVANCED VIEW LABELS =====
-    // Shoulders
-    'anterior-deltoid': 'Anterior Deltoid',
-    'lateral-deltoid': 'Lateral Deltoid',
-    'posterior-deltoid': 'Posterior Deltoid',
-    // Chest
-    'upper-chest': 'Upper Chest',
-    'mid-chest': 'Mid Chest',
-    'lower-chest': 'Lower Chest',
-    // Arms
-    'long-head-bicep': 'Long Head Bicep',
-    'short-head-bicep': 'Short Head Bicep',
-    'lateral-head-triceps': 'Lateral Triceps',
-    'long-head-triceps': 'Long Head Triceps',
-    'medial-head-triceps': 'Medial Triceps',
-    'wrist-flexors': 'Wrist Flexors',
-    'wrist-extensors': 'Wrist Extensors',
-    'brachioradialis': 'Brachioradialis',
-    // Core
-    'upper-abs': 'Upper Abs',
-    'lower-abs': 'Lower Abs',
-    // Back
-    'upper-traps': 'Upper Traps',
-    'mid-traps': 'Mid Traps',
-    'lower-traps': 'Lower Traps',
-    'rhomboids': 'Rhomboids',
-    'teres-major': 'Teres Major',
-    'teres-minor': 'Teres Minor',
-    'erector-spinae': 'Erector Spinae',
-    // Glutes
-    'gluteus-maximus': 'Gluteus Maximus',
-    'gluteus-medius': 'Gluteus Medius',
-    'gluteus-minimus': 'Gluteus Minimus',
-    'tensor-fasciae-latae': 'TFL',
-    // Legs
-    'rectus-femoris': 'Rectus Femoris',
-    'vastus-lateralis': 'Vastus Lateralis',
-    'vastus-medialis': 'Vastus Medialis',
-    'vastus-intermedius': 'Vastus Intermedius',
-    'biceps-femoris': 'Biceps Femoris',
-    'semitendinosus': 'Semitendinosus',
-    'semimembranosus': 'Semimembranosus',
-    'gastrocnemius': 'Gastrocnemius',
-    'soleus': 'Soleus',
-    'tibialis-anterior': 'Tibialis Anterior'
+    // ===== ADVANCED VIEW LABELS (MuscleMap leaf keys) =====
+    'front-deltoid': 'Front Delts',
+    'rear-deltoid': 'Rear Delts',
+    'abs': 'Abs',
+    'quadriceps': 'Quadriceps',
+    'trapezius': 'Trapezius',
+    'lower-back': 'Lower Back',
+    'gluteal': 'Glutes',
+    'hamstring': 'Hamstrings'
 };
 
 /**
@@ -208,68 +129,32 @@ const MUSCLE_TO_BACKEND = {
     'hip-abductors': 'Glutes',  // Group with glutes
     'hamstrings': 'Hamstrings',
     
-    // Advanced keys → Backend (more specific)
-    'anterior-deltoid': 'Front Delts',
-    'lateral-deltoid': 'Lateral Delts',
-    'posterior-deltoid': 'Rear Delts',
-    'upper-chest': 'Upper Chest',
-    'mid-chest': 'Mid Chest',
-    'lower-chest': 'Lower Chest',
-    'long-head-bicep': 'Biceps',
-    'short-head-bicep': 'Biceps',
-    'lateral-head-triceps': 'Triceps',
-    'long-head-triceps': 'Triceps',
-    'medial-head-triceps': 'Triceps',
-    'wrist-flexors': 'Forearms',
-    'wrist-extensors': 'Forearms',
-    'brachioradialis': 'Forearms',
-    'upper-abs': 'Abs',
-    'lower-abs': 'Abs',
-    'upper-traps': 'Traps',
-    'mid-traps': 'Traps',
-    'lower-traps': 'Traps',
-    'rhomboids': 'Upper Back',
-    'teres-major': 'Upper Back',
-    'teres-minor': 'Upper Back',
-    'erector-spinae': 'Lower Back',
-    'gluteus-maximus': 'Glutes',
-    'gluteus-medius': 'Glutes',
-    'gluteus-minimus': 'Glutes',
-    'tensor-fasciae-latae': 'Glutes',
-    'rectus-femoris': 'Quads',
-    'vastus-lateralis': 'Quads',
-    'vastus-medialis': 'Quads',
-    'vastus-intermedius': 'Quads',
-    'biceps-femoris': 'Hamstrings',
-    'semitendinosus': 'Hamstrings',
-    'semimembranosus': 'Hamstrings',
-    'gastrocnemius': 'Calves',
-    'soleus': 'Calves',
-    'tibialis-anterior': 'Tibialis'
+    // Advanced keys → Backend (MuscleMap leaf keys). Display-name style matches
+    // the simple keys above so /generate_starter_plan priority targeting is
+    // unchanged from the prior taxonomy.
+    'front-deltoid': 'Front Delts',
+    'rear-deltoid': 'Rear Delts',
+    'abs': 'Abs',
+    'quadriceps': 'Quads',
+    'trapezius': 'Traps',
+    'lower-back': 'Lower Back',
+    'gluteal': 'Glutes',
+    'hamstring': 'Hamstrings'
 };
 
 /**
- * SVG file paths keyed by viewMode × bodySide.
- *
- * Simple mode swaps in workout-cool's anatomy art (vendored under
- * static/vendor/workout-cool/, ships pre-canonicalized data-canonical-muscles
- * - see static/vendor/workout-cool/NOTICE.md). Advanced mode uses
- * first-party schematic SVGs whose regions are already keyed to the
- * scientific sub-muscles in SIMPLE_TO_ADVANCED_MAP.
+ * SVG file path per body side. A single MuscleMap (melihcolpan/MuscleMap, MIT)
+ * anatomy figure is used for both front and back; regions ship
+ * pre-canonicalized `data-canonical-muscles` keyed to SIMPLE_TO_ADVANCED_MAP
+ * leaves. See static/bodymaps/hypertrophy-advanced/README.md.
  */
 const SVG_PATHS = {
-    simple: {
-        front: '/static/vendor/workout-cool/body_anterior.svg',
-        back: '/static/vendor/workout-cool/body_posterior.svg'
-    },
-    advanced: {
-        front: '/static/bodymaps/hypertrophy-advanced/body_anterior.svg',
-        back: '/static/bodymaps/hypertrophy-advanced/body_posterior.svg'
-    }
+    front: '/static/bodymaps/hypertrophy-advanced/body_anterior.svg',
+    back: '/static/bodymaps/hypertrophy-advanced/body_posterior.svg'
 };
 
-function getSvgPathForMode(mode, side) {
-    return SVG_PATHS[mode][side];
+function getSvgPath(side) {
+    return SVG_PATHS[side];
 }
 
 /**
@@ -293,12 +178,10 @@ const MUSCLES_BY_SIDE = {
 class MuscleSelector {
     constructor(containerId, options = {}) {
         this.container = document.getElementById(containerId);
-        this.viewMode = options.viewMode || 'simple';
         this.bodySide = options.bodySide || 'front';
         this.debugMode = options.debug || false;
-        
-        // Store selections at ADVANCED level (sub-muscles)
-        // This allows precise tracking regardless of view mode
+
+        // Selections are stored as advanced (leaf) muscle keys.
         this.selectedMuscles = new Set();
         
         // SVG cache
@@ -323,16 +206,6 @@ class MuscleSelector {
             <div class="muscle-selector-wrapper">
                 <!-- Controls Row -->
                 <div class="muscle-selector-controls">
-                    <div class="view-toggle-group">
-                        <div class="btn-group btn-group-sm" role="group">
-                            <button type="button" class="btn ${this.viewMode === 'simple' ? 'btn-primary' : 'btn-outline-secondary'}" data-view="simple">
-                                Simple
-                            </button>
-                            <button type="button" class="btn ${this.viewMode === 'advanced' ? 'btn-primary' : 'btn-outline-secondary'}" data-view="advanced">
-                                Advanced
-                            </button>
-                        </div>
-                    </div>
                     <div class="action-buttons">
                         ${this.debugMode ? '<button type="button" class="btn btn-sm btn-outline-info me-1" id="muscle-toggle-debug">Debug</button>' : ''}
                         <button type="button" class="btn btn-sm btn-outline-success" id="muscle-select-all">Select All</button>
@@ -387,7 +260,7 @@ class MuscleSelector {
      * Load SVG from vendor directory and render it inline
      */
     async loadAndRenderSVG() {
-        const svgPath = getSvgPathForMode(this.viewMode, this.bodySide);
+        const svgPath = getSvgPath(this.bodySide);
         const svgContainer = this.container.querySelector('#svg-container');
         
         try {
@@ -401,9 +274,6 @@ class MuscleSelector {
                 this.svgCache[svgPath] = svgText;
                 svgContainer.innerHTML = svgText;
             }
-            
-            // Map vendor slugs to canonical keys
-            this.mapVendorSlugsToCanonical();
             
             // Attach event listeners to muscle regions
             this.attachMuscleEventListeners();
@@ -428,65 +298,14 @@ class MuscleSelector {
     }
 
     /**
-     * Map vendor SVG slugs to canonical muscle keys.
-     * Updates data attributes on SVG elements.
-     *
-     * Three SVG flavors are supported:
-     *   - Pre-canonicalized (workout-cool simple variant and first-party
-     *     advanced variant): each region
-     *     already carries `data-canonical-muscles="<key1>[,<key2>,...]"`.
-     *     No translation needed — left as-is.
-     *   - Vendor-slug (react-body-highlighter advanced variant): each region
-     *     carries `data-muscle="<vendor-slug>"`. Translate via
-     *     VENDOR_SLUG_TO_CANONICAL into a singular `data-canonical-muscle`.
-     */
-    mapVendorSlugsToCanonical() {
-        const regions = this.container.querySelectorAll('.muscle-region');
-
-        regions.forEach(region => {
-            // Pre-canonicalized SVGs (workout-cool) ship the plural attribute
-            // and need no further mapping.
-            if (region.dataset.canonicalMuscles) return;
-
-            const vendorSlug = region.dataset.muscle;
-            if (!vendorSlug) return;
-
-            const canonicalKey = VENDOR_SLUG_TO_CANONICAL[vendorSlug];
-
-            if (canonicalKey === null) {
-                // Non-selectable region (e.g., head, knees)
-                region.classList.add('non-selectable');
-                region.style.cursor = 'default';
-            } else if (canonicalKey) {
-                // Update to canonical key
-                region.dataset.canonicalMuscle = canonicalKey;
-            } else {
-                // Unknown slug - keep original but log warning
-                console.warn(`Unknown vendor slug: ${vendorSlug}`);
-                region.dataset.canonicalMuscle = vendorSlug;
-            }
-        });
-    }
-
-    /**
-     * Get all canonical (simple) keys associated with a region.
-     *
-     * Multi-key SVG regions (workout-cool's BACK area) ship
-     * `data-canonical-muscles="lats,upper-back,lowerback"` which expands to
-     * 5 advanced children once flattened through SIMPLE_TO_ADVANCED_MAP.
-     * Single-key regions return a one-element array.
+     * Get all canonical keys associated with a region from its
+     * `data-canonical-muscles`. MuscleMap regions are single-key; the
+     * comma-split also supports multi-key regions generically.
      */
     getCanonicalKeys(region) {
         const plural = region.dataset.canonicalMuscles;
         if (plural) {
             return plural.split(',').map(k => k.trim()).filter(Boolean);
-        }
-        const singular = region.dataset.canonicalMuscle;
-        if (singular) return [singular];
-        const slug = region.dataset.muscle;
-        if (slug) {
-            const mapped = VENDOR_SLUG_TO_CANONICAL[slug];
-            return mapped ? [mapped] : [slug];
         }
         return [];
     }
@@ -540,11 +359,9 @@ class MuscleSelector {
     }
 
     /**
-     * Attach event listeners to muscle region paths.
-     *
-     * Multi-key regions (workout-cool BACK) carry several simple keys in
-     * `data-canonical-muscles`; clicking and hovering must operate on the
-     * full set, not the first key, so we plumb arrays through everywhere.
+     * Attach event listeners to muscle region paths. Clicking and hovering
+     * operate on the full key set of a region (arrays are plumbed through
+     * everywhere so multi-key regions would also work).
      */
     attachMuscleEventListeners() {
         const regions = this.container.querySelectorAll('.muscle-region:not(.non-selectable)');
@@ -601,16 +418,6 @@ class MuscleSelector {
      * Attach global event listeners (tabs, buttons)
      */
     attachGlobalEventListeners() {
-        // View mode toggle
-        this.container.querySelectorAll('[data-view]').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const newMode = e.currentTarget.dataset.view;
-                if (newMode !== this.viewMode) {
-                    this.switchViewMode(newMode);
-                }
-            });
-        });
-
         // Body side tabs
         this.container.querySelectorAll('[data-side]').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -687,28 +494,24 @@ class MuscleSelector {
         // Check if this is a parent key (has children in SIMPLE_TO_ADVANCED_MAP)
         const isParentKey = SIMPLE_TO_ADVANCED_MAP.hasOwnProperty(muscleKey) && SIMPLE_TO_ADVANCED_MAP[muscleKey].length > 0;
         
-        if (this.viewMode === 'simple' || isParentKey) {
-            // In simple mode OR when clicking a parent group header in advanced mode,
-            // toggle ALL children of the parent group
+        if (isParentKey) {
+            // Toggle ALL leaf children of the group.
             const children = SIMPLE_TO_ADVANCED_MAP[muscleKey] || [muscleKey];
             const allSelected = children.every(child => this.selectedMuscles.has(child));
-            
             if (allSelected) {
-                // Deselect all children
                 children.forEach(child => this.selectedMuscles.delete(child));
             } else {
-                // Select all children
                 children.forEach(child => this.selectedMuscles.add(child));
             }
         } else {
-            // In advanced mode, toggle individual sub-muscle
+            // Leaf key with no children — toggle directly.
             if (this.selectedMuscles.has(muscleKey)) {
                 this.selectedMuscles.delete(muscleKey);
             } else {
                 this.selectedMuscles.add(muscleKey);
             }
         }
-        
+
         this.updateAllRegionStates();
         this.renderLegend();
         this.updateSummary();
@@ -782,52 +585,30 @@ class MuscleSelector {
         let legendHTML = `
             <div class="legend-header">
                 <span class="legend-title">${this.bodySide === 'front' ? 'Front' : 'Back'} Muscles</span>
-                <span class="legend-mode-badge">${this.viewMode === 'simple' ? 'Simple' : 'Advanced'}</span>
             </div>
             <div class="legend-items">
         `;
-        
-        if (this.viewMode === 'simple') {
-            // Simple mode: show parent groups only
-            const muscleKeys = musclesForSide.filter(key => MUSCLE_LABELS[key]);
-            legendHTML += muscleKeys.map(key => this.renderSimpleLegendItem(key)).join('');
-        } else {
-            // Advanced mode: show sub-muscles grouped under parents
-            musclesForSide.forEach(parentKey => {
-                const children = SIMPLE_TO_ADVANCED_MAP[parentKey];
-                if (children && children.length > 0) {
-                    legendHTML += this.renderAdvancedLegendGroup(parentKey, children);
-                }
-            });
-        }
-        
+
+        // Flat list of muscle groups for the current side.
+        const muscleKeys = musclesForSide.filter(key => MUSCLE_LABELS[key]);
+        legendHTML += muscleKeys.map(key => this.renderSimpleLegendItem(key)).join('');
+
         legendHTML += '</div>';
         legendContainer.innerHTML = legendHTML;
-        
+
         // Attach legend item event listeners
         legendContainer.querySelectorAll('.legend-item').forEach(item => {
             const muscleKey = item.dataset.muscle;
-            const parentKey = item.dataset.parent;
-            
+
             item.addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.toggleMuscle(muscleKey);
             });
-            
-            // Hover highlights the SVG region (parent key for advanced items)
-            const hoverKey = parentKey || muscleKey;
-            item.addEventListener('mouseenter', () => this.handleMuscleHover(hoverKey, true));
-            item.addEventListener('mouseleave', () => this.handleMuscleHover(hoverKey, false));
+
+            item.addEventListener('mouseenter', () => this.handleMuscleHover(muscleKey, true));
+            item.addEventListener('mouseleave', () => this.handleMuscleHover(muscleKey, false));
         });
-        
-        // Attach parent header click handlers (select all children)
-        legendContainer.querySelectorAll('.legend-group-header').forEach(header => {
-            const parentKey = header.dataset.parent;
-            header.addEventListener('click', () => this.toggleMuscle(parentKey));
-            header.addEventListener('mouseenter', () => this.handleMuscleHover(parentKey, true));
-            header.addEventListener('mouseleave', () => this.handleMuscleHover(parentKey, false));
-        });
-        
+
         // Restore scroll position after re-rendering
         const newLegendItems = legendContainer.querySelector('.legend-items');
         if (newLegendItems && scrollTop > 0) {
@@ -861,80 +642,6 @@ class MuscleSelector {
                 ${this.debugMode ? `<code class="legend-key">${parentKey}</code>` : ''}
             </label>
         `;
-    }
-
-    /**
-     * Render an advanced mode legend group (parent + children)
-     */
-    renderAdvancedLegendGroup(parentKey, children) {
-        const parentLabel = MUSCLE_LABELS[parentKey] || parentKey;
-        const isParentSelected = this.isMuscleSelected(parentKey);
-        const isParentPartial = this.isMusclePartiallySelected(parentKey);
-        
-        let parentCheckClass = 'legend-checkbox small';
-        let parentCheckIcon = '';
-        if (isParentSelected) {
-            parentCheckClass += ' checked';
-            parentCheckIcon = '<i class="fas fa-check"></i>';
-        } else if (isParentPartial) {
-            parentCheckClass += ' partial';
-            parentCheckIcon = '<i class="fas fa-minus"></i>';
-        }
-        
-        let html = `
-            <div class="legend-group">
-                <div class="legend-group-header" data-parent="${parentKey}">
-                    <span class="${parentCheckClass}">${parentCheckIcon}</span>
-                    <span class="legend-group-title">${parentLabel}</span>
-                </div>
-                <div class="legend-group-children">
-        `;
-        
-        children.forEach(childKey => {
-            const isSelected = this.selectedMuscles.has(childKey);
-            const childLabel = MUSCLE_LABELS[childKey] || childKey;
-            
-            let checkboxClass = 'legend-checkbox';
-            let checkboxIcon = '';
-            if (isSelected) {
-                checkboxClass += ' checked';
-                checkboxIcon = '<i class="fas fa-check"></i>';
-            }
-            
-            html += `
-                <label class="legend-item legend-child" data-muscle="${childKey}" data-parent="${parentKey}">
-                    <span class="${checkboxClass}">${checkboxIcon}</span>
-                    <span class="legend-label">${childLabel}</span>
-                    ${this.debugMode ? `<code class="legend-key">${childKey}</code>` : ''}
-                </label>
-            `;
-        });
-        
-        html += '</div></div>';
-        return html;
-    }
-
-    /**
-     * Switch view mode (simple/advanced).
-     *
-     * Simple and Advanced load DIFFERENT SVG art (workout-cool vs
-     * react-body-highlighter — see SVG_PATHS), so we must reload the SVG
-     * here. Selection state in `selectedMuscles` is preserved verbatim
-     * across the swap; updateAllRegionStates() re-derives the visual state
-     * from it after the new SVG mounts.
-     */
-    async switchViewMode(newMode) {
-        if (newMode === this.viewMode) return;
-        this.viewMode = newMode;
-
-        this.container.querySelectorAll('[data-view]').forEach(btn => {
-            const isActive = btn.dataset.view === newMode;
-            btn.classList.toggle('btn-primary', isActive);
-            btn.classList.toggle('btn-outline-secondary', !isActive);
-        });
-
-        await this.loadAndRenderSVG();
-        this.updateSummary();
     }
 
     /**
@@ -1080,13 +787,6 @@ class MuscleSelector {
     }
 
     /**
-     * Get current view mode
-     */
-    getViewMode() {
-        return this.viewMode;
-    }
-
-    /**
      * Set selections programmatically
      */
     setSelection(muscleIds) {
@@ -1115,4 +815,3 @@ window.MUSCLE_LABELS = MUSCLE_LABELS;
 window.MUSCLE_TO_BACKEND = MUSCLE_TO_BACKEND;
 window.SIMPLE_TO_ADVANCED_MAP = SIMPLE_TO_ADVANCED_MAP;
 window.ADVANCED_TO_SIMPLE_MAP = ADVANCED_TO_SIMPLE_MAP;
-window.VENDOR_SLUG_TO_CANONICAL = VENDOR_SLUG_TO_CANONICAL;
