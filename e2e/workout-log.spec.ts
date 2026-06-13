@@ -536,7 +536,10 @@ test.describe('Exercise reference video modal (workout-log)', () => {
     await playBtn.click();
 
     // Default seed is uncurated → straight to YouTube search, modal stays closed.
-    const opened = await page.evaluate(() => window['__openedUrl']);
+    const opened = await page.evaluate(() => {
+      // @ts-expect-error - test-only capture set above
+      return window.__openedUrl as string | null;
+    });
     expect(opened).toMatch(/^https:\/\/www\.youtube\.com\/results\?search_query=/);
     await expect(page.locator('#exerciseVideoModal')).toBeHidden();
   });

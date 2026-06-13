@@ -787,7 +787,10 @@ test.describe('Exercise reference video modal (workout-plan)', () => {
     await playBtn.click();
 
     // Goes straight to YouTube search results — the modal never opens.
-    const opened = await page.evaluate(() => window['__openedUrl']);
+    const opened = await page.evaluate(() => {
+      // @ts-expect-error - test-only capture set above
+      return window.__openedUrl as string | null;
+    });
     expect(opened).toMatch(/^https:\/\/www\.youtube\.com\/results\?search_query=/);
     await expect(page.locator('#exerciseVideoModal')).toBeHidden();
   });
