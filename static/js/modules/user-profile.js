@@ -1,11 +1,14 @@
 import { api } from './fetch-wrapper.js';
 import { showToast } from './toast.js';
+import { initializeExerciseImagePreview } from './exercise-image-preview.js';
 import {
-    annotateWorkoutCoolBodymapPolygons,
+    annotateBodymapPolygons,
     COVERAGE_LIFT_LABELS,
     COVERAGE_MUSCLE_CHAIN,
-    loadWorkoutCoolBodymapSvg,
+    loadBodymapSvg,
 } from './bodymap-svg.js';
+
+initializeExerciseImagePreview();
 
 // Issue #17 — JS port of the cold-start + accuracy-band logic that lives
 // in `utils/profile_estimator.py`. The estimator stays the source of
@@ -785,7 +788,7 @@ function computeMuscleCoverage(filledByKey) {
 async function mountBodymapForSide(stage, side) {
     if (BODYMAP_STATE.svgMounted[side]) return;
     try {
-        const svgText = await loadWorkoutCoolBodymapSvg(side);
+        const svgText = await loadBodymapSvg(side);
         const wrap = document.createElement('div');
         wrap.className = 'profile-bodymap-svg-pane';
         wrap.dataset.bodymapPane = side;
@@ -793,7 +796,7 @@ async function mountBodymapForSide(stage, side) {
         wrap.innerHTML = svgText;
         const svgEl = wrap.querySelector('svg');
         if (svgEl) {
-            annotateWorkoutCoolBodymapPolygons(svgEl, side);
+            annotateBodymapPolygons(svgEl, side);
         }
         const loading = stage.querySelector('[data-bodymap-loading]');
         if (loading) loading.remove();

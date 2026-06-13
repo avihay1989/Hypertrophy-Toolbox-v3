@@ -710,8 +710,8 @@ class TestRouteContracts:
     def test_get_workout_plan_includes_field_null(
         self, client, clean_db, exercise_factory, workout_plan_factory
     ):
-        exercise_factory("Bench Press")
-        workout_plan_factory(exercise_name="Bench Press")
+        exercise_factory("Unmapped Test Lift")
+        workout_plan_factory(exercise_name="Unmapped Test Lift")
 
         resp = client.get("/get_workout_plan")
         assert resp.status_code == 200

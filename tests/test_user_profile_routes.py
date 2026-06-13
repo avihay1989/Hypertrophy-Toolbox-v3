@@ -1,3 +1,6 @@
+from pathlib import Path
+
+
 XHR_HEADERS = {
     "Accept": "application/json",
     "X-Requested-With": "XMLHttpRequest",
@@ -647,6 +650,31 @@ def test_profile_page_partition_covers_every_lift_exactly_once(client, clean_db)
         )
     # `REFERENCE_LIFT_LABELS` continues to round-trip every slug to a label.
     assert set(REFERENCE_LIFT_LABELS) == set(KEY_LIFT_LABELS)
+
+
+def test_profile_reference_lift_icons_cover_every_lift_and_assets_exist(
+    client, clean_db
+):
+    from routes.user_profile import REFERENCE_LIFT_IMAGE_PATHS, REFERENCE_LIFT_LABELS
+
+    assert set(REFERENCE_LIFT_IMAGE_PATHS) == set(REFERENCE_LIFT_LABELS)
+
+    asset_root = Path("static/vendor/free-exercise-db/exercises")
+    missing_assets = [
+        f"{lift_key}: {image_path}"
+        for lift_key, image_path in REFERENCE_LIFT_IMAGE_PATHS.items()
+        if not (asset_root / image_path).is_file()
+    ]
+    assert missing_assets == []
+
+    response = client.get("/user_profile")
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+    assert 'class="reference-lift-icon"' in html
+    assert (
+        "vendor/free-exercise-db/exercises/Barbell_Bench_Press_-_Medium_Grip/0.jpg"
+        in html
+    )
 
 
 def test_profile_page_context_exposes_anterior_posterior_partition(

@@ -538,18 +538,38 @@
 }
 
 .reference-lift-label {
+    align-items: center;
+    display: grid;
+    gap: 0.65rem;
+    grid-template-columns: 42px minmax(0, 1fr);
+    min-width: 0;
+}
+
+.reference-lift-icon {
+    aspect-ratio: 1;
+    background: color-mix(in srgb, var(--surface-2, #f1f4f8) 82%, white);
+    border: 1px solid color-mix(in srgb, var(--ink-3, #7c849c) 20%, transparent);
+    border-radius: 8px;
+    box-shadow: 0 3px 10px rgba(20, 28, 48, 0.08);
+    display: block;
+    height: 42px;
+    object-fit: cover;
+    width: 42px;
+}
+
+.reference-lift-label-text {
     display: grid;
     gap: 0.2rem;
     min-width: 0;
 }
 
-.reference-lift-label span {
+.reference-lift-label-text span {
     color: var(--ink-1, #22283a);
     font-weight: 650;
     overflow-wrap: anywhere;
 }
 
-.reference-lift-label small {
+.reference-lift-label-text small {
     color: var(--ink-3, #6d7488);
     font-size: 0.78rem;
 }
@@ -564,6 +584,12 @@
 
 [data-theme='dark'] .reference-lift-hand-hint {
     color: var(--ink-3, #939bb2);
+}
+
+[data-theme='dark'] .reference-lift-icon {
+    background: color-mix(in srgb, var(--surface-2, #1f2533) 84%, black);
+    border-color: color-mix(in srgb, var(--ink-3, #939bb2) 30%, transparent);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.28);
 }
 
 .preference-grid {
@@ -1500,6 +1526,10 @@
     display: flex;
     gap: 1rem;
     justify-content: center;
+    /* Anchor for the absolutely-positioned popover (see below). Keeping the
+       popover out of flow lets the SVG stay dead-centred and stops it jumping
+       sideways when the hover popover is shown/hidden. */
+    position: relative;
     margin: 0 0 0.75rem;
 }
 
@@ -1516,6 +1546,11 @@
     height: auto;
     max-height: 480px;
     width: 100%;
+    /* Inline SVGs default to the text/I-beam cursor over non-painted areas
+       (the body-outline silhouette uses pointer-events:none), which made the
+       figure feel unclickable. Force the arrow; muscle regions override with
+       cursor:pointer below. */
+    cursor: default;
 }
 
 .profile-bodymap-loading {
@@ -1579,10 +1614,17 @@
     border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 22%, transparent);
     border-radius: 12px;
     box-shadow: 0 6px 18px rgba(15, 18, 32, 0.10);
-    flex: 1 1 auto;
-    max-width: 360px;
-    min-width: 220px;
     padding: 0.85rem 1rem;
+    /* Out of flow so the centred SVG never reflows when the popover toggles.
+       Anchored to start just right of the figure (≈ half the 240px figure
+       + the 1rem stage gap) and stretch to the stage's right edge — beside
+       the figure, never overlapping it. The mobile column layout below
+       restores normal flow. */
+    position: absolute;
+    top: 0;
+    left: calc(50% + 136px);
+    right: 0;
+    min-width: 0;
 }
 
 .profile-bodymap-popover[hidden] {
@@ -1733,10 +1775,16 @@
 
 @media (max-width: 767.98px) {
     .profile-bodymap-stage {
+        align-items: center;
         flex-direction: column;
     }
     .profile-bodymap-popover {
+        /* Back to normal flow below the centred figure on narrow screens. */
+        position: static;
+        left: auto;
+        right: auto;
         max-width: none;
+        width: 100%;
     }
 }
 
