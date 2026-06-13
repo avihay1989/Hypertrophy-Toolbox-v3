@@ -179,6 +179,7 @@ def render_svg(*, side: str, view_box: str, body_id: str,
             elif mapping == SKIP:
                 continue
             else:
+                assert mapping is not None  # narrowed: real canonical key, not OUTLINE/SKIP
                 regions.append((slug, mapping, d))
 
     parts: list[str] = []
@@ -238,7 +239,7 @@ def build(vendor_dir: Path) -> dict[str, str]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").split("\n\n")[0])
     parser.add_argument("--vendor-dir", type=Path, default=VENDOR_DIR)
     parser.add_argument("--out-dir", type=Path, default=OUT_DIR)
     parser.add_argument("--print-stats", action="store_true")
