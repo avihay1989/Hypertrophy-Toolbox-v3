@@ -761,36 +761,35 @@ test.describe('Exercise reference video modal (workout-plan)', () => {
     const playBtn = firstRow.locator('.btn-video');
     await expect(playBtn).toBeVisible();
 
+    // Seed rows are uncurated → search-variant icon + accessible name.
     const ariaLabel = await playBtn.getAttribute('aria-label');
-    expect(ariaLabel).toMatch(/^Play reference video for /);
+    expect(ariaLabel).toMatch(/^Search YouTube for a /);
+    await expect(playBtn.locator('i')).toHaveClass(/fa-search/);
 
     const swapBtn = firstRow.locator('.btn-swap');
     await expect(swapBtn).toBeVisible();
   });
 
-  test('uncurated exercise (NULL youtube_video_id) opens the search-fallback variant', async ({ page }) => {
+  test('uncurated exercise (NULL youtube_video_id) opens a YouTube search tab — no modal', async ({ page }) => {
+    // Stub window.open so the click captures the target URL without spawning a
+    // real YouTube tab (deterministic, network-free).
+    await page.evaluate(() => {
+      // @ts-expect-error - test-only capture
+      window.__openedUrl = null;
+      window.open = (url) => {
+        // @ts-expect-error - test-only capture
+        window.__openedUrl = url;
+        return null;
+      };
+    });
+
     const playBtn = page.locator('#workout_plan_table_body tr .btn-video').first();
     await playBtn.click();
 
-    const modal = page.locator('#exerciseVideoModal');
-    await expect(modal).toBeVisible();
-
-    // Embed wrap should be hidden; search wrap visible.
-    await expect(page.locator('#exerciseVideoEmbedWrap')).toBeHidden();
-    await expect(page.locator('#exerciseVideoSearchWrap')).toBeVisible();
-
-    // External CTA points at youtube.com/results with the exercise name encoded.
-    const externalLink = page.locator('#exerciseVideoExternalLink');
-    const href = await externalLink.getAttribute('href');
-    expect(href).toMatch(/^https:\/\/www\.youtube\.com\/results\?search_query=/);
-
-    // External link must open in a new tab with safe rel attributes.
-    expect(await externalLink.getAttribute('target')).toBe('_blank');
-    expect(await externalLink.getAttribute('rel')).toBe('noopener noreferrer');
-
-    // Iframe is empty (no leaked src on uncurated rows).
-    const iframeSrc = await page.locator('#exerciseVideoIframe').getAttribute('src');
-    expect(iframeSrc === '' || iframeSrc === null).toBe(true);
+    // Goes straight to YouTube search results — the modal never opens.
+    const opened = await page.evaluate(() => window['__openedUrl']);
+    expect(opened).toMatch(/^https:\/\/www\.youtube\.com\/results\?search_query=/);
+    await expect(page.locator('#exerciseVideoModal')).toBeHidden();
   });
 
   test('valid id opens embed mode; close clears iframe src', async ({ page }) => {
@@ -814,9 +813,8 @@ test.describe('Exercise reference video modal (workout-plan)', () => {
     const modal = page.locator('#exerciseVideoModal');
     await expect(modal).toBeVisible();
 
-    // Embed visible, search hidden.
+    // Embed visible.
     await expect(page.locator('#exerciseVideoEmbedWrap')).toBeVisible();
-    await expect(page.locator('#exerciseVideoSearchWrap')).toBeHidden();
 
     const iframe = page.locator('#exerciseVideoIframe');
     // Auto-retrying assertion (not a one-shot getAttribute) — robust even though
@@ -875,18 +873,20 @@ test.describe('Exercise reference video modal (workout-plan)', () => {
     );
   });
 
-  test('malformed id falls through to search fallback', async ({ page }) => {
-    await page.evaluate(() => {
+  test('malformed id opens a YouTube search tab — no modal', async ({ page }) => {
+    const opened = await page.evaluate(() => {
+      let captured: string | null = null;
+      window.open = (url) => {
+        captured = String(url);
+        return null;
+      };
       // @ts-expect-error - exposed by exercise-video-modal.js
       window.openExerciseVideoModal('not-an-id', 'Fake Exercise');
+      return captured;
     });
-    await expect(page.locator('#exerciseVideoModal')).toBeVisible();
-    await expect(page.locator('#exerciseVideoEmbedWrap')).toBeHidden();
-    await expect(page.locator('#exerciseVideoSearchWrap')).toBeVisible();
-
-    const href = await page.locator('#exerciseVideoExternalLink').getAttribute('href');
-    expect(href).toMatch(/^https:\/\/www\.youtube\.com\/results\?search_query=/);
-    expect(href).toContain('Fake');
+    await expect(page.locator('#exerciseVideoModal')).toBeHidden();
+    expect(opened).toMatch(/^https:\/\/www\.youtube\.com\/results\?search_query=/);
+    expect(opened).toContain('Fake');
   });
 });
 

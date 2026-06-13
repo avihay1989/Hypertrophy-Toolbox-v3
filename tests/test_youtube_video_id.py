@@ -432,8 +432,9 @@ class TestPageRender:
         assert "log-play-video-btn" in body
         # No curated id seeded → button should ship with empty data-video-id.
         assert 'data-video-id=""' in body
-        # Aria label uses the exercise name verbatim.
-        assert "Play reference video for Bench Press" in body
+        # Uncurated row → search-variant icon + accessible name (Option 2 UX).
+        assert "fa-search" in body
+        assert "Search YouTube for a Bench Press reference video" in body
 
     def test_log_row_play_button_with_curated_id(
         self,
@@ -461,3 +462,5 @@ class TestPageRender:
             )
         body = resp.get_data(as_text=True)
         assert 'data-video-id="dQw4w9WgXcQ"' in body
+        # Curated row → play-variant icon + accessible name (Option 2 UX).
+        assert "Play reference video for Bench Press" in body

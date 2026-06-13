@@ -112,8 +112,8 @@
                                         data-video-id="{{ log.youtube_video_id or '' }}"
                                         data-exercise-name="{{ log.exercise }}"
                                         title="{% if log.youtube_video_id %}Watch reference video{% else %}Search YouTube for reference video{% endif %}"
-                                        aria-label="Play reference video for {{ log.exercise }}">
-                                    <i class="fas fa-play" aria-hidden="true"></i>
+                                        aria-label="{% if log.youtube_video_id %}Play reference video for {{ log.exercise }}{% else %}Search YouTube for a {{ log.exercise }} reference video{% endif %}">
+                                    <i class="fas {% if log.youtube_video_id %}fa-play{% else %}fa-search{% endif %}" aria-hidden="true"></i>
                                 </button>
                             </div>
                         </td>
