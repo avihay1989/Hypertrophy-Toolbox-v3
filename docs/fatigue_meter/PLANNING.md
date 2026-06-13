@@ -130,6 +130,8 @@ For each row, tick **either** approve **or** override. If override, write the ch
      6. No `/fatigue` page (D5).
      7. No DB schema changes (Phase 3 owns the first schema change per §6).
      8. Bodymap / per-muscle view deferred to Phase 2 (D1 + Stage 5 preview).
+        Body **heatmap** draft plan now lives in [`HEATMAP_PLANNING.md`](HEATMAP_PLANNING.md)
+        (reuses the MuscleMap figure + existing fatigue bands; pending owner decisions).
    - **Authority order when wording conflicts:** the locked decisions in Stage 0 §0.1 (especially the D3 and D10 *overrides*) are the source of truth. `BRAINSTORM.md §24.E` is the pre-lock author synthesis and is **stale wherever it conflicts with D3 or D10** — for example, §24.C #3 ("Effective, but follows the user's existing CountingMode toggle") is *superseded* by D3's "Raw set count. Do not follow CountingMode". Any §24.B / §24.E phrasing that hints at logged-data sourcing or CountingMode coupling should be read through the D-list lens, not at face value.
    - **Implementation knock-on:** PLANNING §2.3 Chapter 1.4 still contains a stale CountingMode bullet ("Verify the badge respects the user's existing CountingMode toggle (D3) — when the user is viewing RAW, fatigue is computed from raw sets") which contradicts the D3 override; this bullet must be rewritten or dropped during Chapter 1.4 implementation, not silently followed.
 
