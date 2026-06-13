@@ -27,10 +27,7 @@ const SEL = {
     title: '#exerciseVideoModalExerciseName',
     embedWrap: '#exerciseVideoEmbedWrap',
     iframe: '#exerciseVideoIframe',
-    searchWrap: '#exerciseVideoSearchWrap',
-    searchName: '#exerciseVideoSearchExerciseName',
     externalLink: '#exerciseVideoExternalLink',
-    externalLabel: '#exerciseVideoExternalLabel',
 };
 
 function isValidYoutubeId(value) {
@@ -81,20 +78,27 @@ function getBootstrapModal() {
 }
 
 /**
- * Open the modal for `videoId` (or the search fallback if id is invalid/null).
+ * Open the reference video for `videoId`.
+ *
+ * Curated id  → embedded-player modal.
+ * Uncurated   → no modal; opens a YouTube search in a new tab so the user gets
+ *               a results list to pick from (the long-tail fallback).
+ *
  * @param {string|null|undefined} videoId
  * @param {string} exerciseName
  * @param {HTMLElement} [trigger] - element to return focus to on close
  */
 export function openExerciseVideoModal(videoId, exerciseName, trigger = null) {
+    if (!isValidYoutubeId(videoId)) {
+        window.open(buildSearchUrl(exerciseName), '_blank', 'noopener,noreferrer');
+        return;
+    }
+
     const modal = getBootstrapModal();
     if (!modal) {
-        // Bootstrap not loaded; surface the search url externally as a safe
-        // fallback so the click is never a no-op.
-        const url = isValidYoutubeId(videoId)
-            ? buildWatchUrl(videoId)
-            : buildSearchUrl(exerciseName);
-        window.open(url, '_blank', 'noopener,noreferrer');
+        // Bootstrap not loaded; open the watch page directly so the click is
+        // never a no-op.
+        window.open(buildWatchUrl(videoId), '_blank', 'noopener,noreferrer');
         return;
     }
 
@@ -103,34 +107,17 @@ export function openExerciseVideoModal(videoId, exerciseName, trigger = null) {
     const titleEl = document.querySelector(SEL.title);
     const embedWrap = document.querySelector(SEL.embedWrap);
     const iframe = document.querySelector(SEL.iframe);
-    const searchWrap = document.querySelector(SEL.searchWrap);
-    const searchName = document.querySelector(SEL.searchName);
     const externalLink = document.querySelector(SEL.externalLink);
-    const externalLabel = document.querySelector(SEL.externalLabel);
 
     if (titleEl) {
         titleEl.textContent = exerciseName || 'Reference video';
     }
-
-    const valid = isValidYoutubeId(videoId);
-
-    if (valid) {
-        if (iframe) {
-            iframe.src = buildEmbedUrl(videoId);
-            iframe.title = `${exerciseName || 'Exercise'} reference video`;
-        }
-        if (embedWrap) embedWrap.hidden = false;
-        if (searchWrap) searchWrap.hidden = true;
-        if (externalLink) externalLink.href = buildWatchUrl(videoId);
-        if (externalLabel) externalLabel.textContent = 'Watch on YouTube';
-    } else {
-        if (iframe) iframe.src = '';
-        if (embedWrap) embedWrap.hidden = true;
-        if (searchWrap) searchWrap.hidden = false;
-        if (searchName) searchName.textContent = exerciseName || 'this exercise';
-        if (externalLink) externalLink.href = buildSearchUrl(exerciseName);
-        if (externalLabel) externalLabel.textContent = 'Search YouTube';
+    if (iframe) {
+        iframe.src = buildEmbedUrl(videoId);
+        iframe.title = `${exerciseName || 'Exercise'} reference video`;
     }
+    if (embedWrap) embedWrap.hidden = false;
+    if (externalLink) externalLink.href = buildWatchUrl(videoId);
 
     modal.show();
 }
@@ -145,24 +132,31 @@ export function openExerciseVideoModal(videoId, exerciseName, trigger = null) {
  * @returns {HTMLButtonElement}
  */
 export function buildPlayButton({ videoId, exerciseName }) {
+    const curated = isValidYoutubeId(videoId);
+    const name = exerciseName || 'exercise';
+
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'btn btn-video btn-calm-ghost';
     btn.dataset.action = 'play-video';
     btn.setAttribute(
         'aria-label',
-        `Play reference video for ${exerciseName || 'exercise'}`,
+        curated
+            ? `Play reference video for ${name}`
+            : `Search YouTube for a ${name} reference video`,
     );
-    btn.title = isValidYoutubeId(videoId)
+    btn.title = curated
         ? 'Watch reference video'
         : 'Search YouTube for reference video';
 
+    // Distinct icon by curation state: play glyph only for curated rows, a
+    // magnifier for the search-fallback long tail (see PLANNING.md §5.4).
     const icon = document.createElement('i');
-    icon.className = 'fas fa-play';
+    icon.className = curated ? 'fas fa-play' : 'fas fa-search';
     icon.setAttribute('aria-hidden', 'true');
     btn.appendChild(icon);
 
-    if (isValidYoutubeId(videoId)) {
+    if (curated) {
         btn.dataset.videoId = videoId;
     }
     btn.dataset.exerciseName = exerciseName || '';

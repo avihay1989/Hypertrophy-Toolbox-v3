@@ -169,6 +169,41 @@ class TestGetWorkoutPlan:
         )
         assert target["media_path"] == "Chin-Up/0.jpg"
 
+    @pytest.mark.parametrize(
+        ("exercise_name", "expected_media_path"),
+        [
+            ("Dumbbell Weighted Dip - Chest focused.", "Dips_-_Chest_Version/0.jpg"),
+            ("Dumbbell Decline Skullcrusher", "EZ-Bar_Skullcrusher/0.jpg"),
+            ("Machine Assisted Chin Up", "Chin-Up/0.jpg"),
+            ("Cable Belt Calf Raise", "Standing_Calf_Raises/0.jpg"),
+            ("Dumbbell Neutral Overhead Press", "Dumbbell_Shoulder_Press/0.jpg"),
+            ("Cable Straight Back Seated Row", "Seated_Cable_Rows/0.jpg"),
+            ("Dumbbell Heels Elevated Hip Thrust", "Barbell_Hip_Thrust/0.jpg"),
+            ("Barbell 45 degrees Hyperextension", "Hyperextensions_Back_Extensions/0.jpg"),
+            ("Cable Seated Leg Extension", "Leg_Extensions/0.jpg"),
+            ("Dumbbell Upright Shoulder External Rotation with support", "External_Rotation/0.jpg"),
+            ("Barbell Side Step Up - Quadriceps focused", "Barbell_Step_Ups/0.jpg"),
+        ],
+    )
+    def test_get_workout_plan_media_path_covers_close_name_fallbacks(
+        self,
+        client,
+        clean_db,
+        exercise_factory,
+        workout_plan_factory,
+        exercise_name,
+        expected_media_path,
+    ):
+        """Close exercise names still get a representative local reference image."""
+        exercise_factory(exercise_name)
+        workout_plan_factory(exercise_name=exercise_name)
+
+        resp = client.get("/get_workout_plan")
+        assert resp.status_code == 200
+        data = resp.get_json()
+        target = next(row for row in data["data"] if row["exercise"] == exercise_name)
+        assert target["media_path"] == expected_media_path
+
 
 class TestRemoveExercise:
     """Tests for POST /remove_exercise endpoint."""

@@ -20,7 +20,9 @@
                         aria-label="Close reference video"></button>
             </div>
             <div class="modal-body p-0">
-                {# Embed mode: iframe player. Hidden when there is no curated id. #}
+                {# Embed mode only: the modal opens solely for curated ids. Uncurated
+                   rows skip the modal and open a YouTube search tab directly
+                   (see static/js/modules/exercise-video-modal.js). #}
                 <div id="exerciseVideoEmbedWrap" class="exercise-video-embed-wrap" hidden>
                     <iframe id="exerciseVideoIframe"
                             class="exercise-video-iframe"
@@ -30,18 +32,6 @@
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                             referrerpolicy="strict-origin-when-cross-origin"
                             allowfullscreen></iframe>
-                </div>
-                {# Search mode: shown when youtube_video_id is NULL. #}
-                <div id="exerciseVideoSearchWrap" class="exercise-video-search-wrap p-4" hidden>
-                    <p class="mb-3">
-                        <i class="fas fa-info-circle me-1" aria-hidden="true"></i>
-                        No reference video has been curated for this exercise yet.
-                    </p>
-                    <p class="text-muted mb-0">
-                        Search YouTube for
-                        <strong id="exerciseVideoSearchExerciseName"></strong>
-                        to find a form check.
-                    </p>
                 </div>
             </div>
             <div class="modal-footer py-2">

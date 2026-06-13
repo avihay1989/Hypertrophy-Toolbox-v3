@@ -55,31 +55,49 @@ If the owner ever wants to add more rows later, the flow is unchanged:
 
 ## User-Facing Behavior
 
-Each exercise row has one play button.
+Each exercise row has one reference-video button whose icon and action depend on
+whether the exercise has a curated id:
 
-- Valid 11-character YouTube ID: opens the modal with
+- **Valid 11-character YouTube ID** (play glyph): opens the in-app modal with
   `https://www.youtube.com/embed/<id>` and a "Watch on YouTube" external link.
-- NULL, blank, or malformed ID: opens the same modal in search mode, with a CTA
-  to YouTube search for `<exercise name> exercise form`.
+- **NULL, blank, or malformed ID** (magnifier glyph): opens a YouTube search in a
+  new tab (`https://www.youtube.com/results?search_query=<exercise name>%20exercise%20form`)
+  — **no modal**. The user lands on a real results list and picks a video. This
+  replaced the earlier "No reference video has been curated yet" modal panel
+  (removed 2026-06-14) because a direct results list is more useful than an
+  intermediate message.
 
 This is the planned hybrid behavior from
 [PLANNING.md §5.4](PLANNING.md#54-where-the-video-ids-come-from): manually curate
 top exercises, use search fallback for the long tail.
 
-## UX Follow-Up Options
+## UX Follow-Up — Option 2 Shipped (2026-06-13)
 
-The current UI always shows the play button. For uncurated rows, it opens the
-search fallback. If that feels misleading, consider one of these follow-ups:
+The button now signals its behavior by icon and accessible name instead of
+always reading as "play":
 
-- Keep the current single button, but change the tooltip/title for uncurated rows
-  to make the search behavior explicit.
-- Use a distinct search icon for uncurated rows and a play icon only for curated
-  rows.
-- Hide the video button unless a curated ID exists, and add a separate explicit
-  search action elsewhere.
+- **Curated rows** (valid 11-char id): play glyph (`fa-play`), title
+  "Watch reference video", aria-label "Play reference video for `<name>`".
+- **Uncurated rows** (NULL/blank/malformed id): magnifier glyph (`fa-search`),
+  title "Search YouTube for reference video", aria-label "Search YouTube for a
+  `<name>` reference video". Clicking opens a YouTube search tab directly (see
+  User-Facing Behavior above) — it no longer routes through the modal.
 
-Any UX change should preserve the `/workout_plan` and `/workout_log` symmetry
-documented in [PLANNING.md §5.5](PLANNING.md#55-frontend--workout_log-is-in-scope).
+Both render sites were updated symmetrically — the plan page's JS button builder
+(`static/js/modules/exercise-video-modal.js` `buildPlayButton`) and the
+server-rendered log row (`templates/workout_log.html`) — preserving the
+`/workout_plan` ↔ `/workout_log` symmetry from
+[PLANNING.md §5.5](PLANNING.md#55-frontend--workout_log-is-in-scope). The modal's
+search-mode panel and its `.exercise-video-search-wrap` CSS were deleted as dead
+code once the uncurated path stopped using the modal. Coverage:
+`tests/test_youtube_video_id.py` (icon + aria-label per state) plus the
+`workout-plan.spec.ts` / `workout-log.spec.ts` accessible-button + search-tab
+specs.
+
+The remaining unbuilt options (reword tooltip only; or hide the button unless a
+curated id exists + separate search action) are not planned — Option 2 plus the
+direct-search-tab behavior resolves the "misleading play button" concern without
+removing the long-tail search affordance.
 
 ## Related Docs
 

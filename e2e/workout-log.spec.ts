@@ -515,26 +515,33 @@ test.describe('Exercise reference video modal (workout-log)', () => {
     const playBtn = firstRow.locator('.btn-video.log-play-video-btn');
     await expect(playBtn).toBeVisible();
 
+    // Default seed is uncurated → search-variant icon + accessible name.
     const ariaLabel = await playBtn.getAttribute('aria-label');
-    expect(ariaLabel).toMatch(/^Play reference video for /);
+    expect(ariaLabel).toMatch(/^Search YouTube for a /);
+    await expect(playBtn.locator('i')).toHaveClass(/fa-search/);
   });
 
-  test('clicking play on an uncurated row opens the search-fallback modal', async ({ page }) => {
+  test('clicking search on an uncurated row opens a YouTube search tab — no modal', async ({ page }) => {
+    await page.evaluate(() => {
+      // @ts-expect-error - test-only capture
+      window.__openedUrl = null;
+      window.open = (url) => {
+        // @ts-expect-error - test-only capture
+        window.__openedUrl = url;
+        return null;
+      };
+    });
+
     const playBtn = page.locator('.workout-log-table .log-play-video-btn').first();
     await playBtn.click();
 
-    const modal = page.locator('#exerciseVideoModal');
-    await expect(modal).toBeVisible();
-
-    // Default seed has no curated video id → search variant.
-    await expect(page.locator('#exerciseVideoEmbedWrap')).toBeHidden();
-    await expect(page.locator('#exerciseVideoSearchWrap')).toBeVisible();
-
-    const externalLink = page.locator('#exerciseVideoExternalLink');
-    const href = await externalLink.getAttribute('href');
-    expect(href).toMatch(/^https:\/\/www\.youtube\.com\/results\?search_query=/);
-    expect(await externalLink.getAttribute('target')).toBe('_blank');
-    expect(await externalLink.getAttribute('rel')).toBe('noopener noreferrer');
+    // Default seed is uncurated → straight to YouTube search, modal stays closed.
+    const opened = await page.evaluate(() => {
+      // @ts-expect-error - test-only capture set above
+      return window.__openedUrl as string | null;
+    });
+    expect(opened).toMatch(/^https:\/\/www\.youtube\.com\/results\?search_query=/);
+    await expect(page.locator('#exerciseVideoModal')).toBeHidden();
   });
 
   test('valid id (driven via JS) opens embed mode', async ({ page }) => {
@@ -548,7 +555,6 @@ test.describe('Exercise reference video modal (workout-log)', () => {
 
     await expect(page.locator('#exerciseVideoModal')).toBeVisible();
     await expect(page.locator('#exerciseVideoEmbedWrap')).toBeVisible();
-    await expect(page.locator('#exerciseVideoSearchWrap')).toBeHidden();
 
     const src = await page.locator('#exerciseVideoIframe').getAttribute('src');
     expect(src).toMatch(/^https:\/\/www\.youtube\.com\/embed\/dQw4w9WgXcQ/);
