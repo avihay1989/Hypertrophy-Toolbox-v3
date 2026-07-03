@@ -50,6 +50,21 @@ CLAUDE.md, docs/MASTER_HANDOVER.md. (Subsystem rules deferred to their phases; p
 ## Phase 2 — Data layer & schema
 ## Phase 3 — Volume & summary calculations
 ## Phase 4 — Fatigue, progression, log
+Full detail: [scan/PHASE_04.md](scan/PHASE_04.md) (agent-read, verified). Highlights:
+- **utils/fatigue.py — four concerns behind banner comments** (Phase-1 core / per-muscle / period-window /
+  SFR). `[NEW]` Strong move-only split candidate, same shape as WP2.1/WP2.3, but absent from REFACTOR_PLAN.
+- **Duplicated logic across fatigue.py ↔ fatigue_data.py** `[NEW]`: the "is this logged row scored" skip
+  rule (adapt_logged_row vs _stimulus_from_rows) and the muscle-bar sort tie-break tuple
+  (summarize_muscle_bars vs _merge_muscle_rows). Not plan-tracked.
+- **progression_plan.py:39 _calculate_weight_increment** — `<20kg` branch returns 2.5 regardless of
+  `is_novice` → the novice check in that branch is a no-op. `[RISK]` Protected zone: owner-decision item,
+  do not touch silently.
+- **body_fat.py ↔ body-composition.js manual-sync contract** with no automated parity test. `[RISK]`
+  (Note: handover says PR #32 added a JS↔Python parity test — reconcile at Phase 21 when reading tests.)
+- **Hardcoded catalog-adjacent lists that silently go stale** `[RISK]`: workout_log.py
+  ASSISTED_BODYWEIGHT_EXERCISES (6 literal names); 6 muscle labels missing from MUSCLE_VOLUME_LANDMARKS.
+- Verified live (not dead): decide_progression_target shared with strength_calibration (import at line 38);
+  both fatigue_data query shapes serve different routes.
 ## Phase 5 — Estimator core
 ## Phase 6 — Plan generation & calibration
 ## Phase 7 — Backup, exports, misc utils

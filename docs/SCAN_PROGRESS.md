@@ -59,13 +59,13 @@ below is checked.**
 - [ ] utils/volume_ai.py (71)
 - [ ] utils/volume_export.py (55)
 
-### [ ] Phase 4 — Fatigue, progression, log (~2,370 LOC)
-- [ ] utils/fatigue.py (751)
-- [ ] utils/fatigue_data.py (395)
-- [ ] utils/fatigue_context.py (389)
-- [ ] utils/progression_plan.py (481)
-- [ ] utils/body_fat.py (203)
-- [ ] utils/workout_log.py (153)
+### [x] Phase 4 — Fatigue, progression, log (~2,370 LOC) — agent-read, merged
+- [x] utils/fatigue.py (751)
+- [x] utils/fatigue_data.py (395)
+- [x] utils/fatigue_context.py (389)
+- [x] utils/progression_plan.py (481)
+- [x] utils/body_fat.py (203)
+- [x] utils/workout_log.py (153)
 
 ### [ ] Phase 5 — Estimator core (~2,420 LOC)
 - [ ] utils/profile_estimator.py (2418)
@@ -208,3 +208,4 @@ below is checked.**
 |---|---|---|
 | 2026-07-03 | setup | worktree + tracker created; scan not yet started |
 | 2026-07-03 | Phase 1 ✓ | entry points + cross-cutting read; 11 findings incl. shadowed error handlers (contradicts WP0.1), schema-init duplication (confirms WP2.4). Resume at Phase 2. |
+| 2026-07-03 | Wave 1 dispatched | Phases 2–10 (Python core) running as 9 parallel Sonnet agents, each writing docs/scan/PHASE_NN.md. Orchestrator merges into SCAN_FINDINGS.md + ticks boxes as each returns. Boxes stay unchecked until each phase's findings file is verified. |
