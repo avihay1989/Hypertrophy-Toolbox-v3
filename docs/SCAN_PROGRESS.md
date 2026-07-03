@@ -22,7 +22,7 @@ below is checked.**
 
 ---
 
-## ▶ RESUME AT: Phase 23 → synthesis (all reading phases 1–22 COMPLETE)
+## ✅ SCAN COMPLETE (23/23) — recommendations in [SCAN_RECOMMENDATIONS.md](SCAN_RECOMMENDATIONS.md)
 
 ---
 
@@ -196,10 +196,12 @@ below is checked.**
 - [x] Read all e2e/*.spec.ts; note flakes/known-reds
 - [x] scripts/*.py (17), package.json, playwright.config, .github/workflows/*.yml, conftest.py
 
-### [ ] Phase 23 — Synthesis → recommendations
-- [ ] Cross-cutting themes from findings
-- [ ] Validate / challenge each Phase in docs/REFACTOR_PLAN.md against what was actually read
-- [ ] Produce prioritized recommendation set
+### [x] Phase 23 — Synthesis → recommendations
+- [x] Cross-cutting themes from findings (SCAN_FINDINGS.md bottom section)
+- [x] Validate / challenge each Phase in docs/REFACTOR_PLAN.md against what was actually read
+- [x] Produce prioritized recommendation set → [SCAN_RECOMMENDATIONS.md](SCAN_RECOMMENDATIONS.md)
+
+**SCAN COMPLETE — 23/23.** Deliverable: [SCAN_RECOMMENDATIONS.md](SCAN_RECOMMENDATIONS.md).
 
 ---
 
@@ -213,3 +215,4 @@ below is checked.**
 | 2026-07-03 | Phases 11,13,14,17 ✓ | Wave 2 hit session limit; 4 of 12 files survived complete + merged. Phases 12,15,16,18-22 re-dispatched after reset. |
 | 2026-07-03 | Phase 19 ✓ | CSS part 2 merged: summary bundles 99.1% identical ×4 copies; tokens.css load-order inversion; workout-log.css debt champion; user-profile.css = target template. |
 | 2026-07-03 | Phases 12,15,16,18,20,21,22 ✓ | Wave 2 redispatch complete — ALL READING DONE (22/22). Key: WP3.4 split gaps; double-submit + triplicated-badge-logic bugs in log JS; @layer trap; siloed token namespaces; inverted backup test coverage; non-hermetic pytest files; vacuous E2E assertions; visual-helper class hardcoding. Next: Phase 23 synthesis. |
+| 2026-07-03 | Phase 23 ✓ | SYNTHESIS COMPLETE — SCAN_RECOMMENDATIONS.md written: 12-item bug-fix track, per-WP plan amendments, 3 new CSS prerequisite WPs, execution order. Scan closed 23/23. |
