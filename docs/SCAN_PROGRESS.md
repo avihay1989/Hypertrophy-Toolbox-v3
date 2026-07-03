@@ -22,20 +22,22 @@ below is checked.**
 
 ---
 
-## ▶ RESUME AT: Phase 1 → app.py
+## ▶ RESUME AT: Phase 2 → utils/database.py
 
 ---
 
-### [ ] Phase 1 — Entry points & cross-cutting (~1,300 LOC + docs)
-- [ ] app.py (327)
-- [ ] app_launcher.py (101)
-- [ ] utils/config.py
-- [ ] utils/logger.py (127)
-- [ ] utils/request_id.py (46)
-- [ ] utils/errors.py (259)
-- [ ] utils/constants.py (275)
-- [ ] utils/normalization.py (237)
-- [ ] Orientation docs: CLAUDE.md, docs/MASTER_HANDOVER.md, .claude/rules/*.md, per-dir CLAUDE.md
+### [x] Phase 1 — Entry points & cross-cutting (~1,300 LOC + docs)
+- [x] app.py (327)
+- [x] app_launcher.py (101)
+- [x] utils/config.py
+- [x] utils/logger.py (127)
+- [x] utils/request_id.py (46)
+- [x] utils/errors.py (259)
+- [x] utils/constants.py (275)
+- [x] utils/normalization.py (237)
+- [x] Orientation docs: CLAUDE.md, docs/MASTER_HANDOVER.md read. NOTE: subsystem rules deferred to
+      matching phases (database.md→P2, routes.md→P8, frontend.md→P12, testing.md→P21, debugging.md→P22);
+      per-dir CLAUDE.md read at the start of each phase.
 
 ### [ ] Phase 2 — Data layer & schema (~2,290 LOC)
 - [ ] utils/database.py (762)
@@ -205,3 +207,4 @@ below is checked.**
 | Date | Phases advanced | Notes |
 |---|---|---|
 | 2026-07-03 | setup | worktree + tracker created; scan not yet started |
+| 2026-07-03 | Phase 1 ✓ | entry points + cross-cutting read; 11 findings incl. shadowed error handlers (contradicts WP0.1), schema-init duplication (confirms WP2.4). Resume at Phase 2. |
