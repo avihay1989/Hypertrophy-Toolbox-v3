@@ -22,7 +22,7 @@ below is checked.**
 
 ---
 
-## ▶ RESUME AT: Phase 2 → utils/database.py
+## ▶ RESUME AT: Phase 11 → templates (Wave 2)
 
 ---
 
@@ -39,25 +39,25 @@ below is checked.**
       matching phases (database.md→P2, routes.md→P8, frontend.md→P12, testing.md→P21, debugging.md→P22);
       per-dir CLAUDE.md read at the start of each phase.
 
-### [ ] Phase 2 — Data layer & schema (~2,290 LOC)
-- [ ] utils/database.py (762)
-- [ ] utils/db_initializer.py (655)
-- [ ] utils/exercise_manager.py (201)
-- [ ] utils/filter_predicates.py (193)
-- [ ] utils/exercise_media.py (212)
-- [ ] utils/media_path.py (137)
-- [ ] utils/maintenance.py (129)
+### [x] Phase 2 — Data layer & schema (~2,290 LOC)
+- [x] utils/database.py (762)
+- [x] utils/db_initializer.py (655)
+- [x] utils/exercise_manager.py (201)
+- [x] utils/filter_predicates.py (193)
+- [x] utils/exercise_media.py (212)
+- [x] utils/media_path.py (137)
+- [x] utils/maintenance.py (129)
 
-### [ ] Phase 3 — Volume & summary calculations (~2,900 LOC)
-- [ ] utils/effective_sets.py (575)
-- [ ] utils/weekly_summary.py (464)
-- [ ] utils/session_summary.py (299)
-- [ ] utils/volume_progress.py (507)
-- [ ] utils/movement_patterns.py (506)
-- [ ] utils/volume_taxonomy.py (327)
-- [ ] utils/volume_classifier.py (105)
-- [ ] utils/volume_ai.py (71)
-- [ ] utils/volume_export.py (55)
+### [x] Phase 3 — Volume & summary calculations (~2,900 LOC)
+- [x] utils/effective_sets.py (575)
+- [x] utils/weekly_summary.py (464)
+- [x] utils/session_summary.py (299)
+- [x] utils/volume_progress.py (507)
+- [x] utils/movement_patterns.py (506)
+- [x] utils/volume_taxonomy.py (327)
+- [x] utils/volume_classifier.py (105)
+- [x] utils/volume_ai.py (71)
+- [x] utils/volume_export.py (55)
 
 ### [x] Phase 4 — Fatigue, progression, log (~2,370 LOC) — agent-read, merged
 - [x] utils/fatigue.py (751)
@@ -67,38 +67,38 @@ below is checked.**
 - [x] utils/body_fat.py (203)
 - [x] utils/workout_log.py (153)
 
-### [ ] Phase 5 — Estimator core (~2,420 LOC)
-- [ ] utils/profile_estimator.py (2418)
+### [x] Phase 5 — Estimator core (~2,420 LOC)
+- [x] utils/profile_estimator.py (2418)
 
-### [ ] Phase 6 — Plan generation & calibration (~2,480 LOC)
-- [ ] utils/plan_generator.py (1441)
-- [ ] utils/strength_calibration.py (845)
-- [ ] utils/lift_matching.py (195)
+### [x] Phase 6 — Plan generation & calibration (~2,480 LOC)
+- [x] utils/plan_generator.py (1441)
+- [x] utils/strength_calibration.py (845)
+- [x] utils/lift_matching.py (195)
 
-### [ ] Phase 7 — Backup, exports, misc utils (~1,350 LOC)
-- [ ] utils/program_backup.py (722)
-- [ ] utils/export_utils.py (458)
-- [ ] utils/auto_backup.py (87)
-- [ ] utils/__init__.py (80)
+### [x] Phase 7 — Backup, exports, misc utils (~1,350 LOC)
+- [x] utils/program_backup.py (722)
+- [x] utils/export_utils.py (458)
+- [x] utils/auto_backup.py (87)
+- [x] utils/__init__.py (80)
 
-### [ ] Phase 8 — Routes: workout_plan + filters (~2,260 LOC)
-- [ ] routes/workout_plan.py (1774)
-- [ ] routes/filters.py (489)
+### [x] Phase 8 — Routes: workout_plan + filters (~2,260 LOC)
+- [x] routes/workout_plan.py (1774)
+- [x] routes/filters.py (489)
 
-### [ ] Phase 9 — Routes: profile / exports / progression (~1,940 LOC)
-- [ ] routes/user_profile.py (877)
-- [ ] routes/exports.py (673)
-- [ ] routes/progression_plan.py (393)
+### [x] Phase 9 — Routes: profile / exports / progression (~1,940 LOC)
+- [x] routes/user_profile.py (877)
+- [x] routes/exports.py (673)
+- [x] routes/progression_plan.py (393)
 
-### [ ] Phase 10 — Routes: remainder (~1,470 LOC)
-- [ ] routes/body_composition.py (335)
-- [ ] routes/volume_splitter.py (313)
-- [ ] routes/workout_log.py (250)
-- [ ] routes/program_backup.py (233)
-- [ ] routes/weekly_summary.py (159)
-- [ ] routes/session_summary.py (146)
-- [ ] routes/fatigue.py (29)
-- [ ] routes/main.py
+### [x] Phase 10 — Routes: remainder (~1,470 LOC)
+- [x] routes/body_composition.py (335)
+- [x] routes/volume_splitter.py (313)
+- [x] routes/workout_log.py (250)
+- [x] routes/program_backup.py (233)
+- [x] routes/weekly_summary.py (159)
+- [x] routes/session_summary.py (146)
+- [x] routes/fatigue.py (29)
+- [x] routes/main.py
 
 ### [ ] Phase 11 — Templates (~4,770 LOC, incl. inline JS)
 - [ ] templates/workout_plan.html (856)
@@ -209,3 +209,4 @@ below is checked.**
 | 2026-07-03 | setup | worktree + tracker created; scan not yet started |
 | 2026-07-03 | Phase 1 ✓ | entry points + cross-cutting read; 11 findings incl. shadowed error handlers (contradicts WP0.1), schema-init duplication (confirms WP2.4). Resume at Phase 2. |
 | 2026-07-03 | Wave 1 dispatched | Phases 2–10 (Python core) running as 9 parallel Sonnet agents, each writing docs/scan/PHASE_NN.md. Orchestrator merges into SCAN_FINDINGS.md + ticks boxes as each returns. Boxes stay unchecked until each phase's findings file is verified. |
+| 2026-07-03 | Phases 2,3,5–10 ✓ | Wave 1 complete: all 9 Python-core agents merged. Python source 100% read. REFACTOR_PLAN.md copied into worktree (was untracked → invisible to agents). Wave 2 (11–22) dispatching. |
