@@ -229,6 +229,18 @@ Full detail: [scan/PHASE_17.md](scan/PHASE_17.md) (complete). Highlights:
   full export-surface documentation gap noted for any Phase-3 work.
 ## Phase 18 — CSS part 1
 ## Phase 19 — CSS part 2
+Full detail: [scan/PHASE_19.md](scan/PHASE_19.md). Highlights:
+- **weekly-summary ↔ session-summary CSS 99.1% byte-identical (diff-confirmed)** `[NEW]`; the same
+  ~1350-line frame block is copy-pasted into pages-workout-log.css (3rd copy) and
+  pages-workout-plan.css (4th). WP4.3's dedupe payoff is far larger than the plan sized.
+- **base.html loads tokens.css AFTER layout/components/navbar/a11y/route CSS** `[CONTRADICTS-PLAN]`
+  (frontend.md states the opposite order) — latent cascade-inversion risk for token overrides.
+- **pages-workout-log.css is the debt champion** `[RISK]`: 375 !important, 351 raw rgba(), 217
+  dark-mode blocks with genuinely DIFFERENT per-theme RGB values (not swappable) — WP4.2 undersizes it.
+- **pages-user-profile.css is the proven target end-state** `[NEW]`: 0 !important, 144 color-mix(),
+  ~1:1 token ratio, dark mode as single-property token swaps. Use as the WP4.2 template.
+- **Dead CSS ready for deletion** (zero refs): #isolated_muscles_filter, tooltipFadeIn keyframe
+  (declared 3×, used 0×), layout.css .tbl-show-*/.tbl-hide-sm helpers.
 ## Phase 20 — CSS part 3
 ## Phase 21 — Tests: pytest suite
 ## Phase 22 — E2E specs + build/CI config

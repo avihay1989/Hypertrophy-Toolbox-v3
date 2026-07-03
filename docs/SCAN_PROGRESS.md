@@ -166,12 +166,12 @@ below is checked.**
 - [ ] static/css/pages-workout-plan.css (8226)
 - [ ] static/css/components.css (4511)
 
-### [ ] Phase 19 — CSS part 2: log / profile / layout / summaries (~10,240 LOC)
-- [ ] static/css/pages-workout-log.css (3368)
-- [ ] static/css/pages-user-profile.css (1843)
-- [ ] static/css/layout.css (1841)
-- [ ] static/css/pages-weekly-summary.css (1601)
-- [ ] static/css/pages-session-summary.css (1587)
+### [x] Phase 19 — CSS part 2: log / profile / layout / summaries (~10,240 LOC)
+- [x] static/css/pages-workout-log.css (3368)
+- [x] static/css/pages-user-profile.css (1843)
+- [x] static/css/layout.css (1841)
+- [x] static/css/pages-weekly-summary.css (1601)
+- [x] static/css/pages-session-summary.css (1587)
 
 ### [ ] Phase 20 — CSS part 3: navbar / welcome / volume / remainder (~6,900 LOC)
 - [ ] static/css/navbar.css (1536)
@@ -211,3 +211,4 @@ below is checked.**
 | 2026-07-03 | Wave 1 dispatched | Phases 2–10 (Python core) running as 9 parallel Sonnet agents, each writing docs/scan/PHASE_NN.md. Orchestrator merges into SCAN_FINDINGS.md + ticks boxes as each returns. Boxes stay unchecked until each phase's findings file is verified. |
 | 2026-07-03 | Phases 2,3,5–10 ✓ | Wave 1 complete: all 9 Python-core agents merged. Python source 100% read. REFACTOR_PLAN.md copied into worktree (was untracked → invisible to agents). Wave 2 (11–22) dispatching. |
 | 2026-07-03 | Phases 11,13,14,17 ✓ | Wave 2 hit session limit; 4 of 12 files survived complete + merged. Phases 12,15,16,18-22 re-dispatched after reset. |
+| 2026-07-03 | Phase 19 ✓ | CSS part 2 merged: summary bundles 99.1%% identical ×4 copies; tokens.css load-order inversion; workout-log.css debt champion; user-profile.css = target template. |
