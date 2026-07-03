@@ -22,7 +22,7 @@ below is checked.**
 
 ---
 
-## ▶ RESUME AT: Phase 11 → templates (Wave 2)
+## ▶ RESUME AT: Phase 12 → workout-plan.js (Wave 2 redispatch: 12,15,16,18,19,20,21,22)
 
 ---
 
@@ -100,42 +100,42 @@ below is checked.**
 - [x] routes/fatigue.py (29)
 - [x] routes/main.py
 
-### [ ] Phase 11 — Templates (~4,770 LOC, incl. inline JS)
-- [ ] templates/workout_plan.html (856)
-- [ ] templates/user_profile.html (648)
-- [ ] templates/weekly_summary.html (621)
-- [ ] templates/session_summary.html (495)
-- [ ] templates/welcome.html (416)
-- [ ] templates/base.html (311)
-- [ ] templates/workout_log.html (292)
-- [ ] templates/backup.html (227)
-- [ ] templates/body_composition.html (220)
-- [ ] templates/progression_plan.html (177)
-- [ ] templates/volume_splitter.html (175)
-- [ ] templates/fatigue.html (102)
-- [ ] templates/_fatigue_muscle_bar.html (56)
-- [ ] templates/_fatigue_badge.html (56)
-- [ ] templates/partials/exercise_video_modal.html (52)
-- [ ] templates/error.html (51)
+### [x] Phase 11 — Templates (~4,770 LOC, incl. inline JS)
+- [x] templates/workout_plan.html (856)
+- [x] templates/user_profile.html (648)
+- [x] templates/weekly_summary.html (621)
+- [x] templates/session_summary.html (495)
+- [x] templates/welcome.html (416)
+- [x] templates/base.html (311)
+- [x] templates/workout_log.html (292)
+- [x] templates/backup.html (227)
+- [x] templates/body_composition.html (220)
+- [x] templates/progression_plan.html (177)
+- [x] templates/volume_splitter.html (175)
+- [x] templates/fatigue.html (102)
+- [x] templates/_fatigue_muscle_bar.html (56)
+- [x] templates/_fatigue_badge.html (56)
+- [x] templates/partials/exercise_video_modal.html (52)
+- [x] templates/error.html (51)
 
 ### [ ] Phase 12 — JS: workout-plan cluster (~2,730 LOC)
 - [ ] static/js/modules/workout-plan.js (2411)
 - [ ] static/js/modules/exercises.js (269)
 - [ ] static/js/modules/exercise-helpers.js (48)
 
-### [ ] Phase 13 — JS: profile / muscle-map / media (~2,890 LOC)
-- [ ] static/js/modules/user-profile.js (1483)
-- [ ] static/js/modules/muscle-selector.js (817)
-- [ ] static/js/modules/bodymap-svg.js (278)
-- [ ] static/js/modules/exercise-video-modal.js (177)
-- [ ] static/js/modules/exercise-image-preview.js (131)
+### [x] Phase 13 — JS: profile / muscle-map / media (~2,890 LOC)
+- [x] static/js/modules/user-profile.js (1483)
+- [x] static/js/modules/muscle-selector.js (817)
+- [x] static/js/modules/bodymap-svg.js (278)
+- [x] static/js/modules/exercise-video-modal.js (177)
+- [x] static/js/modules/exercise-image-preview.js (131)
 
-### [ ] Phase 14 — JS: backup / volume-splitter (~2,480 LOC)
-- [ ] static/js/modules/backup-center.js (1005)
-- [ ] static/js/modules/volume-splitter.js (912)
-- [ ] static/js/modules/plan_volume_panel.js (248)
-- [ ] static/js/modules/program-backup.js (174)
-- [ ] static/js/modules/exports.js (143)
+### [x] Phase 14 — JS: backup / volume-splitter (~2,480 LOC)
+- [x] static/js/modules/backup-center.js (1005)
+- [x] static/js/modules/volume-splitter.js (912)
+- [x] static/js/modules/plan_volume_panel.js (248)
+- [x] static/js/modules/program-backup.js (174)
+- [x] static/js/modules/exports.js (143)
 
 ### [ ] Phase 15 — JS: log / filters / dropdowns (~2,600 LOC)
 - [ ] static/js/modules/workout-log.js (818)
@@ -151,16 +151,16 @@ below is checked.**
 - [ ] static/js/modules/summary.js (133)
 - [ ] static/js/modules/charts.js (59)
 
-### [ ] Phase 17 — JS: app infra & shared (~2,010 LOC)
-- [ ] static/js/app.js (298)
-- [ ] static/js/modules/ui-handlers.js (443)
-- [ ] static/js/modules/navbar-enhancements.js (316)
-- [ ] static/js/modules/fetch-wrapper.js (263)
-- [ ] static/js/accessibility.js (264)
-- [ ] static/js/modules/workout-controls-animation.js (175)
-- [ ] static/js/modules/toast.js (111)
-- [ ] static/js/darkMode.js (81)
-- [ ] static/js/modules/navbar.js (58)
+### [x] Phase 17 — JS: app infra & shared (~2,010 LOC)
+- [x] static/js/app.js (298)
+- [x] static/js/modules/ui-handlers.js (443)
+- [x] static/js/modules/navbar-enhancements.js (316)
+- [x] static/js/modules/fetch-wrapper.js (263)
+- [x] static/js/accessibility.js (264)
+- [x] static/js/modules/workout-controls-animation.js (175)
+- [x] static/js/modules/toast.js (111)
+- [x] static/js/darkMode.js (81)
+- [x] static/js/modules/navbar.js (58)
 
 ### [ ] Phase 18 — CSS part 1: workout-plan + components (~12,740 LOC)
 - [ ] static/css/pages-workout-plan.css (8226)
@@ -210,3 +210,4 @@ below is checked.**
 | 2026-07-03 | Phase 1 ✓ | entry points + cross-cutting read; 11 findings incl. shadowed error handlers (contradicts WP0.1), schema-init duplication (confirms WP2.4). Resume at Phase 2. |
 | 2026-07-03 | Wave 1 dispatched | Phases 2–10 (Python core) running as 9 parallel Sonnet agents, each writing docs/scan/PHASE_NN.md. Orchestrator merges into SCAN_FINDINGS.md + ticks boxes as each returns. Boxes stay unchecked until each phase's findings file is verified. |
 | 2026-07-03 | Phases 2,3,5–10 ✓ | Wave 1 complete: all 9 Python-core agents merged. Python source 100% read. REFACTOR_PLAN.md copied into worktree (was untracked → invisible to agents). Wave 2 (11–22) dispatching. |
+| 2026-07-03 | Phases 11,13,14,17 ✓ | Wave 2 hit session limit; 4 of 12 files survived complete + merged. Phases 12,15,16,18-22 re-dispatched after reset. |

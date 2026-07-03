@@ -188,12 +188,45 @@ Full detail: [scan/PHASE_10.md](scan/PHASE_10.md). Highlights:
 - **WP2.4 wrapper confirmed**: program_backup.py:226-234 pure wrapper; caller map pinned (prepare_visual_db
   → routes wrapper; conftest → utils direct). `[CONFIRMS-PLAN]`
 ## Phase 11 — Templates
+Full detail: [scan/PHASE_11.md](scan/PHASE_11.md) (complete; agent killed pre-summary). Highlights:
+- **`<main>` landmark inconsistent across all templates** `[NEW][RISK]`: base.html:219 uses a plain div;
+  5 templates nest their own `<main>`; 7 pages have NO main landmark → real a11y gap, unscoped by any WP.
+- **Three coexisting "server data → JS" conventions** `[NEW]`: JSON script tag (user_profile.html:280),
+  plain data-* attrs (body_composition.html:10-15), tojson-in-data-* (volume_splitter.html:25-29).
+- Query-string cache-buster on static assets noted as a cheap perf win (replace with content hash).
 ## Phase 12 — JS: workout-plan cluster
 ## Phase 13 — JS: profile / muscle-map / media
+Full detail: [scan/PHASE_13.md](scan/PHASE_13.md) (complete). Highlights:
+- **PR #87 MuscleMap unification verified clean at JS level** `[CONFIRMS-PLAN]`: no dead workout-cool/
+  react-body-highlighter code in muscle-selector.js/bodymap-svg.js; leftovers are comment/test-docstring
+  only (test_muscle_selector_mapping.py:151 stale "workout-cool" naming — cosmetic).
+- **muscle-selector region→leaf decision table is Python-ported in tests** (good drift-guard practice,
+  TestRegionVisualState) — pattern worth replicating for body_fat↔body-composition.js.
+- **user-profile.js:1100-1154 vs 1187-1234 — duplicated optimistic-update pattern** `[NEW]` for
+  settings toggles; fold into any future user-profile.js split.
+
 ## Phase 14 — JS: backup / volume-splitter
+Full detail: [scan/PHASE_14.md](scan/PHASE_14.md) (complete). Highlights:
+- **WP3.5 fetch counts exactly right (7 + 2)** `[CONFIRMS-PLAN]` — BUT volume-splitter.js:16-90 is a
+  ~50-line parallel reimplementation of apiFetch's envelope/error logic that should be deleted wholesale,
+  not call-site-swapped. Amend WP3.5 scope. `[CONTRADICTS-PLAN, scope]`
+- **program-backup.js:104-162 showAutoBackupBanner — fully-built orphaned feature** `[NEW]`: defined,
+  imported into app.js, window-assigned, ZERO call sites; welcome.html erase flow never calls it.
+  Wire it up or delete (~60 lines + wiring).
+- **Silent failure in volume-splitter's highest-frequency call** `[RISK]`; backup-center.js vs
+  program-backup.js refresh interplay dismisses in-flight restore confirmations (UX regression noted).
 ## Phase 15 — JS: log / filters / dropdowns
 ## Phase 16 — JS: progression / body-comp / tables / summary
 ## Phase 17 — JS: app infra & shared
+Full detail: [scan/PHASE_17.md](scan/PHASE_17.md) (complete). Highlights:
+- **app.js:99,111,158,162 — toast severity bug, reachable in production** `[NEW][RISK]`: four call
+  sites pass 'warning'/'error' as toast.js's legacy boolean 2nd arg (toast.js:17 coerces non-boolean
+  → false) so warnings AND errors render as green success toasts. Behavior-changing fix → standalone
+  bug ticket, not a refactor WP.
+- **fetch-wrapper.js has ZERO blob/binary support** `[CONFIRMS-PLAN]` — confirms WP3.5's carve-out:
+  export/download raw fetches MUST stay raw (or the wrapper needs a blob mode first).
+- toast.js dual API (legacy positional + object-style) is the root enabler of the severity bug;
+  full export-surface documentation gap noted for any Phase-3 work.
 ## Phase 18 — CSS part 1
 ## Phase 19 — CSS part 2
 ## Phase 20 — CSS part 3
