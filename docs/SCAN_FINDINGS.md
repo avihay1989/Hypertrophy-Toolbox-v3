@@ -195,6 +195,20 @@ Full detail: [scan/PHASE_11.md](scan/PHASE_11.md) (complete; agent killed pre-su
   plain data-* attrs (body_composition.html:10-15), tojson-in-data-* (volume_splitter.html:25-29).
 - Query-string cache-buster on static assets noted as a cheap perf win (replace with content hash).
 ## Phase 12 — JS: workout-plan cluster
+Full detail: [scan/PHASE_12.md](scan/PHASE_12.md). Highlights:
+- **Toast severity bug re-confirmed at app.js:99,111,158,162** (generateStarterPlan paths);
+  workout-plan.js/exercises.js themselves clean of the pattern. `[RISK]`
+- **TWO full duplicate "Add Exercise" flows** `[NEW]`: exercises.js addExercise/sendExerciseData/
+  resetFormFields/validateExerciseValues are dead-but-window-assigned (survives a rule-8 grep!);
+  workout-plan.js has the parallel, actually-wired versions with different bodies.
+- **WP3.4's 4-leaf split has no home for ~660 lines (~27%)** `[CONTRADICTS-PLAN]`: AMRAP/EMOM
+  execution-style picker (~220), swap/replace (~140), Add-Exercise form cluster (~300).
+- **table.js/supersets.js not cleanly separable** `[CONTRADICTS-PLAN]`: superset color/adjacency
+  logic inlined in updateWorkoutPlanTable row loop + DnD; 4 shared mutable module-state vars cross
+  the proposed boundary (selectedExerciseIds, supersetColorMap, allExercisesCache,
+  currentRoutineTabFilter) — plan names no shared-state module.
+- **Event-listener leak confirmed** `[RISK]`: showExecutionStylePicker (workout-plan.js:383-390) —
+  3 of 4 close paths never remove the document outside-click listener.
 ## Phase 13 — JS: profile / muscle-map / media
 Full detail: [scan/PHASE_13.md](scan/PHASE_13.md) (complete). Highlights:
 - **PR #87 MuscleMap unification verified clean at JS level** `[CONFIRMS-PLAN]`: no dead workout-cool/
@@ -216,7 +230,37 @@ Full detail: [scan/PHASE_14.md](scan/PHASE_14.md) (complete). Highlights:
 - **Silent failure in volume-splitter's highest-frequency call** `[RISK]`; backup-center.js vs
   program-backup.js refresh interplay dismisses in-flight restore confirmations (UX regression noted).
 ## Phase 15 — JS: log / filters / dropdowns
+Full detail: [scan/PHASE_15.md](scan/PHASE_15.md). Highlights:
+- **Double-submission bug on every scored-value edit** `[RISK]`: workout_log.html inline onchange
+  races ui-handlers.js's 500ms-debounced input handler — two identical /update_workout_log POSTs,
+  each re-running server calibration recompute + toast.
+- **Progression-badge correctness bug from TRIPLICATED logic** `[RISK]`: handleDateChange
+  (workout-log.js:801-807) omits the isWeightProgression() assisted-bodyweight special case that the
+  other two copies (:388-395, :580-586) apply.
+- **~96 lines front-to-back dead** `[NEW]` (workout-log.js:595-690): selectors that don't exist in
+  the template; POST to /filter_workout_logs — a route that doesn't exist anywhere.
+- **Validation is enforced NOWHERE in the update path** `[RISK]`: client validateScoredValue is
+  cosmetic (toggles CSS, never blocks save); server update_workout_log does zero range/type checks.
+  Confirms + extends the Phase-8 server-side gap.
+- **workout-dropdowns.js _cleanupHandler built but never invoked** `[NEW]` — real per-session
+  listener/popover leak on workout_plan. Also: 3rd/4th hand-synced taxonomy lists (muscle names in
+  filter-view-mode.js vs constants.py; routine names in routine-cascade.js vs plan_generator.py);
+  dead showToast import in routine-cascade.js; no toast legacy-arg misuse in these four files.
 ## Phase 16 — JS: progression / body-comp / tables / summary
+Full detail: [scan/PHASE_16.md](scan/PHASE_16.md). Highlights:
+- **charts.js fully dead in production** `[NEW]`: reachable via initializeCharts() but no template
+  creates [data-chart] and Chart.js is never loaded (Chart global doesn't exist).
+- **summary.js exports are permanent no-ops** `[NEW]`: self-guard pageHasOwnUpdater() is always true
+  (templates define their own window-scoped updaters). The ~395 inline JS lines WP3.2 targets are the
+  ONLY live implementation, not a duplicate — extraction is a move, not a merge.
+- **Body-comp parity gap quantified** `[RISK]`: e2e parity test covers only compute_navy, male, one
+  input; compute_bmi/ace_category/jackson_pollock_ideal have ZERO parity assertions (4 functions
+  mandated byte-identical by body_fat.py docstring — currently verified identical by read).
+- **progression-plan.js:523-573 dead AND broken** `[NEW]`: createSuggestionCard/openGoalModal no
+  callers; openGoalModal calls getCurrentValue() which doesn't exist anywhere in the repo.
+- **filters.js: exactly 1 raw fetch (line 222)** `[CONFIRMS-PLAN]`. table-responsiveness.js has ~3
+  runtime-unreachable exports — a JS dead-code category (call-graph-reachable, runtime-unreachable)
+  that Phase 0 (Python-only) doesn't cover.
 ## Phase 17 — JS: app infra & shared
 Full detail: [scan/PHASE_17.md](scan/PHASE_17.md) (complete). Highlights:
 - **app.js:99,111,158,162 — toast severity bug, reachable in production** `[NEW][RISK]`: four call
@@ -228,6 +272,36 @@ Full detail: [scan/PHASE_17.md](scan/PHASE_17.md) (complete). Highlights:
 - toast.js dual API (legacy positional + object-style) is the root enabler of the severity bug;
   full export-surface documentation gap noted for any Phase-3 work.
 ## Phase 18 — CSS part 1
+Full detail: [scan/PHASE_18.md](scan/PHASE_18.md). Highlights:
+- **@layer cascade trap** `[RISK]`: no explicit @layer order statement anywhere; components.css and
+  pages-workout-plan.css both open `@layer workout {}` (silently merged by load order); ~100% of
+  in-layer rules carry !important — a workaround for losing to unlayered rules. Removing !important
+  without first declaring layer order reintroduces cascade bugs. WP4.2 prerequisite.
+- **~600 lines of MISFILED page content in pages-workout-plan.css** `[NEW]`: .workout-log-frame
+  (~155, belongs to Log) + .summary-* families (~440, belongs to Summaries), both ALSO duplicated in
+  components.css. WP4.3 needs a "relocate" step, not just "hoist shared".
+- **Bimodal token adoption** `[NEW]`: new sections (superset, fatigue-context, Calm Glass) tokenized;
+  ~70% older code hardcodes literals even where a same-file token exists.
+- **Two overlapping spacing-token vocabularies in tokens.css itself** (--space-* legacy vs --s-* Calm
+  Glass, same values) `[RISK]` — WP4.1 merge hazard, resolve first.
+- **Dead**: .legend-mode-badge, ADVANCED MODE grouped-legend block, .view-toggle-group (~60 lines).
+
+## Phase 20 — CSS part 3 (+ SCSS pipeline)
+Full detail: [scan/PHASE_20.md](scan/PHASE_20.md). Highlights:
+- **bootstrap.custom.min.css is NOT pure Bootstrap** `[RISK]`: silently bundles compiled .fatigue-*
+  and .vp-*/.volume-active-summary from SCSS — invisible to static/css-only audits; name-collides
+  with unrelated .volume-* in pages-volume-splitter.css.
+- **navbar.css = three overlapping live redesign generations** `[CONTRADICTS-PLAN]` (token @layer +
+  hardcoded !important legacy + newer :where() Calm Glass) — much harder than generic WP4.2 treatment.
+- **theme-dark.css needs per-rule triage, not bulk deletion** `[CONTRADICTS-PLAN]`: legacy hex layer
+  (incl. a pastel duplicate whose light twin lives in another file) + newer variable-remap layer that
+  only partially supersedes it.
+- **Four template-verified dead blocks** `[NEW]`: volume-splitter 3-col layout; progression's ~75-line
+  dropdown section that targets workout_plan.html elements; base.css .loading-spinner/.fade-enter*;
+  base.css .skeleton fully shadowed by motion.css.
+- **Six siloed local token namespaces** (--wl-*, --nav-*, --bc-*, --backup-*, --volume-*, --fatigue-*)
+  none referencing tokens.css `[NEW]` — the real duplication is one level above hardcoded colors;
+  WP4.1's framing undercounts it.
 ## Phase 19 — CSS part 2
 Full detail: [scan/PHASE_19.md](scan/PHASE_19.md). Highlights:
 - **weekly-summary ↔ session-summary CSS 99.1% byte-identical (diff-confirmed)** `[NEW]`; the same
@@ -243,7 +317,39 @@ Full detail: [scan/PHASE_19.md](scan/PHASE_19.md). Highlights:
   (declared 3×, used 0×), layout.css .tbl-show-*/.tbl-hide-sm helpers.
 ## Phase 20 — CSS part 3
 ## Phase 21 — Tests: pytest suite
+Full detail: [scan/PHASE_21.md](scan/PHASE_21.md) (incl. full coverage matrix). Highlights:
+- **effective_sets second pipeline: deletion touches exactly 26 tests in test_effective_sets.py**
+  `[CONFIRMS P3]` — clean one-shot removal.
+- **Backup coverage is INVERTED** `[NEW][RISK]`: create_auto_backup_before_erase (dead) has 7 tests;
+  create_startup_backup (live in /erase-data + startup) has ZERO tests.
+- **update_exercise permissiveness is untested-by-pytest** `[CONFIRMS P8]`: only Playwright
+  validation-boundary.spec.ts touches it — and (per P22) those assertions are largely vacuous.
+- **weight==0 bug is ENSHRINED** `[RISK]`: test_add_exercise_missing_weight asserts the rejection;
+  conflicts with logging-side tests that treat scored_weight=0.0 as legit assisted-bodyweight.
+  Plan-vs-log semantic inconsistency, owner decision needed.
+- **Two test files read the LIVE data/database.db** `[RISK]`: test_volume_taxonomy.py,
+  test_catalog_invariants.py bypass fixture isolation — "full pytest == baseline" is not hermetic.
+- lift_matching + exercise_media have no direct unit tests (transitive only); body-fat parity has
+  zero pytest coverage (Playwright-only) — gates for WPs touching those must include the e2e spec.
+
 ## Phase 22 — E2E specs + build/CI config
+Full detail: [scan/PHASE_22.md](scan/PHASE_22.md). Highlights:
+- **WP0.4 misclassification** `[CONTRADICTS-PLAN]`: scripts/seed_visual_baseline.py is on the
+  "must stay" list but has ZERO code/CI/e2e refs (doc mentions only) — fails the plan's own archive
+  standard; distinct from e2e/scripts/build_visual_seed.py.
+- **Tier-1 CSS-cleanup fragility** `[RISK]`: e2e/visual-helpers.ts prepareForScreenshot() hardcodes
+  ~25 class names in an override stylesheet shared by ALL visual specs (66 screenshots) — Phase-4
+  renames won't error, they'll silently pollute every pixel diff.
+- **Exact-RGB assertions in REQUIRED CI specs** `[RISK]`: nav-dropdown.spec.ts (nav icon colors),
+  summary-pages.spec.ts (legend swatches) hard-fail on token consolidation — but Phase 4's stated
+  gates don't include these functional specs.
+- **Vacuous assertions inflate the safety net** `[RISK]`: expect(true).toBeTruthy() / `x || true`
+  patterns across validation-boundary, empty-states, exercise-interactions, superset-edge-cases —
+  ~half the documented input-validation E2E coverage cannot fail.
+- **fatigue-context.spec.ts (327 lines, real 2D-A coverage) runs in NO CI path** `[NEW]` — absent
+  from required shards and from e2e/CLAUDE.md's inclusion table; deep-gate only, undocumented.
+- testing.md spec ledger stale (17/315 vs actual 28) `[CONFIRMS-PLAN item #10]`; body-comp parity
+  spec verified exactly as P16 described.
 
 ---
 
@@ -271,3 +377,25 @@ Full detail: [scan/PHASE_19.md](scan/PHASE_19.md). Highlights:
 - **Doc staleness** — CLAUDE.md startup 6 vs 8 (P1); handover SHA pointer (P1); routes.md validation
   claims (P8); REFACTOR_PLAN.md untracked → invisible in worktrees (P10, now copied in).
 - **Duplicate helpers** — get_request_id ×2 (P1).
+
+### Wave-2 additions (frontend/tests/CI):
+- **JS dead code is a first-class category the plan lacks** — charts.js + summary.js no-ops (P16),
+  exercises.js duplicate Add-Exercise flow (P12), workout-log.js 96 dead lines incl. a POST to a
+  nonexistent route (P15), showAutoBackupBanner orphan (P14), progression legacy calling a
+  nonexistent function (P16), dropdown _cleanupHandler never invoked (P15). "Window-assigned but
+  never called" defeats the plan's rule-8 grep.
+- **Triplicated/duplicated client logic with drift already realized** — progression-badge logic ×3
+  with one copy missing the assisted-bodyweight case (P15); apiFetch reimplemented in
+  volume-splitter.js (P14); 3rd/4th hand-synced taxonomy lists in JS (P15).
+- **Validation void spans the full stack** — server: none on update paths (P8); client: cosmetic
+  only (P15); pytest: gap confirmed (P21); E2E: vacuous assertions (P22). The app effectively has
+  no enforced input validation on updates anywhere.
+- **CSS: the plan's WP4.x are right in direction but mis-sized** — 4× copy-pasted ~1350-line frame
+  block (P19); @layer/!important trap needs an order statement first (P18); six siloed token
+  namespaces + duplicate spacing vocabularies (P18,P20); theme-dark + navbar need triage not bulk
+  treatment (P20); tokens.css loads after its consumers (P19); misfiled page content (P18).
+- **Test safety net weaker than counts suggest** — inverted backup coverage (P21), non-hermetic
+  live-DB tests (P21), vacuous E2E assertions (P22), fatigue-context spec in no CI path (P22),
+  exact-RGB assertions primed to fail Phase 4 (P22), visual-helpers hardcoding ~25 class names (P22).
+- **UI event-handling races/leaks** — double-submit on scored edits (P15), execution-picker listener
+  leak (P12), popover leak (P15), toast severity bug (P17/P12).

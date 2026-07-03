@@ -22,7 +22,7 @@ below is checked.**
 
 ---
 
-## ▶ RESUME AT: Phase 12 → workout-plan.js (Wave 2 redispatch: 12,15,16,18,19,20,21,22)
+## ▶ RESUME AT: Phase 23 → synthesis (all reading phases 1–22 COMPLETE)
 
 ---
 
@@ -118,10 +118,10 @@ below is checked.**
 - [x] templates/partials/exercise_video_modal.html (52)
 - [x] templates/error.html (51)
 
-### [ ] Phase 12 — JS: workout-plan cluster (~2,730 LOC)
-- [ ] static/js/modules/workout-plan.js (2411)
-- [ ] static/js/modules/exercises.js (269)
-- [ ] static/js/modules/exercise-helpers.js (48)
+### [x] Phase 12 — JS: workout-plan cluster (~2,730 LOC)
+- [x] static/js/modules/workout-plan.js (2411)
+- [x] static/js/modules/exercises.js (269)
+- [x] static/js/modules/exercise-helpers.js (48)
 
 ### [x] Phase 13 — JS: profile / muscle-map / media (~2,890 LOC)
 - [x] static/js/modules/user-profile.js (1483)
@@ -137,19 +137,19 @@ below is checked.**
 - [x] static/js/modules/program-backup.js (174)
 - [x] static/js/modules/exports.js (143)
 
-### [ ] Phase 15 — JS: log / filters / dropdowns (~2,600 LOC)
-- [ ] static/js/modules/workout-log.js (818)
-- [ ] static/js/modules/filter-view-mode.js (725)
-- [ ] static/js/modules/workout-dropdowns.js (646)
-- [ ] static/js/modules/routine-cascade.js (414)
+### [x] Phase 15 — JS: log / filters / dropdowns (~2,600 LOC)
+- [x] static/js/modules/workout-log.js (818)
+- [x] static/js/modules/filter-view-mode.js (725)
+- [x] static/js/modules/workout-dropdowns.js (646)
+- [x] static/js/modules/routine-cascade.js (414)
 
-### [ ] Phase 16 — JS: progression / body-comp / tables / summary (~2,120 LOC)
-- [ ] static/js/modules/progression-plan.js (573)
-- [ ] static/js/table-responsiveness.js (514)
-- [ ] static/js/modules/body-composition.js (490)
-- [ ] static/js/modules/filters.js (348)
-- [ ] static/js/modules/summary.js (133)
-- [ ] static/js/modules/charts.js (59)
+### [x] Phase 16 — JS: progression / body-comp / tables / summary (~2,120 LOC)
+- [x] static/js/modules/progression-plan.js (573)
+- [x] static/js/table-responsiveness.js (514)
+- [x] static/js/modules/body-composition.js (490)
+- [x] static/js/modules/filters.js (348)
+- [x] static/js/modules/summary.js (133)
+- [x] static/js/modules/charts.js (59)
 
 ### [x] Phase 17 — JS: app infra & shared (~2,010 LOC)
 - [x] static/js/app.js (298)
@@ -162,9 +162,9 @@ below is checked.**
 - [x] static/js/darkMode.js (81)
 - [x] static/js/modules/navbar.js (58)
 
-### [ ] Phase 18 — CSS part 1: workout-plan + components (~12,740 LOC)
-- [ ] static/css/pages-workout-plan.css (8226)
-- [ ] static/css/components.css (4511)
+### [x] Phase 18 — CSS part 1: workout-plan + components (~12,740 LOC)
+- [x] static/css/pages-workout-plan.css (8226)
+- [x] static/css/components.css (4511)
 
 ### [x] Phase 19 — CSS part 2: log / profile / layout / summaries (~10,240 LOC)
 - [x] static/css/pages-workout-log.css (3368)
@@ -173,28 +173,28 @@ below is checked.**
 - [x] static/css/pages-weekly-summary.css (1601)
 - [x] static/css/pages-session-summary.css (1587)
 
-### [ ] Phase 20 — CSS part 3: navbar / welcome / volume / remainder (~6,900 LOC)
-- [ ] static/css/navbar.css (1536)
-- [ ] static/css/pages-welcome.css (1084)
-- [ ] static/css/pages-volume-splitter.css (1059)
-- [ ] static/css/a11y.css (813)
-- [ ] static/css/theme-dark.css (621)
-- [ ] static/css/pages-backup.css (497)
-- [ ] static/css/tokens.css (433)
-- [ ] static/css/pages-progression.css (341)
-- [ ] static/css/pages-body-composition.css (324)
-- [ ] static/css/base.css (123)
-- [ ] static/css/motion.css (71)
-- [ ] scss/_fatigue.scss (528)
-- [ ] scss/pages/_workout_plan_volume_panel.scss (299)
-- [ ] scss/custom-bootstrap.scss (53)
+### [x] Phase 20 — CSS part 3: navbar / welcome / volume / remainder (~6,900 LOC)
+- [x] static/css/navbar.css (1536)
+- [x] static/css/pages-welcome.css (1084)
+- [x] static/css/pages-volume-splitter.css (1059)
+- [x] static/css/a11y.css (813)
+- [x] static/css/theme-dark.css (621)
+- [x] static/css/pages-backup.css (497)
+- [x] static/css/tokens.css (433)
+- [x] static/css/pages-progression.css (341)
+- [x] static/css/pages-body-composition.css (324)
+- [x] static/css/base.css (123)
+- [x] static/css/motion.css (71)
+- [x] scss/_fatigue.scss (528)
+- [x] scss/pages/_workout_plan_volume_panel.scss (299)
+- [x] scss/custom-bootstrap.scss (53)
 
-### [ ] Phase 21 — Tests: pytest suite (58 files)
-- [ ] Read all tests/*.py; map coverage per subsystem (fill coverage matrix in findings)
+### [x] Phase 21 — Tests: pytest suite (58 files)
+- [x] Read all tests/*.py; map coverage per subsystem (fill coverage matrix in findings)
 
-### [ ] Phase 22 — E2E specs + build/CI config (28 specs + config)
-- [ ] Read all e2e/*.spec.ts; note flakes/known-reds
-- [ ] scripts/*.py (17), package.json, playwright.config, .github/workflows/*.yml, conftest.py
+### [x] Phase 22 — E2E specs + build/CI config (28 specs + config)
+- [x] Read all e2e/*.spec.ts; note flakes/known-reds
+- [x] scripts/*.py (17), package.json, playwright.config, .github/workflows/*.yml, conftest.py
 
 ### [ ] Phase 23 — Synthesis → recommendations
 - [ ] Cross-cutting themes from findings
@@ -211,4 +211,5 @@ below is checked.**
 | 2026-07-03 | Wave 1 dispatched | Phases 2–10 (Python core) running as 9 parallel Sonnet agents, each writing docs/scan/PHASE_NN.md. Orchestrator merges into SCAN_FINDINGS.md + ticks boxes as each returns. Boxes stay unchecked until each phase's findings file is verified. |
 | 2026-07-03 | Phases 2,3,5–10 ✓ | Wave 1 complete: all 9 Python-core agents merged. Python source 100% read. REFACTOR_PLAN.md copied into worktree (was untracked → invisible to agents). Wave 2 (11–22) dispatching. |
 | 2026-07-03 | Phases 11,13,14,17 ✓ | Wave 2 hit session limit; 4 of 12 files survived complete + merged. Phases 12,15,16,18-22 re-dispatched after reset. |
-| 2026-07-03 | Phase 19 ✓ | CSS part 2 merged: summary bundles 99.1%% identical ×4 copies; tokens.css load-order inversion; workout-log.css debt champion; user-profile.css = target template. |
+| 2026-07-03 | Phase 19 ✓ | CSS part 2 merged: summary bundles 99.1% identical ×4 copies; tokens.css load-order inversion; workout-log.css debt champion; user-profile.css = target template. |
+| 2026-07-03 | Phases 12,15,16,18,20,21,22 ✓ | Wave 2 redispatch complete — ALL READING DONE (22/22). Key: WP3.4 split gaps; double-submit + triplicated-badge-logic bugs in log JS; @layer trap; siloed token namespaces; inverted backup test coverage; non-hermetic pytest files; vacuous E2E assertions; visual-helper class hardcoding. Next: Phase 23 synthesis. |
