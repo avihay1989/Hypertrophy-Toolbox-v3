@@ -7,7 +7,7 @@
 {% endblock %}
 
 {% block content %}
-<main id="body-composition" class="body-composition-page" data-page="body-composition" data-testid="body-composition-page" role="main"
+<div id="body-composition" class="body-composition-page" data-page="body-composition" data-testid="body-composition-page"
       data-bc-app="true"
       data-profile-gender="{{ profile.get('gender') or '' }}"
       data-profile-age="{{ profile.get('age') or '' }}"
@@ -212,7 +212,7 @@
             </section>
         </div>
     </div>
-</main>
+</div>
 {% endblock %}
 
 {% block page_js %}

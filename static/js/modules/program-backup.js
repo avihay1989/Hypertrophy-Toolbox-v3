@@ -129,10 +129,13 @@ export function showAutoBackupBanner(autoBackup) {
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     `;
 
-    // Insert at top of main content
-    const main = document.querySelector('main') || document.querySelector('.container-fluid');
-    if (main) {
-        main.insertBefore(banner, main.firstChild);
+    // Keep the home-page banner inside the welcome content. The base template
+    // owns the document's sole <main> landmark, so selecting the first main
+    // would otherwise move this banner outside its historical page wrapper.
+    const bannerHost = document.querySelector('[data-page="welcome"]')
+        || document.getElementById('main-content');
+    if (bannerHost) {
+        bannerHost.insertBefore(banner, bannerHost.firstChild);
     }
 }
 

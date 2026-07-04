@@ -216,14 +216,14 @@
     </header>
 
     <!-- Main Content Area -->
-    <div id="main-content" class="container-fluid mt-4">
+    <main id="main-content" class="container-fluid mt-4" tabindex="-1">
         {% block content %}
         <!-- Default Fallback Content -->
         <div class="alert alert-info text-center" role="alert">
             Content is loading. Please wait...
         </div>
         {% endblock %}
-    </div>
+    </main>
 
     <!-- Toast Notification Section -->
     <div 
