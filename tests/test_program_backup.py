@@ -160,6 +160,7 @@ class TestProgramBackup:
                 "SELECT COUNT(*) as cnt FROM program_backup_items WHERE backup_id = ?",
                 (backup["id"],),
             )
+            assert row is not None
             assert row["cnt"] == backup["item_count"]
             assert row["cnt"] == 2
 
