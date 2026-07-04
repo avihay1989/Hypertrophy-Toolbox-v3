@@ -25,11 +25,14 @@ class ExerciseManager:
         min_rep_range: int,
         max_rep_range: int,
         rir: Optional[int],
-        weight: float,
+        weight: Optional[float],
         rpe: Optional[float] = None,
     ) -> str:
         """Add a selection entry, preventing duplicate routine/exercise pairs."""
-        if not all([routine, exercise, sets, min_rep_range, max_rep_range, weight]):
+        # weight == 0 is a valid value (bodyweight/assisted exercises); only
+        # None/absent/empty-string weight counts as missing. The other required
+        # fields keep their existing truthiness check.
+        if not all([routine, exercise, sets, min_rep_range, max_rep_range]) or weight is None or weight == "":
             logger.warning("Rejecting add_exercise due to missing fields")
             return "Error: Missing required fields."
 

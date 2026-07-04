@@ -178,6 +178,40 @@ class TestReplaceExerciseEndpoint:
         assert updated_row['exercise'] == "Front Squat"
         assert updated_row['routine'] == "Leg Day"
     
+    def test_replace_exercise_preserves_exercise_order_zero(self, client, exercise_factory, workout_plan_factory):
+        """exercise_order=0 (the first position) must survive a replace/swap, not be dropped as missing."""
+        from utils.database import DatabaseHandler
+
+        exercise1 = exercise_factory(
+            "Deadlift",
+            primary_muscle_group="Back",
+            equipment="Barbell"
+        )
+        exercise_factory(
+            "Romanian Deadlift",
+            primary_muscle_group="Back",
+            equipment="Barbell"
+        )
+
+        plan_id = workout_plan_factory(exercise_name=exercise1, routine="Pull Day")
+
+        with DatabaseHandler() as db:
+            db.execute_query(
+                "UPDATE user_selection SET exercise_order = 0 WHERE id = ?",
+                (plan_id,)
+            )
+
+        response = client.post('/replace_exercise', json={
+            "id": plan_id
+        })
+
+        assert response.status_code == 200
+        data = response.get_json()
+
+        assert data['ok'] is True
+        updated_row = data['data']['updated_row']
+        assert updated_row['exercise_order'] == 0
+
     def test_replace_exercise_ai_strategy(self, client, exercise_factory, workout_plan_factory):
         """Test replacement with AI strategy specified."""
         exercise1 = exercise_factory(

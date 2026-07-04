@@ -698,11 +698,15 @@ def update_exercise_order():
         
         with DatabaseHandler() as db:
             for entry in data:
-                if not entry.get("id") or not entry.get("order"):
+                entry_id = entry.get("id")
+                entry_order = entry.get("order")
+                # order == 0 is a valid position; only None/absent/empty-string
+                # counts as missing.
+                if not entry_id or entry_order is None or entry_order == "":
                     return error_response("VALIDATION_ERROR", "Invalid entry data", 400)
                 db.execute_query(
                     "UPDATE user_selection SET exercise_order = ? WHERE id = ?",
-                    (entry["order"], entry["id"])
+                    (entry_order, entry_id)
                 )
                 
         return jsonify(success_response(message="Exercise order updated successfully"))
@@ -1034,7 +1038,7 @@ def _perform_exercise_swap(db: DatabaseHandler, exercise_id: int, new_exercise: 
             "SELECT exercise_order FROM user_selection WHERE id = ?",
             (exercise_id,)
         )
-        if order_row and order_row.get('exercise_order'):
+        if order_row and order_row.get('exercise_order') is not None:
             updated_row['exercise_order'] = order_row['exercise_order']
             
     return updated_row
