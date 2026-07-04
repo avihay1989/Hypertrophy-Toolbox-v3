@@ -59,10 +59,12 @@ To add a filterable column:
 
 ## Input validation
 Validation is currently path-specific; do not assume browser input attributes are a
-server contract. The add-exercise service checks required fields, `min_rep_range <=
-max_rep_range`, RIR ≥ 0, and weight in 0–1000. The plan-update and workout-log-update
-routes currently allowlist field names but do not enforce value bounds. Track B WPB.2
-owns the pending canonical server bounds and their application across add/update paths.
+server contract. `utils/workout_validation.py` applies the shared persisted-workout
+bounds: weight **0–1000 kg inclusive**, RIR **0–10 inclusive**, and minimum reps no
+greater than maximum reps. These bounds are enforced for plan add/update,
+plan-to-workout-log import, and scored-log update paths; invalid writes use the standard
+HTTP 400 `VALIDATION_ERROR` envelope. Scored-log fields retain their nullable/blank
+clear contract, while plan required-field validation continues to reject supplied blanks.
 
 ## Auth boundaries
 **No authentication exists.** Single-user local app. `POST /erase-data` (`app.py:158`) requires `{"confirm": "ERASE_ALL_DATA"}` in body; requests without it return 400. A pre-erase snapshot writes to `data/auto_backup/` before wiping. **Do not expose this app to an untrusted network.**
