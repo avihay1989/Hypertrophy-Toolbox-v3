@@ -36,6 +36,37 @@ function parseOptionalNumber(text) {
     return Number.isFinite(parsed) ? parsed : null;
 }
 
+function computeProgressionState(row) {
+    const plannedRir = parseFloat(row.querySelector('[data-field="planned_rir"]')?.textContent) || 0;
+    const plannedRpe = parseFloat(row.querySelector('[data-field="planned_rpe"]')?.textContent) || 0;
+    const plannedMinReps = parseFloat(row.querySelector('[data-field="planned_min_reps"]')?.textContent) || 0;
+    const plannedMaxReps = parseFloat(row.querySelector('[data-field="planned_max_reps"]')?.textContent) || 0;
+    const plannedWeight = parseOptionalNumber(row.querySelector('[data-field="planned_weight"]')?.textContent);
+
+    const scoredRir = parseFloat(row.querySelector('[data-field="scored_rir"] .editable-text')?.textContent) || 0;
+    const scoredRpe = parseFloat(row.querySelector('[data-field="scored_rpe"] .editable-text')?.textContent) || 0;
+    const scoredMinReps = parseFloat(row.querySelector('[data-field="scored_min_reps"] .editable-text')?.textContent) || 0;
+    const scoredMaxReps = parseFloat(row.querySelector('[data-field="scored_max_reps"] .editable-text')?.textContent) || 0;
+    const scoredWeight = parseOptionalNumber(row.querySelector('[data-field="scored_weight"] .editable-text')?.textContent);
+
+    return Boolean(
+        (scoredRir && plannedRir && scoredRir < plannedRir) ||
+        (scoredRpe && plannedRpe && scoredRpe > plannedRpe) ||
+        (scoredMinReps && plannedMinReps && scoredMinReps > plannedMinReps) ||
+        (scoredMaxReps && plannedMaxReps && scoredMaxReps > plannedMaxReps) ||
+        isWeightProgression(row, plannedWeight, scoredWeight)
+    );
+}
+
+function updateProgressionBadge(row) {
+    const badge = row?.querySelector('.badge');
+    if (!badge) return;
+
+    const isProgressive = computeProgressionState(row);
+    badge.className = `badge ${isProgressive ? 'bg-success' : 'bg-warning'}`;
+    badge.textContent = isProgressive ? 'Achieved' : 'Pending';
+}
+
 export function initializeWorkoutLog() {
     console.log('Initializing workout log');
 
@@ -370,33 +401,7 @@ export async function updateScoredValue(logId, field, value) {
             updateProgressionIndicator(row, field, value);
         }
 
-        // Update badge status
-        const badge = row.querySelector('.badge');
-        if (badge) {
-            // Get all the values
-            const planned_rir = parseFloat(row.querySelector('[data-field="planned_rir"]')?.textContent) || 0;
-            const planned_rpe = parseFloat(row.querySelector('[data-field="planned_rpe"]')?.textContent) || 0;
-            const planned_min_reps = parseFloat(row.querySelector('[data-field="planned_min_reps"]')?.textContent) || 0;
-            const planned_max_reps = parseFloat(row.querySelector('[data-field="planned_max_reps"]')?.textContent) || 0;
-            const planned_weight = parseOptionalNumber(row.querySelector('[data-field="planned_weight"]')?.textContent);
-
-            const scored_rir = parseFloat(row.querySelector('[data-field="scored_rir"] .editable-text')?.textContent) || 0;
-            const scored_rpe = parseFloat(row.querySelector('[data-field="scored_rpe"] .editable-text')?.textContent) || 0;
-            const scored_min_reps = parseFloat(row.querySelector('[data-field="scored_min_reps"] .editable-text')?.textContent) || 0;
-            const scored_max_reps = parseFloat(row.querySelector('[data-field="scored_max_reps"] .editable-text')?.textContent) || 0;
-            const scored_weight = parseOptionalNumber(row.querySelector('[data-field="scored_weight"] .editable-text')?.textContent);
-
-            const isProgressive = (
-                (scored_rir && planned_rir && scored_rir < planned_rir) ||
-                (scored_rpe && planned_rpe && scored_rpe > planned_rpe) ||
-                (scored_min_reps && planned_min_reps && scored_min_reps > planned_min_reps) ||
-                (scored_max_reps && planned_max_reps && scored_max_reps > planned_max_reps) ||
-                isWeightProgression(row, planned_weight, scored_weight)
-            );
-
-            badge.className = `badge ${isProgressive ? 'bg-success' : 'bg-warning'}`;
-            badge.textContent = isProgressive ? 'Achieved' : 'Pending';
-        }
+        updateProgressionBadge(row);
 
         notifyCalibrationOutcome(response?.data?.calibration);
     } catch (error) {
@@ -563,33 +568,7 @@ function checkProgressiveOverload(logId) {
         return;
     }
 
-    // Get planned values
-    const planned_rir = parseFloat(row.querySelector('[data-field="planned_rir"]')?.textContent) || 0;
-    const planned_rpe = parseFloat(row.querySelector('[data-field="planned_rpe"]')?.textContent) || 0;
-    const planned_min_reps = parseFloat(row.querySelector('[data-field="planned_min_reps"]')?.textContent) || 0;
-    const planned_max_reps = parseFloat(row.querySelector('[data-field="planned_max_reps"]')?.textContent) || 0;
-    const planned_weight = parseOptionalNumber(row.querySelector('[data-field="planned_weight"]')?.textContent);
-
-    // Get scored values
-    const scored_rir = parseFloat(row.querySelector('[data-field="scored_rir"] .editable-text')?.textContent) || 0;
-    const scored_rpe = parseFloat(row.querySelector('[data-field="scored_rpe"] .editable-text')?.textContent) || 0;
-    const scored_min_reps = parseFloat(row.querySelector('[data-field="scored_min_reps"] .editable-text')?.textContent) || 0;
-    const scored_max_reps = parseFloat(row.querySelector('[data-field="scored_max_reps"] .editable-text')?.textContent) || 0;
-    const scored_weight = parseOptionalNumber(row.querySelector('[data-field="scored_weight"] .editable-text')?.textContent);
-
-    const isProgressive = (
-        (scored_rir && planned_rir && scored_rir < planned_rir) ||
-        (scored_rpe && planned_rpe && scored_rpe > planned_rpe) ||
-        (scored_min_reps && planned_min_reps && scored_min_reps > planned_min_reps) ||
-        (scored_max_reps && planned_max_reps && scored_max_reps > planned_max_reps) ||
-        isWeightProgression(row, planned_weight, scored_weight)
-    );
-
-    const badge = row.querySelector('.badge');
-    if (badge) {
-        badge.className = `badge ${isProgressive ? 'bg-success' : 'bg-warning'}`;
-        badge.textContent = isProgressive ? 'Achieved' : 'Pending';
-    }
+    updateProgressionBadge(row);
 }
 
 function initializeEditableCells() {
@@ -781,34 +760,10 @@ export async function handleDateChange(event, logId) {
         // Hide the input after successful update
         input.style.display = 'none';
 
-        // Get the row and update badge status
+        // Changing the date does not affect progression, but repaint from the
+        // same shared decision used by initial load and scored-value updates.
         const row = document.querySelector(`tr[data-log-id="${id}"]`);
-        const badge = row?.querySelector('.badge');
-        if (badge) {
-            // Get all the values
-            const planned_rir = parseFloat(row.querySelector('[data-field="planned_rir"]')?.textContent) || 0;
-            const planned_rpe = parseFloat(row.querySelector('[data-field="planned_rpe"]')?.textContent) || 0;
-            const planned_min_reps = parseFloat(row.querySelector('[data-field="planned_min_reps"]')?.textContent) || 0;
-            const planned_max_reps = parseFloat(row.querySelector('[data-field="planned_max_reps"]')?.textContent) || 0;
-            const planned_weight = parseFloat(row.querySelector('[data-field="planned_weight"]')?.textContent) || 0;
-
-            const scored_rir = parseFloat(row.querySelector('[data-field="scored_rir"] .editable-text')?.textContent) || 0;
-            const scored_rpe = parseFloat(row.querySelector('[data-field="scored_rpe"] .editable-text')?.textContent) || 0;
-            const scored_min_reps = parseFloat(row.querySelector('[data-field="scored_min_reps"] .editable-text')?.textContent) || 0;
-            const scored_max_reps = parseFloat(row.querySelector('[data-field="scored_max_reps"] .editable-text')?.textContent) || 0;
-            const scored_weight = parseFloat(row.querySelector('[data-field="scored_weight"] .editable-text')?.textContent) || 0;
-
-            const isProgressive = (
-                (scored_rir && planned_rir && scored_rir < planned_rir) ||
-                (scored_rpe && planned_rpe && scored_rpe > planned_rpe) ||
-                (scored_min_reps && planned_min_reps && scored_min_reps > planned_min_reps) ||
-                (scored_max_reps && planned_max_reps && scored_max_reps > planned_max_reps) ||
-                (scored_weight && planned_weight && scored_weight > planned_weight)
-            );
-
-            badge.className = `badge ${isProgressive ? 'bg-success' : 'bg-warning'}`;
-            badge.textContent = isProgressive ? 'Achieved' : 'Pending';
-        }
+        updateProgressionBadge(row);
 
         showToast('success', 'Progression date updated successfully');
     } catch (error) {

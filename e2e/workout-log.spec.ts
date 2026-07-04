@@ -321,6 +321,81 @@ test.describe('Workout Log with Data', () => {
       expect(hasIndicators !== null).toBeTruthy();
     }
   });
+
+  test('assisted progression stays achieved after changing its date', async ({ page }) => {
+    await page.request.post('/clear_workout_log');
+    await page.request.post('/clear_workout_plan');
+
+    try {
+      const addResponse = await page.request.post('/add_exercise', {
+        data: {
+          routine: 'GYM - Full Body - Workout A',
+          exercise: 'Machine Assisted Chin Up',
+          sets: 3,
+          min_rep_range: 6,
+          max_rep_range: 10,
+          rir: 2,
+          rpe: 8,
+          weight: 65,
+        },
+      });
+      expect(addResponse.ok()).toBeTruthy();
+
+      const exportResponse = await page.request.post('/export_to_workout_log');
+      expect(exportResponse.ok()).toBeTruthy();
+
+      await page.goto(ROUTES.WORKOUT_LOG);
+      await waitForPageReady(page);
+
+      const row = page.locator('tr[data-assisted-bodyweight="true"]', {
+        hasText: 'Machine Assisted Chin Up',
+      });
+      await expect(row).toHaveCount(1);
+
+      const badge = row.locator('td[data-label="Progressive Overload"] .badge');
+      await expect(badge).toHaveText('Pending');
+
+      const weightCell = row.locator('td[data-field="scored_weight"]');
+      const weightInput = weightCell.locator('input');
+      await weightCell.locator('.editable-text').click();
+      const weightUpdate = page.waitForResponse((response) =>
+        new URL(response.url()).pathname === '/update_workout_log'
+          && response.request().method() === 'POST',
+      );
+      await weightInput.fill('60');
+      expect((await weightUpdate).ok()).toBeTruthy();
+      await expect(badge).toHaveText('Achieved');
+
+      let datePostCount = 0;
+      page.on('request', (request) => {
+        if (
+          new URL(request.url()).pathname === '/update_progression_date'
+          && request.method() === 'POST'
+        ) {
+          datePostCount += 1;
+        }
+      });
+
+      const dateCell = row.locator('td[data-field="last_progression_date"]');
+      const dateInput = dateCell.locator('input[type="date"]');
+      await dateCell.click();
+      await expect(dateInput).toBeVisible();
+
+      const dateUpdate = page.waitForResponse((response) =>
+        new URL(response.url()).pathname === '/update_progression_date'
+          && response.request().method() === 'POST',
+      );
+      await dateInput.fill('2026-07-04');
+      expect((await dateUpdate).ok()).toBeTruthy();
+
+      await expect(dateCell.locator('.date-display')).toHaveText('04-07-26');
+      await expect(badge).toHaveText('Achieved');
+      expect(datePostCount).toBe(1);
+    } finally {
+      await page.request.post('/clear_workout_log');
+      await page.request.post('/clear_workout_plan');
+    }
+  });
 });
 
 test.describe('Workout Log Date Filter', () => {
