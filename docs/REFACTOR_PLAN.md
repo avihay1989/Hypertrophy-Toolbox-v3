@@ -169,8 +169,9 @@ Each item is a separate, small PR unless two entries explicitly share one root c
 
 ### A1 Toast severity contract
 
-- Correct the four `app.js` calls that use the legacy signature incorrectly.
-- Add Vitest or E2E coverage proving warning/error classes and messages.
+- Correct all five reversed-signature `app.js` calls: two warnings, one success, and
+  two errors.
+- Add Vitest or E2E coverage proving success/warning/error classes and messages.
 - A warning on legacy misuse is optional; do not remove the legacy API in this PR.
 - Gate: JS test plus starter-plan paths in `workout-plan.spec.ts`.
 
@@ -800,6 +801,6 @@ decisions are silently outstanding; either resolve them or leave them explicitly
 - [x] Scan evidence merged into the implementation branch (2026-07-04; WP-1.0).
 - [x] Owner decisions OD1–OD10 recorded (2026-07-04; see §3).
 - [x] OD follow-ups drafted as Track B work packets WPB.1–WPB.9 (2026-07-04).
-- [ ] Owner approves Track A execution.
-- [ ] Owner approves Track B execution (behavior + contract changes).
+- [x] Owner approves Track A execution (2026-07-04).
+- [x] Owner approves Track B execution (behavior + contract changes) (2026-07-04).
 - [ ] Owner approves Plan v3 for refactor execution.
