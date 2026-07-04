@@ -27,6 +27,28 @@ class TestWeightIncrement:
         assert _calculate_weight_increment(20.0, is_novice=True) == 2.5
         assert _calculate_weight_increment(50.0, is_novice=True) == 2.5
 
+    def test_light_weight_increment_experienced(self):
+        """Experienced lifters get +5kg below 20kg too (OD5)."""
+        assert _calculate_weight_increment(15.0, is_novice=False) == 5.0
+        assert _calculate_weight_increment(10.0, is_novice=False) == 5.0
+        assert _calculate_weight_increment(19.9, is_novice=False) == 5.0
+
+    def test_light_weight_increment_novice_unchanged(self):
+        """Novice behavior below 20kg is unchanged by OD5."""
+        assert _calculate_weight_increment(15.0, is_novice=True) == 2.5
+        assert _calculate_weight_increment(19.9, is_novice=True) == 2.5
+
+    def test_weight_increment_boundary_20kg_both_experience_levels(self):
+        """At the 20kg boundary, both experience levels keep existing behavior."""
+        assert _calculate_weight_increment(20.0, is_novice=False) == 5.0
+        assert _calculate_weight_increment(20.0, is_novice=True) == 2.5
+
+    def test_weight_increment_just_below_and_above_20kg_experienced(self):
+        """Experienced lifters get 5kg on both sides of the 20kg boundary now."""
+        assert _calculate_weight_increment(19.9, is_novice=False) == 5.0
+        assert _calculate_weight_increment(20.0, is_novice=False) == 5.0
+        assert _calculate_weight_increment(20.1, is_novice=False) == 5.0
+
 
 class TestAcceptableEffort:
     """Tests for effort acceptability check."""

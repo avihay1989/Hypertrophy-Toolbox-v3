@@ -39,16 +39,14 @@ def get_exercise_plan_defaults(exercise: str) -> Optional[Dict[str, Any]]:
 def _calculate_weight_increment(current_weight: float, is_novice: bool = True) -> float:
     """
     Calculate appropriate weight increment based on double progression rules.
-    
+
     Rules:
-    - Under 20kg: +2.5kg
-    - 20kg and above: +5kg
-    - Novices get smaller increments for safety
+    - Novices: always +2.5kg, regardless of weight (safety).
+    - Experienced lifters: +5kg at every weight, including under 20kg (OD5).
     """
-    if current_weight < 20:
-        return 2.5 if not is_novice else 2.5
-    else:
-        return 5.0 if not is_novice else 2.5
+    if is_novice:
+        return 2.5
+    return 5.0
 
 
 def _check_acceptable_effort(scored_rir: Optional[int], scored_rpe: Optional[float]) -> bool:
