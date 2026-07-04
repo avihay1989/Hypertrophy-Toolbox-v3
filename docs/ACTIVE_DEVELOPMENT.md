@@ -4,6 +4,15 @@ This file is the execution source of truth for autonomous development sessions. 
 
 ## Current Objective
 
+**2026-07-05 — Deep Refactor Plan v3 Phase -1.** Owner approved structural-refactor
+execution. Current `main` baseline is `c0d5c38`: Track A is shipped; Track B has merged
+WPB.1 (#103), WPB.5 (#101), WPB.7 (#102), WPB.8 (#104), and WPB.9 step 1 (#100).
+WP-1.1 is synchronizing the documentation against the integrated code/CI state before
+the remaining Phase -1 evidence and test-hardening packets proceed. See
+`docs/REFACTOR_PLAN.md` and `docs/MASTER_HANDOVER.md` for the canonical packet/status map.
+
+---
+
 **2026-06-11 — Issue #8 navbar/dark-mode known-red fix ready.** Fixed the `e2e/nav-dropdown.spec.ts` 1440px dark-mode-toggle actionability red by compacting only the cramped desktop navbar utility chrome (`1360px–1500px`: hide decorative signature/dividers and the scale control, keep muscle + dark toggles reachable) and restoring the spec to a real Playwright `locator.click()`. Promoted `e2e/nav-dropdown.spec.ts` into the required `e2e-functional-shard` spec list without renaming any check context; `program-backup` remains isolated in `e2e-backup`, visual specs remain manual deep gate only. Local verification: `npx playwright test e2e/nav-dropdown.spec.ts --project=chromium --reporter=line` -> **7 passed**. `data/database.db` remains runtime dirt only.
 
 ---

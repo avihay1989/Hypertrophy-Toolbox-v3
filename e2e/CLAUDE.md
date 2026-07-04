@@ -12,11 +12,12 @@ Playwright Chromium specs covering UI flows end-to-end. `playwright.config.ts` a
 | `dark-mode.spec.ts`, `nav-dropdown.spec.ts` | Theme + navbar |
 | `workout-plan.spec.ts`, `workout-log.spec.ts` | Plan/log CRUD |
 | `summary-pages.spec.ts`, `progression.spec.ts`, `volume-splitter.spec.ts` | Analyze + progress + distribute |
-| `program-backup.spec.ts`, `user-profile.spec.ts` | Backup modal, profile questionnaire |
+| `program-backup.spec.ts`, `erase-flow.spec.ts`, `user-profile.spec.ts` | Backup/erase recovery flows, profile questionnaire |
 | `exercise-interactions.spec.ts`, `superset-edge-cases.spec.ts`, `replace-exercise-errors.spec.ts` | Per-row actions |
 | `validation-boundary.spec.ts`, `error-handling.spec.ts`, `empty-states.spec.ts`, `accessibility.spec.ts` | Edge & a11y |
 | `api-integration.spec.ts` | All API endpoints |
-| `visual.spec.ts`, `volume-progress.spec.ts`, `fatigue-stage4-smokes.spec.ts` | Visual snapshots + recent feature smokes |
+| `fatigue-context.spec.ts`, `listener-cleanup.spec.ts` | Advisory fatigue context + listener lifecycle regressions |
+| `visual.spec.ts`, `visual-baseline-thumbnails.spec.ts`, `volume-progress.spec.ts`, `fatigue-stage4-smokes.spec.ts` | Visual snapshots + recent feature smokes |
 
 Full per-spec test count map: `.claude/rules/testing.md`.
 
@@ -41,6 +42,9 @@ The GitHub Actions gate runs a curated, deterministic subset on **ubuntu/Chromiu
 | `accessibility`, `api-integration`, `body-composition`, `browser-navigation-state`, `dark-mode`, `empty-states`, `error-handling`, `exercise-interactions`, `fatigue`, `fatigue-stage4-smokes`, `learned-calibration`, `nav-dropdown`, `progression`, `replace-exercise-errors`, `smoke-navigation`, `summary-pages`, `superset-edge-cases`, `ui-hardening`, `user-profile`, `validation-boundary`, `volume-progress`, `volume-splitter`, `workout-log`, `workout-plan` | `e2e-functional-shard` matrix job (`--shard=i/2`) | Deterministic functional/product coverage |
 | `smoke-navigation` | also `e2e-smoke` job | Fast standalone "is the app up" signal |
 | `program-backup` | `e2e-backup` job (isolated) | Live backup/restore mutations — own server + fresh seed avoids intra-run sequential-DB pollution without any between-spec reset |
+| `fatigue-context` | `e2e-fatigue-context` job (**non-required**) | WPB.9 step 1: dedicated green-run observation context; promotion remains a separate later step |
+| `erase-flow` | `e2e-erase-flow` job (**non-required**) | Live erase/reset mutation and WPB.8 banner proof run on an isolated server/DB |
+| `listener-cleanup` | local/targeted and manual deep gate only | Track A regression instrumentation; intentionally not in the required functional list |
 | `accessibility`, `fatigue-stage4-smokes`, `volume-progress` | **promoted to `e2e-functional` (A10, 2026-06-11)** | Were measure-first (a11y run-cost; geometry/sub-pixel asserts). Promoted after a 5×-repeat ubuntu stability probe (225/225 green, zero flakes) + the 2026-06-05 deep-gate full-e2e green. Their asserts are coarse thresholds (tap-target ≥32/≥44, viewport-bound ±1px, overflow boolean), not pixel-exact snapshots. Watch the first ~10 PR runs for any geometry flake; revert that one spec line if one appears. |
 | `nav-dropdown` | **promoted to `e2e-functional` (2026-06-11)** | Fixed the 1440px dark-mode-toggle actionability red with compact desktop navbar utility chrome; spec now uses a real Playwright click. |
 | `visual`, `visual-baseline-thumbnails` | manual deep gate only (`visual-linux` job) | Cross-OS rendering: compared against Linux baselines, never a required PR check. See "Visual spec contract" below. |
