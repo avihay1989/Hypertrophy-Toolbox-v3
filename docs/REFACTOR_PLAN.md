@@ -11,9 +11,9 @@ This supersedes v2. It incorporates:
   `PHASE_22.md` from that scan worktree;
 - a second review of high-risk scan claims against `main` at `b5e837d`.
 
-The scan artifacts currently live in `D:/development/HT-scan`, not this checkout.
-Merge or copy those documentation-only commits before implementation so the evidence
-links are available to executors and reviewers.
+The scan artifacts are merged into this checkout (WP-1.0, 2026-07-04):
+`docs/SCAN_FINDINGS.md`, `docs/SCAN_RECOMMENDATIONS.md`, `docs/SCAN_PROGRESS.md`,
+and `docs/scan/PHASE_02.md`–`PHASE_22.md`.
 
 The scan's headline is right: the architectural direction survived, but the sizing and
 sequencing did not. Python work needs broader schema/route scope, the proposed JS seams
@@ -696,7 +696,7 @@ decisions are silently outstanding; either resolve them or leave them explicitly
 - [x] Prior review gaps incorporated: visual page coverage, static-fetch carve-outs,
   schema force semantics, durable goldens, import characterization, realistic WP sizing,
   and parallel isolation.
-- [ ] Scan evidence merged into the implementation branch.
+- [x] Scan evidence merged into the implementation branch (2026-07-04; WP-1.0).
 - [x] Owner decisions OD1–OD10 recorded (2026-07-04; see §3).
 - [ ] Owner approves Track A execution.
 - [ ] Owner approves Plan v3 for refactor execution.
