@@ -624,6 +624,73 @@ test.describe('Plan Generator v1.5.0 Features', () => {
 });
 
 // ============================================================================
+// Toast severity contract (Track A1) — app.js's generateStarterPlan() previously
+// called showToast(message, type) instead of showToast(type, message). toast.js's
+// legacy-signature fallback (modules/toast.js:14-27) treats any non-boolean 2nd
+// arg as a falsy legacyIsError, so both the client-side validation warning and
+// the server-error path silently rendered as a green "success" toast. These
+// tests pin the correct severity class (bg-warning / bg-danger) as well as the
+// message, so a regression back to the reversed argument order fails loudly.
+// ============================================================================
+
+test.describe('Starter plan toast severity contract', () => {
+  test.beforeEach(async ({ page, consoleErrors }) => {
+    consoleErrors.startCollecting();
+    await page.goto(ROUTES.WORKOUT_PLAN);
+    await waitForPageReady(page);
+  });
+
+  test.afterEach(async ({ consoleErrors }) => {
+    consoleErrors.assertNoErrors();
+  });
+
+  test('no-equipment-selected guard renders a warning toast, not success', async ({ page }) => {
+    await page.locator('#generate-plan-btn').click();
+    const modal = page.locator('#generatePlanModal');
+    await expect(modal).toBeVisible({ timeout: 5000 });
+
+    // Uncheck every equipment box via the modal's own "None" shortcut so
+    // generateStarterPlan() hits the client-side equipment-required guard
+    // (app.js: showToast('warning', 'Please select at least one equipment type.'))
+    // instead of reaching the API.
+    await page.locator('button[onclick*="checked = false"]').click();
+
+    await page.locator('#generatePlanSubmit').click();
+
+    const toast = page.locator('#liveToast');
+    await expect(toast).toBeVisible({ timeout: 5000 });
+    await expect(toast).toHaveClass(/bg-warning/);
+    await expect(toast).not.toHaveClass(/bg-success/);
+    await expect(page.locator('#toast-body')).toContainText('Please select at least one equipment type.');
+
+    // Submission was blocked client-side, so the modal stays open.
+    await expect(modal).toBeVisible();
+  });
+
+  test('server-rejected generation renders an error toast with the server message, not success', async ({ page }) => {
+    await page.route('**/generate_starter_plan', async route => {
+      await route.fulfill({
+        status: 400,
+        contentType: 'application/json',
+        body: JSON.stringify({ message: 'No exercises available for the selected filters.' }),
+      });
+    });
+
+    await page.locator('#generate-plan-btn').click();
+    const modal = page.locator('#generatePlanModal');
+    await expect(modal).toBeVisible({ timeout: 5000 });
+
+    await page.locator('#generatePlanSubmit').click();
+
+    const toast = page.locator('#liveToast');
+    await expect(toast).toBeVisible({ timeout: 5000 });
+    await expect(toast).toHaveClass(/bg-danger/);
+    await expect(toast).not.toHaveClass(/bg-success/);
+    await expect(page.locator('#toast-body')).toContainText('No exercises available for the selected filters.');
+  });
+});
+
+// ============================================================================
 // Muscle selector — single MuscleMap body map
 //
 // One MuscleMap anatomy figure (id="body-{anterior,posterior}-hypertrophy-advanced")

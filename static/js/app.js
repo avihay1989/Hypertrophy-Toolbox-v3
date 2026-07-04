@@ -96,7 +96,7 @@ window.generateStarterPlan = async function() {
         
         // Validate at least one equipment is selected
         if (equipmentWhitelist.length === 0) {
-            showToast('Please select at least one equipment type.', 'warning');
+            showToast('warning', 'Please select at least one equipment type.');
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalText;
             return;
@@ -108,7 +108,7 @@ window.generateStarterPlan = async function() {
             priorityMuscles = window.muscleSelector.getSelectedMusclesForBackend();
             // Limit to 2 priority muscles
             if (priorityMuscles.length > 2) {
-                showToast('Maximum 2 priority muscles allowed. Using first 2 selected.', 'warning');
+                showToast('warning', 'Maximum 2 priority muscles allowed. Using first 2 selected.');
                 priorityMuscles = priorityMuscles.slice(0, 2);
             }
         }
@@ -143,7 +143,7 @@ window.generateStarterPlan = async function() {
             // Show success message
             const routines = Object.keys(result.data.routines).join(', ');
             const totalExercises = result.data.total_exercises;
-            showToast(`Plan generated successfully! Created routines: ${routines} with ${totalExercises} exercises.`, 'success');
+            showToast('success', `Plan generated successfully! Created routines: ${routines} with ${totalExercises} exercises.`);
             
             // Refresh the workout plan table
             if (typeof fetchWorkoutPlan === 'function') {
@@ -155,11 +155,11 @@ window.generateStarterPlan = async function() {
             }
         } else {
             const errorMsg = result.message || 'Failed to generate plan';
-            showToast(errorMsg, 'error');
+            showToast('error', errorMsg);
         }
     } catch (error) {
         console.error('Error generating plan:', error);
-        showToast('Error generating plan. Please try again.', 'error');
+        showToast('error', 'Error generating plan. Please try again.');
     } finally {
         // Restore button state
         submitBtn.disabled = false;
