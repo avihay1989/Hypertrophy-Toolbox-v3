@@ -26,6 +26,15 @@ def test_database_handler_uses_the_test_scoped_database_path(app, test_db_path):
         assert Path(db.database_path) == Path(test_db_path)
 
 
+def test_test_database_paths_never_resolve_to_the_live_database(
+    test_db_path, catalog_db_path
+):
+    live_db = Path(__file__).resolve().parents[1] / "data" / "database.db"
+
+    assert Path(test_db_path).resolve() != live_db.resolve()
+    assert Path(catalog_db_path).resolve() != live_db.resolve()
+
+
 def test_distinct_test_databases_do_not_share_sqlite_locks(tmp_path):
     primary_db = tmp_path / "primary.db"
     secondary_db = tmp_path / "secondary.db"
