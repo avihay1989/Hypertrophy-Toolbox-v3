@@ -12,7 +12,7 @@
  * docs/user_profile/LEARNED_CALIBRATION_PLAN.md.
  */
 import { test, expect, ROUTES, SELECTORS, waitForPageReady } from './fixtures';
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 const CALIBRATION_SETTINGS = '/api/user_profile/calibration_settings';
 const CALIBRATION_DASHBOARD = '/api/user_profile/calibration/dashboard';
@@ -549,25 +549,53 @@ test.describe('Learned Calibration — Golden Path (Real Data)', () => {
     await page.waitForSelector('.workout-log-table tbody tr');
     const row = page.locator('.workout-log-table tbody tr').first();
 
+    const editScoredField = async (cell: Locator, value: string) => {
+      const responseDone = page.waitForResponse(
+        (response) => response.url().includes('/update_workout_log')
+          && response.request().method() === 'POST',
+      );
+      await cell.locator('.editable-text').click();
+      await cell.locator('input').fill(value);
+      await cell.locator('input').blur();
+      expect((await responseDone).ok()).toBeTruthy();
+      // Let any competing delayed submission surface before the next edit.
+      await page.waitForTimeout(650);
+    };
+
     // Weight
     const weightCell = row.locator('td[data-field="scored_weight"]');
-    await weightCell.locator('.editable-text').click();
-    await weightCell.locator('input').fill('140');
-    await weightCell.locator('input').blur();
+    await editScoredField(weightCell, '140');
 
     // Min Reps
     const minRepsCell = row.locator('td[data-field="scored_min_reps"]');
-    await minRepsCell.locator('.editable-text').click();
-    await minRepsCell.locator('input').fill('6');
-    await minRepsCell.locator('input').blur();
+    await editScoredField(minRepsCell, '6');
 
     // Max Reps
     const maxRepsCell = row.locator('td[data-field="scored_max_reps"]');
-    await maxRepsCell.locator('.editable-text').click();
-    await maxRepsCell.locator('input').fill('6');
-    await maxRepsCell.locator('input').blur();
+    await editScoredField(maxRepsCell, '6');
 
-    // RIR
+    // RIR — one browser edit must produce one write and one calibration update.
+    let updatePostCount = 0;
+    const calibrationResponseChecks: Promise<boolean>[] = [];
+    page.on('request', (request) => {
+      if (
+        new URL(request.url()).pathname === '/update_workout_log'
+        && request.method() === 'POST'
+      ) {
+        updatePostCount += 1;
+      }
+    });
+    page.on('response', (response) => {
+      if (
+        new URL(response.url()).pathname === '/update_workout_log'
+        && response.request().method() === 'POST'
+      ) {
+        calibrationResponseChecks.push(
+          response.json().then((body) => body?.data?.calibration?.status === 'updated'),
+        );
+      }
+    });
+
     const rirCell = row.locator('td[data-field="scored_rir"]');
     await rirCell.locator('.editable-text').click();
     await rirCell.locator('input').fill('2');
@@ -575,6 +603,11 @@ test.describe('Learned Calibration — Golden Path (Real Data)', () => {
     const updateResponse = page.waitForResponse((r) => r.url().includes('/update_workout_log') && r.request().method() === 'POST');
     await rirCell.locator('input').blur();
     expect((await updateResponse).ok()).toBeTruthy();
+    await page.waitForTimeout(650);
+
+    expect(updatePostCount).toBe(1);
+    const calibrationUpdateCount = (await Promise.all(calibrationResponseChecks)).filter(Boolean).length;
+    expect(calibrationUpdateCount).toBe(1);
 
     await page.waitForSelector(SELECTORS.TOAST_CONTAINER + ' .toast.show');
     await page.locator(SELECTORS.TOAST_CONTAINER).locator('.btn-close').first().click();

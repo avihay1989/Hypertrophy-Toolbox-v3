@@ -128,7 +128,6 @@
                                 <input type="number" 
                                        class="editable-input number-input form-control input-calm-inset"
                                        value="{{ log.scored_min_reps if log.scored_min_reps and log.scored_min_reps != 'None' else '' }}"
-                                       onchange="updateScoredValue('{{ log.id }}', 'scored_min_reps', this.value)"
                                        min="0"
                                        style="display: none;">
                                 <span class="editable-text">{{ log.scored_min_reps if log.scored_min_reps and log.scored_min_reps != 'None' else '--' }}</span>
@@ -148,7 +147,6 @@
                                 <input type="number" 
                                        class="editable-input number-input form-control input-calm-inset"
                                        value="{{ log.scored_max_reps if log.scored_max_reps and log.scored_max_reps != 'None' else '' }}"
-                                       onchange="updateScoredValue('{{ log.id }}', 'scored_max_reps', this.value)"
                                        min="0"
                                        style="display: none;">
                                 <span class="editable-text">{{ log.scored_max_reps if log.scored_max_reps and log.scored_max_reps != 'None' else '--' }}</span>
@@ -169,7 +167,6 @@
                                        class="editable-input number-input form-control input-calm-inset"
                                        value="{{ log.scored_rir if log.scored_rir and log.scored_rir != 'None' else '' }}"
                                        min="0"
-                                       onchange="updateScoredValue('{{ log.id }}', 'scored_rir', this.value)"
                                        style="display: none;">
                                 <span class="editable-text">{{ log.scored_rir if log.scored_rir and log.scored_rir != 'None' else '--' }}</span>
                                 {# For RIR, LOWER is BETTER (means you pushed harder) #}
@@ -190,7 +187,6 @@
                                        class="editable-input number-input form-control input-calm-inset"
                                        value="{{ log.scored_rpe if log.scored_rpe and log.scored_rpe != 'None' else '' }}"
                                        min="0"
-                                       onchange="updateScoredValue('{{ log.id }}', 'scored_rpe', this.value)"
                                        style="display: none;">
                                 <span class="editable-text">{{ log.scored_rpe if log.scored_rpe and log.scored_rpe != 'None' else '--' }}</span>
                                 {# For RPE, HIGHER means you pushed harder - it's a measure of effort #}
@@ -212,7 +208,6 @@
                                        value="{{ log.scored_weight if log.scored_weight is not none and log.scored_weight != 'None' else '' }}"
                                        step="0.5"
                                        min="0"
-                                       onchange="updateScoredValue('{{ log.id }}', 'scored_weight', this.value)"
                                        style="display: none;">
                                 <span class="editable-text">{{ log.scored_weight if log.scored_weight is not none and log.scored_weight != 'None' else '--' }}</span>
                                 {% if log.scored_weight is not none and log.scored_weight != 'None' and log.planned_weight is not none %}
