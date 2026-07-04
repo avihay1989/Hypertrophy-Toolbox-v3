@@ -58,10 +58,14 @@ To add a filterable column:
 - [ ] If muscle-type: add mapping in `SIMPLE_TO_DB_MUSCLE` / `SIMPLE_TO_ADVANCED_ISOLATED` (`routes/filters.py:17-69`)
 
 ## Input validation
-Routes validate bounds before calling utils. Example pattern in `routes/workout_plan.py`: sets 1-20, reps 1-100, weight ≥ 0, RIR 0-10.
+Validation is currently path-specific; do not assume browser input attributes are a
+server contract. The add-exercise service checks required fields, `min_rep_range <=
+max_rep_range`, RIR ≥ 0, and weight in 0–1000. The plan-update and workout-log-update
+routes currently allowlist field names but do not enforce value bounds. Track B WPB.2
+owns the pending canonical server bounds and their application across add/update paths.
 
 ## Auth boundaries
-**No authentication exists.** Single-user local app. `POST /erase-data` (`app.py:125`) requires `{"confirm": "ERASE_ALL_DATA"}` in body; requests without it return 400. A pre-erase snapshot writes to `data/auto_backup/` before wiping. **Do not expose this app to an untrusted network.**
+**No authentication exists.** Single-user local app. `POST /erase-data` (`app.py:158`) requires `{"confirm": "ERASE_ALL_DATA"}` in body; requests without it return 400. A pre-erase snapshot writes to `data/auto_backup/` before wiping. **Do not expose this app to an untrusted network.**
 
 ## Filename sanitization
 `utils/export_utils.py` has `sanitize_filename()` to strip path traversal and dangerous characters from export filenames.

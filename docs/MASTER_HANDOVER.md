@@ -4,6 +4,17 @@
 
 ## Current State
 
+> **2026-07-05 — Plan v3 execution APPROVED; Phase -1 started (`main` @ `c0d5c38`).**
+> Track A remains shipped. Track B has merged WPB.1 (#103), WPB.5 (#101), WPB.7
+> (#102), WPB.8 (#104), and WPB.9's non-required observation job (#100); WPB.2–WPB.4,
+> WPB.6, and WPB.9's eventual required-context promotion remain pending. Integrated
+> pytest baseline: **1613 passed** in the isolated WP-1.1 worktree. Current required
+> Chromium functional inventory: **404 tests**, green as **202 + 202** in the latest
+> merged PR CI; dedicated fatigue-context **6 passed** and erase-flow **2 passed**.
+> The complete Playwright inventory is **501 tests across 30 specs**. The owner explicitly
+> approved Plan-v3 execution on 2026-07-05; the previous unapproved wording below is
+> retained only as the Track-A milestone's historical state.
+>
 > **2026-07-04 — Deep Refactor Plan v3 Track A SHIPPED (`main` @ `55bca22`, PRs #91–#98).** All eight confirmed bug-fix packets are complete: toast severity contract (A1), workout-log single-submit path (A2), assisted-progression badge consistency including date edits (A3), seven route error-page contracts plus fatigue XHR handling (A4), atomic backup creation (A5), execution-picker/dropdown listener cleanup (A6), removal of the unconditional export cleanup delay with retry-on-lock behavior (A7), and CTE-prefixed write classification for `DatabaseHandler` locking (A8). Work ran in isolated worktrees; live `data/database.db` was never staged. Final integrated PR #98 CI: **1629 pytest passed**; required Chromium functional shards **202 + 202 passed**; smoke, backup, lint, security, frontend, and type gates all green. Track B is owner-approved and its "Track A complete" prerequisites are now satisfied. Plan-v3 structural refactor execution remains unapproved/unchecked.
 >
 > **2026-06-11 — Issue #8 navbar/dark-mode known-red fix ready.** Fixed the `e2e/nav-dropdown.spec.ts` 1440px dark-mode-toggle actionability red by compacting only the cramped desktop navbar utility chrome (`1360px–1500px`: hide decorative signature/dividers and the scale control, keep muscle + dark toggles reachable) and restoring the spec to a real Playwright `locator.click()`. Promoted `e2e/nav-dropdown.spec.ts` into the required `e2e-functional-shard` spec list without renaming any check context; `program-backup` remains isolated in `e2e-backup`, visual specs remain manual deep gate only. Current docs updated: `e2e/CLAUDE.md`, `docs/ai_workflow/QUALITY_GATE.md`, `docs/CI_CD_IMPROVEMENT_PLAN.md`, `docs/UI_SCENARIOS_GAP_ANALYSIS.md`, `docs/LEFTOVERS_BY_PRIORITY.md`, and changelog. Local verification: `npx playwright test e2e/nav-dropdown.spec.ts --project=chromium --reporter=line` -> **7 passed**. `data/database.db` remains runtime dirt only.

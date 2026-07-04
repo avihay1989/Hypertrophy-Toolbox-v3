@@ -1,7 +1,7 @@
 # Deep Refactor Plan — v3 (2026-07-04, full-scan grounded)
 
-**Status: Track A completed on `main` (2026-07-04); Track B approved; Plan-v3
-structural-refactor execution still awaits owner approval.**
+**Status: Track A completed; Track B partially shipped; Plan-v3 structural-refactor
+execution approved by the owner on 2026-07-05. Phase -1 is in progress.**
 
 This supersedes v2. It incorporates:
 
@@ -44,8 +44,8 @@ track and must never be smuggled into move-only refactor PRs.
 - CSS contains an undeclared `@layer` ordering trap, duplicate token vocabularies,
   six local token namespaces, a four-copy summary/frame block, and misfiled page CSS.
 - The safety net has gaps: two pytest files read the live DB, several E2E assertions
-  are vacuous, live startup backup code lacks direct tests, and fatigue-context E2E is
-  absent from CI.
+  are vacuous, and live startup backup copying still lacks direct tests. Fatigue-context
+  E2E now has a dedicated non-required CI context (WPB.9 step 1), but is not yet required.
 
 ### Accepted with stricter safeguards
 
@@ -246,6 +246,11 @@ is interleaved with the phases, not a block; the prerequisite column in each ent
 Execution requires the owner's Track-A/Plan-v3 sign-off boxes plus this section's approval
 per the sign-off checklist.
 
+**Status at `main` @ `c0d5c38` (2026-07-05):** WPB.1 (#103), WPB.5 (#101),
+WPB.7 (#102), WPB.8 (#104), and WPB.9 step 1 (#100) are merged. WPB.2–WPB.4
+and WPB.6 remain prerequisite-gated; WPB.9 still needs its observation window and
+separate required-context promotion.
+
 ### WPB.1 (OD1) Allow plan weight 0 for bodyweight/assisted exercises
 
 - Fix the falsy-check family in `utils/exercise_manager.py`: weight `0` treated as
@@ -346,6 +351,8 @@ per the sign-off checklist.
 
 ### WP-1.1 Documentation truth sync
 
+**Completed 2026-07-05 on the WP-1.1 documentation branch.**
+
 - Correct the startup initializer inventory, blueprint count, current verified counts,
   handover SHA wording, route-validation claims, E2E spec ledger, and fatigue-context CI row.
 - Correct stale `STATUS_MAP` import documentation; current `session_summary.py` imports only
@@ -372,8 +379,8 @@ per the sign-off checklist.
 - Replace `expect(true)`, `x || true`, and equivalent non-assertions in
   `validation-boundary`, `empty-states`, `exercise-interactions`, and
   `superset-edge-cases` with observable outcomes.
-- Do not introduce new validation behavior while OD2 is unresolved; characterize actual
-  behavior or mark a case explicitly pending with a linked decision.
+- Do not introduce WPB.2's approved-but-not-yet-implemented validation behavior here;
+  characterize current behavior or mark the case pending on WPB.2.
 
 ### WP-1.5 Normalize the main landmark
 
@@ -809,4 +816,4 @@ decisions are silently outstanding; either resolve them or leave them explicitly
 - [x] OD follow-ups drafted as Track B work packets WPB.1–WPB.9 (2026-07-04).
 - [x] Owner approves Track A execution (2026-07-04).
 - [x] Owner approves Track B execution (behavior + contract changes) (2026-07-04).
-- [ ] Owner approves Plan v3 for refactor execution.
+- [x] Owner approves Plan v3 for refactor execution (2026-07-05).

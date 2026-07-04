@@ -48,11 +48,14 @@ initialize_database()           ← utils/db_initializer.py — tables + normali
 add_progression_goals_table()   ← utils/database.py
 add_volume_tracking_tables()    ← utils/database.py
 add_user_profile_tables()       ← utils/database.py
+add_body_composition_snapshots_table() ← utils/database.py
+add_strength_calibration_tables()      ← utils/database.py
+add_fatigue_context_settings_table()   ← utils/database.py
 initialize_exercise_order()     ← routes/workout_plan.py — ALTERs user_selection
 init_backup_tables()            ← routes/program_backup.py → utils/program_backup.py
 create_startup_backup()         ← utils/auto_backup.py — snapshots live DB to data/auto_backup/
 ```
-Then registers 11 blueprints (`app.py:60-76`), plus one direct route: `POST /erase-data` (`app.py:130`).
+Then registers 13 blueprints (`app.py:84-98`), plus one direct route: `POST /erase-data` (`app.py:158`).
 
 ### Module boundaries
 ```
@@ -80,8 +83,10 @@ app.py                 ← startup + middleware only; no business logic
 | `workout_plan_bp` | `routes/workout_plan.py` | `GET /workout_plan`, `POST /add_exercise`, `POST /generate_starter_plan` |
 | `progression_plan_bp` | `routes/progression_plan.py` | `GET /progression` |
 | `user_profile_bp` | `routes/user_profile.py` | `GET /user_profile`, `GET /api/user_profile/estimate` |
+| `body_composition_bp` | `routes/body_composition.py` | `GET /body_composition`, `POST /api/body_composition/snapshots` |
 | `volume_splitter_bp` | `routes/volume_splitter.py` | `GET /volume_splitter` |
 | `program_backup_bp` | `routes/program_backup.py` | `GET/POST /api/backups`, `POST /api/backups/<id>/restore` |
+| `fatigue_bp` | `routes/fatigue.py` | `GET /fatigue` |
 
 ### Deeper references
 - Routes / API endpoints / filters / security → `.claude/rules/routes.md` (loads when editing `routes/**`).
@@ -167,36 +172,28 @@ npx playwright test --project=chromium --reporter=line
 
 ## 5. Current State & Risks
 
-### Verified test counts (2026-07-04 — Deep Refactor Plan v3 Track A close on `main`)
-- **2026-07-04 — Deep Refactor Plan v3 Track A close on `main` @ `55bca22`**:
-  pytest **1629 passed** (~1m 22s in CI); required Playwright Chromium functional
-  shards **202 + 202 passed** (~5m / ~8m). PRs #91–#98 shipped A1–A8; final
-  integrated PR #98 also passed smoke, backup, lint, security, frontend, and type gates.
-- **pytest**: 1447 passed (~4m 17s, full `tests/` run) — adds 4 new `tests/test_profile_estimator.py` cases for the barbell↔dumbbell per-hand load-basis conversion in `utils/profile_estimator.py` (`_load_basis_factor`). Fixes Workout Controls suggesting per-hand dumbbell weights ~2× too high when the chain reference was a total-load barbell/machine lift (e.g. Incline Dumbbell Press 71→36 kg/hand). Previous documented baseline was 1442 (2026-05-24); the +5 vs that figure reflects this checkout, not arithmetic. No E2E run this session.
+### Verified test counts (2026-07-05 — Plan v3 Phase -1 entry on `main`)
+- **Integrated `main` @ `c0d5c38`**: isolated-worktree pytest **1613 passed**;
+  latest merged PR CI functional shards **202 + 202 passed**; dedicated fatigue-context
+  **6 passed** and erase-flow **2 passed**; full inventory **501 tests / 30 specs**.
+- Track A shipped in PRs #91–#98. Track B has shipped WPB.1 (#103), WPB.5 (#101),
+  WPB.7 (#102), WPB.8 (#104), and WPB.9 step 1 (#100); WPB.2–WPB.4, WPB.6, and
+  WPB.9 promotion remain pending/prerequisite-gated.
 
-### Prior verified test counts
-- **2026-05-24 — Fatigue Meter Phase 2 Stage 3 verify-suite close on `main` @ d5b80bf, post-PR #35**: pytest 1442 passed (~2m 55s) — same baseline as Stage 2 implementation (no count drift post-squash).
-- **Playwright Chromium targeted (`e2e/fatigue.spec.ts`)**: 8 passed (~7.8s).
-- **Full E2E Playwright (Chromium)**: 449 passed / 13 failed / 17 did-not-run (~12.5m). The 13 + 17 reds match the documented pre-existing baseline **exactly** with **zero new Stage-2 reds**: 2 `workout-plan.spec.ts` tests on `#muscleModeToggle` off-viewport at 1280 width (same historical family as the now-fixed `nav-dropdown.spec.ts:117` issue #8), 10 sub-pixel `visual.spec.ts` desktop drifts on welcome / workout-plan / workout-log / progression / volume-splitter (zero Stage-2 surface), 1 `visual-baseline-thumbnails.spec.ts` plan-desktop-light-simple, and 17 `visual-baseline-thumbnails.spec.ts` cases that need the seed-DB preflight from `e2e/scripts/prepare_visual_db.py` per `e2e/CLAUDE.md`. The 12 weekly-summary + session-summary visual baselines re-snapshotted during Stage 2 implementation are now passing (`449 = 437 + 12`). Pre-merge restore point: backup id 5, label `pre-fatigue-meter-phase-2-stage-2-merge-2026-05-23`.
-- **2026-05-23, Stage 2 implementation gate (`feat/fatigue-meter-phase-2-stage-2`)**: pytest 1442 passed (~3m 07s) — 1351 Stage-1 baseline + 91 new Stage-2 tests (79 unit cases in `tests/test_fatigue.py` covering per-muscle math, logged-side, period windows, SFR sentinel, Unassigned-bucket invariant; 12 integration cases in `tests/test_fatigue_routes.py` covering `GET /fatigue` empty/populated/unranked paths + the Unassigned-via-route invariant). Targeted `e2e/fatigue.spec.ts` 8 passed (~7.7s). First verify-suite Chromium full run was 437 passed / 25 failed / 17 did-not-run; 12 of the 25 were the expected weekly + session summary visual baselines (badge gained the "View per-muscle breakdown →" link row, same pattern as PR #28) and were re-baselined via scoped `--update-snapshots`. PR #35 squash on `main` (d5b80bf) 2026-05-23.
-- **2026-05-23, Stage 1 close (`feat/fatigue-meter-phase-2`)**: pytest 1351 passed (~2m 55s) post-Stage-1 (1350 entry baseline + 1 new `tests/test_catalog_invariants.py::test_catalog_primary_muscle_group_has_no_nulls`). PR #34 squash on `main`.
-- **2026-05-21, `main` post-Body-Composition hygiene**: pytest 1374 passed (~2m 53s) — 1372 post-PR-#31 + 2 new `captured_at` ISO validation cases. Superseded 2026-05-23 by the `test_filter_cache.py` deletion (KI-001 dormant code removal).
-- **2026-05-03, `feat/fatigue-meter-phase-1-rebased`**: pytest 1160 passed (~2m 25s); Playwright Chromium 408 passed, 2 failed (effective 409 / 1 — `nav-dropdown.spec.ts:117` dark-mode-toggle off-viewport was a pre-existing red on `origin/main`, fixed later by issue #8; `program-backup.spec.ts:79` is a sequential-DB flake that passes in isolation). See `docs/fatigue_meter/PLANNING.md §2.7`.
-- **2026-04-28, pre-rebase**: pytest 1080 passed (~2m 22s); relevant E2E 41 passed (`user-profile.spec.ts` + `workout-plan.spec.ts`); adjacent E2E 55 passed (`exercise-interactions.spec.ts` + `accessibility.spec.ts` + `smoke-navigation.spec.ts`); last full E2E baseline 314 passed (~7.2m, 2026-04-18); summary-page Playwright 20 passed (~25s, 2026-04-18).
-
-Re-verify after significant changes and update counts above.
+Historical baselines live in `docs/MASTER_HANDOVER.md`. Re-verify after significant changes.
 
 ### Known response-contract exceptions (2026-05-21)
 None. The pattern-coverage and replace-exercise fallback paths were migrated to `success_response()` / `error_response()` (2026-05-21). The replace-exercise "no result" cases (`NO_CANDIDATES`, `DUPLICATE`, `SELECTION_FAILED`) keep HTTP 200 by passing `status_code=200` to `error_response()` — they're user-facing "couldn't be processed" outcomes that pytest + the JS swap handler treat as 200 + `ok:false`.
 
 ### exercise_order column
-Added at startup by `initialize_exercise_order()` (`routes/workout_plan.py:614`) via `ALTER TABLE`. Route handler `get_workout_plan` (lines 231-234) defensively checks `column_exists()` for pre-migration DBs.
+Added at startup by `initialize_exercise_order()` (`routes/workout_plan.py:634`) via `ALTER TABLE`. `get_workout_plan` (line 247) defensively checks `column_exists()` for pre-migration DBs.
 
 ### session_summary vs weekly_summary — not duplicates
 - `utils/session_summary.py:21` — `calculate_session_summary(routine, time_window, ...)`: groups by routine, optional date filter, per-session averages from `workout_log` join.
 - `utils/weekly_summary.py:35` — `calculate_weekly_summary(method, ...)`: aggregates across all routines weekly, no date filter, tracks frequency.
 
-`session_summary.py` imports `STATUS_MAP`/`EFFECTIVE_STATUS_MAP` from `weekly_summary.py` (line 9), but calculations are independent.
+`session_summary.py` imports only `EFFECTIVE_STATUS_MAP` from `weekly_summary.py`
+(`utils/session_summary.py:9`); the calculations remain independent.
 
 ### Historical audit trail
 Full file-by-file audit log and violation details: `docs/CLAUDE_MD_AUDIT.md`. Resolved items list (Cleanup Waves 1 and 2, `utils/database_indexes.py` retirement 2026-04-18, `volume_export.py` DatabaseHandler migration) lives there.
