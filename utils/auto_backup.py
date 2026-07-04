@@ -85,3 +85,14 @@ def create_startup_backup() -> Path | None:
     except (sqlite3.Error, OSError):
         logger.exception("Auto-backup failed")
         return None
+
+
+def describe_snapshot(snapshot_path: Path | str | None) -> dict | None:
+    """Build JSON-safe metadata for a snapshot path, for API responses.
+
+    Returns None when no snapshot was taken (e.g. `create_startup_backup`
+    skipped it), so callers can pass the result straight through untouched.
+    """
+    if snapshot_path is None:
+        return None
+    return {"filename": Path(snapshot_path).name}

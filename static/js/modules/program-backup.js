@@ -1,9 +1,7 @@
 /**
  * Program backup utilities shared by the Backup Center and auto-recovery flows.
  */
-import { showToast } from './toast.js';
 import { api } from './fetch-wrapper.js';
-import { notifyVolumeAffectingPlanChange } from './workout-plan-events.js';
 
 /**
  * Fetch all backups from the API
@@ -102,62 +100,39 @@ export async function deleteBackup(backupId) {
 }
 
 /**
- * Show auto-backup restore banner after erase
- * @param {Object} autoBackup - Auto-backup info from erase response
+ * Show a banner referencing the pre-erase file-copy snapshot written to
+ * data/auto_backup/ (see utils/auto_backup.py). This is informational only —
+ * there is no in-app restore action for this raw file snapshot; recovery is a
+ * manual file-copy operation, distinct from the Backup Center's DB-table
+ * backups (see restoreBackup() above).
+ * @param {Object|null} autoBackup - Snapshot info from the /erase-data response,
+ *   e.g. `{ filename: "database_20260704_153012.db" }`. No-op if falsy (the
+ *   erase route returns null when no snapshot was taken).
  */
 export function showAutoBackupBanner(autoBackup) {
-    if (!autoBackup || !autoBackup.id) return;
-    
+    if (!autoBackup || !autoBackup.filename) return;
+
     // Remove any existing banner
     const existingBanner = document.getElementById('auto-backup-banner');
     if (existingBanner) existingBanner.remove();
-    
+
     const banner = document.createElement('div');
     banner.id = 'auto-backup-banner';
+    banner.setAttribute('data-testid', 'auto-backup-banner');
     banner.className = 'alert alert-info alert-dismissible fade show d-flex align-items-center justify-content-between';
     banner.innerHTML = `
         <div>
             <i class="fas fa-info-circle me-2"></i>
-            <strong>Auto-backup created:</strong> "${escapeHtml(autoBackup.name)}" 
-            with ${autoBackup.item_count} exercises
+            <strong>Auto-backup created:</strong> your data was saved to
+            <code>data/auto_backup/${escapeHtml(autoBackup.filename)}</code> before erasing.
         </div>
-        <div class="d-flex gap-2 align-items-center">
-            <button type="button" class="btn btn-sm btn-primary" id="restore-auto-backup-btn">
-                <i class="fas fa-undo me-1"></i>Restore Now
-            </button>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     `;
-    
+
     // Insert at top of main content
     const main = document.querySelector('main') || document.querySelector('.container-fluid');
     if (main) {
         main.insertBefore(banner, main.firstChild);
-        
-        // Attach restore handler
-        document.getElementById('restore-auto-backup-btn').addEventListener('click', async () => {
-            const btn = document.getElementById('restore-auto-backup-btn');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Restoring...';
-            
-            try {
-                const result = await restoreBackup(autoBackup.id);
-                showToast('success', `Restored ${result.restored_count} exercises`);
-                banner.remove();
-                
-                // Refresh workout plan
-                if (typeof window.fetchWorkoutPlan === 'function') {
-                    window.fetchWorkoutPlan();
-                    notifyVolumeAffectingPlanChange('program-backup-restore');
-                } else {
-                    window.location.reload();
-                }
-            } catch (error) {
-                showToast('error', `Failed to restore: ${error.message}`);
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-undo me-1"></i>Restore Now';
-            }
-        });
     }
 }
 

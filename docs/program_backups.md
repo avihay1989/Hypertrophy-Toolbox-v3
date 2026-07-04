@@ -63,6 +63,7 @@ There are two backup mechanisms:
 
 - **Program auto-backup support**: `utils/program_backup.py` can create `program_backups` rows with `backup_type='auto'` and prune them to the latest 10. The Backup Center displays these separately when they exist. The current `/erase-data` full-reset route does not call this utility because it drops and recreates the backup tables.
 - **Startup database snapshots**: `utils/auto_backup.py` copies the live SQLite file to `data/auto_backup/database_<timestamp>.db` when the app starts and immediately before `/erase-data`. These are disaster-recovery files outside the Backup Center UI and rotate to the latest 7 files.
+- **Erase-flow banner**: `/erase-data`'s JSON response includes `data.auto_backup` — `{"filename": "database_<timestamp>.db"}` from `utils.auto_backup.describe_snapshot()`, or `null` if no snapshot was taken. The welcome page's confirm-erase handler passes this to `showAutoBackupBanner()` (`static/js/modules/program-backup.js`) so the user sees where the pre-erase file-copy landed. This is informational only — there is no in-app restore action for the raw file snapshot.
 
 ## Key Files
 
@@ -73,4 +74,6 @@ There are two backup mechanisms:
 - `utils/program_backup.py`
 - `utils/auto_backup.py`
 - `tests/test_program_backup.py`
+- `tests/test_auto_backup.py`
 - `e2e/program-backup.spec.ts`
+- `e2e/erase-flow.spec.ts`
