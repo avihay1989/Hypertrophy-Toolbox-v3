@@ -75,6 +75,40 @@ class TestAddExercise:
         })
         assert resp.status_code == 200
 
+    def test_add_exercise_weight_zero_accepted(self, client, clean_db, exercise_factory):
+        """weight=0 is valid for bodyweight/assisted exercises."""
+        exercise_factory("Pull Up")
+
+        resp = client.post("/add_exercise", json={
+            "routine": "Pull",
+            "exercise": "Pull Up",
+            "sets": 3,
+            "min_rep_range": 8,
+            "max_rep_range": 12,
+            "rir": 2,
+            "weight": 0
+        })
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data["ok"] is True
+
+    def test_add_exercise_weight_absent_rejected(self, client, clean_db, exercise_factory):
+        """A missing weight key (None) is still rejected as a required field."""
+        exercise_factory("Bench Press")
+
+        resp = client.post("/add_exercise", json={
+            "routine": "Push",
+            "exercise": "Bench Press",
+            "sets": 3,
+            "min_rep_range": 8,
+            "max_rep_range": 12,
+            "rir": 2
+            # weight intentionally omitted
+        })
+        assert resp.status_code == 400
+        data = resp.get_json()
+        assert data["ok"] is False
+
     def test_add_exercise_duplicate_returns_400(self, client, clean_db, exercise_factory):
         """Duplicate exercise in same routine should return validation error."""
         exercise_factory("Bench Press")
@@ -385,6 +419,38 @@ class TestUpdateExercise:
             "updates": {"sets": 5}
         })
         assert resp.status_code == 400
+
+
+class TestUpdateExerciseOrder:
+    """Tests for POST /update_exercise_order endpoint."""
+
+    def test_update_exercise_order_zero_accepted(self, client, clean_db, workout_plan_fixture):
+        """order=0 is a valid position and must be accepted, not treated as missing."""
+        from utils.database import DatabaseHandler
+
+        resp = client.post("/update_exercise_order", json=[
+            {"id": workout_plan_fixture["id"], "order": 0}
+        ])
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data["ok"] is True
+
+        with DatabaseHandler() as db:
+            row = db.fetch_one(
+                "SELECT exercise_order FROM user_selection WHERE id = ?",
+                (workout_plan_fixture["id"],)
+            )
+        assert row is not None
+        assert row["exercise_order"] == 0
+
+    def test_update_exercise_order_missing_order_rejected(self, client, clean_db, workout_plan_fixture):
+        """A missing/None order value is still rejected."""
+        resp = client.post("/update_exercise_order", json=[
+            {"id": workout_plan_fixture["id"]}
+        ])
+        assert resp.status_code == 400
+        data = resp.get_json()
+        assert data["ok"] is False
 
 
 class TestSupersetLink:

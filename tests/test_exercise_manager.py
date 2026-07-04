@@ -202,11 +202,28 @@ class TestAddExercise:
             
             assert "Error" in result
     
+    def test_add_exercise_accepts_zero_weight(self, app, exercise_factory, clean_db):
+        """weight=0 is valid for bodyweight/assisted exercises and must be accepted."""
+        with app.app_context():
+            exercise_factory("Pull Up")
+
+            result = ExerciseManager.add_exercise(
+                routine="Workout A",
+                exercise="Pull Up",
+                sets=3,
+                min_rep_range=6,
+                max_rep_range=8,
+                rir=2,
+                weight=0
+            )
+
+            assert result == "Exercise added successfully."
+
     def test_add_exercise_missing_weight(self, app, exercise_factory):
-        """Should return error when weight is missing/zero."""
+        """Should return error when weight is None (missing/absent)."""
         with app.app_context():
             exercise_factory("Bench Press")
-            
+
             result = ExerciseManager.add_exercise(
                 routine="Workout A",
                 exercise="Bench Press",
@@ -214,9 +231,9 @@ class TestAddExercise:
                 min_rep_range=6,
                 max_rep_range=8,
                 rir=2,
-                weight=0  # Missing/zero
+                weight=None  # Missing/absent
             )
-            
+
             assert "Error" in result
     
     def test_add_exercise_optional_rir(self, app, exercise_factory, clean_db):
