@@ -167,7 +167,11 @@ npx playwright test --project=chromium --reporter=line
 
 ## 5. Current State & Risks
 
-### Verified test counts (2026-06-02 — estimator dumbbell load-basis bugfix on `main`)
+### Verified test counts (2026-07-04 — Deep Refactor Plan v3 Track A close on `main`)
+- **2026-07-04 — Deep Refactor Plan v3 Track A close on `main` @ `55bca22`**:
+  pytest **1629 passed** (~1m 22s in CI); required Playwright Chromium functional
+  shards **202 + 202 passed** (~5m / ~8m). PRs #91–#98 shipped A1–A8; final
+  integrated PR #98 also passed smoke, backup, lint, security, frontend, and type gates.
 - **pytest**: 1447 passed (~4m 17s, full `tests/` run) — adds 4 new `tests/test_profile_estimator.py` cases for the barbell↔dumbbell per-hand load-basis conversion in `utils/profile_estimator.py` (`_load_basis_factor`). Fixes Workout Controls suggesting per-hand dumbbell weights ~2× too high when the chain reference was a total-load barbell/machine lift (e.g. Incline Dumbbell Press 71→36 kg/hand). Previous documented baseline was 1442 (2026-05-24); the +5 vs that figure reflects this checkout, not arithmetic. No E2E run this session.
 
 ### Prior verified test counts

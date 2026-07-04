@@ -1,6 +1,7 @@
 # Deep Refactor Plan — v3 (2026-07-04, full-scan grounded)
 
-**Status: revised after the 23-phase codebase scan; owner decisions still required.**
+**Status: Track A completed on `main` (2026-07-04); Track B approved; Plan-v3
+structural-refactor execution still awaits owner approval.**
 
 This supersedes v2. It incorporates:
 
@@ -166,6 +167,11 @@ files. OD10 requires no WP (keep as-is; WP1.8 homes the helpers).
 ## Track A — confirmed bug fixes (before structural refactors)
 
 Each item is a separate, small PR unless two entries explicitly share one root cause.
+
+**Completed 2026-07-04.** A1–A8 landed as PRs #91–#98 (A4–A8 used
+#92–#96; A2/A3 used #97/#98). The final integrated gate on PR #98 passed
+1629 pytest tests and both required functional E2E shards (202 + 202). Track B
+prerequisites that say "Track A complete" are now satisfied.
 
 ### A1 Toast severity contract
 
