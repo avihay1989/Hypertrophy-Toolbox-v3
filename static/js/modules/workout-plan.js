@@ -236,9 +236,16 @@ async function showExecutionStylePicker(exerciseId, currentExercise) {
         return;
     }
     
-    // Remove any existing picker
+    // Remove any existing picker through its own cleanup path so its
+    // document-level outside-click listener is detached too
     const existingPicker = document.querySelector('.execution-style-picker');
-    if (existingPicker) existingPicker.remove();
+    if (existingPicker) {
+        if (typeof existingPicker._closePicker === 'function') {
+            existingPicker._closePicker();
+        } else {
+            existingPicker.remove();
+        }
+    }
     
     const currentStyle = currentExercise?.execution_style || 'standard';
     const timeCap = currentExercise?.time_cap_seconds || 60;
@@ -338,6 +345,23 @@ async function showExecutionStylePicker(exerciseId, currentExercise) {
         }
     }
     
+    // Single close path — every way of dismissing the picker (Close, Cancel,
+    // Save, outside click, replacement by a newly opened picker) must go
+    // through closePicker() so the document-level outside-click listener
+    // never outlives the picker element.
+    let outsideClickTimer = null;
+    const closeOnOutside = (e) => {
+        if (!picker.contains(e.target) && !e.target.closest('.execution-style-cell')) {
+            closePicker();
+        }
+    };
+    const closePicker = () => {
+        clearTimeout(outsideClickTimer);
+        document.removeEventListener('click', closeOnOutside);
+        picker.remove();
+    };
+    picker._closePicker = closePicker;
+
     // Event listeners
     const radios = picker.querySelectorAll('input[type="radio"]');
     radios.forEach(radio => {
@@ -351,8 +375,8 @@ async function showExecutionStylePicker(exerciseId, currentExercise) {
         });
     });
     
-    picker.querySelector('.btn-close-picker').addEventListener('click', () => picker.remove());
-    picker.querySelector('.btn-cancel-exec').addEventListener('click', () => picker.remove());
+    picker.querySelector('.btn-close-picker').addEventListener('click', () => closePicker());
+    picker.querySelector('.btn-cancel-exec').addEventListener('click', () => closePicker());
     
     picker.querySelector('.btn-save-exec').addEventListener('click', async () => {
         const selectedStyle = picker.querySelector(`input[name="exec-style-${exerciseId}"]:checked`).value;
@@ -371,7 +395,7 @@ async function showExecutionStylePicker(exerciseId, currentExercise) {
         try {
             const result = await api.post('/api/execution_style', payload);
             showToast(`Execution style set to ${selectedStyle.toUpperCase()}`);
-            picker.remove();
+            closePicker();
             // Refresh the workout plan to show updated badge
             await fetchWorkoutPlan();
         } catch (error) {
@@ -379,14 +403,11 @@ async function showExecutionStylePicker(exerciseId, currentExercise) {
         }
     });
     
-    // Close on outside click
-    setTimeout(() => {
-        document.addEventListener('click', function closeOnOutside(e) {
-            if (!picker.contains(e.target) && !e.target.closest('.execution-style-cell')) {
-                picker.remove();
-                document.removeEventListener('click', closeOnOutside);
-            }
-        });
+    // Close on outside click (delayed so the click that opened the picker
+    // does not immediately close it). closePicker() cancels this timer if the
+    // picker is dismissed before the listener is ever attached.
+    outsideClickTimer = setTimeout(() => {
+        document.addEventListener('click', closeOnOutside);
     }, 100);
 }
 

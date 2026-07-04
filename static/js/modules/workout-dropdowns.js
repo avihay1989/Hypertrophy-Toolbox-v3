@@ -12,7 +12,12 @@ export function initializeWorkoutDropdowns() {
   if (!workoutContainer || workoutContainer.getAttribute('data-page') !== 'workout-plan') {
     return;
   }
-  
+
+  // Tear down dropdowns whose owner element was removed/replaced (e.g. a
+  // deleted exercise row) before enhancing anything new, so their window/
+  // document listeners, observers, and body-appended popovers don't leak.
+  cleanupDetachedDropdowns();
+
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const SELECTOR_SELECT = '.form-select.uniform-dropdown, .filter-dropdown, .routine-dropdown, .exercise-dropdown';
   const selects = workoutContainer.querySelectorAll(SELECTOR_SELECT);
@@ -24,6 +29,17 @@ export function initializeWorkoutDropdowns() {
     }
     
     enhanceSelect(select, prefersReducedMotion);
+  });
+}
+
+// Invoke the stored cleanup for every enhanced dropdown whose container is no
+// longer in the DOM. Deleting from the Set inside forEach is safe per spec.
+function cleanupDetachedDropdowns() {
+  dropdownRegistry.forEach(dropdownData => {
+    if (!dropdownData.container.isConnected &&
+        typeof dropdownData.container._cleanupHandler === 'function') {
+      dropdownData.container._cleanupHandler();
+    }
   });
 }
 
