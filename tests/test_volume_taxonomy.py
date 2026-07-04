@@ -1,8 +1,7 @@
 """Strict Phase 0 taxonomy checks for plan volume integration.
 
-These tests intentionally read the live development DB at data/database.db.
-They do not use the normal test DB fixture because Phase 0 gates on the real
-catalog taxonomy, not seeded fixtures.
+The catalog fixture is a test-scoped snapshot of the shipped catalog. This
+keeps the taxonomy gate representative without connecting to the live DB.
 """
 from __future__ import annotations
 
@@ -28,20 +27,19 @@ from utils.volume_taxonomy import (
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-LIVE_DB = REPO_ROOT / "data" / "database.db"
 AUDIT_DOC = REPO_ROOT / "docs" / "archive" / "VOLUME_TAXONOMY_AUDIT.md"
 
 
-def _connect() -> sqlite3.Connection:
-    assert LIVE_DB.exists(), f"Live DB is required for Phase 0: {LIVE_DB}"
-    conn = sqlite3.connect(LIVE_DB)
+def _connect(catalog_db_path: str) -> sqlite3.Connection:
+    uri = Path(catalog_db_path).resolve().as_uri() + "?mode=ro"
+    conn = sqlite3.connect(uri, uri=True)
     conn.row_factory = sqlite3.Row
     return conn
 
 
-def _distinct_pst_values() -> list[tuple[str, str]]:
+def _distinct_pst_values(catalog_db_path: str) -> list[tuple[str, str]]:
     values: list[tuple[str, str]] = []
-    with _connect() as conn:
+    with _connect(catalog_db_path) as conn:
         for column in (
             "primary_muscle_group",
             "secondary_muscle_group",
@@ -66,9 +64,9 @@ def _csv_tokens(raw: str | None) -> list[str]:
     return [token.strip() for token in re.split(r"[;,]", raw) if token.strip()]
 
 
-def _distinct_isolated_tokens() -> set[str]:
+def _distinct_isolated_tokens(catalog_db_path: str) -> set[str]:
     tokens: set[str] = set()
-    with _connect() as conn:
+    with _connect(catalog_db_path) as conn:
         for row in conn.execute("SELECT DISTINCT muscle FROM exercise_isolated_muscles"):
             tokens.add(row["muscle"])
         for row in conn.execute(
@@ -83,11 +81,11 @@ def _distinct_isolated_tokens() -> set[str]:
     return tokens
 
 
-def test_every_pst_value_has_basic_rollup() -> None:
+def test_every_pst_value_has_basic_rollup(catalog_db_path: str) -> None:
     missing: list[tuple[str, str, str | None]] = []
     invalid: list[tuple[str, str]] = []
 
-    for column, raw in _distinct_pst_values():
+    for column, raw in _distinct_pst_values(catalog_db_path):
         key = canonical_pst(raw)
         if key not in COARSE_TO_BASIC:
             missing.append((column, raw, key))
@@ -99,11 +97,11 @@ def test_every_pst_value_has_basic_rollup() -> None:
     assert invalid == []
 
 
-def test_every_pst_value_has_representative_advanced() -> None:
+def test_every_pst_value_has_representative_advanced(catalog_db_path: str) -> None:
     missing: list[tuple[str, str, str | None]] = []
     invalid: list[tuple[str, str]] = []
 
-    for column, raw in _distinct_pst_values():
+    for column, raw in _distinct_pst_values(catalog_db_path):
         key = canonical_pst(raw)
         if key not in COARSE_TO_REPRESENTATIVE_ADVANCED:
             missing.append((column, raw, key))
@@ -116,11 +114,11 @@ def test_every_pst_value_has_representative_advanced() -> None:
     assert invalid == []
 
 
-def test_every_isolated_token_handled() -> None:
+def test_every_isolated_token_handled(catalog_db_path: str) -> None:
     missing: list[tuple[str, str]] = []
     invalid: list[tuple[str, str | None]] = []
 
-    for raw in sorted(_distinct_isolated_tokens()):
+    for raw in sorted(_distinct_isolated_tokens(catalog_db_path)):
         normalized = normalize_isolated_token(raw)
         if normalized in DISTRIBUTED_UMBRELLA_TOKENS:
             continue
@@ -183,12 +181,12 @@ def test_blank_pst_strategy_is_set() -> None:
     assert BLANK_PST_STRATEGY in {"isolated_only", "backfill", "exclude"}
 
 
-def test_blank_pst_audit_section_present() -> None:
+def test_blank_pst_audit_section_present(catalog_db_path: str) -> None:
     assert AUDIT_DOC.exists(), f"Missing Phase 0 audit doc: {AUDIT_DOC}"
     text = AUDIT_DOC.read_text(encoding="utf-8")
     assert "## Blank P/S/T exercises" in text
 
-    with _connect() as conn:
+    with _connect(catalog_db_path) as conn:
         blank_count = conn.execute(
             """
             SELECT COUNT(*)

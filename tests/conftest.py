@@ -3,6 +3,7 @@ Pytest configuration and fixtures for Priority 0 security tests.
 """
 import pytest
 import os
+import shutil
 from pathlib import Path
 from flask import Flask, jsonify
 from utils.database import (
@@ -67,6 +68,18 @@ def _cleanup_database_files(database_path: str) -> None:
 def test_db_path(tmp_path):
     """Create a unique temporary database file path per test."""
     return str(tmp_path / TEST_DB_FILENAME)
+
+
+@pytest.fixture
+def catalog_db_path(tmp_path):
+    """Copy the shipped catalog into a test-scoped, read-only snapshot."""
+    repo_root = Path(__file__).resolve().parents[1]
+    source = repo_root / "data" / "database.db"
+    destination = tmp_path / "catalog.db"
+
+    assert source.exists(), f"Shipped catalog database is missing: {source}"
+    shutil.copyfile(source, destination)
+    return str(destination)
 
 
 @pytest.fixture
