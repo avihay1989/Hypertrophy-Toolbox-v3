@@ -1,6 +1,7 @@
 """Database connection helpers and lightweight data-access abstraction."""
 from __future__ import annotations
 
+import re
 import sqlite3
 import threading
 import time
@@ -100,6 +101,93 @@ def _configure_connection(connection: sqlite3.Connection) -> sqlite3.Connection:
         connection.execute("PRAGMA synchronous = NORMAL;")
     
     return connection
+
+
+# Statement classification for write-lock dispatch. A CTE prefix
+# (``WITH ... AS (...)``) can front INSERT/UPDATE/DELETE/REPLACE as well as
+# SELECT, so the main verb after the CTE definitions decides read vs write.
+_SQL_WORD_RE = re.compile(r"[A-Za-z_]+")
+_CTE_MAIN_VERBS = frozenset({"INSERT", "UPDATE", "DELETE", "REPLACE", "SELECT", "VALUES"})
+
+
+def _skip_sql_ignorable(sql: str, index: int) -> int:
+    """Advance *index* past whitespace and SQL comments."""
+    length = len(sql)
+    while index < length:
+        char = sql[index]
+        if char.isspace():
+            index += 1
+        elif sql.startswith("--", index):
+            newline = sql.find("\n", index)
+            index = length if newline == -1 else newline + 1
+        elif sql.startswith("/*", index):
+            end = sql.find("*/", index + 2)
+            index = length if end == -1 else end + 2
+        else:
+            break
+    return index
+
+
+def _statement_operation(query: str) -> str:
+    """Return the top-level SQL verb of *query* (e.g. ``"INSERT"``).
+
+    Statements prefixed by a CTE are resolved to the main verb that follows
+    the CTE definitions by scanning at parenthesis depth zero while skipping
+    string literals, quoted identifiers, and comments. Returns ``"WITH"``
+    when the main verb cannot be determined and ``"UNKNOWN"`` for empty
+    input; both dispatch to the read path (pre-existing behavior).
+    """
+    if not query:
+        return "UNKNOWN"
+    index = _skip_sql_ignorable(query, 0)
+    match = _SQL_WORD_RE.match(query, index)
+    if match is None:
+        return "UNKNOWN"
+    operation = match.group(0).upper()
+    if operation != "WITH":
+        return operation
+
+    length = len(query)
+    depth = 0
+    index = match.end()
+    while index < length:
+        char = query[index]
+        if char in ("'", '"', "`"):
+            index += 1
+            while index < length:
+                if query[index] == char:
+                    if index + 1 < length and query[index + 1] == char:
+                        index += 2  # escaped quote inside literal
+                        continue
+                    index += 1
+                    break
+                index += 1
+            continue
+        if char == "[":  # bracket-quoted identifier
+            end = query.find("]", index + 1)
+            index = length if end == -1 else end + 1
+            continue
+        if query.startswith("--", index) or query.startswith("/*", index):
+            index = _skip_sql_ignorable(query, index)
+            continue
+        if char == "(":
+            depth += 1
+            index += 1
+            continue
+        if char == ")":
+            depth = max(depth - 1, 0)
+            index += 1
+            continue
+        word = _SQL_WORD_RE.match(query, index)
+        if word is not None:
+            if depth == 0:
+                token = word.group(0).upper()
+                if token in _CTE_MAIN_VERBS:
+                    return token
+            index = word.end()
+            continue
+        index += 1
+    return "WITH"
 
 
 def _should_attempt_recovery(exc: sqlite3.DatabaseError, database_path: str) -> bool:
@@ -211,8 +299,10 @@ class DatabaseHandler:
         prepared = self._prepare_params(params)
         start_time = time.time()
         
-        # Determine if this is a write operation that needs locking
-        operation = query.strip().split()[0].upper() if query else "UNKNOWN"
+        # Determine if this is a write operation that needs locking.
+        # CTE-prefixed statements (WITH ... INSERT/UPDATE/DELETE) resolve to
+        # their main verb, e.g. utils.maintenance.REBUILD_EIM_SQL.
+        operation = _statement_operation(query)
         is_write = operation in ("INSERT", "UPDATE", "DELETE", "CREATE", "DROP", "ALTER", "REPLACE")
         
         try:
@@ -287,8 +377,9 @@ class DatabaseHandler:
         prepared_sets = list(self._prepare_params(params, for_many=True) for params in param_sets)
         start_time = time.time()
         
-        # executemany is typically a write operation
-        operation = query.strip().split()[0].upper() if query else "UNKNOWN"
+        # executemany is typically a write operation; resolve CTE prefixes
+        # to their main verb (WITH ... INSERT/UPDATE/DELETE).
+        operation = _statement_operation(query)
         is_write = operation in ("INSERT", "UPDATE", "DELETE", "REPLACE")
         
         try:
