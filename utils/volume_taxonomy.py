@@ -315,11 +315,6 @@ def normalize_isolated_token(token: str) -> str:
     return normalized.strip("-")
 
 
-def advanced_to_basic(advanced: str) -> str:
-    """Return the Basic bucket for an Advanced splitter key."""
-    return ADVANCED_TO_BASIC[advanced]
-
-
 def expand_umbrella(token: str) -> tuple[str, ...] | None:
     """Return the advanced distribution tuple for an umbrella token."""
     return DISTRIBUTED_UMBRELLA_TOKENS.get(normalize_isolated_token(token))

@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 
 # =============================================================================
@@ -119,26 +119,6 @@ class EffectiveSetResult:
     rep_range_factor: float
     # Per-muscle effective sets (after contribution weighting)
     muscle_contributions: Dict[str, float]
-
-
-@dataclass
-class SessionVolumeResult:
-    """Result container for session-level volume analysis."""
-    routine: str
-    muscle_volumes: Dict[str, float]  # muscle -> effective sets
-    raw_muscle_volumes: Dict[str, float]  # muscle -> raw sets
-    warnings: Dict[str, VolumeWarningLevel]  # muscle -> warning level
-
-
-@dataclass
-class WeeklyVolumeResult:
-    """Result container for weekly volume analysis."""
-    muscle_volumes: Dict[str, float]  # muscle -> total effective sets
-    raw_muscle_volumes: Dict[str, float]  # muscle -> total raw sets
-    frequency: Dict[str, int]  # muscle -> session count where effective >= 1.0
-    avg_sets_per_session: Dict[str, float]
-    max_sets_per_session: Dict[str, float]
-    volume_class: Dict[str, str]  # muscle -> classification
 
 
 # =============================================================================
@@ -342,180 +322,8 @@ def get_weekly_volume_class(effective_sets: float) -> str:
     for label, (low, high) in WEEKLY_VOLUME_THRESHOLDS.items():
         if low <= effective_sets < high:
             return label
-    
+
     return 'low'
-
-
-def calculate_training_frequency(
-    sessions_with_muscle: List[Tuple[str, float]]
-) -> int:
-    """Calculate meaningful training frequency for a muscle.
-    
-    Args:
-        sessions_with_muscle: List of (session_id, effective_sets) tuples
-            for a specific muscle.
-    
-    Returns:
-        Number of sessions where muscle received >= 1.0 effective sets.
-    
-    Notes:
-        - Multiple exercises in one session count as one frequency hit
-        - Ignores sessions with only negligible contribution
-        - Sessions with only tertiary contribution count if >= 1.0 effective sets
-    """
-    return sum(1 for _, eff_sets in sessions_with_muscle if eff_sets >= 1.0)
-
-
-def calculate_volume_distribution(
-    session_volumes: List[float]
-) -> Tuple[float, float]:
-    """Calculate volume distribution metrics across sessions.
-    
-    Args:
-        session_volumes: List of effective sets per session for a muscle.
-    
-    Returns:
-        Tuple of (average_sets_per_session, max_sets_per_session).
-    
-    Notes:
-        - Based on effective sets
-        - If frequency = 1, avg = max
-        - If frequency = 0, returns (0.0, 0.0) safely
-    """
-    if not session_volumes:
-        return (0.0, 0.0)
-    
-    filtered = [v for v in session_volumes if v > 0]
-    if not filtered:
-        return (0.0, 0.0)
-    
-    avg_sets = sum(filtered) / len(filtered)
-    max_sets = max(filtered)
-    
-    return (avg_sets, max_sets)
-
-
-# =============================================================================
-# Aggregate Calculation Functions
-# =============================================================================
-
-def aggregate_session_volumes(
-    exercise_results: List[Tuple[str, EffectiveSetResult]]
-) -> SessionVolumeResult:
-    """Aggregate effective sets for a single session/routine.
-    
-    Args:
-        exercise_results: List of (routine, EffectiveSetResult) tuples
-            for exercises in a session.
-    
-    Returns:
-        SessionVolumeResult with per-muscle volumes and warnings.
-    """
-    if not exercise_results:
-        return SessionVolumeResult(
-            routine='',
-            muscle_volumes={},
-            raw_muscle_volumes={},
-            warnings={},
-        )
-    
-    routine = exercise_results[0][0]
-    muscle_volumes: Dict[str, float] = {}
-    raw_muscle_volumes: Dict[str, float] = {}
-    
-    for _, result in exercise_results:
-        for muscle, eff_sets in result.muscle_contributions.items():
-            muscle_volumes[muscle] = muscle_volumes.get(muscle, 0.0) + eff_sets
-        
-        # Track raw sets per muscle (assuming same contribution structure)
-        for muscle, eff_sets in result.muscle_contributions.items():
-            # Reverse engineer raw contribution from effective
-            if result.effective_sets > 0:
-                ratio = eff_sets / result.effective_sets
-                raw_contribution = result.raw_sets * ratio
-            else:
-                raw_contribution = 0.0
-            raw_muscle_volumes[muscle] = raw_muscle_volumes.get(muscle, 0.0) + raw_contribution
-    
-    # Generate warnings
-    warnings = {
-        muscle: get_session_volume_warning(volume)
-        for muscle, volume in muscle_volumes.items()
-    }
-    
-    return SessionVolumeResult(
-        routine=routine,
-        muscle_volumes=muscle_volumes,
-        raw_muscle_volumes=raw_muscle_volumes,
-        warnings=warnings,
-    )
-
-
-def aggregate_weekly_volumes(
-    session_results: List[SessionVolumeResult],
-    all_trained_muscles: Optional[List[str]] = None,
-) -> WeeklyVolumeResult:
-    """Aggregate session volumes into weekly totals.
-    
-    Args:
-        session_results: List of SessionVolumeResult from individual sessions.
-        all_trained_muscles: Optional list of all muscles trained historically
-            (to ensure muscles with zero current volume still appear).
-    
-    Returns:
-        WeeklyVolumeResult with weekly totals, frequency, distribution, and classification.
-    """
-    muscle_volumes: Dict[str, float] = {}
-    raw_muscle_volumes: Dict[str, float] = {}
-    sessions_per_muscle: Dict[str, List[float]] = {}
-    
-    # Aggregate across sessions
-    for session in session_results:
-        for muscle, volume in session.muscle_volumes.items():
-            muscle_volumes[muscle] = muscle_volumes.get(muscle, 0.0) + volume
-            
-            if muscle not in sessions_per_muscle:
-                sessions_per_muscle[muscle] = []
-            sessions_per_muscle[muscle].append(volume)
-        
-        for muscle, raw_vol in session.raw_muscle_volumes.items():
-            raw_muscle_volumes[muscle] = raw_muscle_volumes.get(muscle, 0.0) + raw_vol
-    
-    # Include historically trained muscles with zero volume
-    if all_trained_muscles:
-        for muscle in all_trained_muscles:
-            if muscle not in muscle_volumes:
-                muscle_volumes[muscle] = 0.0
-                raw_muscle_volumes[muscle] = 0.0
-                sessions_per_muscle[muscle] = []
-    
-    # Calculate frequency (sessions with >= 1.0 effective sets)
-    frequency: Dict[str, int] = {}
-    for muscle, session_vols in sessions_per_muscle.items():
-        frequency[muscle] = sum(1 for v in session_vols if v >= 1.0)
-    
-    # Calculate distribution metrics
-    avg_sets_per_session: Dict[str, float] = {}
-    max_sets_per_session: Dict[str, float] = {}
-    for muscle, session_vols in sessions_per_muscle.items():
-        avg, max_vol = calculate_volume_distribution(session_vols)
-        avg_sets_per_session[muscle] = avg
-        max_sets_per_session[muscle] = max_vol
-    
-    # Classify weekly volumes
-    volume_class: Dict[str, str] = {
-        muscle: get_weekly_volume_class(volume)
-        for muscle, volume in muscle_volumes.items()
-    }
-    
-    return WeeklyVolumeResult(
-        muscle_volumes=muscle_volumes,
-        raw_muscle_volumes=raw_muscle_volumes,
-        frequency=frequency,
-        avg_sets_per_session=avg_sets_per_session,
-        max_sets_per_session=max_sets_per_session,
-        volume_class=volume_class,
-    )
 
 
 # =============================================================================
@@ -544,32 +352,3 @@ def rir_to_rpe(rir: int) -> float:
         Estimated RPE.
     """
     return 10.0 - rir
-
-
-def format_volume_summary(
-    muscle: str,
-    effective_sets: float,
-    raw_sets: float,
-    frequency: int,
-    volume_class: str,
-) -> Dict[str, Any]:
-    """Format volume data for API response.
-    
-    Args:
-        muscle: Muscle group name.
-        effective_sets: Total effective sets.
-        raw_sets: Total raw sets.
-        frequency: Training frequency (sessions).
-        volume_class: Volume classification.
-    
-    Returns:
-        Dictionary suitable for JSON serialization.
-    """
-    return {
-        'muscle_group': muscle,
-        'effective_sets': round(effective_sets, 2),
-        'raw_sets': round(raw_sets, 2),
-        'frequency': frequency,
-        'volume_class': volume_class,
-        'sets_per_session': round(effective_sets / frequency, 2) if frequency > 0 else 0.0,
-    }
