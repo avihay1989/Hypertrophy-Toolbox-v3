@@ -126,7 +126,12 @@ def weekly_summary():
         logger.exception("Error in weekly_summary: %s", e)
         if is_xhr_request():
             return error_response("INTERNAL_ERROR", "Unable to fetch weekly summary", 500)
-        return render_template("error.html", message="Unable to load weekly summary."), 500
+        return render_template(
+            "error.html",
+            error_title="Server Error",
+            error_code=500,
+            error_message="Unable to load weekly summary.",
+        ), 500
 
 
 @weekly_summary_bp.route("/api/pattern_coverage")

@@ -143,4 +143,9 @@ def session_summary():
         logger.exception("Error in session_summary: %s", e)
         if is_xhr_request():
             return error_response("INTERNAL_ERROR", "Unable to fetch session summary", 500)
-        return render_template("error.html", message="Unable to load session summary."), 500 
+        return render_template(
+            "error.html",
+            error_title="Server Error",
+            error_code=500,
+            error_message="Unable to load session summary.",
+        ), 500

@@ -41,7 +41,12 @@ def backup_center():
         )
     except Exception:
         logger.exception("Error loading backup center page")
-        return render_template("error.html", message="Unable to load backup center."), 500
+        return render_template(
+            "error.html",
+            error_title="Server Error",
+            error_code=500,
+            error_message="Unable to load backup center.",
+        ), 500
 
 
 @program_backup_bp.route('/api/backups', methods=['GET'])

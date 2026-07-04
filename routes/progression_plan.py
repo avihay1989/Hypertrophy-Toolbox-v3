@@ -130,7 +130,12 @@ def progression_plan():
         )
     except Exception as e:
         logger.exception("Error in progression_plan: %s", str(e))
-        return render_template("error.html", message="Unable to load progression plan."), 500
+        return render_template(
+            "error.html",
+            error_title="Server Error",
+            error_code=500,
+            error_message="Unable to load progression plan.",
+        ), 500
 
 
 @progression_plan_bp.route("/get_exercise_suggestions", methods=["POST"])

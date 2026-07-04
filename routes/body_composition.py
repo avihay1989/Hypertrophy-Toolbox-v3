@@ -189,7 +189,12 @@ def body_composition():
         )
     except Exception:
         logger.exception("Error rendering body composition page")
-        return render_template("error.html", message="Unable to load Body Composition."), 500
+        return render_template(
+            "error.html",
+            error_title="Server Error",
+            error_code=500,
+            error_message="Unable to load Body Composition.",
+        ), 500
 
 
 @body_composition_bp.route("/api/body_composition/snapshot", methods=["POST"])
