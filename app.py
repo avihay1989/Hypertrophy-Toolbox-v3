@@ -10,7 +10,7 @@ from utils.database import (
     add_user_profile_tables,
     add_volume_tracking_tables,
 )
-from utils.auto_backup import create_startup_backup
+from utils.auto_backup import create_startup_backup, describe_snapshot
 from routes.workout_log import workout_log_bp
 from routes.weekly_summary import weekly_summary_bp
 from routes.session_summary import session_summary_bp
@@ -173,7 +173,7 @@ def erase_data():
         )
     try:
         # Snapshot before wiping so the nuke is recoverable from data/auto_backup/.
-        create_startup_backup()
+        snapshot_path = create_startup_backup()
         # Drop ALL tables including backup tables (full reset)
         with DatabaseHandler() as db:
             tables = [
@@ -220,11 +220,11 @@ def erase_data():
         init_backup_tables()
         
         from utils.errors import success_response
-        
+
         response_message = 'All data has been erased and tables reinitialized successfully.'
-        
+
         return jsonify(success_response(
-            data=None,
+            data={"auto_backup": describe_snapshot(snapshot_path)},
             message=response_message
         ))
     except Exception as e:

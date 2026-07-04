@@ -399,6 +399,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 const toast = new bootstrap.Toast(document.getElementById('successToast'));
                 document.querySelector('#successToast .toast-body span').textContent = data.message;
                 toast.show();
+
+                const autoBackup = data.data && data.data.auto_backup;
+                if (autoBackup && typeof window.showAutoBackupBanner === 'function') {
+                    window.showAutoBackupBanner(autoBackup);
+                }
+
                 setTimeout(() => window.location.reload(), 2000);
             } else {
                 throw new Error(data.message);
