@@ -153,8 +153,8 @@ def create_backup(
     # in a single transaction (mirrors restore_backup's BEGIN IMMEDIATE /
     # commit / rollback shape) so a crash mid-insert leaves no partial
     # backup. When a caller supplies its own `db`, that caller owns the
-    # transaction (e.g. create_auto_backup_before_erase already holds a
-    # BEGIN IMMEDIATE), so we just write uncommitted and let it commit.
+    # transaction (e.g. a caller that already holds a BEGIN IMMEDIATE), so we
+    # just write uncommitted and let it commit.
     own_transaction = should_close
 
     try:
@@ -613,51 +613,6 @@ def delete_backup(backup_id: int) -> bool:
         )
         
         return True
-
-
-def create_auto_backup_before_erase() -> Optional[Dict[str, Any]]:
-    """
-    Create an automatic backup before erase/reset operations.
-    
-    Only creates a backup if the active program has data.
-    
-    Returns:
-        Backup metadata dict if backup was created, None if active program was empty
-    """
-    with DatabaseHandler() as db:
-        # Check if user_selection table exists and has data
-        table_check = db.fetch_one(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name='user_selection'"
-        )
-        
-        if not table_check:
-            logger.debug("No user_selection table found, skipping auto-backup")
-            return None
-        
-        count_result = db.fetch_one("SELECT COUNT(*) as count FROM user_selection")
-        if not count_result or count_result['count'] == 0:
-            logger.debug("Active program is empty, skipping auto-backup")
-            return None
-    
-    # Create timestamped auto-backup
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
-    backup_name = f"Pre-Erase Auto-Backup ({timestamp})"
-
-    with DatabaseHandler() as db:
-        db.execute_query("BEGIN IMMEDIATE", commit=False)
-        try:
-            backup = create_backup(
-                name=backup_name,
-                note="Automatically created before erase/reset operation",
-                backup_type="auto",
-                db=db,
-            )
-            prune_auto_backups(keep_count=10, db=db)
-            db.connection.commit()
-            return backup
-        except sqlite3.Error:
-            db.connection.rollback()
-            raise
 
 
 def prune_auto_backups(keep_count: int = 10, db: Optional[DatabaseHandler] = None) -> int:

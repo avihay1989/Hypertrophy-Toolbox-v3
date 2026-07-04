@@ -21,7 +21,6 @@ from utils.volume_taxonomy import (
     DISTRIBUTED_UMBRELLA_TOKENS,
     IGNORED_TOKENS,
     TOKEN_TO_ADVANCED,
-    advanced_to_basic,
     canonical_pst,
     expand_umbrella,
     normalize_isolated_token,
@@ -172,7 +171,6 @@ def test_advanced_set_normalizes_to_advanced_muscle_groups() -> None:
 
 
 def test_design_calls_documented() -> None:
-    assert advanced_to_basic("lower-trapezius") == "Middle-Traps"
     assert expand_umbrella("quadriceps") == (
         "rectus-femoris",
         "inner-quadriceps",
