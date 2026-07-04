@@ -47,6 +47,30 @@ class TestCalculateWeightIncrement:
         assert _calculate_weight_increment(20.0, is_novice=True) == 2.5
         assert _calculate_weight_increment(50.0, is_novice=True) == 2.5
 
+    def test_experienced_under_20kg_returns_5(self):
+        """Experienced (non-novice) lifters under 20kg now get +5kg (OD5)."""
+        assert _calculate_weight_increment(5.0, is_novice=False) == 5.0
+        assert _calculate_weight_increment(15.0, is_novice=False) == 5.0
+        assert _calculate_weight_increment(19.9, is_novice=False) == 5.0
+
+    def test_novice_under_20kg_still_returns_2_5(self):
+        """Novice behavior under 20kg is unchanged by OD5."""
+        assert _calculate_weight_increment(5.0, is_novice=True) == 2.5
+        assert _calculate_weight_increment(15.0, is_novice=True) == 2.5
+        assert _calculate_weight_increment(19.9, is_novice=True) == 2.5
+
+    def test_boundary_around_20kg_experienced_vs_novice(self):
+        """Regression across the 20kg boundary for both experience levels."""
+        # Just below 20kg
+        assert _calculate_weight_increment(19.9, is_novice=False) == 5.0
+        assert _calculate_weight_increment(19.9, is_novice=True) == 2.5
+        # At 20kg
+        assert _calculate_weight_increment(20.0, is_novice=False) == 5.0
+        assert _calculate_weight_increment(20.0, is_novice=True) == 2.5
+        # Just above 20kg
+        assert _calculate_weight_increment(20.1, is_novice=False) == 5.0
+        assert _calculate_weight_increment(20.1, is_novice=True) == 2.5
+
 
 class TestCheckAcceptableEffort:
     """Tests for effort acceptability check (RIR/RPE)."""

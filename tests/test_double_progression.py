@@ -27,6 +27,28 @@ class TestWeightIncrement:
         assert _calculate_weight_increment(20.0, is_novice=True) == 2.5
         assert _calculate_weight_increment(50.0, is_novice=True) == 2.5
 
+    def test_light_weight_increment_experienced(self):
+        """Experienced lifters get +5kg below 20kg too (OD5)."""
+        assert _calculate_weight_increment(15.0, is_novice=False) == 5.0
+        assert _calculate_weight_increment(10.0, is_novice=False) == 5.0
+        assert _calculate_weight_increment(19.9, is_novice=False) == 5.0
+
+    def test_light_weight_increment_novice_unchanged(self):
+        """Novice behavior below 20kg is unchanged by OD5."""
+        assert _calculate_weight_increment(15.0, is_novice=True) == 2.5
+        assert _calculate_weight_increment(19.9, is_novice=True) == 2.5
+
+    def test_weight_increment_boundary_20kg_both_experience_levels(self):
+        """At the 20kg boundary, both experience levels keep existing behavior."""
+        assert _calculate_weight_increment(20.0, is_novice=False) == 5.0
+        assert _calculate_weight_increment(20.0, is_novice=True) == 2.5
+
+    def test_weight_increment_just_below_and_above_20kg_experienced(self):
+        """Experienced lifters get 5kg on both sides of the 20kg boundary now."""
+        assert _calculate_weight_increment(19.9, is_novice=False) == 5.0
+        assert _calculate_weight_increment(20.0, is_novice=False) == 5.0
+        assert _calculate_weight_increment(20.1, is_novice=False) == 5.0
+
 
 class TestAcceptableEffort:
     """Tests for effort acceptability check."""
@@ -235,11 +257,37 @@ class TestProgressionSuggestions:
         ]
         
         suggestions = generate_progression_suggestions(history)
-        
+
         # Should have a reduce_weight suggestion
         reduce_suggestions = [s for s in suggestions if s["type"] == "reduce_weight"]
         assert len(reduce_suggestions) == 1
-    
+
+    def test_reduce_weight_decrement_experienced_below_20kg(self):
+        """OD5 side effect: the reduce-weight DECREMENT is also 5kg for
+        experienced lifters below 20kg (novice stays 2.5kg)."""
+        def make_history():
+            return [
+                {
+                    "exercise": "Lateral Raise",
+                    "scored_max_reps": 5,
+                    "planned_min_reps": 8,
+                    "planned_max_reps": 12,
+                    "scored_weight": 10.0,
+                    "planned_sets": 3,
+                }
+                for _ in range(2)
+            ]
+
+        experienced = generate_progression_suggestions(make_history(), is_novice=False)
+        reduce_exp = [s for s in experienced if s["type"] == "reduce_weight"]
+        assert len(reduce_exp) == 1
+        assert reduce_exp[0]["suggested_weight"] == 5.0  # 10 - 5.0 (was 7.5 pre-OD5)
+
+        novice = generate_progression_suggestions(make_history(), is_novice=True)
+        reduce_nov = [s for s in novice if s["type"] == "reduce_weight"]
+        assert len(reduce_nov) == 1
+        assert reduce_nov[0]["suggested_weight"] == 7.5  # 10 - 2.5, unchanged
+
     def test_empty_history(self):
         """Should return empty list for empty history."""
         suggestions = generate_progression_suggestions([])
