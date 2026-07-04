@@ -466,7 +466,12 @@ def user_profile():
         return render_template("user_profile.html", **context)
     except Exception:
         logger.exception("Error rendering user profile")
-        return render_template("error.html", message="Unable to load user profile."), 500
+        return render_template(
+            "error.html",
+            error_title="Server Error",
+            error_code=500,
+            error_message="Unable to load user profile.",
+        ), 500
 
 
 @user_profile_bp.route("/api/user_profile", methods=["POST"])

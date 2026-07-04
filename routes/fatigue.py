@@ -23,7 +23,12 @@ def fatigue_page():
         context = build_fatigue_page_context(period)
     except Exception:
         logger.exception("Error building /fatigue context")
-        if is_xhr_request(request):
+        if is_xhr_request():
             return error_response("INTERNAL_ERROR", "Failed to load fatigue page", 500)
-        return render_template('error.html', error_message="Unable to load fatigue page"), 500
+        return render_template(
+            'error.html',
+            error_title="Server Error",
+            error_code=500,
+            error_message="Unable to load fatigue page",
+        ), 500
     return render_template('fatigue.html', **context)

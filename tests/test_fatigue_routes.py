@@ -1,5 +1,30 @@
 """Integration tests for GET /fatigue (Phase 2 Stage 2)."""
+import routes.fatigue as fatigue_route
 from utils.fatigue_data import build_fatigue_page_context
+
+
+class TestFatigueRouteExceptionPath:
+    """Regression: the except-branch of /fatigue must not crash on its own error handling."""
+
+    def _raise(self, *args, **kwargs):
+        raise RuntimeError("boom")
+
+    def test_xhr_request_gets_json_error_not_a_crash(self, client, monkeypatch):
+        # is_xhr_request() takes zero arguments; the route previously called
+        # is_xhr_request(request), which raised TypeError inside the except
+        # block and masked the intended error_response with an unhandled 500.
+        monkeypatch.setattr(fatigue_route, "build_fatigue_page_context", self._raise)
+        response = client.get('/fatigue', headers={'Accept': 'application/json'})
+        assert response.status_code == 500
+        data = response.get_json()
+        assert data['ok'] is False
+        assert data['error']['code'] == 'INTERNAL_ERROR'
+
+    def test_non_xhr_request_gets_error_page(self, client, monkeypatch):
+        monkeypatch.setattr(fatigue_route, "build_fatigue_page_context", self._raise)
+        response = client.get('/fatigue')
+        assert response.status_code == 500
+        assert b'Unable to load fatigue page' in response.data
 
 
 class TestFatigueRouteBasic:
