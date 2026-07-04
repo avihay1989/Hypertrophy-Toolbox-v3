@@ -149,9 +149,18 @@ def create_backup(
         db.__enter__()
         should_close = True
 
-    commit_writes = should_close
+    # When we own the connection, wrap the header insert and all item inserts
+    # in a single transaction (mirrors restore_backup's BEGIN IMMEDIATE /
+    # commit / rollback shape) so a crash mid-insert leaves no partial
+    # backup. When a caller supplies its own `db`, that caller owns the
+    # transaction (e.g. create_auto_backup_before_erase already holds a
+    # BEGIN IMMEDIATE), so we just write uncommitted and let it commit.
+    own_transaction = should_close
 
     try:
+        if own_transaction:
+            db.execute_query("BEGIN IMMEDIATE", commit=False)
+
         # Check if user_selection table exists
         table_check = db.fetch_one(
             "SELECT name FROM sqlite_master WHERE type='table' AND name='user_selection'"
@@ -188,7 +197,7 @@ def create_backup(
         db.execute_query("""
             INSERT INTO program_backups (name, note, backup_type, schema_version, item_count, created_at)
             VALUES (?, ?, ?, ?, ?, ?)
-        """, (name, note, backup_type, BACKUP_SCHEMA_VERSION, item_count, datetime.now()), commit=commit_writes)
+        """, (name, note, backup_type, BACKUP_SCHEMA_VERSION, item_count, datetime.now()), commit=False)
         
         # Get the newly created backup ID
         result = db.fetch_one("SELECT last_insert_rowid() as id")
@@ -216,8 +225,11 @@ def create_backup(
                     item.get('weight'),
                     item.get('exercise_order'),  # Will be None if column doesn't exist
                     item.get('superset_group')   # Will be None if column doesn't exist
-                ), commit=commit_writes)
-        
+                ), commit=False)
+
+        if own_transaction:
+            db.connection.commit()
+
         logger.info(
             "Backup created successfully",
             extra={
@@ -238,6 +250,8 @@ def create_backup(
             'created_at': datetime.now().isoformat()
         }
     except BaseException as exc:
+        if own_transaction:
+            db.connection.rollback()
         if should_close:
             db.__exit__(type(exc), exc, exc.__traceback__)
             should_close = False

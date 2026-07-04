@@ -94,6 +94,75 @@ class TestProgramBackup:
         with pytest.raises(ValueError, match="Backup name is required"):
             create_backup(name="   ")
     
+    def test_create_backup_rollback_leaves_no_partial_backup_on_failure(
+        self,
+        clean_db,
+        exercise_factory,
+        workout_plan_factory,
+        monkeypatch,
+    ):
+        """Test that a crash mid-item-insert leaves no partial header or items.
+
+        Forces the second `program_backup_items` insert to raise, mirroring the
+        restore-path rollback test above. Before the atomic-transaction fix, the
+        header insert and each item insert committed individually, so a crash
+        here would leave a header row overstating item_count with only the
+        already-committed items present.
+        """
+        ex1 = exercise_factory("Exercise A", primary_muscle_group="Chest")
+        ex2 = exercise_factory("Exercise B", primary_muscle_group="Back")
+        ex3 = exercise_factory("Exercise C", primary_muscle_group="Legs")
+
+        workout_plan_factory(exercise_name=ex1, routine="Workout A", sets=3, weight=100.0)
+        workout_plan_factory(exercise_name=ex2, routine="Workout A", sets=4, weight=110.0)
+        workout_plan_factory(exercise_name=ex3, routine="Workout A", sets=5, weight=120.0)
+
+        original_execute_query = DatabaseHandler.execute_query
+        insert_calls = {"count": 0}
+
+        def flaky_execute_query(self, query, params=None, *, commit=True):
+            if "INSERT INTO program_backup_items" in query:
+                insert_calls["count"] += 1
+                if insert_calls["count"] == 2:
+                    raise sqlite3.Error("forced")
+            return original_execute_query(self, query, params, commit=commit)
+
+        monkeypatch.setattr(DatabaseHandler, "execute_query", flaky_execute_query)
+
+        with pytest.raises(sqlite3.Error, match="forced"):
+            create_backup(name="Doomed Backup")
+
+        with DatabaseHandler() as db:
+            headers = db.fetch_all(
+                "SELECT id FROM program_backups WHERE name = ?", ("Doomed Backup",)
+            )
+            assert headers == []
+
+            items = db.fetch_all("SELECT id FROM program_backup_items")
+            assert items == []
+
+    def test_create_backup_item_count_matches_inserted_rows(
+        self, clean_db, exercise_factory, workout_plan_factory
+    ):
+        """The header's item_count must always equal the actual number of
+        program_backup_items rows written for that backup — the invariant the
+        non-atomic N+1-commit bug could silently violate on a mid-loop crash."""
+        ex1 = exercise_factory("Exercise A", primary_muscle_group="Chest")
+        ex2 = exercise_factory("Exercise B", primary_muscle_group="Back")
+
+        workout_plan_factory(exercise_name=ex1, routine="Workout A", sets=3, weight=100.0)
+        workout_plan_factory(exercise_name=ex2, routine="Workout A", sets=4, weight=110.0)
+
+        backup = create_backup(name="Invariant Backup")
+
+        with DatabaseHandler() as db:
+            row = db.fetch_one(
+                "SELECT COUNT(*) as cnt FROM program_backup_items WHERE backup_id = ?",
+                (backup["id"],),
+            )
+            assert row["cnt"] == backup["item_count"]
+            assert row["cnt"] == 2
+
     def test_list_backups_returns_all_backups(self, clean_db, exercise_factory, workout_plan_factory):
         """Test that list_backups returns all created backups."""
         exercise_factory("Test Exercise")
