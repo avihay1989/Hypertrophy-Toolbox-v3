@@ -6,6 +6,9 @@ and small rounding differences are expected across implementations.
 """
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import pytest
 
 from utils.body_fat import (
@@ -14,6 +17,41 @@ from utils.body_fat import (
     compute_navy,
     jackson_pollock_ideal,
 )
+
+
+PARITY_FIXTURE = (
+    Path(__file__).resolve().parents[1] / "e2e" / "fixtures" / "body-fat-parity.json"
+)
+
+
+def test_shared_js_python_parity_fixture_matches_all_four_public_functions():
+    cases = json.loads(PARITY_FIXTURE.read_text(encoding="utf-8"))
+    assert cases
+
+    for case in cases:
+        profile = case["profile"]
+        expected = case["expected"]
+        bmi = compute_bmi(
+            gender=profile["gender"],
+            age_years=profile["age"],
+            height_cm=profile["height_cm"],
+            bodyweight_kg=profile["weight_kg"],
+        )
+        if case["tape"] is None:
+            effective_bfp = bmi["bfp"]
+        else:
+            effective_bfp = compute_navy(
+                gender=profile["gender"],
+                height_cm=profile["height_cm"],
+                **case["tape"],
+            )
+
+        assert round(effective_bfp, 1) == expected["bfp"], case["id"]
+        assert round(bmi["bmi"], 1) == expected["bmi"], case["id"]
+        assert ace_category(effective_bfp, profile["gender"]) == expected["ace"], case["id"]
+        assert round(jackson_pollock_ideal(profile["age"], profile["gender"]), 1) == expected[
+            "jackson_pollock_ideal"
+        ], case["id"]
 
 
 # -- compute_navy -----------------------------------------------------------

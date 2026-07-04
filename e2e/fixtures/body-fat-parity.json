@@ -1,0 +1,26 @@
+[
+  {
+    "id": "male-navy-adult",
+    "profile": {"gender": "M", "age": 34, "height_cm": 180, "weight_kg": 80},
+    "tape": {"neck_cm": 38, "waist_cm": 85},
+    "expected": {"method": "U.S. Navy method", "bfp": 16.1, "bmi": 24.7, "ace": "Fitness", "jackson_pollock_ideal": 13.5}
+  },
+  {
+    "id": "female-navy-adult",
+    "profile": {"gender": "F", "age": 42, "height_cm": 165, "weight_kg": 60},
+    "tape": {"neck_cm": 32, "waist_cm": 70, "hip_cm": 95},
+    "expected": {"method": "U.S. Navy method", "bfp": 24.9, "bmi": 22.0, "ace": "Fitness", "jackson_pollock_ideal": 22.5}
+  },
+  {
+    "id": "male-bmi-minor",
+    "profile": {"gender": "M", "age": 14, "height_cm": 160, "weight_kg": 50},
+    "tape": null,
+    "expected": {"method": "BMI method (fallback)", "bfp": 17.5, "bmi": 19.5, "ace": "Fitness", "jackson_pollock_ideal": 8.5}
+  },
+  {
+    "id": "female-bmi-older-adult",
+    "profile": {"gender": "F", "age": 60, "height_cm": 165, "weight_kg": 70},
+    "tape": null,
+    "expected": {"method": "BMI method (fallback)", "bfp": 39.3, "bmi": 25.7, "ace": "Obese", "jackson_pollock_ideal": 26.3}
+  }
+]
