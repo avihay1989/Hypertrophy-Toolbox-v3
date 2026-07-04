@@ -44,6 +44,29 @@ async function selectExercise(page: import('@playwright/test').Page) {
   }
 }
 
+async function expectExerciseSubmission(
+  page: import('@playwright/test').Page,
+  expectedStatus: number,
+  expectedPayload: Record<string, number>
+) {
+  const rows = page.locator('#workout_plan_table_body tr');
+  const initialCount = await rows.count();
+  const responsePromise = page.waitForResponse(response =>
+    response.url().endsWith('/add_exercise') && response.request().method() === 'POST'
+  );
+
+  await page.locator(SELECTORS.ADD_EXERCISE_BTN).click();
+  const response = await responsePromise;
+
+  expect(response.status()).toBe(expectedStatus);
+  expect(response.request().postDataJSON()).toMatchObject(expectedPayload);
+  if (expectedStatus === 200) {
+    await expect.poll(() => rows.count()).toBe(initialCount + 1);
+  } else {
+    await expect.poll(() => rows.count()).toBe(initialCount);
+  }
+}
+
 test.beforeEach(async ({ page }) => {
   await resetWorkoutPlan(page);
 });
@@ -61,39 +84,22 @@ test.describe('Negative Value Validation', () => {
     consoleErrors.assertNoErrors();
   });
 
-  test('rejects negative sets value', async ({ page }) => {
+  test('clamps negative sets to the current minimum', async ({ page }) => {
     await page.fill('#sets', '-1');
     await page.fill('#min_rep', '8');
     await page.fill('#max_rep_range', '12');
     await page.fill('#weight', '100');
 
-    await page.locator(SELECTORS.ADD_EXERCISE_BTN).click();
-    await page.waitForTimeout(500);
-
-    // Should show validation error or API rejection
-    const toast = page.locator('.toast, #liveToast');
-    const toastVisible = await toast.isVisible().catch(() => false);
-    
-    // Check if exercise was NOT added (validation worked)
-    const initialRows = await page.locator('#workout_plan_table_body tr').count();
-    
-    // Either toast shown OR exercise not added = validation working
-    expect(toastVisible || initialRows === 0).toBeTruthy();
+    await expectExerciseSubmission(page, 200, { sets: 1 });
   });
 
-  test('rejects negative min rep value', async ({ page }) => {
+  test('clamps negative min rep to the current minimum', async ({ page }) => {
     await page.fill('#sets', '3');
     await page.fill('#min_rep', '-5');
     await page.fill('#max_rep_range', '12');
     await page.fill('#weight', '100');
 
-    await page.locator(SELECTORS.ADD_EXERCISE_BTN).click();
-    await page.waitForTimeout(500);
-
-    // Validation should prevent submission
-    const toast = page.locator('.toast, #liveToast');
-    const toastVisible = await toast.isVisible().catch(() => false);
-    expect(true).toBeTruthy(); // Test passes if no crash
+    await expectExerciseSubmission(page, 200, { min_rep_range: 1 });
   });
 
   test('rejects negative max rep value', async ({ page }) => {
@@ -102,22 +108,16 @@ test.describe('Negative Value Validation', () => {
     await page.fill('#max_rep_range', '-10');
     await page.fill('#weight', '100');
 
-    await page.locator(SELECTORS.ADD_EXERCISE_BTN).click();
-    await page.waitForTimeout(500);
-
-    expect(true).toBeTruthy();
+    await expectExerciseSubmission(page, 400, { max_rep_range: 1 });
   });
 
-  test('rejects negative weight value', async ({ page }) => {
+  test('clamps negative weight to zero', async ({ page }) => {
     await page.fill('#sets', '3');
     await page.fill('#min_rep', '8');
     await page.fill('#max_rep_range', '12');
     await page.fill('#weight', '-50');
 
-    await page.locator(SELECTORS.ADD_EXERCISE_BTN).click();
-    await page.waitForTimeout(500);
-
-    expect(true).toBeTruthy();
+    await expectExerciseSubmission(page, 200, { weight: 0 });
   });
 });
 
@@ -140,19 +140,10 @@ test.describe('Rep Range Validation', () => {
     await page.fill('#max_rep_range', '8');
     await page.fill('#weight', '100');
 
-    await page.locator(SELECTORS.ADD_EXERCISE_BTN).click();
-    await page.waitForTimeout(500);
-
-    // Should show validation error
-    const toast = page.locator('.toast, #liveToast');
-    const toastVisible = await toast.isVisible().catch(() => false);
-    
-    // Check toast content for validation message
-    if (toastVisible) {
-      const toastText = await page.locator('#toast-body, .toast-body').textContent();
-      // Implementations may return a specific rep-range message or a generic validation error.
-      expect(toastText?.toLowerCase() ?? '').toMatch(/rep|invalid|error|unexpected/);
-    }
+    await expectExerciseSubmission(page, 400, {
+      min_rep_range: 15,
+      max_rep_range: 8,
+    });
   });
 
   test('accepts valid rep range (min < max)', async ({ page }) => {
@@ -161,17 +152,10 @@ test.describe('Rep Range Validation', () => {
     await page.fill('#max_rep_range', '12');
     await page.fill('#weight', '100');
 
-    const initialCount = await page.locator('#workout_plan_table_body tr').count();
-
-    await page.locator(SELECTORS.ADD_EXERCISE_BTN).click();
-    await page.waitForTimeout(1000);
-
-    // Should add successfully
-    const newCount = await page.locator('#workout_plan_table_body tr').count();
-    const toast = page.locator('.toast, #liveToast');
-    const toastVisible = await toast.isVisible().catch(() => false);
-
-    expect(newCount > initialCount || toastVisible).toBeTruthy();
+    await expectExerciseSubmission(page, 200, {
+      min_rep_range: 8,
+      max_rep_range: 12,
+    });
   });
 
   test('accepts equal min and max rep (min == max)', async ({ page }) => {
@@ -180,11 +164,10 @@ test.describe('Rep Range Validation', () => {
     await page.fill('#max_rep_range', '5');
     await page.fill('#weight', '100');
 
-    await page.locator(SELECTORS.ADD_EXERCISE_BTN).click();
-    await page.waitForTimeout(1000);
-
-    // Should be valid - same min and max means fixed rep target
-    expect(true).toBeTruthy();
+    await expectExerciseSubmission(page, 200, {
+      min_rep_range: 5,
+      max_rep_range: 5,
+    });
   });
 });
 
@@ -201,48 +184,31 @@ test.describe('Zero Value Validation', () => {
     consoleErrors.assertNoErrors();
   });
 
-  test('rejects zero sets', async ({ page }) => {
+  test('clamps zero sets to the current minimum', async ({ page }) => {
     await page.fill('#sets', '0');
     await page.fill('#min_rep', '8');
     await page.fill('#max_rep_range', '12');
     await page.fill('#weight', '100');
 
-    await page.locator(SELECTORS.ADD_EXERCISE_BTN).click();
-    await page.waitForTimeout(500);
-
-    // 0 sets should be rejected
-    const toast = page.locator('.toast, #liveToast');
-    const toastVisible = await toast.isVisible().catch(() => false);
-    expect(true).toBeTruthy();
+    await expectExerciseSubmission(page, 200, { sets: 1 });
   });
 
-  test('rejects zero min rep', async ({ page }) => {
+  test('clamps zero min rep to the current minimum', async ({ page }) => {
     await page.fill('#sets', '3');
     await page.fill('#min_rep', '0');
     await page.fill('#max_rep_range', '12');
     await page.fill('#weight', '100');
 
-    await page.locator(SELECTORS.ADD_EXERCISE_BTN).click();
-    await page.waitForTimeout(500);
-
-    expect(true).toBeTruthy();
+    await expectExerciseSubmission(page, 200, { min_rep_range: 1 });
   });
 
-  test('warns on zero weight', async ({ page }) => {
+  test('accepts zero weight for bodyweight or assisted exercise', async ({ page }) => {
     await page.fill('#sets', '3');
     await page.fill('#min_rep', '8');
     await page.fill('#max_rep_range', '12');
     await page.fill('#weight', '0');
 
-    await page.locator(SELECTORS.ADD_EXERCISE_BTN).click();
-    await page.waitForTimeout(500);
-
-    // Zero weight should warn user (bodyweight exercise?)
-    const toast = page.locator('.toast, #liveToast');
-    const toastVisible = await toast.isVisible().catch(() => false);
-    
-    // Either success (bodyweight allowed) or warning
-    expect(true).toBeTruthy();
+    await expectExerciseSubmission(page, 200, { weight: 0 });
   });
 });
 
@@ -270,11 +236,7 @@ test.describe('RIR/RPE Value Validation', () => {
       await rirField.fill('15');  // RIR > 10 doesn't make sense
     }
 
-    await page.locator(SELECTORS.ADD_EXERCISE_BTN).click();
-    await page.waitForTimeout(500);
-
-    // Should cap or reject excessive RIR
-    expect(true).toBeTruthy();
+    await expectExerciseSubmission(page, 200, { rir: 10 });
   });
 
   test('rejects negative RIR', async ({ page }) => {
@@ -288,10 +250,7 @@ test.describe('RIR/RPE Value Validation', () => {
       await rirField.fill('-2');
     }
 
-    await page.locator(SELECTORS.ADD_EXERCISE_BTN).click();
-    await page.waitForTimeout(500);
-
-    expect(true).toBeTruthy();
+    await expectExerciseSubmission(page, 200, { rir: 0 });
   });
 
   test('rejects RPE greater than 10', async ({ page }) => {
@@ -305,10 +264,7 @@ test.describe('RIR/RPE Value Validation', () => {
       await rpeField.fill('12');  // RPE scale is 1-10
     }
 
-    await page.locator(SELECTORS.ADD_EXERCISE_BTN).click();
-    await page.waitForTimeout(500);
-
-    expect(true).toBeTruthy();
+    await expectExerciseSubmission(page, 200, { rpe: 10 });
   });
 
   test('accepts valid RIR value (0-4 typical range)', async ({ page }) => {
@@ -322,11 +278,7 @@ test.describe('RIR/RPE Value Validation', () => {
       await rirField.fill('2');
     }
 
-    await page.locator(SELECTORS.ADD_EXERCISE_BTN).click();
-    await page.waitForTimeout(1000);
-
-    // Should succeed
-    expect(true).toBeTruthy();
+    await expectExerciseSubmission(page, 200, { rir: 2 });
   });
 });
 
@@ -349,11 +301,7 @@ test.describe('Decimal/Float Value Handling', () => {
     await page.fill('#max_rep_range', '12');
     await page.fill('#weight', '102.5');  // Decimal weight (common for kg)
 
-    await page.locator(SELECTORS.ADD_EXERCISE_BTN).click();
-    await page.waitForTimeout(1000);
-
-    // Decimal weight should be allowed
-    expect(true).toBeTruthy();
+    await expectExerciseSubmission(page, 200, { weight: 102.5 });
   });
 
   test('handles decimal sets by rounding', async ({ page }) => {
@@ -362,11 +310,7 @@ test.describe('Decimal/Float Value Handling', () => {
     await page.fill('#max_rep_range', '12');
     await page.fill('#weight', '100');
 
-    await page.locator(SELECTORS.ADD_EXERCISE_BTN).click();
-    await page.waitForTimeout(500);
-
-    // Should handle gracefully (round or reject)
-    expect(true).toBeTruthy();
+    await expectExerciseSubmission(page, 200, { sets: 3 });
   });
 
   test('handles decimal reps by rounding or rejecting', async ({ page }) => {
@@ -375,10 +319,7 @@ test.describe('Decimal/Float Value Handling', () => {
     await page.fill('#max_rep_range', '12');
     await page.fill('#weight', '100');
 
-    await page.locator(SELECTORS.ADD_EXERCISE_BTN).click();
-    await page.waitForTimeout(500);
-
-    expect(true).toBeTruthy();
+    await expectExerciseSubmission(page, 200, { min_rep_range: 8 });
   });
 });
 
@@ -417,10 +358,13 @@ test.describe('Empty Value Validation', () => {
     await page.fill('#max_rep_range', '12');
     await page.fill('#weight', '100');
 
+    let addRequestSent = false;
+    page.on('request', request => {
+      if (request.url().endsWith('/add_exercise')) addRequestSent = true;
+    });
     await page.locator(SELECTORS.ADD_EXERCISE_BTN).click();
-    await page.waitForTimeout(500);
-
-    expect(true).toBeTruthy();
+    await expect(page.locator('#liveToast')).toBeVisible();
+    expect(addRequestSent).toBe(false);
   });
 
   test('rejects empty weight field', async ({ page }) => {
@@ -458,11 +402,7 @@ test.describe('Extreme Value Handling', () => {
     await page.fill('#max_rep_range', '12');
     await page.fill('#weight', '100');
 
-    await page.locator(SELECTORS.ADD_EXERCISE_BTN).click();
-    await page.waitForTimeout(500);
-
-    // Should either accept (unlikely workout) or warn about unrealistic value
-    expect(true).toBeTruthy();
+    await expectExerciseSubmission(page, 200, { sets: 9999 });
   });
 
   test('handles very large weight value', async ({ page }) => {
@@ -471,10 +411,7 @@ test.describe('Extreme Value Handling', () => {
     await page.fill('#max_rep_range', '12');
     await page.fill('#weight', '50000');  // 50000 lbs = unrealistic
 
-    await page.locator(SELECTORS.ADD_EXERCISE_BTN).click();
-    await page.waitForTimeout(500);
-
-    expect(true).toBeTruthy();
+    await expectExerciseSubmission(page, 400, { weight: 50000 });
   });
 
   test('handles very large rep values', async ({ page }) => {
@@ -483,9 +420,9 @@ test.describe('Extreme Value Handling', () => {
     await page.fill('#max_rep_range', '1000');
     await page.fill('#weight', '100');
 
-    await page.locator(SELECTORS.ADD_EXERCISE_BTN).click();
-    await page.waitForTimeout(500);
-
-    expect(true).toBeTruthy();
+    await expectExerciseSubmission(page, 200, {
+      min_rep_range: 500,
+      max_rep_range: 1000,
+    });
   });
 });

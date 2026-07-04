@@ -150,7 +150,7 @@ test.describe('Exercise Delete Functionality', () => {
     }
   });
 
-  test('clicking delete shows confirmation', async ({ page }) => {
+  test('clicking delete sends the remove request', async ({ page }) => {
     await selectRoutine(page);
     await page.waitForSelector('#workout_plan_table_body tr');
 
@@ -159,17 +159,12 @@ test.describe('Exercise Delete Functionality', () => {
 
     if (count > 0) {
       const deleteBtn = rows.first().locator('button[data-action="delete"], .delete-btn, .btn-danger');
+      const responsePromise = page.waitForResponse(response =>
+        response.url().endsWith('/remove_exercise') && response.request().method() === 'POST'
+      );
       await deleteBtn.click();
-
-      // Either confirm modal appears or browser confirm
-      await page.waitForTimeout(500);
-      
-      // Check for modal or proceed with deletion
-      const confirmModal = page.locator('.modal.show, [role="dialog"]:visible');
-      const isModalVisible = await confirmModal.isVisible().catch(() => false);
-      
-      // Test passes - delete action was triggered
-      expect(true).toBe(true);
+      const response = await responsePromise;
+      expect(response.status()).toBe(200);
     }
   });
 
@@ -221,9 +216,8 @@ test.describe('Replace Exercise Functionality', () => {
 
     if (count > 0) {
       const replaceBtn = rows.first().locator('button[data-action="replace"], .replace-btn, [title*="Replace"]');
-      // Replace might be icon-only button
-      const hasReplace = await replaceBtn.count() > 0;
-      expect(hasReplace || true).toBe(true); // Pass even if not present (feature may be optional)
+      await expect(replaceBtn).toHaveCount(1);
+      await expect(replaceBtn).toBeVisible();
     }
   });
 
@@ -236,19 +230,18 @@ test.describe('Replace Exercise Functionality', () => {
 
     if (count > 0) {
       // Listen for API call
-      const requestPromise = page.waitForRequest(req => 
+      const requestPromise = page.waitForRequest(req =>
         req.url().includes('/replace_exercise') && req.method() === 'POST'
-      ).catch(() => null);
+      );
 
       const replaceBtn = rows.first().locator('button[data-action="replace"], .replace-btn, [title*="Replace"], .btn-replace');
-      const hasReplace = await replaceBtn.count() > 0;
-
-      if (hasReplace) {
-        await replaceBtn.click();
-        const request = await requestPromise;
-        // Test passes if replace button was found and clicked
-      }
-      // Test passes even if no replace button (feature may be optional)
+      await expect(replaceBtn).toBeVisible();
+      await replaceBtn.click();
+      const request = await requestPromise;
+      expect(request.postDataJSON()).toMatchObject({
+        id: expect.anything(),
+        strategy: 'ai',
+      });
     }
   });
 });
@@ -346,12 +339,9 @@ test.describe('Superset Functionality', () => {
         await page.waitForTimeout(1000);
       }
 
-      // Check for toast or visual indicator
-      const toastVisible = await page.locator('.toast').isVisible().catch(() => false);
-      const supersetIndicator = await page.locator('.superset-indicator, [data-superset]').count();
-
-      // Accept any reasonable outcome - we've verified the UI workflow exists
-      expect(toastVisible || supersetIndicator > 0 || isEnabled || true).toBe(true);
+      await expect.poll(() => page.locator(
+        '#workout_plan_table_body tr[data-superset-group]:not([data-superset-group=""])'
+      ).count()).toBe(2);
     }
   });
 });
@@ -457,25 +447,14 @@ test.describe('Exercise Details Modal', () => {
     }
   });
 
-  test('clicking exercise shows details modal', async ({ page }) => {
+  test('exercise name is currently rendered as plain text', async ({ page }) => {
     await selectRoutine(page);
     await page.waitForSelector('#workout_plan_table_body tr');
 
-    const exerciseLink = page.locator('#workout_plan_table_body tr').first().locator('a.exercise-link, .exercise-name[role="button"], [data-bs-toggle="modal"]');
-    const count = await exerciseLink.count();
-
-    if (count > 0) {
-      await exerciseLink.click();
-
-      // Wait for modal
-      await page.waitForTimeout(500);
-
-      const modal = page.locator('.modal.show, #exerciseDetailsModal');
-      const isVisible = await modal.isVisible().catch(() => false);
-
-      // Feature may not be implemented
-      expect(isVisible || true).toBe(true);
-    }
+    const exerciseName = page.locator('#workout_plan_table_body tr').first().locator('.exercise-name');
+    await expect(exerciseName).toBeVisible();
+    await expect(exerciseName).not.toHaveAttribute('role', 'button');
+    await expect(page.locator('#exerciseDetailsModal')).toHaveCount(0);
   });
 });
 

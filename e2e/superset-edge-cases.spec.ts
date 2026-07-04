@@ -39,7 +39,7 @@ async function addExercise(page: import('@playwright/test').Page, exerciseName?:
   const exerciseSelect = page.locator(SELECTORS.EXERCISE_SEARCH);
   const options = await exerciseSelect.locator('option').allInnerTexts();
   const usedExercises = new Set(
-    (await page.locator('#workout_plan_table_body tr td:nth-child(4)').allInnerTexts())
+    (await page.locator('#workout_plan_table_body .exercise-name').allInnerTexts())
       .map(text => text.trim().toLowerCase())
       .filter(Boolean)
   );
@@ -58,17 +58,23 @@ async function addExercise(page: import('@playwright/test').Page, exerciseName?:
     targetExercise = options.find(opt => opt && opt.trim() !== '' && !opt.includes('Select'));
   }
   
-  if (targetExercise) {
-    await exerciseSelect.selectOption(targetExercise);
-  }
+  expect(targetExercise, 'an unused exercise option should be available').toBeTruthy();
+  await exerciseSelect.selectOption({ label: targetExercise! });
   
   await page.fill('#sets', '3');
   await page.fill('#min_rep', '8');
   await page.fill('#max_rep_range', '12');
   await page.fill('#weight', '100');
   
+  const rowCountBefore = await page.locator('#workout_plan_table_body tr').count();
+  const responsePromise = page.waitForResponse(response =>
+    response.url().includes(API_ENDPOINTS.ADD_EXERCISE) &&
+    response.request().method() === 'POST'
+  );
   await page.locator(SELECTORS.ADD_EXERCISE_BTN).click();
-  await page.waitForTimeout(1000);
+  const response = await responsePromise;
+  expect(response.status()).toBe(200);
+  await expect(page.locator('#workout_plan_table_body tr')).toHaveCount(rowCountBefore + 1);
 }
 
 /**
@@ -79,7 +85,7 @@ async function waitForExercisesInTable(page: import('@playwright/test').Page, mi
     (min) => document.querySelectorAll('#workout_plan_table_body tr').length >= min,
     minCount,
     { timeout: 5000 }
-  ).catch(() => {});
+  );
 }
 
 test.beforeEach(async ({ page }) => {
@@ -154,27 +160,22 @@ test.describe('Superset Linking Edge Cases', () => {
     await waitForExercisesInTable(page, 2);
     
     const checkboxes = page.locator('#workout_plan_table_body .superset-checkbox');
-    const count = await checkboxes.count();
-    
-    if (count >= 2) {
-      await checkboxes.nth(0).click();
-      await checkboxes.nth(1).click();
-      await page.waitForTimeout(300);
-      
-      const linkBtn = page.locator('#link-superset-btn');
-      const isEnabled = await linkBtn.isEnabled().catch(() => false);
-      
-      if (isEnabled) {
-        await linkBtn.click();
-        await page.waitForTimeout(1000);
-        
-        // Check for success toast or visual indicator of superset
-        const toast = page.locator('.toast, #liveToast');
-        const toastVisible = await toast.isVisible().catch(() => false);
-        
-        expect(toastVisible || true).toBeTruthy();
-      }
-    }
+    await expect(checkboxes).toHaveCount(2);
+    await checkboxes.nth(0).click();
+    await checkboxes.nth(1).click();
+
+    const linkBtn = page.locator('#link-superset-btn');
+    await expect(linkBtn).toBeEnabled();
+    const responsePromise = page.waitForResponse(response =>
+      response.url().endsWith('/api/superset/link') && response.request().method() === 'POST'
+    );
+    await linkBtn.click();
+    expect((await responsePromise).status()).toBe(200);
+
+    const linkedRows = page.locator(
+      '#workout_plan_table_body tr[data-superset-group]:not([data-superset-group=""])'
+    );
+    await expect(linkedRows).toHaveCount(2);
   });
 });
 
@@ -231,7 +232,7 @@ test.describe('Delete Exercise in Superset', () => {
     }
   });
 
-  test('delete confirmation mentions superset if applicable', async ({ page }) => {
+  test('deleting a linked exercise clears the partner superset group', async ({ page }) => {
     await addExercise(page);
     await addExercise(page);
     await waitForExercisesInTable(page, 2);
@@ -249,22 +250,18 @@ test.describe('Delete Exercise in Superset', () => {
       }
     }
     
-    // Try to delete - should warn about superset
+    // Deleting one member unlinks the remaining partner server-side.
     const deleteBtn = page.locator('#workout_plan_table_body tr').first().locator('button[data-action="delete"], .delete-btn, .btn-danger');
-    
-    if (await deleteBtn.isVisible()) {
-      let dialogMessage = '';
-      page.on('dialog', async dialog => {
-        dialogMessage = dialog.message();
-        await dialog.accept();
-      });
-      
-      await deleteBtn.click();
-      await page.waitForTimeout(500);
-      
-      // Test passes regardless - we're checking the flow doesn't crash
-      expect(true).toBeTruthy();
-    }
+    await expect(deleteBtn).toBeVisible();
+    const responsePromise = page.waitForResponse(response =>
+      response.url().endsWith('/remove_exercise') && response.request().method() === 'POST'
+    );
+    await deleteBtn.click();
+    expect((await responsePromise).status()).toBe(200);
+    await expect(page.locator('#workout_plan_table_body tr')).toHaveCount(1);
+    await expect(page.locator('#workout_plan_table_body tr').first()).not.toHaveAttribute(
+      'data-superset-group'
+    );
   });
 });
 
@@ -330,10 +327,8 @@ test.describe('Unlink Superset Edge Cases', () => {
         
         // Unlink should now be visible
         const unlinkBtn = page.locator('#unlink-superset-btn');
-        const display = await unlinkBtn.evaluate(el => window.getComputedStyle(el).display);
-        
-        // May be inline-flex or block when visible
-        expect(['inline-flex', 'block', 'inline', 'flex'].includes(display) || true).toBeTruthy();
+        await expect(unlinkBtn).toBeVisible();
+        await expect(unlinkBtn).toBeEnabled();
       }
     }
   });
@@ -363,14 +358,14 @@ test.describe('Unlink Superset Edge Cases', () => {
         // Click unlink
         const unlinkBtn = page.locator('#unlink-superset-btn');
         if (await unlinkBtn.isVisible() && await unlinkBtn.isEnabled()) {
+          const responsePromise = page.waitForResponse(response =>
+            response.url().endsWith('/api/superset/unlink') && response.request().method() === 'POST'
+          );
           await unlinkBtn.click();
-          await page.waitForTimeout(1000);
-          
-          // Both exercises should now be un-supersetted
-          // Check for toast indicating success
-          const toast = page.locator('.toast, #liveToast');
-          const toastVisible = await toast.isVisible().catch(() => false);
-          expect(toastVisible || true).toBeTruthy();
+          expect((await responsePromise).status()).toBe(200);
+          await expect(page.locator(
+            '#workout_plan_table_body tr[data-superset-group]:not([data-superset-group=""])'
+          )).toHaveCount(0);
         }
       }
     }
@@ -469,10 +464,7 @@ test.describe('Superset State Persistence', () => {
         
         // Check that superset styling/attributes are preserved
         const supersetRows = page.locator('#workout_plan_table_body tr[data-superset-group]:not([data-superset-group=""])');
-        const groupCount = await supersetRows.count();
-        
-        // If superset persisted, should have 2 rows with superset group
-        expect(groupCount === 2 || groupCount === 0).toBeTruthy(); // May not persist if not saved
+        await expect(supersetRows).toHaveCount(2);
       }
     }
   });
@@ -532,19 +524,8 @@ test.describe('Superset Visual Indicators', () => {
         await linkBtn.click();
         await page.waitForTimeout(1000);
         
-        // Check for visual indicator (class, border, badge, etc.)
-        const rows = page.locator('#workout_plan_table_body tr');
-        const firstRow = rows.first();
-        
-        // Could have superset class, data attribute, or badge
-        const hasSupersetClass = await firstRow.evaluate(el => 
-          el.classList.contains('superset') || 
-          el.classList.contains('superset-member') ||
-          el.hasAttribute('data-superset-group')
-        ).catch(() => false);
-        
-        // Visual indicator should exist
-        expect(hasSupersetClass || true).toBeTruthy();
+        const firstRow = page.locator('#workout_plan_table_body tr').first();
+        await expect(firstRow).toHaveAttribute('data-superset-group', /^SS-/);
       }
     }
   });
