@@ -182,6 +182,8 @@ test.describe('Global Smoke and Navigation', () => {
       await page.goto(route.url);
       await waitForPageReady(page);
       await expect(page.locator(route.selector)).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('main#main-content')).toHaveCount(1);
+      await expect(page.locator('[role="main"]')).toHaveCount(0);
     }
   });
 });

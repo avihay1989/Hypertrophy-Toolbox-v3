@@ -333,18 +333,20 @@ test.describe('Focus Management', () => {
 });
 
 test.describe('Skip Links', () => {
-  test('skip to main content link exists', async ({ page }) => {
+  test('skip link targets and focuses the single main landmark', async ({ page }) => {
     await page.goto(ROUTES.HOME);
     await waitForPageReady(page);
 
-    // Skip link is usually the first focusable element
+    const main = page.locator('main#main-content');
+    await expect(page.locator('main')).toHaveCount(1);
+    await expect(main).toHaveAttribute('tabindex', '-1');
+
     await page.keyboard.press('Tab');
-
-    const skipLink = page.locator('a[href="#main"], a[href="#content"], .skip-link, .skip-to-main');
-    const count = await skipLink.count();
-
-    // Skip link should exist (may be visually hidden until focused)
-    expect(count >= 0).toBeTruthy();
+    const skipLink = page.locator('.nb-skip-link');
+    await expect(skipLink).toBeFocused();
+    await expect(skipLink).toHaveAttribute('href', '#main-content');
+    await skipLink.click();
+    await expect(main).toBeFocused();
   });
 });
 

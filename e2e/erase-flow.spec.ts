@@ -31,6 +31,7 @@ test.describe('Erase flow — auto-backup banner', () => {
 
     const banner = page.locator(AUTO_BACKUP_BANNER);
     await expect(banner).toBeVisible();
+    await expect(page.locator('#welcome > [data-testid="auto-backup-banner"]')).toHaveCount(1);
     await expect(banner).toContainText('Auto-backup created');
     await expect(banner).toContainText('data/auto_backup/');
     await expect(banner).toContainText(SNAPSHOT_FILENAME_PATTERN);
