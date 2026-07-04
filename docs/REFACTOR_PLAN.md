@@ -155,11 +155,11 @@ All ten decisions recorded with the owner on 2026-07-04.
 | OD9 | Promote `fatigue-context.spec.ts` into required CI? | **Promote to required.** CI WP: add as a NEW job/context (never rename existing required contexts); land after it has run green as non-required for a few PRs. |
 | OD10 | Retire the exported/tested streaming-threshold helpers no route uses? | **Keep them.** WP1.8 gives them a clear home during export extraction. |
 
-Owner decisions produce separate WPs (drafted into Track A / a new Track B
-contract-changes section before execution). They are not permission to fold behavior
-changes into the refactor packets below. OD1–OD5 supersede the corresponding
-"Deferred behavior fixes" entries in Track A; OD6/OD7 removals must be sequenced after
-the Phase-1 extractions that touch the same files.
+Owner decisions produce separate WPs — drafted as **Track B** below (2026-07-04).
+They are not permission to fold behavior changes into the refactor packets below.
+OD1–OD5 supersede the corresponding "Deferred behavior fixes" entries in Track A;
+OD6/OD7 removals must be sequenced after the Phase-1 extractions that touch the same
+files. OD10 requires no WP (keep as-is; WP1.8 homes the helpers).
 
 ---
 
@@ -223,9 +223,109 @@ Each item is a separate, small PR unless two entries explicitly share one root c
 
 ### Deferred behavior fixes
 
-- Weight-zero semantics, update validation, and export-GET mutation wait for OD1–OD3.
-- Null-routine and novice progression semantics wait for OD4–OD5.
+- Weight-zero semantics, update validation, export-GET mutation, null-routine
+  bucketing, and novice progression semantics are now decided (OD1–OD5) and drafted
+  as WPB.1–WPB.5 in Track B below.
 - Token load order is handled as visual-gated WP4.-1, not hidden in Track A.
+
+---
+
+## Track B — owner-decided behavior and contract changes (OD1–OD9)
+
+Drafted 2026-07-04 from the §3 decisions. Each WP is a **separate PR** with migration
+notes in the PR description and updated test coverage (refactor invariant, `CLAUDE.md`).
+None of these may ride inside a move-only refactor WP. Prerequisites vary per WP — Track B
+is interleaved with the phases, not a block; the prerequisite column in each entry governs.
+Execution requires the owner's Track-A/Plan-v3 sign-off boxes plus this section's approval
+per the sign-off checklist.
+
+### WPB.1 (OD1) Allow plan weight 0 for bodyweight/assisted exercises
+
+- Fix the falsy-check family in `utils/exercise_manager.py`: weight `0` treated as
+  missing on add, and `exercise_order`/`order` `0` treated as missing in remove/reorder.
+- Rewrite `test_add_exercise_missing_weight` to assert 0 is accepted and `None`/absent
+  is still rejected.
+- Prerequisite: Track A complete. Land before Phase 1 touches the same routes/utils.
+- Gate: workout-plan pytest family plus `workout-plan.spec.ts`.
+
+### WPB.2 (OD2) Server-side bounds for plan/log updates
+
+- Define canonical limits in one place (`utils/constants.py` or the WP1.1 validator
+  module if it has landed): weight ≥ 0 with a sane upper cap, RIR 0–10,
+  min-reps ≤ max-reps.
+- Enforce on add and update paths for plan and log; reject with `error_response()`.
+- New boundary tests per field; update any docs that previously overstated validation.
+- Prerequisite: WPB.1 (weight-0 semantics define the lower bound). Coordinate with
+  WP1.1 if concurrent — the allowlist/validator module is the natural home.
+- Gate: plan/log pytest families plus `workout-plan.spec.ts` and `workout-log.spec.ts`.
+
+### WPB.3 (OD3) Export-to-log stops mutating order; endpoint becomes POST
+
+- Export-to-log no longer writes `exercise_order`; the endpoint moves GET → POST.
+- Update the frontend caller(s) in the same PR; this is an API-shape change — migration
+  notes mandatory.
+- Prerequisite: **WP1.8 first** (extracts current behavior preserved); this fix lands
+  as its own PR after.
+- Gate: export pytest family plus the export/workout-log E2E paths.
+
+### WPB.4 (OD4) Weekly summary `Unassigned` bucket for null routines
+
+- Protected calc zone. Weekly summary buckets null-routine rows as `Unassigned`,
+  matching session summary, instead of dropping them from frequency.
+- Prerequisite: **WP2.3 golden fixtures must land first**; product-risk review required
+  before merge.
+- Gate: weekly-summary pytest + goldens diff reviewed as intentional, plus
+  weekly-summary visual/E2E specs.
+
+### WPB.5 (OD5) Experience-aware increment below 20 kg
+
+- Protected calc zone. In `_calculate_weight_increment`, experienced lifters get
+  +5 kg below 20 kg too (novice behavior unchanged).
+- Regression tests on both experience levels around the 20 kg boundary (just below,
+  at, just above).
+- Prerequisite: Track A complete; product-risk review required (progression semantics).
+- Gate: progression pytest family plus `progression.spec.ts`.
+
+### WPB.6 (OD6) Remove the five frontend-unreferenced endpoints
+
+- Delete `/get_routine_options`, `/get_user_selection`, `/get_exercise_details/<id>`,
+  `/get_filtered_exercises`, `/get_unique_values/<table>/<column>` plus their tests.
+- Migration notes list each removed route and its replacement (or "none — unused").
+- Prerequisite: **after WP1.1/WP1.2** — `/get_unique_values` is in WP1.2's scope; removing
+  it earlier would churn that extraction.
+- Gate: full pytest (expected count drop documented) plus API-integration E2E.
+
+### WPB.7 (OD7) Remove the three dead contracts
+
+- Remove the second (test-only) effective-sets pipeline, `advanced_to_basic`, and the
+  **DB-table** `create_auto_backup_before_erase` variant.
+- The pre-erase **file snapshot** in `/erase-data` (live copy into `data/auto_backup/`)
+  **stays** — verify the erase flow still produces it before merging.
+- Authorized test deletions: ~26 effective-sets pipeline tests, the taxonomy test, and
+  the DB-table backup-contract tests. Migration notes list every deleted public symbol.
+- Prerequisite: after the Phase-1 extraction touching the same file, if any; must land
+  **before or independent of** WPB.8 — the banner must never reference the removed
+  function.
+- Gate: full pytest (expected count drop documented) plus erase-flow smoke.
+
+### WPB.8 (OD8) Wire `showAutoBackupBanner` into the erase flow
+
+- Erase flow shows the banner referencing the **live file-copy snapshot in
+  `data/auto_backup/`** — not the DB-table function WPB.7 removes.
+- E2E asserting the banner appears post-erase with the snapshot reference.
+- Prerequisite: coordinate with WPB.7 (either order, but the banner's data source is
+  the file snapshot from day one).
+- Gate: erase-flow E2E plus any program-backup pytest touching the banner's data.
+
+### WPB.9 (OD9) Promote `fatigue-context.spec.ts` to required CI
+
+- Add as a **new** job/context — never rename an existing required context (renames
+  orphan branch-protection checks and hard-block PRs).
+- Land only after the spec has run green as non-required on several consecutive PRs;
+  record the observed runs in the PR description.
+- Prerequisite: none code-side; timing-gated by the green-run streak.
+- Gate: the new context green on the promoting PR itself; branch-protection update is a
+  separate, reversible settings change.
 
 ---
 
@@ -676,6 +776,7 @@ not churn it merely for consistency. Suggested order:
 | Order | Track/phase | Prerequisite | Close gate |
 |---|---|---|---|
 | 1 | Track A safe bug fixes | owner approval of behavior-changing track | focused regression + full pytest/E2E union |
+| — | Track B owner-decided changes (WPB.1–WPB.9) | per-WP prerequisites in Track B; interleaved with phases, not a block | per-WP gate + migration notes in every PR |
 | 2 | Phase -1 evidence/docs/tests | scan docs merged | `/verify-suite`; live DB unchanged |
 | 3 | Phase 0 dead code/hygiene | hermetic baseline | `/verify-suite` + pyright baseline diff |
 | 4 | Phase 1 route boundaries | Phase 0 import cleanup | `/verify-suite` + API integration |
@@ -698,5 +799,7 @@ decisions are silently outstanding; either resolve them or leave them explicitly
   and parallel isolation.
 - [x] Scan evidence merged into the implementation branch (2026-07-04; WP-1.0).
 - [x] Owner decisions OD1–OD10 recorded (2026-07-04; see §3).
+- [x] OD follow-ups drafted as Track B work packets WPB.1–WPB.9 (2026-07-04).
 - [ ] Owner approves Track A execution.
+- [ ] Owner approves Track B execution (behavior + contract changes).
 - [ ] Owner approves Plan v3 for refactor execution.
