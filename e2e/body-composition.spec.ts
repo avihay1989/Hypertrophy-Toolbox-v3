@@ -5,6 +5,7 @@
  */
 import type { Page } from '@playwright/test';
 import { test, expect, waitForPageReady } from './fixtures';
+import parityCases from './fixtures/body-fat-parity.json';
 
 const ROUTE = '/body_composition';
 
@@ -124,4 +125,37 @@ test.describe('Body Composition page', () => {
     // Python formulas have drifted.
     expect(Math.abs(previewValue - Number(snap.bfp_navy.toFixed(1)))).toBeLessThanOrEqual(0.05);
   });
+
+  for (const parityCase of parityCases) {
+    test(`shared JS/Python parity: ${parityCase.id}`, async ({ page }) => {
+      const profileResp = await page.request.post('/api/user_profile', {
+        data: {
+          gender: parityCase.profile.gender,
+          age: parityCase.profile.age,
+          height_cm: parityCase.profile.height_cm,
+          weight_kg: parityCase.profile.weight_kg,
+          experience_years: 5,
+        },
+      });
+      expect(profileResp.ok(), 'parity profile seed must succeed').toBeTruthy();
+
+      await page.goto(ROUTE);
+      await waitForPageReady(page);
+      if (parityCase.tape) {
+        await page.locator('#bc-neck').fill(String(parityCase.tape.neck_cm));
+        await page.locator('#bc-waist').fill(String(parityCase.tape.waist_cm));
+        if ('hip_cm' in parityCase.tape) {
+          await page.locator('#bc-hip').fill(String(parityCase.tape.hip_cm));
+        }
+      }
+
+      await expect(page.locator('[data-bc-method-label]')).toHaveText(parityCase.expected.method);
+      await expect(page.locator('[data-bc-bfp]')).toHaveText(`${parityCase.expected.bfp.toFixed(1)} %`);
+      await expect(page.locator('[data-bc-bmi]')).toHaveText(parityCase.expected.bmi.toFixed(1));
+      await expect(page.locator('[data-bc-band-label]')).toHaveText(parityCase.expected.ace);
+      await expect(page.locator('[data-bc-jp-ideal]')).toHaveText(
+        `${parityCase.expected.jackson_pollock_ideal.toFixed(1)} %`,
+      );
+    });
+  }
 });
