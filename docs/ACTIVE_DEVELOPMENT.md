@@ -4,12 +4,14 @@ This file is the execution source of truth for autonomous development sessions. 
 
 ## Current Objective
 
-**2026-07-05 — Deep Refactor Plan v3 Phase -1.** Owner approved structural-refactor
-execution. Current `main` baseline is `c0d5c38`: Track A is shipped; Track B has merged
-WPB.1 (#103), WPB.5 (#101), WPB.7 (#102), WPB.8 (#104), and WPB.9 step 1 (#100).
-WP-1.1 is synchronizing the documentation against the integrated code/CI state before
-the remaining Phase -1 evidence and test-hardening packets proceed. See
-`docs/REFACTOR_PLAN.md` and `docs/MASTER_HANDOVER.md` for the canonical packet/status map.
+**2026-07-05 — Deep Refactor Plan v3 Phase -1 shipped; Phase 0 next.** Current `main`
+baseline is `cbd5a25`: Phase -1 closed through PR #110 with 1684 pytest tests and
+required functional shards 206 + 202 green. Track B has shipped WPB.1 (#103), WPB.2
+(#107), WPB.5 (#101), WPB.7 (#102), WPB.8 (#104), and WPB.9 (#100 plus the
+required-context promotion after PRs #100–#109 ran green). WPB.3, WPB.4, and WPB.6
+remain prerequisite-gated. WP0.1 and WP0.2 have read-only execution audits; Phase-0
+source changes have not started. See `docs/REFACTOR_PLAN.md` and
+`docs/MASTER_HANDOVER.md` for the canonical packet/status map.
 
 ---
 

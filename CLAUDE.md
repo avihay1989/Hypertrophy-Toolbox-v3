@@ -172,13 +172,14 @@ npx playwright test --project=chromium --reporter=line
 
 ## 5. Current State & Risks
 
-### Verified test counts (2026-07-05 — Plan v3 Phase -1 entry on `main`)
-- **Integrated `main` @ `c0d5c38`**: isolated-worktree pytest **1613 passed**;
-  latest merged PR CI functional shards **202 + 202 passed**; dedicated fatigue-context
-  **6 passed** and erase-flow **2 passed**; full inventory **501 tests / 30 specs**.
-- Track A shipped in PRs #91–#98. Track B has shipped WPB.1 (#103), WPB.5 (#101),
-  WPB.7 (#102), WPB.8 (#104), and WPB.9 step 1 (#100); WPB.2–WPB.4, WPB.6, and
-  WPB.9 promotion remain pending/prerequisite-gated.
+### Verified test counts (2026-07-05 — Plan v3 Phase -1 close on `main`)
+- **Integrated `main` @ `cbd5a25`**: PR #110 CI pytest **1684 passed**;
+  required Chromium functional shards **206 + 202 passed**; dedicated fatigue-context
+  **6 passed** and erase-flow **2 passed**; full inventory **505 tests / 30 specs**.
+- Track A shipped in PRs #91–#98. Phase -1 shipped through PRs #105, #106, and
+  #108–#110. Track B has shipped WPB.1 (#103), WPB.2 (#107), WPB.5 (#101), WPB.7
+  (#102), WPB.8 (#104), and WPB.9 (#100 plus the 2026-07-05 required-context
+  promotion). WPB.3, WPB.4, and WPB.6 remain prerequisite-gated.
 
 Historical baselines live in `docs/MASTER_HANDOVER.md`. Re-verify after significant changes.
 

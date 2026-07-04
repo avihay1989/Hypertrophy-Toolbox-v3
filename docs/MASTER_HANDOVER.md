@@ -4,16 +4,18 @@
 
 ## Current State
 
-> **2026-07-05 — Plan v3 execution APPROVED; Phase -1 started (`main` @ `c0d5c38`).**
-> Track A remains shipped. Track B has merged WPB.1 (#103), WPB.5 (#101), WPB.7
-> (#102), WPB.8 (#104), and WPB.9's non-required observation job (#100); WPB.2–WPB.4,
-> WPB.6, and WPB.9's eventual required-context promotion remain pending. Integrated
-> pytest baseline: **1613 passed** in the isolated WP-1.1 worktree. Current required
-> Chromium functional inventory: **404 tests**, green as **202 + 202** in the latest
-> merged PR CI; dedicated fatigue-context **6 passed** and erase-flow **2 passed**.
-> The complete Playwright inventory is **501 tests across 30 specs**. The owner explicitly
-> approved Plan-v3 execution on 2026-07-05; the previous unapproved wording below is
-> retained only as the Track-A milestone's historical state.
+> **2026-07-05 — Plan v3 Phase -1 SHIPPED (`main` @ `cbd5a25`).** Scan evidence,
+> documentation truth sync, hermetic catalog tests, prerequisite characterization,
+> vacuous-E2E repair, and the single-main-landmark contract are complete (PRs #105,
+> #106, #108, #109, #110; scan evidence was already integrated as WP-1.0). Final PR
+> #110 CI: **1684 pytest passed**; required Chromium functional shards **206 + 202**;
+> dedicated fatigue-context **6 passed** and erase-flow **2 passed**. Full Playwright
+> inventory: **505 tests across 30 specs**. The live `data/database.db` was not staged.
+> Track B has also shipped WPB.1 (#103), WPB.2 (#107), WPB.5 (#101), WPB.7 (#102),
+> WPB.8 (#104), and WPB.9: its dedicated job landed in #100, then became the ninth
+> required branch-protection context after ten consecutive green PRs (#100–#109).
+> WPB.3, WPB.4, and WPB.6 remain prerequisite-gated. Phase 0 is next; WP0.1 and WP0.2
+> have read-only execution audits but no Phase-0 source changes have landed yet.
 >
 > **2026-07-04 — Deep Refactor Plan v3 Track A SHIPPED (`main` @ `55bca22`, PRs #91–#98).** All eight confirmed bug-fix packets are complete: toast severity contract (A1), workout-log single-submit path (A2), assisted-progression badge consistency including date edits (A3), seven route error-page contracts plus fatigue XHR handling (A4), atomic backup creation (A5), execution-picker/dropdown listener cleanup (A6), removal of the unconditional export cleanup delay with retry-on-lock behavior (A7), and CTE-prefixed write classification for `DatabaseHandler` locking (A8). Work ran in isolated worktrees; live `data/database.db` was never staged. Final integrated PR #98 CI: **1629 pytest passed**; required Chromium functional shards **202 + 202 passed**; smoke, backup, lint, security, frontend, and type gates all green. Track B is owner-approved and its "Track A complete" prerequisites are now satisfied. Plan-v3 structural refactor execution remains unapproved/unchecked.
 >
