@@ -4,6 +4,7 @@ from utils.database import DatabaseHandler
 from utils.filter_predicates import FilterPredicates
 from utils.logger import get_logger
 from utils.normalization import normalize_exercise_row, split_csv
+from utils.workout_validation import validate_workout_bounds
 
 
 logger = get_logger()
@@ -36,21 +37,16 @@ class ExerciseManager:
             logger.warning("Rejecting add_exercise due to missing fields")
             return "Error: Missing required fields."
 
-        if int(min_rep_range) > int(max_rep_range):
-            logger.warning("Rejecting add_exercise: min_rep_range (%s) > max_rep_range (%s)", min_rep_range, max_rep_range)
-            return "Error: Min rep range cannot exceed max rep range."
-
-        if rir is not None and int(rir) < 0:
-            logger.warning("Rejecting add_exercise: negative RIR (%s)", rir)
-            return "Error: RIR cannot be negative."
-
-        if float(weight) < 0:
-            logger.warning("Rejecting add_exercise: negative weight (%s)", weight)
-            return "Error: Weight cannot be negative."
-
-        if float(weight) > 1000:
-            logger.warning("Rejecting add_exercise: unreasonable weight (%s)", weight)
-            return "Error: Weight exceeds maximum allowed value (1000)."
+        bounds_error = validate_workout_bounds(
+            weight=weight,
+            rir=rir,
+            min_reps=min_rep_range,
+            max_reps=max_rep_range,
+            allow_null=True,
+        )
+        if bounds_error:
+            logger.warning("Rejecting add_exercise: %s", bounds_error)
+            return f"Error: {bounds_error}"
 
         duplicate_check_query = (
             "SELECT COUNT(*) AS count FROM user_selection WHERE routine = ? AND exercise = ?"

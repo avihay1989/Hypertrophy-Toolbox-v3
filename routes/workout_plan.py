@@ -13,6 +13,7 @@ from routes.filters import ALLOWED_COLUMNS, validate_column_name
 from utils.constants import DIFFICULTY, MECHANIC, UTILITY, ANTAGONIST_PAIRS
 from utils.plan_generator import GENERATOR_ROUTINE_PROGRAMS, generate_starter_plan
 from utils.volume_progress import get_volume_progress
+from utils.workout_validation import UNSET, validate_workout_bounds
 
 workout_plan_bp = Blueprint('workout_plan', __name__)
 logger = get_logger()
@@ -141,6 +142,16 @@ def add_exercise():
         data = request.get_json()
         if not data:
             return error_response("VALIDATION_ERROR", "No data provided", 400)
+
+        bounds_error = validate_workout_bounds(
+            weight=data.get('weight', UNSET),
+            rir=data.get('rir', UNSET),
+            min_reps=data.get('min_rep_range', UNSET),
+            max_reps=data.get('max_rep_range', UNSET),
+            allow_null=True,
+        )
+        if bounds_error:
+            return error_response("VALIDATION_ERROR", bounds_error, 400)
         
         # Log request with context
         logger.info(
@@ -581,6 +592,29 @@ def update_exercise():
         update_fields = []
         params = []
         valid_fields = {'sets', 'min_rep_range', 'max_rep_range', 'rir', 'rpe', 'weight'}
+        bounded_updates = {key: value for key, value in updates.items() if key in valid_fields}
+
+        min_reps = max_reps = UNSET
+        if 'min_rep_range' in bounded_updates or 'max_rep_range' in bounded_updates:
+            with DatabaseHandler() as db:
+                current = db.fetch_one(
+                    "SELECT min_rep_range, max_rep_range FROM user_selection WHERE id = ?",
+                    (exercise_id,),
+                )
+            min_reps = bounded_updates.get(
+                'min_rep_range', current.get('min_rep_range', UNSET) if current else UNSET
+            )
+            max_reps = bounded_updates.get(
+                'max_rep_range', current.get('max_rep_range', UNSET) if current else UNSET
+            )
+        bounds_error = validate_workout_bounds(
+            weight=bounded_updates.get('weight', UNSET),
+            rir=bounded_updates.get('rir', UNSET),
+            min_reps=min_reps,
+            max_reps=max_reps,
+        )
+        if bounds_error:
+            return error_response("VALIDATION_ERROR", bounds_error, 400)
         
         for field, value in updates.items():
             if field in valid_fields:

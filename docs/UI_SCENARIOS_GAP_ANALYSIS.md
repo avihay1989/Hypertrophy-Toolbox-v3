@@ -151,11 +151,11 @@ Document corrections made in this revision:
 **File**: `exercises.js`, `workout-log.js`, `workout-plan.js`
 | Scenario | Current Behavior | Status |
 |----------|------------------|--------|
-| Weight = 0 entered | Allowed for bodyweight use cases | ✅ |
+| Weight in 0–1000 kg | Inclusive server-side bound; 0 remains valid for bodyweight/assisted entries | ✅ |
 | Negative rep range | Rejected | ✅ |
-| Min rep > Max rep | Rejected with validation message | ✅ |
+| Min rep > Max rep | Rejected server-side on plan add/edit and scored-log edit | ✅ |
 | Sets = 0 | Rejected | ✅ |
-| RIR > 10 | Rejected | ✅ |
+| RIR outside 0–10 | Rejected server-side on plan add/edit and scored-log edit | ✅ |
 | RPE > 10 | Rejected | ✅ |
 
 **E2E Coverage**: ✅ Covered in [validation-boundary.spec.ts](../e2e/validation-boundary.spec.ts)

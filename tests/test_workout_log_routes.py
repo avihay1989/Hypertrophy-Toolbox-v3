@@ -175,6 +175,93 @@ class TestUpdateWorkoutLog:
         })
         assert resp.status_code == 200
 
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [("scored_weight", 0), ("scored_weight", 1000), ("scored_rir", 0), ("scored_rir", 10)],
+    )
+    def test_update_log_accepts_canonical_boundaries(
+        self, client, clean_db, workout_log_entry, field, value
+    ):
+        resp = client.post("/update_workout_log", json={
+            "id": workout_log_entry["id"], "updates": {field: value},
+        })
+        assert resp.status_code == 200
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("scored_weight", -0.01), ("scored_weight", 1000.01),
+            ("scored_rir", -0.01), ("scored_rir", 10.01),
+        ],
+    )
+    def test_update_log_rejects_values_outside_canonical_boundaries(
+        self, client, clean_db, workout_log_entry, field, value
+    ):
+        resp = client.post("/update_workout_log", json={
+            "id": workout_log_entry["id"], "updates": {field: value},
+        })
+        assert resp.status_code == 400
+        assert resp.get_json()["error"]["code"] == "VALIDATION_ERROR"
+
+    @pytest.mark.parametrize(
+        "updates",
+        [
+            {"scored_min_reps": 13, "scored_max_reps": 12},
+            {"scored_min_reps": 8, "scored_max_reps": 7},
+            {"scored_min_reps": 12, "scored_max_reps": 8},
+        ],
+    )
+    def test_update_log_rejects_inverted_rep_ranges(
+        self, client, clean_db, workout_log_entry, updates
+    ):
+        resp = client.post("/update_workout_log", json={
+            "id": workout_log_entry["id"], "updates": updates,
+        })
+        assert resp.status_code == 400
+
+    def test_update_log_accepts_equal_rep_range(
+        self, client, clean_db, workout_log_entry
+    ):
+        resp = client.post("/update_workout_log", json={
+            "id": workout_log_entry["id"],
+            "updates": {"scored_min_reps": 10, "scored_max_reps": 10},
+        })
+        assert resp.status_code == 200
+
+    @pytest.mark.parametrize(
+        "updates",
+        [{"scored_min_reps": 13}, {"scored_max_reps": 7}],
+    )
+    def test_update_log_validates_partial_rep_edit_against_persisted_companion(
+        self, client, clean_db, workout_log_entry, updates
+    ):
+        seeded = client.post("/update_workout_log", json={
+            "id": workout_log_entry["id"],
+            "updates": {"scored_min_reps": 8, "scored_max_reps": 12},
+        })
+        assert seeded.status_code == 200
+
+        resp = client.post("/update_workout_log", json={
+            "id": workout_log_entry["id"], "updates": updates,
+        })
+        assert resp.status_code == 400
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("scored_weight", None), ("scored_weight", ""),
+            ("scored_rir", None), ("scored_rir", ""),
+            ("scored_min_reps", None), ("scored_min_reps", ""),
+        ],
+    )
+    def test_update_log_preserves_nullable_scored_fields(
+        self, client, clean_db, workout_log_entry, field, value
+    ):
+        resp = client.post("/update_workout_log", json={
+            "id": workout_log_entry["id"], "updates": {field: value},
+        })
+        assert resp.status_code == 200
+
 
 class TestDeleteWorkoutLog:
     """Tests for POST /delete_workout_log endpoint."""
