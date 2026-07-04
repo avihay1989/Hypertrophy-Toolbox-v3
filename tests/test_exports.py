@@ -6,6 +6,7 @@ Tests for data export functionality with focus on:
 - Streaming exports
 """
 
+import os
 import pytest
 import json
 from io import BytesIO
@@ -15,7 +16,9 @@ from utils.export_utils import (
     create_content_disposition_header,
     generate_timestamped_filename,
     estimate_export_size,
-    should_use_streaming
+    should_use_streaming,
+    create_excel_workbook,
+    _remove_temp_file_with_retry,
 )
 
 
@@ -143,6 +146,136 @@ class TestExportSizeEstimation:
         """Test that large exports use streaming."""
         result = should_use_streaming(100000, 50)
         assert result is True
+
+
+class TestTempFileCleanupRetry:
+    """Test the retry-based temp-file cleanup (replaces the old unconditional 0.5s sleep)."""
+
+    def test_removes_file_on_first_try(self, tmp_path):
+        """Normal case: no lock, file is removed immediately."""
+        target = tmp_path / "sample.xlsx"
+        target.write_text("data")
+
+        result = _remove_temp_file_with_retry(str(target))
+
+        assert result is True
+        assert not target.exists()
+
+    def test_missing_file_treated_as_success(self, tmp_path):
+        """A file that's already gone (e.g. removed elsewhere) is not an error."""
+        missing = tmp_path / "already_gone.xlsx"
+
+        result = _remove_temp_file_with_retry(str(missing))
+
+        assert result is True
+
+    def test_recovers_from_transient_lock(self, tmp_path, monkeypatch):
+        """Simulates a Windows-style transient PermissionError that clears after a couple tries."""
+        import utils.export_utils as export_utils
+
+        target = tmp_path / "locked.xlsx"
+        target.write_text("data")
+
+        real_remove = os.remove
+        calls = {"count": 0}
+
+        def flaky_remove(path):
+            calls["count"] += 1
+            if calls["count"] < 3:
+                raise PermissionError("simulated transient lock")
+            real_remove(path)
+
+        monkeypatch.setattr(export_utils.os, "remove", flaky_remove)
+        monkeypatch.setattr(export_utils, "time", _NoSleepTime())
+
+        result = _remove_temp_file_with_retry(str(target), attempts=5, initial_delay=0.01)
+
+        assert result is True
+        assert calls["count"] == 3
+        assert not target.exists()
+
+    def test_exhausts_retries_and_logs_without_raising(self, tmp_path, monkeypatch, caplog):
+        """A permanently locked file logs a warning and returns False instead of raising."""
+        import logging
+        import utils.export_utils as export_utils
+
+        target = tmp_path / "permanently_locked.xlsx"
+        target.write_text("data")
+
+        def always_locked(path):
+            raise PermissionError("permanently locked")
+
+        monkeypatch.setattr(export_utils.os, "remove", always_locked)
+        monkeypatch.setattr(export_utils, "time", _NoSleepTime())
+        caplog.set_level(logging.WARNING, logger="hypertrophy_toolbox")
+
+        result = _remove_temp_file_with_retry(str(target), attempts=3, initial_delay=0.01)
+
+        assert result is False
+        assert any(
+            "Failed to remove temporary file" in record.getMessage()
+            for record in caplog.records
+        )
+
+
+class _NoSleepTime:
+    """Stand-in for the `time` module that skips real delays in retry-backoff tests."""
+
+    def sleep(self, seconds):
+        pass
+
+
+class TestWorkbookCleanupPaths:
+    """Verify create_excel_workbook cleans up its temp file on both success and error paths."""
+
+    def _spy_on_temp_file(self, monkeypatch):
+        """Capture the temp file path xlsxwriter writes to, without changing behavior."""
+        import tempfile as tempfile_module
+        import utils.export_utils as export_utils
+
+        captured = {}
+        original_ntf = tempfile_module.NamedTemporaryFile
+
+        def spy_ntf(*args, **kwargs):
+            f = original_ntf(*args, **kwargs)
+            captured["path"] = f.name
+            return f
+
+        monkeypatch.setattr(export_utils.tempfile, "NamedTemporaryFile", spy_ntf)
+        return captured
+
+    def test_success_path_produces_valid_workbook_and_removes_temp_file(self, app, monkeypatch):
+        captured = self._spy_on_temp_file(monkeypatch)
+
+        with app.app_context():
+            response = create_excel_workbook(
+                {"Sheet1": [{"col_a": 1, "col_b": "x"}]}, "test_export.xlsx"
+            )
+
+        assert response.status_code == 200
+        wb = load_workbook(BytesIO(response.data))
+        assert "Sheet1" in wb.sheetnames
+
+        assert "path" in captured
+        assert not os.path.exists(captured["path"])
+
+    def test_error_path_still_removes_temp_file(self, app, monkeypatch):
+        """If workbook construction fails partway through, the temp file must not leak."""
+        import utils.export_utils as export_utils
+
+        captured = self._spy_on_temp_file(monkeypatch)
+
+        def boom(*args, **kwargs):
+            raise ValueError("forced failure for test")
+
+        monkeypatch.setattr(export_utils, "_setup_formats", boom)
+
+        with app.app_context():
+            with pytest.raises(ValueError):
+                create_excel_workbook({"Sheet1": [{"col_a": 1}]}, "test_export.xlsx")
+
+        assert "path" in captured
+        assert not os.path.exists(captured["path"])
 
 
 class TestExportsEndpoints:

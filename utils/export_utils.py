@@ -11,6 +11,7 @@ Provides:
 import re
 import os
 import tempfile
+import time
 from io import BytesIO
 from typing import List, Dict, Any, Generator
 from datetime import datetime
@@ -394,17 +395,49 @@ def create_excel_workbook(
             logger.warning(f"Error closing workbook: {close_error}")
         raise
     finally:
-        # Clean up the temporary file after a delay to allow debugging if needed
-        # In case of errors, the temp file can be inspected
+        # Clean up the temporary file. workbook.close() (above, or in the
+        # except block) already released the file handle, but on Windows a
+        # brief transient lock (AV scan, indexer) can still cause the first
+        # unlink attempt to fail with PermissionError. Retry a few times with
+        # a short backoff instead of unconditionally delaying every export.
+        _remove_temp_file_with_retry(temp_file_path)
+
+
+def _remove_temp_file_with_retry(
+    path: str,
+    attempts: int = 5,
+    initial_delay: float = 0.05
+) -> bool:
+    """
+    Remove a temporary file, retrying briefly on transient Windows file locks.
+
+    Args:
+        path: Path to the temporary file to remove
+        attempts: Maximum number of removal attempts
+        initial_delay: Delay before the first retry, doubling each attempt
+
+    Returns:
+        True if the file was removed (or already gone), False if all
+        attempts were exhausted.
+    """
+    delay = initial_delay
+    for attempt in range(1, attempts + 1):
         try:
-            if os.path.exists(temp_file_path):
-                # Keep temp file for a few seconds to allow inspection if debugging
-                import time
-                time.sleep(0.5)  # Small delay for debugging
-                os.remove(temp_file_path)
-                logger.debug(f"Cleaned up temporary file: {temp_file_path}")
-        except Exception as e:
-            logger.warning(f"Failed to remove temporary file {temp_file_path}: {e}")
+            os.remove(path)
+            logger.debug(f"Cleaned up temporary file: {path}")
+            return True
+        except FileNotFoundError:
+            # Already removed by another path - nothing left to do.
+            return True
+        except OSError as e:
+            if attempt == attempts:
+                logger.warning(
+                    f"Failed to remove temporary file {path} after {attempts} attempts: {e}"
+                )
+                return False
+            time.sleep(delay)
+            delay *= 2
+    return False
 
 
 def estimate_export_size(row_count: int, col_count: int) -> int:
