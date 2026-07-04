@@ -56,27 +56,19 @@ test.describe('Empty Workout Plan - Export', () => {
     
     const rows = await page.locator('#workout_plan_table_body tr').count();
     
-    if (rows === 0) {
-      const exportBtn = page.locator(SELECTORS.EXPORT_EXCEL_BTN);
-      
-      if (await exportBtn.isVisible()) {
-        // Track if download started
-        let downloadStarted = false;
-        page.on('download', () => {
-          downloadStarted = true;
-        });
-        
-        await exportBtn.click();
-        await page.waitForTimeout(1000);
-        
-        // Should either show warning toast OR not trigger download
-        const toast = page.locator('.toast, #liveToast');
-        const toastVisible = await toast.isVisible().catch(() => false);
-        
-        // Either warning shown OR no download happens
-        expect(toastVisible || !downloadStarted).toBeTruthy();
-      }
-    }
+    expect(rows).toBe(0);
+    const exportBtn = page.locator(SELECTORS.EXPORT_EXCEL_BTN);
+    await expect(exportBtn).toBeVisible();
+
+    let downloadStarted = false;
+    page.on('download', () => {
+      downloadStarted = true;
+    });
+
+    await exportBtn.click();
+    await expect(page.locator('#liveToast')).toBeVisible();
+    await expect(page.locator('#toast-body')).toContainText('No exercises to export');
+    expect(downloadStarted).toBe(false);
   });
 
   test('export to log with empty plan shows helpful message', async ({ page }) => {
@@ -85,29 +77,12 @@ test.describe('Empty Workout Plan - Export', () => {
     
     const rows = await page.locator('#workout_plan_table_body tr').count();
     
-    if (rows === 0) {
-      const exportToLogBtn = page.locator(SELECTORS.EXPORT_TO_LOG_BTN);
-      
-      if (await exportToLogBtn.isVisible()) {
-        await exportToLogBtn.click();
-        await page.waitForTimeout(1000);
-        
-        // Should show message about empty plan
-        const toast = page.locator('.toast, #liveToast');
-        const toastVisible = await toast.isVisible().catch(() => false);
-        
-        if (toastVisible) {
-          const toastText = await page.locator('#toast-body, .toast-body').textContent();
-          // Should mention empty or no exercises
-          expect(
-            toastText?.toLowerCase().includes('empty') ||
-            toastText?.toLowerCase().includes('no exercise') ||
-            toastText?.toLowerCase().includes('add') ||
-            true
-          ).toBeTruthy();
-        }
-      }
-    }
+    expect(rows).toBe(0);
+    const exportToLogBtn = page.locator(SELECTORS.EXPORT_TO_LOG_BTN);
+    await expect(exportToLogBtn).toBeVisible();
+    await exportToLogBtn.click();
+    await expect(page.locator('#liveToast')).toBeVisible();
+    await expect(page.locator('#toast-body')).toContainText('No exercises to export');
   });
 });
 
@@ -165,30 +140,16 @@ test.describe('Empty Workout Log Operations', () => {
       await page.waitForTimeout(1000);
       
       // Should show message about no exercises to import
-      const toast = page.locator('.toast, #liveToast');
-      const toastVisible = await toast.isVisible().catch(() => false);
-      
-      // Either toast shown or page remains functional
-      await expect(page.locator('h1')).toContainText('Workout Log');
+      await expect(page.locator('#liveToast')).toBeVisible();
+      await expect(page.locator('#toast-body')).toContainText(/no exercises|empty/i);
     }
   });
 
   test('empty log table shows appropriate message', async ({ page }) => {
     const table = page.locator('.workout-log-table');
     
-    if (await table.isVisible()) {
-      const rows = await table.locator('tbody tr').count();
-      
-      // If no data rows, should show empty state
-      if (rows === 0) {
-        // Look for empty state message
-        const emptyMessage = page.locator('.empty-state, .no-data, td[colspan]');
-        const messageVisible = await emptyMessage.isVisible().catch(() => false);
-        
-        // Either shows empty message or table is simply empty
-        expect(messageVisible || rows === 0).toBeTruthy();
-      }
-    }
+    await expect(table).toBeVisible();
+    await expect(table.locator('tbody tr')).toHaveCount(0);
   });
 });
 
@@ -217,11 +178,8 @@ test.describe('Empty Filter Results', () => {
         await muscleFilter.selectOption(unusedMuscle);
         await page.waitForTimeout(500);
         
-        // Check table for empty state
-        const visibleRows = await page.locator('#workout_plan_table_body tr:visible').count();
-        
-        // Either shows 0 rows or empty message
-        expect(visibleRows >= 0).toBeTruthy();
+        await expect(muscleFilter.locator('option:checked')).toHaveText(unusedMuscle);
+        await expect(page.locator('#workout_plan_table_body')).toBeAttached();
       }
     }
   });
@@ -260,7 +218,7 @@ test.describe('Empty Summary Pages', () => {
     
     // Check for empty state or data display
     const container = page.locator(SELECTORS.PAGE_WEEKLY_SUMMARY);
-    await expect(container).toBeVisible({ timeout: 5000 }).catch(() => {});
+    await expect(container).toBeVisible({ timeout: 5000 });
     
     // Page should not crash
     await expect(page.locator('h1')).toContainText(/summary|weekly/i);
@@ -275,7 +233,7 @@ test.describe('Empty Summary Pages', () => {
     
     // Check for empty state or data display
     const container = page.locator(SELECTORS.PAGE_SESSION_SUMMARY);
-    await expect(container).toBeVisible({ timeout: 5000 }).catch(() => {});
+    await expect(container).toBeVisible({ timeout: 5000 });
     
     // Page should not crash
     await expect(page.locator('h1')).toContainText(/summary|session/i);
@@ -313,29 +271,12 @@ test.describe('Empty Progression Plan', () => {
     }
   });
 
-  test('selecting exercise with no progression data shows appropriate message', async ({ page }) => {
+  test('suggestions stay hidden when no exercise can be selected', async ({ page }) => {
     const exerciseSelector = page.locator('#exerciseSelect');
     
     if (await exerciseSelector.isVisible()) {
-      const options = exerciseSelector.locator('option');
-      const optionCount = await options.count();
-      let exerciseValue: string | null = null;
-
-      if (optionCount > 1) {
-        exerciseValue = await options.nth(1).getAttribute('value');
-      }
-
-      if (exerciseValue) {
-        await exerciseSelector.selectOption(exerciseValue);
-        await page.waitForTimeout(500);
-        
-        // Should show suggestions or empty state
-        const suggestionsContainer = page.locator('#suggestionsContainer');
-        const goalsTable = page.locator('.current-goals table');
-        
-        // Either shows data or appropriate empty state
-        expect(true).toBeTruthy();
-      }
+      await expect(exerciseSelector.locator('option')).toHaveCount(1);
+      await expect(page.locator('#suggestionsContainer')).toBeHidden();
     }
   });
 });
@@ -351,18 +292,17 @@ test.describe('Empty Volume Splitter', () => {
     consoleErrors.assertNoErrors();
   });
 
-  test('calculate with no input shows validation message', async ({ page }) => {
+  test('calculate with untouched inputs returns current default results', async ({ page }) => {
     const calculateBtn = page.locator(SELECTORS.CALCULATE_VOLUME_BTN);
     
     if (await calculateBtn.isVisible()) {
+      const responsePromise = page.waitForResponse(response =>
+        response.url().endsWith('/api/calculate_volume') && response.request().method() === 'POST'
+      );
       await calculateBtn.click();
-      await page.waitForTimeout(500);
-      
-      // Should show validation message
-      const toast = page.locator('.toast, #liveToast, .alert-danger, .invalid-feedback');
-      const messageVisible = await toast.isVisible().catch(() => false);
-      
-      expect(messageVisible || true).toBeTruthy();
+      const response = await responsePromise;
+      expect(response.status()).toBe(200);
+      expect((await response.json()).ok).toBe(true);
     }
   });
 
@@ -378,18 +318,14 @@ test.describe('Empty Volume Splitter', () => {
     }
   });
 
-  test('export empty volume results shows warning', async ({ page }) => {
+  test('export untouched volume inputs downloads a workbook', async ({ page }) => {
     const exportBtn = page.locator(SELECTORS.EXPORT_VOLUME_EXCEL_BTN);
     
     if (await exportBtn.isVisible()) {
+      const downloadPromise = page.waitForEvent('download');
       await exportBtn.click();
-      await page.waitForTimeout(1000);
-      
-      // Should show warning or not trigger download
-      const toast = page.locator('.toast, #liveToast');
-      const toastVisible = await toast.isVisible().catch(() => false);
-      
-      expect(toastVisible || true).toBeTruthy();
+      const download = await downloadPromise;
+      expect(download.suggestedFilename()).toMatch(/^volume_plan_\d{4}-\d{2}-\d{2}\.xlsx$/);
     }
   });
 });
@@ -408,18 +344,7 @@ test.describe('Table Empty State Messages', () => {
     const tableBody = page.locator('#workout_plan_table_body');
     const rows = await tableBody.locator('tr').count();
     
-    if (rows === 0 || rows === 1) {
-      // Check for empty state row or message
-      const emptyRow = tableBody.locator('tr td[colspan]');
-      const emptyMessage = tableBody.locator('.empty-state, .no-exercises');
-      
-      const hasEmptyIndicator = 
-        (await emptyRow.count()) > 0 ||
-        (await emptyMessage.count()) > 0 ||
-        rows === 0;
-      
-      expect(hasEmptyIndicator).toBeTruthy();
-    }
+    expect(rows).toBe(0);
     
     consoleErrors.assertNoErrors();
   });
@@ -431,12 +356,8 @@ test.describe('Table Empty State Messages', () => {
     
     const tableBody = page.locator('.workout-log-table tbody');
     
-    if (await tableBody.isVisible()) {
-      const rows = await tableBody.locator('tr').count();
-      
-      // Either has data or empty state
-      expect(rows >= 0).toBeTruthy();
-    }
+    await expect(tableBody).toBeAttached();
+    await expect(tableBody.locator('tr')).toHaveCount(0);
     
     consoleErrors.assertNoErrors();
   });
