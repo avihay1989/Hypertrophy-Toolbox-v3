@@ -190,9 +190,9 @@ export function initializeProgressionPlan() {
                                 targetValueInput.value = currentValue + 2;
                                 break;
                             case 'weight':
-                                // Use same increment logic as suggestion cards: 2.5kg if < 20, else 5kg
-                                const weightIncrement = currentValue < 20 ? 2.5 : 5;
-                                targetValueInput.value = currentValue + weightIncrement;
+                                // Match the server's novice default (is_novice=True): always +2.5kg.
+                                // Increment tiers live in _calculate_weight_increment (utils/progression_plan.py).
+                                targetValueInput.value = currentValue + 2.5;
                                 break;
                             case 'sets':
                                 // Suggest adding 1 set
