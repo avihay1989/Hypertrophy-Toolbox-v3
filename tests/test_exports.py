@@ -382,6 +382,7 @@ class TestExportsEndpoints:
         assert response.get_json()["error"]["code"] == "VALIDATION_ERROR"
         with DatabaseHandler() as db:
             row = db.fetch_one("SELECT COUNT(*) AS count FROM workout_log")
+        assert row is not None
         assert row["count"] == 0
     
     def test_export_to_workout_log_empty_plan(self, client, clean_database):

@@ -248,7 +248,11 @@ class TestUpdateWorkoutLog:
 
     @pytest.mark.parametrize(
         ("field", "value"),
-        [("scored_weight", None), ("scored_rir", None), ("scored_min_reps", None)],
+        [
+            ("scored_weight", None), ("scored_weight", ""),
+            ("scored_rir", None), ("scored_rir", ""),
+            ("scored_min_reps", None), ("scored_min_reps", ""),
+        ],
     )
     def test_update_log_preserves_nullable_scored_fields(
         self, client, clean_db, workout_log_entry, field, value

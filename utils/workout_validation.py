@@ -39,8 +39,8 @@ def validate_workout_bounds(
     """Return a validation message, or ``None`` when canonical bounds hold.
 
     ``UNSET`` distinguishes an omitted partial-update field from an explicit
-    JSON null. Scored log values are nullable, while bounded plan values are
-    not nullable when supplied.
+    JSON null. Scored log values are nullable/blank, while bounded plan values
+    are not nullable when supplied.
     """
     numeric_values: dict[str, Optional[float]] = {}
     for key, value, label in (
@@ -51,7 +51,7 @@ def validate_workout_bounds(
     ):
         if value is UNSET:
             continue
-        if value is None and allow_null:
+        if allow_null and (value is None or value == ""):
             numeric_values[key] = None
             continue
         if value is None:
