@@ -1,7 +1,7 @@
 # Deep Refactor Plan — v3 (2026-07-04, full-scan grounded)
 
-**Status: Track A completed; Track B partially shipped; Plan-v3 structural-refactor
-execution approved by the owner on 2026-07-05. Phase -1 is in progress.**
+**Status: Track A and Phase -1 completed; Track B partially shipped; Plan-v3
+structural-refactor execution approved by the owner on 2026-07-05. Phase 0 is next.**
 
 This supersedes v2. It incorporates:
 
@@ -43,9 +43,9 @@ track and must never be smuggled into move-only refactor PRs.
   deleted once its JSON calls use the shared wrapper.
 - CSS contains an undeclared `@layer` ordering trap, duplicate token vocabularies,
   six local token namespaces, a four-copy summary/frame block, and misfiled page CSS.
-- The safety net has gaps: two pytest files read the live DB, several E2E assertions
-  are vacuous, and live startup backup copying still lacks direct tests. Fatigue-context
-  E2E now has a dedicated non-required CI context (WPB.9 step 1), but is not yet required.
+- Phase -1 closed the identified safety-net gaps: catalog tests are hermetic, the named
+  vacuous E2E assertions now observe real outcomes, startup backup copying has direct
+  tests, and fatigue-context E2E is a required branch-protection context.
 
 ### Accepted with stricter safeguards
 
@@ -246,10 +246,11 @@ is interleaved with the phases, not a block; the prerequisite column in each ent
 Execution requires the owner's Track-A/Plan-v3 sign-off boxes plus this section's approval
 per the sign-off checklist.
 
-**Status at `main` @ `c0d5c38` (2026-07-05):** WPB.1 (#103), WPB.5 (#101),
-WPB.7 (#102), WPB.8 (#104), and WPB.9 step 1 (#100) are merged. WPB.2–WPB.4
-and WPB.6 remain prerequisite-gated; WPB.9 still needs its observation window and
-separate required-context promotion.
+**Status at `main` @ `cbd5a25` (2026-07-05):** WPB.1 (#103), WPB.2 (#107),
+WPB.5 (#101), WPB.7 (#102), WPB.8 (#104), and WPB.9 are shipped. WPB.9's job
+landed in #100 and became required after ten consecutive green PRs (#100–#109),
+without renaming or removing an existing context. WPB.3, WPB.4, and WPB.6 remain
+prerequisite-gated.
 
 ### WPB.1 (OD1) Allow plan weight 0 for bodyweight/assisted exercises
 
@@ -343,6 +344,11 @@ separate required-context promotion.
 
 ## Phase -1 — evidence, docs, and gate hardening
 
+**Completed 2026-07-05.** WP-1.0 evidence was already integrated; WP-1.1 through
+WP-1.5 shipped in PRs #106, #105, and #108–#110. Final CI on PR #110 passed
+1684 pytest tests, functional Chromium shards 206 + 202, fatigue-context 6, and
+erase-flow 2. The full Playwright inventory is 505 tests across 30 specs.
+
 ### WP-1.0 Merge the scan evidence
 
 - Bring `SCAN_PROGRESS.md`, `SCAN_FINDINGS.md`, `SCAN_RECOMMENDATIONS.md`, and
@@ -351,7 +357,7 @@ separate required-context promotion.
 
 ### WP-1.1 Documentation truth sync
 
-**Completed 2026-07-05 on the WP-1.1 documentation branch.**
+**Completed in PR #106.**
 
 - Correct the startup initializer inventory, blueprint count, current verified counts,
   handover SHA wording, route-validation claims, E2E spec ledger, and fatigue-context CI row.
@@ -361,12 +367,16 @@ separate required-context promotion.
 
 ### WP-1.2 Hermetic pytest baseline
 
+**Completed in PR #105.**
+
 - Move `test_volume_taxonomy.py` and `test_catalog_invariants.py` off live
   `data/database.db` onto isolated fixtures or committed test fixtures.
 - Add a guard test that fails if test DB resolution points at the live path.
 - Gate: both files repeatedly, then full pytest with live DB hash unchanged.
 
 ### WP-1.3 Close prerequisite unit-test gaps
+
+**Completed in PR #108.**
 
 - Add direct tests for `create_startup_backup`, `lift_matching`, and `exercise_media`.
 - Add import-order/export-surface tests needed by the estimator split.
@@ -376,6 +386,8 @@ separate required-context promotion.
 
 ### WP-1.4 Repair vacuous E2E assertions
 
+**Completed in PR #109.**
+
 - Replace `expect(true)`, `x || true`, and equivalent non-assertions in
   `validation-boundary`, `empty-states`, `exercise-interactions`, and
   `superset-edge-cases` with observable outcomes.
@@ -383,6 +395,8 @@ separate required-context promotion.
   characterize current behavior or mark the case pending on WPB.2.
 
 ### WP-1.5 Normalize the main landmark
+
+**Completed in PR #110.**
 
 - Make `base.html` own the single `<main id="main-content">` landmark and replace nested
   page-level `<main>` elements with neutral containers, or choose the inverse pattern and

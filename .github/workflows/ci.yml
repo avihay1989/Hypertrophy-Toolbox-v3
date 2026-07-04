@@ -329,9 +329,10 @@ jobs:
   # than the e2e-functional-shard matrix idiom: adding a spec to that matrix's list
   # feeds the "E2E Functional (Chromium)" fan-in gate, which IS a required
   # branch-protection context — that would promote this spec to required
-  # immediately, skipping the green-run observation window OD9 calls for. This job
-  # is intentionally NOT added to branch protection's required_status_checks; step
-  # 2 (later, separate PR) promotes it only after several consecutive green runs.
+  # immediately, skipping the green-run observation window OD9 calls for. Step 1
+  # landed in PR #100; after ten consecutive green PRs (#100-#109), the existing
+  # context became required on 2026-07-05. Its historical job name is now
+  # load-bearing branch-protection configuration and must not be renamed.
   e2e-fatigue-context:
     name: E2E Fatigue Context (Chromium, non-required)
     runs-on: ubuntu-latest
