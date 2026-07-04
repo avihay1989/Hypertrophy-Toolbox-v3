@@ -1,6 +1,14 @@
 """Canonical constants used across the Hypertrophy Toolbox backend."""
 from __future__ import annotations
 
+# Canonical persisted workout-value bounds. Weight is stored and displayed in
+# kilograms throughout the app; 1000 kg is an intentionally generous sanity
+# ceiling that still rejects accidental extra digits.
+MIN_WORKOUT_WEIGHT_KG = 0.0
+MAX_WORKOUT_WEIGHT_KG = 1000.0
+MIN_RIR = 0.0
+MAX_RIR = 10.0
+
 MUSCLE_GROUPS = [
     "Rectus Abdominis",
     "Biceps",

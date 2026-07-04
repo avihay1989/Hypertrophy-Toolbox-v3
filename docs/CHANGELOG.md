@@ -4,6 +4,11 @@ All notable changes to Hypertrophy Toolbox v3.
 
 ## Unreleased - May 23, 2026
 
+### Workout plan/log validation contract (Track B WPB.2)
+
+- Plan adds, plan edits, plan-to-log imports, and scored-log edits now share canonical server-side bounds: weight is **0–1000 kg inclusive**, RIR is **0–10 inclusive**, and minimum reps cannot exceed maximum reps. Invalid writes return the existing `VALIDATION_ERROR` response envelope with HTTP 400; scored-log fields remain nullable. Imports validate every source row before writing, so invalid legacy plans cannot be partially imported.
+- Migration note: clients that previously persisted weight above 1000 kg, RIR outside 0–10, or inverted rep ranges through update endpoints must correct those values before retrying. No schema or successful-response shape changed.
+
 ### Docs — CI/CD Plan Archived
 
 - Moved the completed CI/CD Improvement Plan and its per-phase council docs (Phases 0–5, shipped via PRs #40–#51) into `docs/archive/ci_cd/` (`CI_CD_IMPROVEMENT_PLAN.md` + `phase1/3/4_2/5/PLANNING.md`). The live CI artifact `docs/ci_cd_phase3/pyright-baseline.json` stays in the active tree — it is referenced by a hardcoded path in `.github/workflows/ci.yml` and `scripts/pyright_baseline_diff.py`. Repointed all references in `ci.yml`, `deep-gate.yml`, `docs/README.md`, and `docs/LEFTOVERS_BY_PRIORITY.md`. Deleted the obsolete `docs/archive/PUPPETEER_TEST_FINDINGS.md` (Puppeteer was replaced by Playwright).

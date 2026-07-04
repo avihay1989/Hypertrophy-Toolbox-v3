@@ -138,6 +138,67 @@ class TestAddExercise:
         assert payload["ok"] is False
         assert payload["error"]["code"] == "VALIDATION_ERROR"
 
+    @pytest.mark.parametrize("weight", [0, 1000])
+    def test_add_exercise_accepts_weight_boundaries(
+        self, client, clean_db, exercise_factory, weight
+    ):
+        exercise_factory("Boundary Press")
+        resp = client.post("/add_exercise", json={
+            "routine": "Push", "exercise": "Boundary Press", "sets": 3,
+            "min_rep_range": 8, "max_rep_range": 12, "rir": 2, "weight": weight,
+        })
+        assert resp.status_code == 200
+        assert resp.get_json()["ok"] is True
+
+    @pytest.mark.parametrize("weight", [-0.01, 1000.01])
+    def test_add_exercise_rejects_weight_outside_boundaries(
+        self, client, clean_db, exercise_factory, weight
+    ):
+        exercise_factory("Boundary Press")
+        resp = client.post("/add_exercise", json={
+            "routine": "Push", "exercise": "Boundary Press", "sets": 3,
+            "min_rep_range": 8, "max_rep_range": 12, "rir": 2, "weight": weight,
+        })
+        assert resp.status_code == 400
+        assert resp.get_json()["error"]["code"] == "VALIDATION_ERROR"
+
+    @pytest.mark.parametrize("rir", [0, 10])
+    def test_add_exercise_accepts_rir_boundaries(
+        self, client, clean_db, exercise_factory, rir
+    ):
+        exercise_factory("Boundary Press")
+        resp = client.post("/add_exercise", json={
+            "routine": "Push", "exercise": "Boundary Press", "sets": 3,
+            "min_rep_range": 8, "max_rep_range": 12, "rir": rir, "weight": 100,
+        })
+        assert resp.status_code == 200
+
+    @pytest.mark.parametrize("rir", [-0.01, 10.01])
+    def test_add_exercise_rejects_rir_outside_boundaries(
+        self, client, clean_db, exercise_factory, rir
+    ):
+        exercise_factory("Boundary Press")
+        resp = client.post("/add_exercise", json={
+            "routine": "Push", "exercise": "Boundary Press", "sets": 3,
+            "min_rep_range": 8, "max_rep_range": 12, "rir": rir, "weight": 100,
+        })
+        assert resp.status_code == 400
+
+    @pytest.mark.parametrize(
+        ("minimum", "maximum", "expected_status"),
+        [(8, 8, 200), (9, 8, 400)],
+    )
+    def test_add_exercise_enforces_rep_range_order(
+        self, client, clean_db, exercise_factory, minimum, maximum, expected_status
+    ):
+        exercise_factory("Boundary Press")
+        resp = client.post("/add_exercise", json={
+            "routine": "Push", "exercise": "Boundary Press", "sets": 3,
+            "min_rep_range": minimum, "max_rep_range": maximum,
+            "rir": 2, "weight": 100,
+        })
+        assert resp.status_code == expected_status
+
 
 class TestGetExerciseDetails:
     """Tests for GET /get_exercise_details/<id> endpoint."""
@@ -419,6 +480,56 @@ class TestUpdateExercise:
             "updates": {"sets": 5}
         })
         assert resp.status_code == 400
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [("weight", 0), ("weight", 1000), ("rir", 0), ("rir", 10)],
+    )
+    def test_update_exercise_accepts_canonical_boundaries(
+        self, client, clean_db, workout_plan_fixture, field, value
+    ):
+        resp = client.post("/update_exercise", json={
+            "id": workout_plan_fixture["id"], "updates": {field: value},
+        })
+        assert resp.status_code == 200
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [("weight", -0.01), ("weight", 1000.01), ("rir", -0.01), ("rir", 10.01)],
+    )
+    def test_update_exercise_rejects_values_outside_canonical_boundaries(
+        self, client, clean_db, workout_plan_fixture, field, value
+    ):
+        resp = client.post("/update_exercise", json={
+            "id": workout_plan_fixture["id"], "updates": {field: value},
+        })
+        assert resp.status_code == 400
+        assert resp.get_json()["error"]["code"] == "VALIDATION_ERROR"
+
+    @pytest.mark.parametrize(
+        "updates",
+        [
+            {"min_rep_range": 13},
+            {"max_rep_range": 7},
+            {"min_rep_range": 12, "max_rep_range": 8},
+        ],
+    )
+    def test_update_exercise_rejects_inverted_rep_ranges(
+        self, client, clean_db, workout_plan_fixture, updates
+    ):
+        resp = client.post("/update_exercise", json={
+            "id": workout_plan_fixture["id"], "updates": updates,
+        })
+        assert resp.status_code == 400
+
+    def test_update_exercise_accepts_equal_rep_range(
+        self, client, clean_db, workout_plan_fixture
+    ):
+        resp = client.post("/update_exercise", json={
+            "id": workout_plan_fixture["id"],
+            "updates": {"min_rep_range": 10, "max_rep_range": 10},
+        })
+        assert resp.status_code == 200
 
 
 class TestUpdateExerciseOrder:

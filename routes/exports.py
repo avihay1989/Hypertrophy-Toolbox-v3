@@ -13,6 +13,7 @@ from utils.weekly_summary import (
 )
 from utils.errors import error_response, success_response
 from utils.logger import get_logger
+from utils.workout_validation import validate_workout_bounds
 
 exports_bp = Blueprint('exports', __name__)
 logger = get_logger()
@@ -499,6 +500,19 @@ def export_to_workout_log():
                     "No exercises to export",
                     400
                 )
+
+            # Validate the full source set before inserting any log row so a
+            # legacy/out-of-band invalid plan cannot produce a partial import.
+            for exercise in workout_plan:
+                bounds_error = validate_workout_bounds(
+                    weight=exercise["weight"],
+                    rir=exercise["rir"],
+                    min_reps=exercise["min_rep_range"],
+                    max_reps=exercise["max_rep_range"],
+                    allow_null=True,
+                )
+                if bounds_error:
+                    return error_response("VALIDATION_ERROR", bounds_error, 400)
 
             exported_count = 0
             skipped_count = 0

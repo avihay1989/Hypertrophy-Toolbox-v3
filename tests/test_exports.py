@@ -341,6 +341,48 @@ class TestExportsEndpoints:
         data = json.loads(response.data)
         assert data['status'] == 'success'
         assert 'message' in data
+
+    @pytest.mark.parametrize(
+        ("weight", "rir", "minimum", "maximum"),
+        [(0, 0, 8, 8), (1000, 10, 8, 12)],
+    )
+    def test_export_to_workout_log_accepts_canonical_boundaries(
+        self, client, sample_workout_plan, weight, rir, minimum, maximum
+    ):
+        from utils.database import DatabaseHandler
+
+        with DatabaseHandler() as db:
+            db.execute_query(
+                "UPDATE user_selection SET weight = ?, rir = ?, "
+                "min_rep_range = ?, max_rep_range = ?",
+                (weight, rir, minimum, maximum),
+            )
+
+        response = client.post('/export_to_workout_log')
+        assert response.status_code == 200
+
+    @pytest.mark.parametrize(
+        ("column", "value"),
+        [
+            ("weight", -0.01), ("weight", 1000.01),
+            ("rir", -0.01), ("rir", 10.01),
+            ("min_rep_range", 13), ("max_rep_range", 7),
+        ],
+    )
+    def test_export_to_workout_log_rejects_invalid_legacy_plan_atomically(
+        self, client, sample_workout_plan, column, value
+    ):
+        from utils.database import DatabaseHandler
+
+        with DatabaseHandler() as db:
+            db.execute_query(f"UPDATE user_selection SET {column} = ?", (value,))
+
+        response = client.post('/export_to_workout_log')
+        assert response.status_code == 400
+        assert response.get_json()["error"]["code"] == "VALIDATION_ERROR"
+        with DatabaseHandler() as db:
+            row = db.fetch_one("SELECT COUNT(*) AS count FROM workout_log")
+        assert row["count"] == 0
     
     def test_export_to_workout_log_empty_plan(self, client, clean_database):
         """Test exporting empty workout plan."""

@@ -13,6 +13,7 @@ from utils.strength_calibration import (
     recompute_calibration_after_log,
     update_calibration_for_exercise,
 )
+from utils.workout_validation import UNSET, validate_workout_bounds
 
 workout_log_bp = Blueprint('workout_log', __name__)
 logger = get_logger()
@@ -64,10 +65,27 @@ def update_workout_log():
         calibration = None
         with DatabaseHandler() as db:
             # Check if log entry exists
-            check_query = "SELECT id, exercise FROM workout_log WHERE id = ?"
+            check_query = (
+                "SELECT id, exercise, scored_min_reps, scored_max_reps "
+                "FROM workout_log WHERE id = ?"
+            )
             existing = db.fetch_one(check_query, (log_id,))
             if not existing:
                 return error_response("NOT_FOUND", f"Workout log entry with ID {log_id} not found", 404)
+
+            min_reps = max_reps = UNSET
+            if "scored_min_reps" in valid_updates or "scored_max_reps" in valid_updates:
+                min_reps = valid_updates.get("scored_min_reps", existing["scored_min_reps"])
+                max_reps = valid_updates.get("scored_max_reps", existing["scored_max_reps"])
+            bounds_error = validate_workout_bounds(
+                weight=valid_updates.get("scored_weight", UNSET),
+                rir=valid_updates.get("scored_rir", UNSET),
+                min_reps=min_reps,
+                max_reps=max_reps,
+                allow_null=True,
+            )
+            if bounds_error:
+                return error_response("VALIDATION_ERROR", bounds_error, 400)
 
             db.execute_query(query, params)
 
