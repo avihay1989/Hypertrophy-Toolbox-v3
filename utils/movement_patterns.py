@@ -11,14 +11,6 @@ from enum import Enum
 from typing import Dict, List, Optional, Set, Tuple
 
 
-class MovementCategory(str, Enum):
-    """Top-level movement categories."""
-    LOWER_BODY = "lower_body"
-    UPPER_BODY = "upper_body"
-    CORE = "core"
-    ISOLATION = "isolation"
-
-
 class MovementPattern(str, Enum):
     """Primary movement patterns."""
     # Lower body patterns
@@ -251,10 +243,6 @@ ENVIRONMENT_EQUIPMENT: Dict[str, Set[str]] = {
 }
 
 
-# Default home equipment (minimal setup)
-HOME_BASIC_EQUIPMENT: Set[str] = {"Bodyweight", "Dumbbells", "Band"}
-
-
 @dataclass
 class SlotDefinition:
     """Definition of an exercise slot in a session blueprint."""
@@ -464,9 +452,6 @@ class PrescriptionRules:
     # Total sets per session constraints
     MIN_SETS_PER_SESSION: int = 15
     MAX_SETS_PER_SESSION: int = 24
-    DEFAULT_SETS_TARGET: int = 18
-
-
 def classify_exercise(
     exercise_name: str,
     primary_muscle: Optional[str] = None,

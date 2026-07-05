@@ -1,8 +1,11 @@
 """
 Standardized API error responses and helpers.
 """
-from flask import jsonify, request, g, make_response
 from typing import Optional, Dict, Any
+
+from flask import jsonify, request, make_response
+
+from utils.request_id import get_request_id
 
 
 class APIError(Exception):
@@ -12,11 +15,6 @@ class APIError(Exception):
         self.message = message
         self.status_code = status_code
         super().__init__(self.message)
-
-
-def get_request_id():
-    """Get the current request ID from Flask g object."""
-    return getattr(g, 'request_id', None)
 
 
 def success_response(data: Any = None, message: Optional[str] = None) -> Dict:
@@ -136,8 +134,6 @@ def register_error_handlers(app):
     Args:
         app: Flask application instance
     """
-    from werkzeug.exceptions import HTTPException
-    
     def _html_error(status_code: int, title: str, message: str):
         html = (
             "<!DOCTYPE html>"
@@ -162,17 +158,6 @@ def register_error_handlers(app):
                 400
             )
         return _html_error(400, "Bad Request", "The request could not be understood or was missing required parameters.")
-    
-    @app.errorhandler(404)
-    def not_found(e):
-        """Handle 404 Not Found errors."""
-        if is_xhr_request():
-            return error_response(
-                "NOT_FOUND",
-                "The requested resource could not be found.",
-                404
-            )
-        return _html_error(404, "Not Found", "The requested resource could not be found.")
     
     @app.errorhandler(422)
     def unprocessable_entity(e):
@@ -220,40 +205,4 @@ def register_error_handlers(app):
     def handle_api_error(e):
         """Handle custom APIError exceptions."""
         return error_response(e.code, e.message, e.status_code)
-    
-    @app.errorhandler(Exception)
-    def handle_unexpected_error(e):
-        """Handle any unexpected exceptions."""
-        # Don't handle HTTP exceptions here (they're handled above)
-        if isinstance(e, HTTPException):
-            return e
-        
-        # Get request context for logging
-        request_id = get_request_id()
-        endpoint = request.endpoint if request else None
-        method = request.method if request else None
-        path = request.path if request else None
-        user_agent = request.headers.get('User-Agent', '')[:50] if request else None
-        
-        # Log the unexpected error with full context
-        app.logger.exception(
-            f"Unexpected error: {type(e).__name__}",
-            extra={
-                'error_type': type(e).__name__,
-                'endpoint': endpoint,
-                'method': method,
-                'path': path,
-                'user_agent': user_agent,
-                'request_id': request_id
-            }
-        )
-        
-        if is_xhr_request():
-            return error_response(
-                "INTERNAL_ERROR",
-                "An unexpected error occurred. Please try again later.",
-                500
-            )
-
-        return _html_error(500, "Internal Server Error", "An unexpected error occurred. Please try again later.")
 

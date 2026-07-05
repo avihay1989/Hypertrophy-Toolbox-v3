@@ -122,7 +122,7 @@ Pure-Python module; no Flask imports. All logic lives here so it's unit-testable
 - [x] `KEY_LIFTS: frozenset[str]` — 14 slugs matching questionnaire.
 - [x] `COMPLEX_ALLOWLIST: frozenset[str]` — exercise-name keywords (lowercase, substring match) for tier classification.
 - [x] `EXCLUDED_EQUIPMENT: frozenset[str]` — `{'Trx','Bosu_Ball','Cardio','Recovery','Yoga','Vitruvian','Band','Stretches'}`.
-- [x] `TIER_RATIOS: dict[str,float]` and `REP_RANGE_PCT: dict[str,float]` per A.3/A.4.
+- [x] `TIER_RATIOS: dict[str,float]` and `REP_RANGE_PRESETS` `pct_1rm` entries per A.3/A.4.
 - [x] `MUSCLE_TO_KEY_LIFT: dict[str, list[str]]` per A.5 (ordered fallback chain).
 
 ### C.2 Public functions
