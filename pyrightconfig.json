@@ -4,6 +4,9 @@
   "pythonVersion": "3.11",
   "pythonPlatform": "Windows",
   "exclude": [
+    "**/node_modules",
+    "**/__pycache__",
+    "**/.*",
     "docs/archive/**"
   ],
   "executionEnvironments": [
