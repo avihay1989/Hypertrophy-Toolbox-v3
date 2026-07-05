@@ -340,54 +340,6 @@ tableDebugLog('[TableResponsiveness] Version 2024-11-11-03 loaded');
     }
   }
 
-  // Keep legacy function for backward compatibility (no-op for click handlers)
-  function toggleColumn(tableEl, colIdentifier, show, pageKey) {
-    tableDebugLog('[toggleColumn] Legacy call ignored - use view mode toggle instead');
-  }
-
-  /**
-   * Apply column visibility to table
-   * @param {HTMLElement} tableEl - Table element
-   * @param {string} colIdentifier - Column identifier (data-label value)
-   * @param {boolean} show - Whether to show the column
-   */
-  function applyColumnVisibility(tableEl, colIdentifier, show) {
-  tableDebugLog('[applyColumnVisibility] Called with:', { colIdentifier, show });
-    
-    // Find the column index by matching the data-label in the header
-    const headers = qsa('th[data-label]', tableEl);
-    let columnIndex = -1;
-    
-    headers.forEach((th, index) => {
-      if (th.getAttribute('data-label') === colIdentifier) {
-        columnIndex = index;
-  tableDebugLog('[applyColumnVisibility] Found column at index:', index, 'Header text:', th.textContent.trim());
-      }
-    });
-    
-    if (columnIndex === -1) {
-      console.warn(`[applyColumnVisibility] Column with data-label "${colIdentifier}" not found`);
-      return;
-    }
-    
-    // Hide/show the header cell
-    const header = headers[columnIndex];
-    if (header) {
-      header.style.display = show ? '' : 'none';
-  tableDebugLog('[applyColumnVisibility] Header display set to:', header.style.display || 'default');
-    }
-    
-    // Hide/show all corresponding body cells using nth-child selector
-    // Note: nth-child is 1-indexed, and we need to account for the drag handle column
-    const nthChildIndex = columnIndex + 2; // +1 for nth-child indexing, +1 for drag handle
-  tableDebugLog('[applyColumnVisibility] Using nth-child selector:', nthChildIndex);
-  const bodyCells = qsa(`tbody tr td:nth-child(${nthChildIndex})`, tableEl);
-  tableDebugLog('[applyColumnVisibility] Found', bodyCells.length, 'body cells to toggle');
-    bodyCells.forEach(cell => {
-      cell.style.display = show ? '' : 'none';
-    });
-  }
-
   // ============================================================
   // DYNAMIC ROWS PER PAGE (ResizeObserver)
   // ============================================================
