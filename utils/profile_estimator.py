@@ -279,8 +279,6 @@ REP_RANGE_PRESETS = {
     "moderate": {"min_rep": 6, "max_rep": 8, "pct_1rm": 0.77, "rir": 2, "rpe": 8.0},
     "light": {"min_rep": 10, "max_rep": 15, "pct_1rm": 0.65, "rir": 2, "rpe": 7.5},
 }
-REP_RANGE_PCT = {key: preset["pct_1rm"] for key, preset in REP_RANGE_PRESETS.items()}
-
 DEFAULT_PREFERENCES = {
     "complex": "heavy",
     "accessory": "moderate",

@@ -22,7 +22,7 @@ def error_app():
     the shared app from conftest.py.
     """
     import utils.config
-    from flask import Flask
+    from flask import Flask, abort, make_response
     from routes.workout_plan import workout_plan_bp, initialize_exercise_order
     from routes.workout_log import workout_log_bp
     from routes.main import main_bp
@@ -54,11 +54,35 @@ def error_app():
     # Register middleware and error handlers
     add_request_id_middleware(app)
     register_error_handlers(app)
+
+    # app.py registers these two handlers after register_error_handlers(). Keep
+    # the fixture layered the same way so tests prove the production winners,
+    # rather than relying on the shadowed helper registrations removed in WP0.1.
+    @app.errorhandler(404)
+    def layered_not_found(_error):
+        if is_xhr_request():
+            return error_response("NOT_FOUND", "The requested resource was not found", 404)
+        return make_response("<html><h1>Not Found</h1></html>", 404)
+
+    @app.errorhandler(Exception)
+    def layered_exception(_error):
+        if is_xhr_request():
+            return error_response("INTERNAL_ERROR", "An unexpected error occurred", 500)
+        return make_response("<html><h1>Internal Server Error</h1></html>", 500)
     
     # Add error trigger route BEFORE any requests
     @app.route('/__trigger_internal_error')
     def __trigger_internal_error():
         raise RuntimeError('forced test error')
+
+    @app.route('/__trigger_http_error/<int:status_code>')
+    def __trigger_http_error(status_code):
+        abort(status_code)
+
+    @app.route('/__trigger_api_error')
+    def __trigger_api_error():
+        from utils.errors import APIError
+        raise APIError('TEST_API_ERROR', 'forced API error', 409)
     
     # Initialize database within app context
     with app.app_context():
@@ -118,6 +142,7 @@ class TestErrorHandlers:
         data = json.loads(response.data)
         assert data['ok'] is False
         assert data['error']['code'] == 'NOT_FOUND'
+        assert data['error']['message'] == 'The requested resource was not found'
         assert 'requestId' in data['error']
     
     def test_404_html_response(self, error_client):
@@ -134,6 +159,7 @@ class TestErrorHandlers:
         data = json.loads(response.data)
         assert data['ok'] is False
         assert data['error']['code'] == 'INTERNAL_ERROR'
+        assert data['error']['message'] == 'An unexpected error occurred'
 
     def test_500_html_response(self, error_client):
         """Test 500 handler returns HTML for browser requests."""
@@ -141,6 +167,35 @@ class TestErrorHandlers:
         assert response.status_code == 500
         assert response.mimetype == 'text/html'
         assert b'Internal Server Error' in response.data
+
+    @pytest.mark.parametrize(('status_code', 'error_code'), [
+        (400, 'BAD_REQUEST'),
+        (422, 'UNPROCESSABLE_ENTITY'),
+        (500, 'INTERNAL_ERROR'),
+    ])
+    def test_helper_owned_status_handlers_remain_live(
+        self, error_client, status_code, error_code
+    ):
+        response = error_client.get(
+            f'/__trigger_http_error/{status_code}',
+            headers={'Accept': 'application/json'},
+        )
+        assert response.status_code == status_code
+        assert response.get_json()['error']['code'] == error_code
+
+    def test_api_error_handler_remains_live(self, error_client):
+        response = error_client.get(
+            '/__trigger_api_error', headers={'Accept': 'application/json'}
+        )
+        assert response.status_code == 409
+        assert response.get_json()['error']['code'] == 'TEST_API_ERROR'
+
+    def test_later_exception_handler_owns_unrecognized_http_errors(self, error_client):
+        response = error_client.get(
+            '/__trigger_http_error/418', headers={'Accept': 'application/json'}
+        )
+        assert response.status_code == 500
+        assert response.get_json()['error']['message'] == 'An unexpected error occurred'
     
     def test_error_response_helper(self, error_app):
         """Test error_response helper function."""

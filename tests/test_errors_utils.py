@@ -18,6 +18,7 @@ from utils.errors import (
     ERROR_CODES,
     get_request_id,
 )
+from utils.request_id import get_request_id as canonical_get_request_id
 
 
 class TestSuccessResponse:
@@ -252,6 +253,10 @@ class TestGetRequestId:
         with app.test_request_context():
             # Don't set g.request_id
             assert get_request_id() is None
+
+    def test_errors_reexports_canonical_request_id_helper(self):
+        """The legacy errors import path must remain an identity-preserving re-export."""
+        assert get_request_id is canonical_get_request_id
 
 
 # Fixtures for errors tests

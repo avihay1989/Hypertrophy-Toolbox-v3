@@ -16,13 +16,6 @@ from utils.effective_sets import (
 from utils.logger import get_logger
 
 
-STATUS_MAP = {
-    'low-volume': 'low',
-    'medium-volume': 'medium',
-    'high-volume': 'high',
-    'ultra-volume': 'excessive',
-}
-
 # Map new volume classes to CSS-compatible status
 EFFECTIVE_STATUS_MAP = {
     'low': 'low',
