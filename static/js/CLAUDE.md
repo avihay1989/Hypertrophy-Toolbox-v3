@@ -15,7 +15,7 @@ Vanilla ES6 modules, no framework. `modules/` holds feature-scoped modules; the 
 | `modules/navbar.js`, `modules/navbar-enhancements.js` | Nav UI |
 | `modules/workout-plan.js`, `modules/workout-plan-events.js`, `modules/workout-dropdowns.js`, `modules/exercises.js`, `modules/filters.js`, `modules/filter-view-mode.js`, `modules/routine-cascade.js` | Plan-builder pieces |
 | `modules/workout-log.js` | Log page |
-| `modules/summary.js`, `modules/charts.js` | Weekly/session analyzers |
+| `modules/summary.js` | Weekly/session analyzers |
 | `modules/progression-plan.js` | Progression page |
 | `modules/volume-splitter.js`, `modules/plan_volume_panel.js` | Distribute |
 | `modules/user-profile.js`, `modules/bodymap-svg.js`, `modules/muscle-selector.js` | Profile + body map |

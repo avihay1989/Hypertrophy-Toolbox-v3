@@ -1,4 +1,3 @@
-import { createVolumeChart, createProgressChart } from './charts.js';
 import { fetchWeeklySummary, fetchSessionSummary } from './summary.js';
 import { handleDateChange } from './workout-log.js';
 
@@ -386,26 +385,6 @@ export function handleTableSort() {
             tbody.innerHTML = '';
             sortedRows.forEach(row => tbody.appendChild(row));
         });
-    });
-}
-
-export function initializeCharts() {
-    const chartContainers = document.querySelectorAll('[data-chart]');
-    chartContainers.forEach(container => {
-        const chartType = container.dataset.chart;
-        const chartData = JSON.parse(container.dataset.chartData || '{}');
-        
-        const canvas = document.createElement('canvas');
-        container.appendChild(canvas);
-        
-        switch (chartType) {
-            case 'volume':
-                createVolumeChart(canvas, chartData);
-                break;
-            case 'progress':
-                createProgressChart(canvas, chartData);
-                break;
-        }
     });
 }
 

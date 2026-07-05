@@ -6,7 +6,6 @@ import { addExercise, removeExercise, clearWorkoutPlan } from './modules/exercis
 import { initializeUIHandlers, initializeFormHandlers, initializeTooltips, initializeDropdowns, handleTableSort } from './modules/ui-handlers.js';
 import { exportToExcel, exportToWorkoutLog, exportSummary } from './modules/exports.js';
 import { initializeWorkoutPlanHandlers } from './modules/workout-plan.js';
-import { initializeCharts } from './modules/ui-handlers.js';
 import { 
     fetchWeeklySummary,
     fetchSessionSummary 
@@ -186,7 +185,6 @@ function initializeHomePage() {
 
 function initializeWeeklySummary() {
     appDebugLog('Initializing Weekly Summary page');
-    initializeCharts();
     fetchWeeklySummary();
     return {
         cleanup: () => {
@@ -197,7 +195,6 @@ function initializeWeeklySummary() {
 
 function initializeSessionSummary() {
     appDebugLog('Initializing Session Summary page');
-    initializeCharts();
     fetchSessionSummary();
     return {
         cleanup: () => {
