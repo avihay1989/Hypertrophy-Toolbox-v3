@@ -3,10 +3,12 @@
   "venv": ".venv",
   "pythonVersion": "3.11",
   "pythonPlatform": "Windows",
+  "exclude": [
+    "docs/archive/**"
+  ],
   "executionEnvironments": [
     {
       "root": "."
     }
   ]
 }
-

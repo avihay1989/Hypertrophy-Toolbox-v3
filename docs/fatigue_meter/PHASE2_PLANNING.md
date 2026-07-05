@@ -101,7 +101,7 @@ Stretch decisions also locked at Stage 0:
 - Inference rule: tokenize `exercise_name`, match against `utils.constants.MUSCLE_ALIAS` ∪ `MUSCLE_GROUPS` (longest-alias-first, word-boundary regex). 132 of 633 rows resolved to a real muscle this way (Gluteus Maximus 45, Hamstrings 16, Chest 13, Latissimus Dorsi 10, Lower Back 8, Neck 8, Trapezius 6, Biceps 5, Quadriceps 4, Forearms 4, Rectus Abdominis 4, Calves 4, Triceps 3, External Obliques 2).
 - Remaining 501 unmatched rows assigned the sentinel value **`"Unassigned"`**. All 501 are dormant catalog entries (zero appear in `user_selection` at cleanup time — verified by joined-NULL audit).
 - `"Unassigned"` added to `utils/volume_taxonomy.COARSE_TO_BASIC` → `"Abdominals"` and `COARSE_TO_REPRESENTATIVE_ADVANCED` → `"upper-abdominals"` so volume-rollup invariants stay satisfied. Comments inline mark both as Stage 1 placeholders. **Stage 2 fatigue per-muscle math should treat `"Unassigned"` the same as a NULL bucket** (display in its own bar, no rollup into a real muscle's MEV/MAV/MRV).
-- Reproducer script: `scripts/fatigue_stage1_cleanup.py` (idempotent — a second run touches zero rows). Dry-run twin: `scripts/fatigue_stage1_cleanup_dryrun.py`.
+- Reproducer script: `scripts/fatigue_stage1_cleanup.py` (idempotent — a second run touches zero rows). Dry-run twin: `docs/archive/2026/one-off-scripts/fatigue/fatigue_stage1_cleanup_dryrun.py` (archived WP0.3).
 - Regression test: `tests/test_catalog_invariants.py::test_catalog_primary_muscle_group_has_no_nulls`.
 
 ---
