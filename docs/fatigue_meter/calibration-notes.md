@@ -47,8 +47,8 @@ Computed via `utils.fatigue_data.compute_*_fatigue()` against the live
 | Routine A | 39 | moderate |
 
 These numbers were also independently confirmed at the rendered-HTML level on
-the same date — see `scripts/fatigue_stage4_remaining_smokes.py` ("badge
-coherence" check).
+the same date — see `docs/archive/2026/one-off-scripts/fatigue/fatigue_stage4_remaining_smokes.py`
+(archived WP0.3) ("badge coherence" check).
 
 ---
 

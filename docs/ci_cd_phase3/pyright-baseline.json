@@ -2,8 +2,8 @@
   "_meta": {
     "tool": "pyright",
     "note": "Baseline-allowlist for the typecheck CI gate (leftovers A9). Generated under the committed pyrightconfig.json (pythonVersion 3.11, pythonPlatform Windows). Regenerate with scripts/pyright_baseline_diff.py --write-baseline. Do NOT edit by hand to silence a real regression.",
-    "total_diagnostics": 189,
-    "distinct_keys": 57
+    "total_diagnostics": 186,
+    "distinct_keys": 56
   },
   "diagnostics": [
     {
@@ -89,13 +89,6 @@
       "rule": "reportOptionalSubscript",
       "message": "Object of type \"None\" is not subscriptable",
       "count": 8
-    },
-    {
-      "file": "scripts/seed_visual_baseline.py",
-      "severity": "error",
-      "rule": "reportOptionalSubscript",
-      "message": "Object of type \"None\" is not subscriptable",
-      "count": 3
     },
     {
       "file": "tests/conftest.py",
