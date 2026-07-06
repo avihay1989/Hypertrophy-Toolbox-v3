@@ -1,3 +1,5 @@
+from typing import cast
+
 from flask import Blueprint, request
 from utils.export_utils import (
     create_excel_workbook,
@@ -94,7 +96,11 @@ def export_to_workout_log():
 
         result = export_plan_to_workout_log()
         if not result.ok:
-            return error_response(result.code, result.message, result.status_code)
+            return error_response(
+                cast(str, result.code),
+                result.message,
+                result.status_code,
+            )
 
         return success_response(message=result.message)
 
