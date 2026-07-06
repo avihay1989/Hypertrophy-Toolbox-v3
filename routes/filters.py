@@ -4,6 +4,15 @@ from utils.database import DatabaseHandler
 from utils.errors import success_response, error_response
 from utils.logger import get_logger
 from utils.constants import DIFFICULTY, MECHANIC, UTILITY
+# The SQL-name allowlists and validators are owned by utils.filter_registry.
+# Re-exported here (unchanged names) so existing callers/tests that do
+# `from routes.filters import ALLOWED_COLUMNS, validate_column_name` keep working.
+from utils.filter_registry import (  # noqa: F401  (re-exported)
+    ALLOWED_TABLES,
+    ALLOWED_COLUMNS,
+    validate_table_name,
+    validate_column_name,
+)
 
 filters_bp = Blueprint('filters', __name__)
 logger = get_logger()
@@ -103,51 +112,6 @@ FILTER_MAPPING = {
     "synergists": "synergists",
     "difficulty": "difficulty",
 }
-
-# Whitelist for safe table and column names (prevents SQL injection)
-ALLOWED_TABLES = {
-    'exercises': 'exercises',
-    'user_selection': 'user_selection',
-    'workout_log': 'workout_log',
-    'progression_goals': 'progression_goals',
-}
-
-ALLOWED_COLUMNS = {
-    # Exercises table columns
-    'primary_muscle_group': 'primary_muscle_group',
-    'secondary_muscle_group': 'secondary_muscle_group',
-    'tertiary_muscle_group': 'tertiary_muscle_group',
-    'advanced_isolated_muscles': 'advanced_isolated_muscles',
-    'force': 'force',
-    'equipment': 'equipment',
-    'mechanic': 'mechanic',
-    'utility': 'utility',
-    'grips': 'grips',
-    'stabilizers': 'stabilizers',
-    'synergists': 'synergists',
-    'difficulty': 'difficulty',
-    'exercise_name': 'exercise_name',
-    # User selection columns
-    'routine': 'routine',
-    'exercise': 'exercise',
-    'sets': 'sets',
-    'min_rep_range': 'min_rep_range',
-    'max_rep_range': 'max_rep_range',
-    'rir': 'rir',
-    'rpe': 'rpe',
-    'weight': 'weight',
-}
-
-
-def validate_table_name(table: str) -> bool:
-    """Validate that table name is in whitelist."""
-    return table.lower() in {k.lower(): v for k, v in ALLOWED_TABLES.items()}
-
-
-def validate_column_name(column: str) -> bool:
-    """Validate that column name is in whitelist."""
-    return column.lower() in {k.lower(): v for k, v in ALLOWED_COLUMNS.items()}
-
 
 ENUM_VALUE_MAP = {
     'mechanic': sorted(set(MECHANIC.values())),
