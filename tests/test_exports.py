@@ -342,6 +342,38 @@ class TestExportsEndpoints:
         assert data['status'] == 'success'
         assert 'message' in data
 
+    def test_export_to_workout_log_rejects_get(self, client, sample_workout_plan):
+        """Importing a plan is a write operation and must remain POST-only."""
+        response = client.get('/export_to_workout_log')
+
+        assert response.status_code == 405
+
+    def test_export_to_workout_log_preserves_exercise_order(
+        self, client, sample_workout_plan
+    ):
+        """Importing a plan must not repair or otherwise rewrite plan ordering."""
+        from utils.database import DatabaseHandler
+
+        with DatabaseHandler() as db:
+            db.execute_query("UPDATE user_selection SET exercise_order = NULL")
+            before_rows = db.fetch_all(
+                "SELECT id, exercise_order FROM user_selection ORDER BY id"
+            )
+            before_snapshot = [
+                (row["id"], row["exercise_order"]) for row in before_rows
+            ]
+
+        response = client.post('/export_to_workout_log')
+
+        assert response.status_code == 200
+        with DatabaseHandler() as db:
+            after_rows = db.fetch_all(
+                "SELECT id, exercise_order FROM user_selection ORDER BY id"
+            )
+        assert [
+            (row["id"], row["exercise_order"]) for row in after_rows
+        ] == before_snapshot
+
     @pytest.mark.parametrize(
         ("weight", "rir", "minimum", "maximum"),
         [(0, 0, 8, 8), (1000, 10, 8, 12)],
@@ -523,137 +555,20 @@ class TestExportErrorHandling:
         assert int(response.headers.get('Content-Length', '0')) > 0
 
 
-class TestExportNPlusOneRecalculation:
-    """Test N+1 UPDATE loop fixes and atomic exercise_order recalculations."""
-    
-    def test_recalculate_exercise_order_success(self, client, clean_database):
-        """Test success path with multiple rows needing recalculation."""
+class TestExcelExportReadOnlyContract:
+    """Regression coverage for OD3's read-only Excel export contract."""
+
+    def test_export_to_excel_preserves_exercise_order(self, client, clean_database):
+        """Excel export must preserve duplicate and NULL ordering values exactly."""
         from utils.database import DatabaseHandler
-        
-        # Setup rows with missing exercise_order
-        with DatabaseHandler() as db:
-            db.execute_query("INSERT OR IGNORE INTO exercises (exercise_name, primary_muscle_group) VALUES ('Squat', 'Legs')")
-            db.execute_query("INSERT OR IGNORE INTO exercises (exercise_name, primary_muscle_group) VALUES ('Bench Press', 'Chest')")
-            db.execute_query("INSERT OR IGNORE INTO exercises (exercise_name, primary_muscle_group) VALUES ('Deadlift', 'Back')")
-            db.execute_query("INSERT INTO user_selection (routine, exercise, sets, min_rep_range, max_rep_range, weight) VALUES ('A', 'Squat', 3, 8, 12, 100)")
-            db.execute_query("INSERT INTO user_selection (routine, exercise, sets, min_rep_range, max_rep_range, weight) VALUES ('A', 'Bench Press', 3, 8, 12, 100)")
-            db.execute_query("INSERT INTO user_selection (routine, exercise, sets, min_rep_range, max_rep_range, weight) VALUES ('B', 'Deadlift', 3, 8, 12, 100)")
-        
-        # Trigger export, which should recalculate
-        response = client.get('/export_to_excel')
-        assert response.status_code == 200
-        
-        # Verify the database state has updated exercise_order values
-        with DatabaseHandler() as db:
-            rows = db.fetch_all("SELECT routine, exercise, exercise_order FROM user_selection ORDER BY exercise_order")
-            
-            assert len(rows) == 3
-            # Should be ordered 1, 2, 3 and no NULLs
-            orders = [r['exercise_order'] for r in rows]
-            assert all(o is not None for o in orders)
-            assert sorted(orders) == [1, 2, 3]
-
-    def test_recalculate_exercise_order_atomic_failure(self, client, clean_database, caplog):
-        """Test real SQLite rollback semantics if atomic batch mode fails."""
-        import logging
-        from utils.database import DatabaseHandler
-        from routes.workout_plan import column_exists
-        
-        # Setup rows
-        with DatabaseHandler() as db:
-            db.execute_query("INSERT OR IGNORE INTO exercises (exercise_name, primary_muscle_group) VALUES ('Squat', 'Legs')")
-            db.execute_query("INSERT OR IGNORE INTO exercises (exercise_name, primary_muscle_group) VALUES ('Bench Press', 'Chest')")
-            db.execute_query("INSERT OR IGNORE INTO exercises (exercise_name, primary_muscle_group) VALUES ('Deadlift', 'Back')")
-            db.execute_query("INSERT INTO user_selection (routine, exercise, sets, min_rep_range, max_rep_range, weight) VALUES ('A', 'Squat', 3, 8, 12, 100)")
-            db.execute_query("INSERT INTO user_selection (routine, exercise, sets, min_rep_range, max_rep_range, weight) VALUES ('A', 'Bench Press', 3, 8, 12, 100)")
-            db.execute_query("INSERT INTO user_selection (routine, exercise, sets, min_rep_range, max_rep_range, weight) VALUES ('B', 'Deadlift', 3, 8, 12, 100)")
-
-            assert column_exists(db, "user_selection", "exercise_order"), (
-                "exercise_order column missing - schema regression"
-            )
-            before_rows = db.fetch_all(
-                "SELECT id, exercise_order FROM user_selection ORDER BY id"
-            )
-            before_snapshot = [(row["id"], row["exercise_order"]) for row in before_rows]
-
-            db.execute_query("DROP TRIGGER IF EXISTS fail_exercise_order_mid_batch")
-            db.execute_query("""
-                CREATE TRIGGER fail_exercise_order_mid_batch
-                BEFORE UPDATE OF exercise_order ON user_selection
-                WHEN NEW.exercise_order = 2
-                BEGIN
-                    SELECT RAISE(ABORT, 'simulated mid-batch failure');
-                END
-            """)
-
-        caplog.set_level(logging.ERROR, logger="hypertrophy_toolbox")
-
-        try:
-            # Trigger export. Production catches the recalc failure and still returns the workbook.
-            response = client.get('/export_to_excel')
-            assert response.status_code == 200
-            assert response.mimetype == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-
-            # The first attempted UPDATE must be rolled back after the trigger aborts the batch.
-            with DatabaseHandler() as db:
-                after_rows = db.fetch_all(
-                    "SELECT id, exercise_order FROM user_selection ORDER BY id"
-                )
-                after_snapshot = [(row["id"], row["exercise_order"]) for row in after_rows]
-        finally:
-            with DatabaseHandler() as db:
-                db.execute_query("DROP TRIGGER IF EXISTS fail_exercise_order_mid_batch")
-
-        assert after_snapshot == before_snapshot
-        assert any(
-            "Error performing batch update for exercise_order" in record.getMessage()
-            and record.levelno >= logging.ERROR
-            for record in caplog.records
-        )
-
-    def test_recalculate_exercise_order_null_initialization(self, client, clean_database):
-        """Rows with NULL exercise_order are initialized sequentially during export."""
-        from utils.database import DatabaseHandler
-        from routes.workout_plan import column_exists
-
-        with DatabaseHandler() as db:
-            db.execute_query("INSERT OR IGNORE INTO exercises (exercise_name, primary_muscle_group) VALUES ('Squat', 'Legs')")
-            db.execute_query("INSERT OR IGNORE INTO exercises (exercise_name, primary_muscle_group) VALUES ('Bench Press', 'Chest')")
-            db.execute_query("INSERT OR IGNORE INTO exercises (exercise_name, primary_muscle_group) VALUES ('Deadlift', 'Back')")
-            db.execute_query("INSERT INTO user_selection (routine, exercise, sets, min_rep_range, max_rep_range, weight, exercise_order) VALUES ('B', 'Deadlift', 3, 8, 12, 100, NULL)")
-            db.execute_query("INSERT INTO user_selection (routine, exercise, sets, min_rep_range, max_rep_range, weight, exercise_order) VALUES ('A', 'Squat', 3, 8, 12, 100, NULL)")
-            db.execute_query("INSERT INTO user_selection (routine, exercise, sets, min_rep_range, max_rep_range, weight, exercise_order) VALUES ('A', 'Bench Press', 3, 8, 12, 100, NULL)")
-
-            assert column_exists(db, "user_selection", "exercise_order"), (
-                "exercise_order column missing - schema regression"
-            )
-
-        response = client.get('/export_to_excel')
-        assert response.status_code == 200
-
-        with DatabaseHandler() as db:
-            rows = db.fetch_all(
-                "SELECT routine, exercise, exercise_order FROM user_selection ORDER BY routine, exercise, id"
-            )
-
-        assert [row["exercise_order"] for row in rows] == [1, 2, 3]
-
-    def test_recalculate_exercise_order_no_op(self, client, clean_database):
-        """Already sequential exercise_order values are left unchanged during export."""
-        from utils.database import DatabaseHandler
-        from routes.workout_plan import column_exists
 
         with DatabaseHandler() as db:
             db.execute_query("INSERT OR IGNORE INTO exercises (exercise_name, primary_muscle_group) VALUES ('Bench Press', 'Chest')")
             db.execute_query("INSERT OR IGNORE INTO exercises (exercise_name, primary_muscle_group) VALUES ('Squat', 'Legs')")
             db.execute_query("INSERT OR IGNORE INTO exercises (exercise_name, primary_muscle_group) VALUES ('Deadlift', 'Back')")
             db.execute_query("INSERT INTO user_selection (routine, exercise, sets, min_rep_range, max_rep_range, weight, exercise_order) VALUES ('A', 'Bench Press', 3, 8, 12, 100, 1)")
-            db.execute_query("INSERT INTO user_selection (routine, exercise, sets, min_rep_range, max_rep_range, weight, exercise_order) VALUES ('A', 'Squat', 3, 8, 12, 100, 2)")
-            db.execute_query("INSERT INTO user_selection (routine, exercise, sets, min_rep_range, max_rep_range, weight, exercise_order) VALUES ('B', 'Deadlift', 3, 8, 12, 100, 3)")
-
-            assert column_exists(db, "user_selection", "exercise_order"), (
-                "exercise_order column missing - schema regression"
-            )
+            db.execute_query("INSERT INTO user_selection (routine, exercise, sets, min_rep_range, max_rep_range, weight, exercise_order) VALUES ('A', 'Squat', 3, 8, 12, 100, 1)")
+            db.execute_query("INSERT INTO user_selection (routine, exercise, sets, min_rep_range, max_rep_range, weight, exercise_order) VALUES ('B', 'Deadlift', 3, 8, 12, 100, NULL)")
             before_rows = db.fetch_all(
                 "SELECT id, exercise_order FROM user_selection ORDER BY id"
             )
