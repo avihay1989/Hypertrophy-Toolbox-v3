@@ -241,50 +241,6 @@ def reorder_and_rename_columns(data, column_config, view_mode='simple'):
     return reordered_data
 
 
-def recalculate_exercise_order(db):
-    """Check dataset state and recalculate sequential order if needed."""
-    if not _column_exists(db, 'user_selection', 'exercise_order'):
-        return
-
-    # Check current state of exercise_order
-    total_check = db.fetch_one("SELECT COUNT(*) as count FROM user_selection")
-    order_check = db.fetch_one("SELECT COUNT(DISTINCT exercise_order) as distinct_count, COUNT(*) as total_count FROM user_selection WHERE exercise_order IS NOT NULL")
-
-    # Recalculate if all values are the same (like all "1") or NULL
-    needs_recalc = False
-    if total_check and total_check['count'] > 0:
-        if order_check and order_check['distinct_count'] == 1:
-            logger.info(f"All exercise_order values are the same ({order_check['distinct_count']} distinct). Recalculating...")
-            needs_recalc = True
-        elif order_check and order_check['total_count'] < total_check['count']:
-            logger.info(f"Some exercise_order values are NULL. Initializing...")
-            needs_recalc = True
-
-    if needs_recalc:
-        logger.info(f"Recalculating exercise_order for {total_check['count']} rows")
-        ordered_rows = db.fetch_all("""
-            SELECT id FROM user_selection
-            ORDER BY routine, exercise, id
-        """)
-        logger.info(f"Found {len(ordered_rows)} rows to update")
-
-        # Semantic change: N+1 update loop changed to atomic batch.
-        # This changes behavior from partial-success logging per-row to all-or-nothing batch update.
-        batch_params = [(index, row['id']) for index, row in enumerate(ordered_rows, start=1)]
-        try:
-            db.executemany(
-                "UPDATE user_selection SET exercise_order = ? WHERE id = ?",
-                batch_params
-            )
-            updated_count = len(batch_params)
-        except Exception as e:
-            logger.error(f"Error performing batch update for exercise_order: {e}")
-            updated_count = 0
-
-        verify = db.fetch_one("SELECT COUNT(DISTINCT exercise_order) as distinct_count FROM user_selection WHERE exercise_order IS NOT NULL")
-        logger.info(f"exercise_order recalculated: {updated_count} rows updated, {verify['distinct_count'] if verify else 0} distinct values")
-
-
 def build_export_query(db):
     """Build the SQL query for the user selection export based on available columns."""
     has_superset = _column_exists(db, 'user_selection', 'superset_group')
@@ -412,9 +368,8 @@ def fetch_all_sheets(db, view_mode):
 
 
 def collect_excel_sheets(view_mode):
-    """Recalculate exercise order (side effect, pending OD3) and assemble all sheets."""
+    """Assemble all Excel sheets without mutating the exported data."""
     with DatabaseHandler() as db:
-        recalculate_exercise_order(db)
         return fetch_all_sheets(db, view_mode)
 
 

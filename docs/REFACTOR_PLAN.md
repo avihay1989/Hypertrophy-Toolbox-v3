@@ -147,7 +147,7 @@ All ten decisions recorded with the owner on 2026-07-04.
 |---|---|---|
 | OD1 | Is plan weight `0` valid for bodyweight/assisted exercises? | **Allow 0 kg.** Behavior-change WP: fix the falsy-check family (`exercise_manager.py` weight, plus order=0 in remove/reorder), rewrite `test_add_exercise_missing_weight` accordingly. |
 | OD2 | What are canonical server bounds for plan/log updates? | **Add sanity bounds.** Behavior-change WP: define and enforce server-side limits (weight ≥0 with sane cap, RIR 0–10, min-reps ≤ max-reps) on add/update paths; new tests; docs then become true. |
-| OD3 | Should export-to-log mutate `exercise_order`, and should that endpoint remain GET? | **Fix it.** Behavior-change WP: export-to-log stops mutating `exercise_order`; endpoint moves to POST. WP1.8 still extracts the current behavior first, preserved; the fix lands as its own PR after. |
+| OD3 | Should `GET /export_to_excel` mutate `exercise_order` while assembling a workbook? | **Fix it.** Behavior-change WP: remove the hidden `recalculate_exercise_order` write from Excel export after WP1.8 extracts it. `/export_to_workout_log` was already POST-only and all repository callers already used POST, so no method or frontend migration is needed. |
 | OD4 | Null routines: dropped from weekly frequency or bucketed as `Unassigned`? | **Unify as `Unassigned`.** Behavior-change WP on a protected calc zone: weekly summary gains an Unassigned bucket matching session summary. Golden fixtures (WP2.3) must land first; product-risk review required. |
 | OD5 | Is the novice branch in `_calculate_weight_increment` a no-op below 20 kg intentionally? | **Make experience matter.** Behavior-change WP on a protected zone: experienced lifters get +5 kg below 20 kg too. Regression tests on both experience levels around the 20 kg boundary. |
 | OD6 | Remove/deprecate the five frontend-unreferenced HTTP endpoints? | **Remove them.** Contract-removal WP: delete `/get_routine_options`, `/get_user_selection`, `/get_exercise_details/<id>`, `/get_filtered_exercises`, `/get_unique_values/<table>/<column>` plus their tests, with migration notes. Sequence AFTER WP1.1/WP1.2 (the last one is in scope there). |
@@ -249,8 +249,11 @@ per the sign-off checklist.
 **Status at `main` @ `cbd5a25` (2026-07-05):** WPB.1 (#103), WPB.2 (#107),
 WPB.5 (#101), WPB.7 (#102), WPB.8 (#104), and WPB.9 are shipped. WPB.9's job
 landed in #100 and became required after ten consecutive green PRs (#100–#109),
-without renaming or removing an existing context. WPB.3, WPB.4, and WPB.6 remain
-prerequisite-gated.
+without renaming or removing an existing context. At that baseline, WPB.3, WPB.4,
+and WPB.6 remained prerequisite-gated.
+
+**Current update (2026-07-07):** WP1.8 landed in #122; WPB.3 is implemented in #128
+and awaiting review/CI. WPB.4 and WPB.6 remain prerequisite-gated.
 
 ### WPB.1 (OD1) Allow plan weight 0 for bodyweight/assisted exercises
 
@@ -272,13 +275,17 @@ prerequisite-gated.
   WP1.1 if concurrent — the allowlist/validator module is the natural home.
 - Gate: plan/log pytest families plus `workout-plan.spec.ts` and `workout-log.spec.ts`.
 
-### WPB.3 (OD3) Export-to-log stops mutating order; endpoint becomes POST
+### WPB.3 (OD3) Excel export stops mutating exercise order
 
-- Export-to-log no longer writes `exercise_order`; the endpoint moves GET → POST.
-- Update the frontend caller(s) in the same PR; this is an API-shape change — migration
-  notes mandatory.
-- Prerequisite: **WP1.8 first** (extracts current behavior preserved); this fix lands
-  as its own PR after.
+- Remove the `recalculate_exercise_order` write from `GET /export_to_excel`; workbook
+  assembly becomes read-only even when stored order values are duplicate or `NULL`.
+- `/export_to_workout_log` was already POST-only, and both live frontend callers plus
+  active pytest/E2E callers already used POST. Pin that contract in tests; no method or
+  frontend migration is required.
+- Migration note: startup `initialize_exercise_order()` still initializes `NULL` values.
+  It does not repair duplicate non-NULL order values; those remain unchanged until an
+  explicit reorder operation.
+- Prerequisite: **WP1.8 first** (landed in #122). Implementation: #128 (in review).
 - Gate: export pytest family plus the export/workout-log E2E paths.
 
 ### WPB.4 (OD4) Weekly summary `Unassigned` bucket for null routines
@@ -515,7 +522,7 @@ all endpoint URLs and response envelopes unless an OD-approved contract WP says 
 
 - Move mapping tables, dataframe transforms, query construction, sheet assembly, and
   export-to-log persistence into utils modules.
-- Preserve the exercise-order side effect pending OD3.
+- Preserve `GET /export_to_excel`'s exercise-order side effect pending OD3.
 - Gate: export pytest plus plan export/download and workout-log import flows.
 
 `routes/user_profile.py` needs no extraction WP: its handlers are already thin; the file's
