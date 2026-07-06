@@ -9,11 +9,13 @@ from utils.workout_log import (
 from utils.errors import success_response, error_response
 from utils.export_utils import create_excel_workbook, generate_timestamped_filename
 from utils.logger import get_logger
-from utils.strength_calibration import (
-    recompute_calibration_after_log,
-    update_calibration_for_exercise,
+from utils.workout_log_service import (
+    WorkoutLogServiceError,
+    clear_all_logs,
+    delete_log_entry,
+    update_log_entry,
+    update_progression_date_entry,
 )
-from utils.workout_validation import UNSET, validate_workout_bounds
 
 workout_log_bp = Blueprint('workout_log', __name__)
 logger = get_logger()
@@ -47,67 +49,14 @@ def update_workout_log():
         if not log_id:
             return error_response("VALIDATION_ERROR", "Log ID is required", 400)
 
-        valid_fields = {
-            "scored_weight", "scored_min_reps", "scored_max_reps", 
-            "scored_rir", "scored_rpe", "last_progression_date"
-        }
+        calibration = update_log_entry(log_id, updates)
 
-        valid_updates = {k: v for k, v in updates.items() if k in valid_fields}
-
-        if not valid_updates:
-            return error_response("VALIDATION_ERROR", "No valid fields to update", 400)
-
-        set_clause = ", ".join(f"{k} = ?" for k in valid_updates.keys())
-        query = f"UPDATE workout_log SET {set_clause} WHERE id = ?"
-        params = list(valid_updates.values()) + [log_id]
-        scored_changed = any(k.startswith("scored_") for k in valid_updates)
-
-        calibration = None
-        with DatabaseHandler() as db:
-            # Check if log entry exists
-            check_query = (
-                "SELECT id, exercise, scored_min_reps, scored_max_reps "
-                "FROM workout_log WHERE id = ?"
-            )
-            existing = db.fetch_one(check_query, (log_id,))
-            if not existing:
-                return error_response("NOT_FOUND", f"Workout log entry with ID {log_id} not found", 404)
-
-            min_reps = max_reps = UNSET
-            if "scored_min_reps" in valid_updates or "scored_max_reps" in valid_updates:
-                min_reps = valid_updates.get("scored_min_reps", existing["scored_min_reps"])
-                max_reps = valid_updates.get("scored_max_reps", existing["scored_max_reps"])
-            bounds_error = validate_workout_bounds(
-                weight=valid_updates.get("scored_weight", UNSET),
-                rir=valid_updates.get("scored_rir", UNSET),
-                min_reps=min_reps,
-                max_reps=max_reps,
-                allow_null=True,
-            )
-            if bounds_error:
-                return error_response("VALIDATION_ERROR", bounds_error, 400)
-
-            db.execute_query(query, params)
-
-            # Recompute learned calibration from the updated logs, reusing the
-            # open handler (plan §"DatabaseHandler Requirement"). Guarded so a
-            # calibration failure never rolls back the user's log write. Only a
-            # scored change is a "meaningful log update" worth notifying about
-            # (plan §"Notifications").
-            try:
-                summary = recompute_calibration_after_log(existing["exercise"], db=db)
-                if scored_changed:
-                    calibration = summary
-            except Exception:
-                logger.exception(
-                    "Calibration recompute failed for log %s; log update preserved", log_id
-                )
-
-        logger.info(f"Updated workout log {log_id}")
         return jsonify(success_response(
             data={"calibration": calibration} if calibration else None,
             message="Workout log updated successfully",
         ))
+    except WorkoutLogServiceError as e:
+        return error_response(e.code, e.message, e.status_code)
     except Exception as e:
         logger.exception("Error updating workout log")
         return error_response("INTERNAL_ERROR", "Failed to update workout log", 500)
@@ -120,29 +69,13 @@ def delete_workout_log():
         
         if not log_id:
             return error_response("VALIDATION_ERROR", "No log ID provided", 400)
-        
-        with DatabaseHandler() as db:
-            # Check if log entry exists
-            check_query = "SELECT id, exercise FROM workout_log WHERE id = ?"
-            existing = db.fetch_one(check_query, (log_id,))
-            if not existing:
-                return error_response("NOT_FOUND", f"Workout log entry with ID {log_id} not found", 404)
 
-            query = "DELETE FROM workout_log WHERE id = ?"
-            db.execute_query(query, (log_id,))
+        delete_log_entry(log_id)
 
-            # Recompute against the remaining logs; clears the calibration row
-            # when the deleted set was the last usable one (invalidate-on-delete).
-            try:
-                update_calibration_for_exercise(existing["exercise"], db=db)
-            except Exception:
-                logger.exception(
-                    "Calibration recompute failed after deleting log %s", log_id
-                )
-
-        logger.info(f"Deleted workout log {log_id}")
         return jsonify(success_response(message="Log entry deleted successfully"))
-        
+
+    except WorkoutLogServiceError as e:
+        return error_response(e.code, e.message, e.status_code)
     except Exception as e:
         logger.exception(f"Error deleting workout log")
         return error_response("INTERNAL_ERROR", "Failed to delete workout log", 500)
@@ -158,21 +91,14 @@ def update_progression_date():
         if not log_id or not new_date:
             return error_response("VALIDATION_ERROR", "Log ID and date are required", 400)
 
-        query = "UPDATE workout_log SET last_progression_date = ? WHERE id = ?"
-        with DatabaseHandler() as db:
-            # Check if log entry exists
-            check_query = "SELECT id FROM workout_log WHERE id = ?"
-            existing = db.fetch_one(check_query, (log_id,))
-            if not existing:
-                return error_response("NOT_FOUND", f"Workout log entry with ID {log_id} not found", 404)
-            
-            db.execute_query(query, (new_date, log_id))
+        update_progression_date_entry(log_id, new_date)
 
-        logger.info(f"Updated progression date for log {log_id}")
         return jsonify(success_response(message="Progression date updated successfully"))
+    except WorkoutLogServiceError as e:
+        return error_response(e.code, e.message, e.status_code)
     except Exception as e:
         logger.exception("Error updating progression date")
-        return error_response("INTERNAL_ERROR", "Failed to update progression date", 500) 
+        return error_response("INTERNAL_ERROR", "Failed to update progression date", 500)
 
 @workout_log_bp.route("/check_progression/<int:log_id>")
 def check_progression_route(log_id):
@@ -245,24 +171,15 @@ def export_workout_log():
 def clear_workout_log():
     """Clear all entries from the workout log."""
     try:
-        with DatabaseHandler() as db:
-            # Count entries before clearing for the response message
-            count_query = "SELECT COUNT(*) as count FROM workout_log"
-            result = db.fetch_one(count_query)
-            entry_count = result['count'] if result else 0
-            
-            if entry_count == 0:
-                return jsonify(success_response(message="Workout log is already empty"))
-            
-            # Delete all entries
-            delete_query = "DELETE FROM workout_log"
-            db.execute_query(delete_query)
-            
-            logger.info(f"Cleared {entry_count} entries from workout log")
-            return jsonify(success_response(
-                message=f"Successfully cleared {entry_count} entries from workout log"
-            ))
-            
+        entry_count = clear_all_logs()
+
+        if entry_count == 0:
+            return jsonify(success_response(message="Workout log is already empty"))
+
+        return jsonify(success_response(
+            message=f"Successfully cleared {entry_count} entries from workout log"
+        ))
+
     except Exception as e:
         logger.exception("Error clearing workout log")
         return error_response("INTERNAL_ERROR", "Failed to clear workout log", 500)
