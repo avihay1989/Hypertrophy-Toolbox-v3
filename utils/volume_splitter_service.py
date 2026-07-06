@@ -21,8 +21,10 @@ volume-taxonomy classes in this behavior-preserving WP.
 """
 import datetime
 from io import BytesIO
+from typing import cast
 
 from openpyxl import Workbook
+from openpyxl.worksheet.worksheet import Worksheet
 
 from utils.database import DatabaseHandler
 from utils.logger import get_logger
@@ -173,7 +175,7 @@ def build_volume_excel(data):
 
     # Create a new workbook and select the active sheet
     wb = Workbook()
-    ws = wb.active
+    ws = cast(Worksheet, wb.active)
     ws.title = "Volume Plan"
 
     # Add headers
