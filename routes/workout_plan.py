@@ -9,8 +9,8 @@ from utils.exercise_manager import (
 from utils.errors import success_response, error_response
 from utils.exercise_media import resolve_exercise_media_path
 from utils.logger import get_logger
-from routes.filters import ALLOWED_COLUMNS, validate_column_name
-from utils.constants import DIFFICULTY, MECHANIC, UTILITY, ANTAGONIST_PAIRS
+from utils.filter_values import fetch_filter_values
+from utils.constants import ANTAGONIST_PAIRS
 from utils.plan_generator import GENERATOR_ROUTINE_PROGRAMS, generate_starter_plan
 from utils.volume_progress import get_volume_progress
 from utils.workout_validation import UNSET, validate_workout_bounds
@@ -19,87 +19,8 @@ workout_plan_bp = Blueprint('workout_plan', __name__)
 logger = get_logger()
 
 def fetch_unique_values(column):
-    """Fetch unique values for a specified column from the exercises table."""
-    # Validate column name is whitelisted
-    if not validate_column_name(column):
-        logger.warning(f"Invalid column name in fetch_unique_values: {column}")
-        return []
-    
-    # Get safe column name from whitelist
-    safe_column = ALLOWED_COLUMNS.get(column.lower())
-    if not safe_column:
-        logger.warning(f"Column not found in whitelist: {column}")
-        return []
-    
-    enum_map = {
-        'mechanic': sorted(set(MECHANIC.values())),
-        'utility': sorted(set(UTILITY.values())),
-        'difficulty': sorted(set(DIFFICULTY.values())),
-    }
-
-    try:
-        with DatabaseHandler() as db:
-            if safe_column in enum_map:
-                return enum_map[safe_column]
-
-            # Force column: query DB and normalize to title case to merge variants
-            if safe_column == 'force':
-                query = (
-                    f"SELECT DISTINCT {safe_column} AS value FROM exercises "
-                    f"WHERE {safe_column} IS NOT NULL AND TRIM({safe_column}) <> '' "
-                    f"ORDER BY {safe_column}"
-                )
-                rows = db.fetch_all(query)
-                # Normalize to title case and dedupe (merges 'push'/'Push', 'pull'/'Pull')
-                seen = set()
-                values = []
-                for row in rows:
-                    val = row['value']
-                    if val:
-                        normalized = val.strip().title()
-                        if normalized not in seen:
-                            seen.add(normalized)
-                            values.append(normalized)
-                return sorted(values)
-
-            if safe_column == 'advanced_isolated_muscles':
-                rows = db.fetch_all(
-                    "SELECT DISTINCT muscle FROM exercise_isolated_muscles ORDER BY muscle"
-                )
-                return [row['muscle'] for row in rows]
-
-            if safe_column in {
-                'primary_muscle_group',
-                'secondary_muscle_group',
-                'tertiary_muscle_group',
-            }:
-                query = (
-                    f"SELECT DISTINCT {safe_column} AS value FROM exercises "
-                    f"WHERE {safe_column} IS NOT NULL AND TRIM({safe_column}) <> '' "
-                    f"ORDER BY {safe_column}"
-                )
-                rows = db.fetch_all(query)
-                return [row['value'] for row in rows]
-
-            if safe_column == 'equipment':
-                query = (
-                    f"SELECT DISTINCT TRIM({safe_column}) AS value FROM exercises "
-                    f"WHERE {safe_column} IS NOT NULL AND TRIM({safe_column}) <> '' "
-                    f"ORDER BY value"
-                )
-                rows = db.fetch_all(query)
-                return [row['value'] for row in rows if row.get('value')]
-
-            query = (
-                f"SELECT DISTINCT {safe_column} AS value FROM exercises "
-                f"WHERE {safe_column} IS NOT NULL AND TRIM({safe_column}) <> '' "
-                f"ORDER BY {safe_column}"
-            )
-            rows = db.fetch_all(query)
-            return [row['value'] for row in rows if row.get('value')]
-    except Exception as e:
-        logger.error(f"Error fetching unique values for {column}: {e}", exc_info=True)
-        return []
+    """Backward-compatible route-level alias for the extracted contract."""
+    return fetch_filter_values(column)
 
 @workout_plan_bp.route("/workout_plan")
 def workout_plan():

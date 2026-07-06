@@ -3,7 +3,7 @@ from utils.filter_predicates import FilterPredicates
 from utils.database import DatabaseHandler
 from utils.errors import success_response, error_response
 from utils.logger import get_logger
-from utils.constants import DIFFICULTY, MECHANIC, UTILITY
+from utils.filter_values import fetch_registered_unique_values
 # The SQL-name allowlists and validators are owned by utils.filter_registry.
 # Re-exported here (unchanged names) so existing callers/tests that do
 # `from routes.filters import ALLOWED_COLUMNS, validate_column_name` keep working.
@@ -111,12 +111,6 @@ FILTER_MAPPING = {
     "stabilizers": "stabilizers",
     "synergists": "synergists",
     "difficulty": "difficulty",
-}
-
-ENUM_VALUE_MAP = {
-    'mechanic': sorted(set(MECHANIC.values())),
-    'utility': sorted(set(UTILITY.values())),
-    'difficulty': sorted(set(DIFFICULTY.values())),
 }
 
 def expand_simple_muscle_value(field: str, value: str) -> tuple:
@@ -330,77 +324,8 @@ def get_unique_values(table, column):
             logger.warning(f"Invalid column name: {column}")
             return error_response("VALIDATION_ERROR", f"Invalid column: {column}", 400)
         
-        # Get safe table and column names from whitelist
-        safe_table = ALLOWED_TABLES.get(table.lower())
-        safe_column = ALLOWED_COLUMNS.get(column.lower())
-        
-        if not safe_table or not safe_column:
-            return error_response("VALIDATION_ERROR", "Invalid table or column", 400)
-        
-        # Use parameterized query with safe names
-        with DatabaseHandler() as db:
-            if safe_table == 'exercises' and safe_column == 'advanced_isolated_muscles':
-                records = db.fetch_all(
-                    "SELECT DISTINCT muscle FROM exercise_isolated_muscles ORDER BY muscle"
-                )
-                values = [row['muscle'] for row in records]
-                return jsonify(success_response(data=values))
-
-            if safe_column in ENUM_VALUE_MAP:
-                return jsonify(success_response(data=ENUM_VALUE_MAP[safe_column]))
-
-            # Force column: query DB and normalize to title case to merge variants
-            if safe_column == 'force':
-                query = (
-                    f"SELECT DISTINCT {safe_column} AS value FROM {safe_table} "
-                    f"WHERE {safe_column} IS NOT NULL AND TRIM({safe_column}) <> '' "
-                    f"ORDER BY {safe_column}"
-                )
-                rows = db.fetch_all(query)
-                # Normalize to title case and dedupe (merges 'push'/'Push', 'pull'/'Pull')
-                seen = set()
-                values = []
-                for row in rows:
-                    val = row['value']
-                    if val:
-                        normalized = val.strip().title()
-                        if normalized not in seen:
-                            seen.add(normalized)
-                            values.append(normalized)
-                return jsonify(success_response(data=sorted(values)))
-
-            if safe_column in {
-                'primary_muscle_group',
-                'secondary_muscle_group',
-                'tertiary_muscle_group',
-            }:
-                query = (
-                    f"SELECT DISTINCT {safe_column} AS value FROM {safe_table} "
-                    f"WHERE {safe_column} IS NOT NULL AND TRIM({safe_column}) <> '' "
-                    f"ORDER BY {safe_column}"
-                )
-                rows = db.fetch_all(query)
-                values = [row['value'] for row in rows]
-                return jsonify(success_response(data=values))
-
-            if safe_column == 'equipment':
-                query = (
-                    f"SELECT DISTINCT TRIM({safe_column}) AS value FROM {safe_table} "
-                    f"WHERE {safe_column} IS NOT NULL AND TRIM({safe_column}) <> '' "
-                    f"ORDER BY value"
-                )
-                rows = db.fetch_all(query)
-                values = [row['value'] for row in rows if row.get('value')]
-                return jsonify(success_response(data=values))
-
-            query = (
-                f"SELECT DISTINCT {safe_column} AS value FROM {safe_table} "
-                f"WHERE {safe_column} IS NOT NULL AND TRIM({safe_column}) <> '' "
-                f"ORDER BY {safe_column}"
-            )
-            results = db.fetch_all(query)
-            values = [row['value'] for row in results if row.get('value')]
-            return jsonify(success_response(data=values))
+        values = fetch_registered_unique_values(table, column)
+        return jsonify(success_response(data=values))
     except Exception as e:
         logger.exception(f"Error fetching unique values for {table}.{column}")
         return error_response("INTERNAL_ERROR", "Failed to fetch unique values", 500) 
@@ -451,4 +376,4 @@ def get_filtered_exercises():
             return jsonify(success_response(data=exercises))
     except Exception as e:
         logger.exception("Error filtering exercises")
-        return error_response("INTERNAL_ERROR", "Failed to filter exercises", 500) 
+        return error_response("INTERNAL_ERROR", "Failed to filter exercises", 500)
