@@ -204,6 +204,10 @@ def compute_snapshot_fields(
 
     bfp_navy: Optional[float] = None
     if all_required_tape:
+        # ``all()`` does not narrow the Optional values for pyright, but this
+        # branch is reachable only when both required measurements are present.
+        assert neck_cm is not None
+        assert waist_cm is not None
         bfp_navy = compute_navy(
             gender=gender,
             height_cm=height_cm,
