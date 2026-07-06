@@ -1,8 +1,7 @@
 """Central filter allowlist and table/column validators.
 
-Single owner of the SQL-name safety whitelists used for dynamic table/column
-interpolation by the filter routes (`/get_unique_values/<table>/<column>`,
-`/get_filtered_exercises`) and by `routes.workout_plan.fetch_unique_values`.
+Single owner of the SQL-name safety whitelists used by the exercise-filter route,
+the workout-plan filter-value helper, and generic internal query contracts.
 `routes.filters` re-exports `ALLOWED_TABLES`, `ALLOWED_COLUMNS`,
 `validate_table_name`, and `validate_column_name` from here so existing callers
 and tests (`from routes.filters import ALLOWED_COLUMNS, validate_column_name`)

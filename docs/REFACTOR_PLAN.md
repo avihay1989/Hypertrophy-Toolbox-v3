@@ -311,6 +311,10 @@ and awaiting review/CI. WPB.4 and WPB.6 remain prerequisite-gated.
 - Delete `/get_routine_options`, `/get_user_selection`, `/get_exercise_details/<id>`,
   `/get_filtered_exercises`, `/get_unique_values/<table>/<column>` plus their tests.
 - Migration notes list each removed route and its replacement (or "none — unused").
+- Implementation baseline after WP1.2: pytest collection **1714 → 1694** (20 approved
+  endpoint-contract cases removed); Playwright inventory **505 → 504** (the permissive
+  routine-options API test removed). Migration replacements are recorded in
+  `docs/CHANGELOG.md`.
 - Prerequisite: **after WP1.1/WP1.2** — `/get_unique_values` is in WP1.2's scope; removing
   it earlier would churn that extraction.
 - Gate: full pytest (expected count drop documented) plus API-integration E2E.

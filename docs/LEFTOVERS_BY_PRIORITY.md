@@ -125,7 +125,7 @@ All ten items below shipped in one docs-only commit on top of A–F. Each links 
 
 | # | Item | Resolution |
 |---|---|---|
-| 11 | **KI-001 — Filter cache invalidation** | Resolved by deleting the module. Triage discovered `utils/filter_cache.py` was dormant code: zero `from utils.filter_cache` imports in `routes/`, `utils/`, or `app.py`; `get_cached_unique_values()` only called by `warm_cache()` which itself was never wired into startup; the route that *would* consume it (`routes/filters.py::get_unique_values`) hit `DatabaseHandler` directly. Catalogue mutations (`save_exercise`, `remove_exercise_by_name`) had no HTTP path. Removing the module eliminated the "1 hour staleness" theoretical risk AND the latent SQLi exposure on the un-validated `f"SELECT DISTINCT {column} FROM {table}"` at line 85. `tests/test_filter_cache.py` (~440 LOC, 30+ tests) removed along with it. |
+| 11 | **KI-001 — Filter cache invalidation** | Resolved by deleting the module. Triage discovered `utils/filter_cache.py` was dormant code: zero `from utils.filter_cache` imports in `routes/`, `utils/`, or `app.py`; `get_cached_unique_values()` only called by `warm_cache()` which itself was never wired into startup; the then-live `routes/filters.py::get_unique_values` route hit `DatabaseHandler` directly (that unused route was later removed in WPB.6). Catalogue mutations (`save_exercise`, `remove_exercise_by_name`) had no HTTP path. Removing the module eliminated the "1 hour staleness" theoretical risk AND the latent SQLi exposure on the un-validated `f"SELECT DISTINCT {column} FROM {table}"` at line 85. `tests/test_filter_cache.py` (~440 LOC, 30+ tests) removed along with it. |
 
 ---
 

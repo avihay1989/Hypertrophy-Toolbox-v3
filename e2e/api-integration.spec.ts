@@ -98,24 +98,6 @@ test.describe('Workout Plan API', () => {
     expect(Array.isArray(data.data)).toBe(true);
   });
 
-  test('GET /get_routine_options returns valid response', async ({ request }) => {
-    const response = await request.get(`${BASE_URL}/get_routine_options`);
-    // Accept 200 or 404 (route may not exist)
-    expect([200, 404]).toContain(response.status());
-    
-    if (response.ok()) {
-      const data = await response.json();
-      // This endpoint returns nested routine options object (e.g., {Gym: {...}, "Home Workout": {...}})
-      // Accept standard API format, array, or structured object with expected keys
-      const isValidResponse = data.ok === true || 
-        data.status === 'success' || 
-        data.success === true || 
-        Array.isArray(data) ||
-        (typeof data === 'object' && (data.Gym || data['Home Workout']));
-      expect(isValidResponse).toBeTruthy();
-    }
-  });
-
   test('GET /api/pattern_coverage returns movement pattern analysis', async ({ request }) => {
     const response = await request.get(`${BASE_URL}/api/pattern_coverage`);
     expect(response.ok()).toBeTruthy();
@@ -835,7 +817,6 @@ test.describe('Response Format Consistency', () => {
   test('success responses have consistent format', async ({ request }) => {
     const endpoints = [
       { path: '/get_workout_plan' },
-      { path: '/get_routine_options' },
       { path: '/weekly_summary', headers: JSON_HEADERS },
       { path: '/session_summary', headers: JSON_HEADERS }
     ];
