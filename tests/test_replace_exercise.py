@@ -2,6 +2,52 @@
 Tests for the Replace/Swap Exercise feature.
 Tests the POST /replace_exercise endpoint functionality.
 """
+import subprocess
+import sys
+
+import pytest
+
+
+@pytest.mark.parametrize(
+    "imports",
+    [
+        "import routes.workout_plan; import utils.exercise_replacement",
+        "import utils.exercise_replacement; import routes.workout_plan",
+    ],
+)
+def test_replacement_modules_import_in_either_order(imports):
+    """The extracted service and compatibility route have no import cycle."""
+    completed = subprocess.run(
+        [sys.executable, "-c", imports],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+
+
+def test_route_helper_imports_remain_compatible():
+    """The pre-extraction route helper paths remain valid aliases."""
+    from routes import workout_plan
+    from utils import exercise_replacement
+
+    assert (
+        workout_plan.suggest_replacement_exercise
+        is exercise_replacement.suggest_replacement_exercise
+    )
+    assert (
+        workout_plan._fetch_current_exercise_details
+        is exercise_replacement._fetch_current_exercise_details
+    )
+    assert (
+        workout_plan._build_replacement_candidates
+        is exercise_replacement._build_replacement_candidates
+    )
+    assert (
+        workout_plan._perform_exercise_swap
+        is exercise_replacement._perform_exercise_swap
+    )
 
 
 class TestReplaceExerciseEndpoint:
@@ -60,6 +106,105 @@ class TestReplaceExerciseEndpoint:
         assert data['ok'] is False
         assert 'error' in data
         assert data['error']['reason'] == 'no_candidates'
+
+    def test_replace_exercise_missing_metadata(
+        self, client, exercise_factory, workout_plan_factory
+    ):
+        """Missing catalog metadata keeps its exact validation contract."""
+        exercise = exercise_factory(
+            "Incomplete Exercise",
+            primary_muscle_group=None,
+            equipment="Barbell",
+        )
+        plan_id = workout_plan_factory(
+            exercise_name=exercise, routine="Test Routine"
+        )
+
+        response = client.post('/replace_exercise', json={"id": plan_id})
+
+        assert response.status_code == 400
+        data = response.get_json()
+        assert data['ok'] is False
+        assert data['error']['code'] == 'VALIDATION_ERROR'
+        assert data['error']['reason'] == 'missing_metadata'
+        assert data['error']['message'] == (
+            "Exercise is missing muscle group or equipment metadata"
+        )
+
+    def test_replace_exercise_selection_failed_stays_http_200(
+        self,
+        client,
+        exercise_factory,
+        workout_plan_factory,
+        monkeypatch,
+    ):
+        """Selection failure is a processable user outcome, not an HTTP error."""
+        from utils import exercise_replacement
+
+        current = exercise_factory(
+            "Current Press", primary_muscle_group="Chest", equipment="Barbell"
+        )
+        exercise_factory(
+            "Alternative Press",
+            primary_muscle_group="Chest",
+            equipment="Barbell",
+        )
+        plan_id = workout_plan_factory(exercise_name=current, routine="Press Day")
+        monkeypatch.setattr(
+            exercise_replacement,
+            "suggest_replacement_exercise",
+            lambda *args, **kwargs: None,
+        )
+
+        response = client.post('/replace_exercise', json={"id": plan_id})
+
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['ok'] is False
+        assert data['error']['code'] == 'SELECTION_FAILED'
+        assert data['error']['reason'] == 'selection_failed'
+        assert data['error']['message'] == "Failed to select replacement exercise"
+
+    def test_replace_exercise_duplicate_stays_http_200(
+        self,
+        client,
+        exercise_factory,
+        workout_plan_factory,
+        monkeypatch,
+    ):
+        """The defensive post-selection duplicate outcome remains HTTP 200."""
+        from utils import exercise_replacement
+
+        current = exercise_factory(
+            "Current Row", primary_muscle_group="Chest", equipment="Barbell"
+        )
+        duplicate = exercise_factory(
+            "Existing Row", primary_muscle_group="Chest", equipment="Barbell"
+        )
+        routine = "Duplicate Routine"
+        plan_id = workout_plan_factory(exercise_name=current, routine=routine)
+        workout_plan_factory(exercise_name=duplicate, routine=routine)
+        monkeypatch.setattr(
+            exercise_replacement,
+            "_build_replacement_candidates",
+            lambda *args, **kwargs: [duplicate],
+        )
+        monkeypatch.setattr(
+            exercise_replacement,
+            "suggest_replacement_exercise",
+            lambda *args, **kwargs: duplicate,
+        )
+
+        response = client.post('/replace_exercise', json={"id": plan_id})
+
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['ok'] is False
+        assert data['error']['code'] == 'DUPLICATE'
+        assert data['error']['reason'] == 'duplicate'
+        assert data['error']['message'] == (
+            "All candidate exercises are already in this routine"
+        )
     
     def test_replace_exercise_avoids_duplicates(self, client, exercise_factory, workout_plan_factory):
         """Test that replacement avoids exercises already in routine."""

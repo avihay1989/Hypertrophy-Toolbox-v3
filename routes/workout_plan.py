@@ -8,6 +8,7 @@ from utils.exercise_manager import (
 )
 from utils.errors import success_response, error_response
 from utils.exercise_media import resolve_exercise_media_path
+from utils import exercise_replacement as replacement_service
 from utils.logger import get_logger
 from utils.filter_values import fetch_filter_values
 from utils.constants import ANTAGONIST_PAIRS
@@ -17,6 +18,13 @@ from utils.workout_validation import UNSET, validate_workout_bounds
 
 workout_plan_bp = Blueprint('workout_plan', __name__)
 logger = get_logger()
+
+# Compatibility aliases: callers importing the pre-WP1.3 route helpers keep
+# working while the implementation and DB ownership live in utils.
+suggest_replacement_exercise = replacement_service.suggest_replacement_exercise
+_fetch_current_exercise_details = replacement_service._fetch_current_exercise_details
+_build_replacement_candidates = replacement_service._build_replacement_candidates
+_perform_exercise_swap = replacement_service._perform_exercise_swap
 
 def fetch_unique_values(column):
     """Backward-compatible route-level alias for the extracted contract."""
@@ -878,127 +886,6 @@ def get_generator_options():
         return error_response("INTERNAL_ERROR", "Failed to fetch generator options", 500)
 
 
-def suggest_replacement_exercise(current_exercise, muscle, equipment, candidates, strategy="fallback"):
-    """
-    Suggest a replacement exercise from the candidate pool.
-    
-    Args:
-        current_exercise: The exercise being replaced
-        muscle: Primary muscle group to match
-        equipment: Equipment type to match
-        candidates: List of valid candidate exercise names
-        strategy: "ai" for AI-based suggestion, "fallback" for deterministic
-    
-    Returns:
-        str: Selected exercise name from candidates, or None if no valid candidate
-    """
-    import random
-    
-    if not candidates:
-        return None
-    
-    # AI strategy placeholder - for now, use heuristic ranking
-    # In the future, this could call an LLM or ML model to rank candidates
-    if strategy == "ai":
-        # Simple heuristic: prefer exercises with similar name patterns
-        # (e.g., "Barbell Bench Press" -> prefer other "Bench" or "Press" exercises)
-        current_words = set(current_exercise.lower().split())
-        
-        def score_candidate(candidate):
-            candidate_words = set(candidate.lower().split())
-            # Count overlapping words (excluding common words like "the", "with")
-            common_words = {'the', 'with', 'a', 'an', 'and', 'or', 'for', 'to'}
-            meaningful_current = current_words - common_words
-            meaningful_candidate = candidate_words - common_words
-            overlap = len(meaningful_current & meaningful_candidate)
-            return overlap
-        
-        # Score all candidates
-        scored = [(score_candidate(c), c) for c in candidates]
-        scored.sort(reverse=True, key=lambda x: x[0])
-        
-        # Find the top score and all candidates with that score
-        top_score = scored[0][0]
-        top_candidates = [name for score, name in scored if score == top_score]
-        
-        # If only one top candidate, also include next tier to add variety
-        # This prevents deterministic cycling between just 2 exercises
-        if len(top_candidates) == 1 and len(scored) > 1:
-            second_score = scored[1][0]
-            # Include second-tier candidates if they're close enough (within 1 point)
-            if top_score - second_score <= 1:
-                top_candidates.extend([name for score, name in scored if score == second_score])
-        
-        # Randomly pick from top candidates
-        return random.choice(top_candidates)
-    
-    # Fallback: random selection
-    return random.choice(candidates)
-
-
-def _fetch_current_exercise_details(db: DatabaseHandler, exercise_id: int):
-    return db.fetch_one("""
-        SELECT 
-            us.id, us.routine, us.exercise, us.sets,
-            us.min_rep_range, us.max_rep_range, us.rir, us.rpe, us.weight,
-            e.primary_muscle_group, e.equipment
-        FROM user_selection us
-        LEFT JOIN exercises e ON us.exercise = e.exercise_name
-        WHERE us.id = ?
-    """, (exercise_id,))
-
-
-def _build_replacement_candidates(db: DatabaseHandler, routine: str, muscle: str, equipment: str, current_exercise: str) -> list[str]:
-    candidates_query = """
-        SELECT exercise_name
-        FROM exercises
-        WHERE LOWER(primary_muscle_group) = LOWER(?)
-          AND LOWER(equipment) = LOWER(?)
-          AND LOWER(exercise_name) != LOWER(?)
-    """
-    candidate_rows = db.fetch_all(candidates_query, (muscle, equipment, current_exercise))
-    candidate_names = [row['exercise_name'] for row in candidate_rows]
-    
-    routine_exercises_query = """
-        SELECT exercise FROM user_selection WHERE routine = ?
-    """
-    routine_exercises = db.fetch_all(routine_exercises_query, (routine,))
-    routine_exercise_names_lower = {row['exercise'].lower() for row in routine_exercises}
-    
-    return [c for c in candidate_names if c.lower() not in routine_exercise_names_lower]
-
-
-def _perform_exercise_swap(db: DatabaseHandler, exercise_id: int, new_exercise: str):
-    db.execute_query(
-        "UPDATE user_selection SET exercise = ? WHERE id = ?",
-        (new_exercise, exercise_id)
-    )
-    
-    updated_row_result = db.fetch_one("""
-        SELECT 
-            us.id, us.routine, us.exercise, us.sets,
-            us.min_rep_range, us.max_rep_range, us.rir, us.rpe, us.weight,
-            e.primary_muscle_group, e.secondary_muscle_group,
-            e.tertiary_muscle_group, e.advanced_isolated_muscles,
-            e.utility, e.grips, e.stabilizers, e.synergists, e.equipment
-        FROM user_selection us
-        LEFT JOIN exercises e ON us.exercise = e.exercise_name
-        WHERE us.id = ?
-    """, (exercise_id,))
-    
-    updated_row: dict = dict(updated_row_result) if updated_row_result else {}
-    
-    if column_exists(db, 'user_selection', 'exercise_order'):
-        order_row = db.fetch_one(
-            "SELECT exercise_order FROM user_selection WHERE id = ?",
-            (exercise_id,)
-        )
-        if order_row and order_row.get('exercise_order') is not None:
-            updated_row['exercise_order'] = order_row['exercise_order']
-            
-    return updated_row
-
-
 @workout_plan_bp.route("/replace_exercise", methods=["POST"])
 def replace_exercise():
     """
@@ -1027,99 +914,25 @@ def replace_exercise():
         
         exercise_id = int(exercise_id)
         
-        with DatabaseHandler() as db:
-            current_row = _fetch_current_exercise_details(db, exercise_id)
-            
-            if not current_row:
-                return error_response("NOT_FOUND", "Exercise not found in workout plan", 404, reason="not_found")
-            
-            current_exercise = current_row['exercise']
-            routine = current_row['routine']
-            muscle = current_row['primary_muscle_group']
-            equipment = current_row['equipment']
-            
-            if not muscle or not equipment:
-                logger.warning(
-                    "Cannot replace exercise - missing metadata",
-                    extra={
-                        'exercise_id': exercise_id,
-                        'exercise': current_exercise,
-                        'muscle': muscle,
-                        'equipment': equipment
-                    }
-                )
-                return error_response("VALIDATION_ERROR", "Exercise is missing muscle group or equipment metadata", 400, reason="missing_metadata")
-            
-            valid_candidates = _build_replacement_candidates(db, routine, muscle, equipment, current_exercise)
-            
-            if not valid_candidates:
-                return error_response(
-                    "NO_CANDIDATES",
-                    f"No alternative exercises found for {muscle} with {equipment}",
-                    200,
-                    reason="no_candidates",
-                )
+        result = replacement_service.replace_exercise_for_selection(
+            exercise_id, strategy
+        )
 
-            new_exercise = suggest_replacement_exercise(current_exercise, muscle, equipment, valid_candidates, strategy)
+        return jsonify(success_response(
+            data=result,
+            message=(
+                f"Replaced {result['old_exercise']} with "
+                f"{result['new_exercise']}"
+            )
+        ))
 
-            if not new_exercise:
-                return error_response(
-                    "SELECTION_FAILED",
-                    "Failed to select replacement exercise",
-                    200,
-                    reason="selection_failed",
-                )
-            
-            duplicate_check = db.fetch_one(
-                "SELECT id FROM user_selection WHERE routine = ? AND LOWER(exercise) = LOWER(?)",
-                (routine, new_exercise)
-            )
-            
-            if duplicate_check:
-                remaining_candidates = [c for c in valid_candidates if c.lower() != new_exercise.lower()]
-                if remaining_candidates:
-                    new_exercise = suggest_replacement_exercise(current_exercise, muscle, equipment, remaining_candidates, "fallback")
-                    if not new_exercise:
-                        return error_response(
-                            "SELECTION_FAILED",
-                            "Failed to select replacement exercise",
-                            200,
-                            reason="selection_failed",
-                        )
-                else:
-                    return error_response(
-                        "DUPLICATE",
-                        "All candidate exercises are already in this routine",
-                        200,
-                        reason="duplicate",
-                    )
-            
-            updated_row = _perform_exercise_swap(db, exercise_id, new_exercise)
-            
-            logger.info(
-                "Exercise replaced successfully",
-                extra={
-                    'exercise_id': exercise_id,
-                    'routine': routine,
-                    'old_exercise': current_exercise,
-                    'new_exercise': new_exercise,
-                    'muscle': muscle,
-                    'equipment': equipment,
-                    'candidates_available': len(valid_candidates)
-                }
-            )
-            
-            remaining_options = len([c for c in valid_candidates if c.lower() != new_exercise.lower()])
-            
-            return jsonify(success_response(
-                data={
-                    "updated_row": updated_row,
-                    "old_exercise": current_exercise,
-                    "new_exercise": new_exercise,
-                    "remaining_options": remaining_options
-                },
-                message=f"Replaced {current_exercise} with {new_exercise}"
-            ))
+    except replacement_service.ExerciseReplacementError as e:
+        return error_response(
+            e.code,
+            e.message,
+            e.status_code,
+            reason=e.reason,
+        )
             
     except Exception as e:
         logger.exception(
