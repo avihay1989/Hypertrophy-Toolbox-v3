@@ -223,6 +223,31 @@ def unlink_superset(
         }
 
 
+def unlink_partner_for_removal(
+    db: DatabaseHandler, exercise_id: Any, superset_group: Any
+) -> None:
+    """Unlink the surviving partner(s) when a supersetted exercise is removed.
+
+    Unlike :func:`unlink_superset`, this reuses the caller's ``DatabaseHandler``
+    rather than opening its own: ``remove_exercise`` performs the partner-null,
+    log-delete, and exercise-delete through one handler so they share its
+    connection and write lock. It nulls every group member except the exercise
+    being removed (``id != ?``); that row is deleted by the caller next.
+    """
+    db.execute_query(
+        "UPDATE user_selection SET superset_group = NULL "
+        "WHERE superset_group = ? AND id != ?",
+        (superset_group, int(exercise_id)),
+    )
+    logger.info(
+        "Unlinked partner exercise from superset due to removal",
+        extra={
+            'superset_group': superset_group,
+            'removed_exercise_id': exercise_id,
+        },
+    )
+
+
 def _group_exercises_by_routine(exercises: list) -> dict:
     routines = {}
     for exercise in exercises:

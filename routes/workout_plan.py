@@ -29,6 +29,7 @@ _validate_superset_link_request = superset_service._validate_superset_link_reque
 _apply_superset_link = superset_service._apply_superset_link
 _group_exercises_by_routine = superset_service._group_exercises_by_routine
 _find_antagonist_pairings = superset_service._find_antagonist_pairings
+unlink_partner_for_removal = superset_service.unlink_partner_for_removal
 
 def fetch_unique_values(column):
     """Backward-compatible route-level alias for the extracted contract."""
@@ -289,19 +290,10 @@ def remove_exercise():
                 return error_response("NOT_FOUND", f"Exercise with ID {exercise_id} not found", 404)
             
             # If exercise is part of a superset, unlink the partner exercise
+            # through this handler (partner-null, then delete below).
             if exercise_info and exercise_info.get('superset_group'):
-                superset_group = exercise_info['superset_group']
-                # Set superset_group to NULL for the partner exercise(s)
-                db_handler.execute_query(
-                    "UPDATE user_selection SET superset_group = NULL WHERE superset_group = ? AND id != ?",
-                    (superset_group, int(exercise_id))
-                )
-                logger.info(
-                    "Unlinked partner exercise from superset due to removal",
-                    extra={
-                        'superset_group': superset_group,
-                        'removed_exercise_id': exercise_id
-                    }
+                superset_service.unlink_partner_for_removal(
+                    db_handler, exercise_id, exercise_info['superset_group']
                 )
             
             # Delete related workout logs to avoid foreign key constraint error
