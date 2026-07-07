@@ -1,7 +1,8 @@
 # Deep Refactor Plan — v3 (2026-07-04, full-scan grounded)
 
-**Status: Track A and Phase -1 completed; Track B partially shipped; Plan-v3
-structural-refactor execution approved by the owner on 2026-07-05. Phase 0 is next.**
+**Status: Track A, Phase -1, and Phase 1 (WP1.1–WP1.8) completed; Track B
+mostly shipped (WPB.3 and WPB.6 landed 2026-07-07; WPB.4 remains gated); Plan-v3
+structural-refactor execution approved by the owner on 2026-07-05. Phase 2 is next.**
 
 This supersedes v2. It incorporates:
 
@@ -252,8 +253,12 @@ landed in #100 and became required after ten consecutive green PRs (#100–#109)
 without renaming or removing an existing context. At that baseline, WPB.3, WPB.4,
 and WPB.6 remained prerequisite-gated.
 
-**Current update (2026-07-07):** WP1.8 landed in #122; WPB.3 is implemented in #128
-and awaiting review/CI. WPB.4 and WPB.6 remain prerequisite-gated.
+**Current update (2026-07-07):** Phase 1 is complete — WP1.1–WP1.8 all landed
+(#123, #126, #127, #130, #124, #125, #121, #122). WPB.3 shipped in #128 and WPB.6
+shipped in #129. WPB.4 remains prerequisite-gated (needs WP2.3 golden fixtures).
+Integrated `main` @ `f9bfb50`: pytest **1708 passed**; required Chromium functional
+shards **205 + 202**; smoke **10**, backup **20**, erase **2**, fatigue-context **6**;
+Playwright inventory **504 tests / 30 specs**.
 
 ### WPB.1 (OD1) Allow plan weight 0 for bodyweight/assisted exercises
 
@@ -285,7 +290,12 @@ and awaiting review/CI. WPB.4 and WPB.6 remain prerequisite-gated.
 - Migration note: startup `initialize_exercise_order()` still initializes `NULL` values.
   It does not repair duplicate non-NULL order values; those remain unchanged until an
   explicit reorder operation.
-- Prerequisite: **WP1.8 first** (landed in #122). Implementation: #128 (in review).
+- Prerequisite: **WP1.8 first** (landed in #122). **SHIPPED in #128** (`73f40ad`),
+  2026-07-07. The plan wording above was partly stale: `/export_to_workout_log` was
+  already POST and all callers already used POST, so the only defect fixed was the
+  hidden `recalculate_exercise_order` write on `GET /export_to_excel`. Test delta was
+  intentional: four obsolete mutation tests removed, three stronger read-only
+  preservation tests added.
 - Gate: export pytest family plus the export/workout-log E2E paths.
 
 ### WPB.4 (OD4) Weekly summary `Unassigned` bucket for null routines
@@ -316,7 +326,10 @@ and awaiting review/CI. WPB.4 and WPB.6 remain prerequisite-gated.
   routine-options API test removed). Migration replacements are recorded in
   `docs/CHANGELOG.md`.
 - Prerequisite: **after WP1.1/WP1.2** — `/get_unique_values` is in WP1.2's scope; removing
-  it earlier would churn that extraction.
+  it earlier would churn that extraction. **SHIPPED in #129** (`f9bfb50`), 2026-07-07,
+  rebased onto post-WP1.4 `main`. Also removed the endpoint-only
+  `fetch_registered_unique_values`; `fetch_filter_values` and
+  `ExerciseManager.fetch_unique_values` are preserved.
 - Gate: full pytest (expected count drop documented) plus API-integration E2E.
 
 ### WPB.7 (OD7) Remove the three dead contracts
@@ -469,7 +482,12 @@ Do not delete CSS here; CSS reachability needs the Phase-4 selector/visual harne
 Goal: routes parse/validate HTTP input, call utils services, and shape responses. Preserve
 all endpoint URLs and response envelopes unless an OD-approved contract WP says otherwise.
 
-### WP1.1 Central filter allowlist and validators
+**STATUS: COMPLETE (2026-07-07).** All eight work packets landed on `main` @ `f9bfb50`
+via PRs #123, #126, #127, #130, #124, #125, #121, #122. Integrated CI: pytest **1708
+passed**; required Chromium functional shards **205 + 202**; Playwright inventory **504
+tests / 30 specs**. Each WP preserved endpoint URLs and response envelopes.
+
+### WP1.1 Central filter allowlist and validators — **SHIPPED (#123)**
 
 - Move `ALLOWED_TABLES`, `ALLOWED_COLUMNS`, and validation into a utils-owned registry.
 - Reconcile it explicitly with `FilterPredicates.VALID_FILTER_FIELDS`; encode aliases and
@@ -477,7 +495,7 @@ all endpoint URLs and response envelopes unless an OD-approved contract WP says 
 - Keep route-level re-exports for existing tests/callers.
 - Add malicious table/column cases and vocabulary parity tests.
 
-### WP1.2 Extract both route-level unique-value contracts
+### WP1.2 Extract both route-level unique-value contracts — **SHIPPED (#126)**
 
 - Move the workout-plan specialized normalization contract to
   `utils/filter_values.fetch_filter_values`.
@@ -487,7 +505,7 @@ all endpoint URLs and response envelopes unless an OD-approved contract WP says 
   contract for now; do not merge signatures or normalization semantics.
 - Gate: filter/exercise-manager pytest plus workout-plan, exercise-interactions, and API E2E.
 
-### WP1.3 Extract replace-exercise service
+### WP1.3 Extract replace-exercise service — **SHIPPED (#127)**
 
 - Move candidate selection, deduplication, and swap persistence to
   `utils/exercise_replacement.py`.
@@ -495,38 +513,44 @@ all endpoint URLs and response envelopes unless an OD-approved contract WP says 
   three HTTP-200 error outcomes.
 - Gate: replacement pytest, `replace-exercise-errors.spec.ts`, `workout-plan.spec.ts`.
 
-### WP1.4 Extract superset service
+### WP1.4 Extract superset service — **SHIPPED (#130)**
 
 - Move validation queries, pairing, persistence, and suggestions to `utils/supersets.py`.
 - Preserve ID generation, ordering, messages, and response shapes even where improvement
   is tempting.
+- Persistence coverage includes the `remove_exercise` partner-unlink, extracted to
+  `unlink_partner_for_removal(db, exercise_id, superset_group)`. Unlike the other service
+  entry points it reuses the caller's `DatabaseHandler` so the partner-null, log-delete,
+  and exercise-delete continue to share one handler (connection + write lock); behavior
+  and the removal log are preserved exactly.
 - Gate: superset pytest, `superset-edge-cases.spec.ts`, `workout-plan.spec.ts`.
 
-### WP1.5 Workout-log service boundary
+### WP1.5 Workout-log service boundary — **SHIPPED (#124)**
 
 - Move mutations and calibration-trigger orchestration from `routes/workout_log.py` to
   `utils/workout_log_service.py`.
 - Do not add validation until OD2 is resolved.
 - Gate: workout-log/calibration pytest and workout-log/learned-calibration E2E.
 
-### WP1.6 Body-composition service boundary
+### WP1.6 Body-composition service boundary — **SHIPPED (#125)**
 
 - Move CRUD/query logic to utils while keeping body-fat formulas unchanged.
 - Preserve the JS↔Python parity fixture introduced in WP-1.3.
 - Gate: body-composition pytest and `body-composition.spec.ts`.
 
-### WP1.7 Volume-splitter service boundary
+### WP1.7 Volume-splitter service boundary — **SHIPPED (#121)**
 
 - Move history/get/delete, range defaults/sanitization, and export orchestration to utils.
 - Document the second classification vocabulary; do not consolidate it with canonical
   volume classes in this behavior-preserving WP.
 - Gate: volume-splitter pytest, volume-splitter and volume-progress E2E.
 
-### WP1.8 Export service boundary
+### WP1.8 Export service boundary — **SHIPPED (#122)**
 
 - Move mapping tables, dataframe transforms, query construction, sheet assembly, and
   export-to-log persistence into utils modules.
-- Preserve `GET /export_to_excel`'s exercise-order side effect pending OD3.
+- Preserved `GET /export_to_excel`'s exercise-order side effect at extraction time;
+  WPB.3 (#128) subsequently removed that side effect per OD3.
 - Gate: export pytest plus plan export/download and workout-log import flows.
 
 `routes/user_profile.py` needs no extraction WP: its handlers are already thin; the file's

@@ -4,6 +4,33 @@
 
 ## Current State
 
+> **2026-07-07 — Plan v3 Phase 1 COMPLETE (`main` @ `f9bfb50`).** All eight
+> route/service-boundary work packets have landed: WP1.1 central filter registry (#123),
+> WP1.2 both unique-value contracts (#126), WP1.3 replace-exercise service (#127),
+> WP1.4 superset service (#130), WP1.5 workout-log service (#124), WP1.6 body-composition
+> service (#125), WP1.7 volume-splitter service (#121), and WP1.8 export service (#122).
+> Routes now parse/validate HTTP and shape responses while `utils/*` owns business logic
+> and DB access; endpoint URLs and response envelopes were preserved throughout.
+> **WP1.4 note:** the final audit caught that `remove_exercise`'s partner-unlink SQL was
+> still inline; it was extracted to `utils/supersets.unlink_partner_for_removal(db, …)`,
+> which reuses the caller's `DatabaseHandler` (shared connection + write lock) so the
+> partner-null / log-delete / exercise-delete sequence and its removal log are unchanged.
+> Two Track B contract WPs also shipped this day: **WPB.3** (#128, `73f40ad`) made
+> `GET /export_to_excel` read-only by removing its hidden `recalculate_exercise_order`
+> write — the stale plan wording about `/export_to_workout_log` HTTP methods was already
+> satisfied, so that was the sole real defect; **WPB.6** (#129, `f9bfb50`) removed the
+> five frontend-unreferenced endpoints (`/get_routine_options`, `/get_user_selection`,
+> `/get_exercise_details/<id>`, `/get_filtered_exercises`,
+> `/get_unique_values/<table>/<column>`) plus the endpoint-only
+> `fetch_registered_unique_values`, keeping `fetch_filter_values` and
+> `ExerciseManager.fetch_unique_values`. Integrated PR #129 CI (rebased onto post-WP1.4
+> `main`): **1708 pytest passed**; required Chromium functional shards **205 + 202**;
+> smoke **10**, backup **20**, erase **2**, fatigue-context **6**; full Playwright
+> inventory **504 tests / 30 specs**. The live `data/database.db` was never staged.
+> Track B remaining: **WPB.4** only (weekly-summary `Unassigned` bucket), still gated on
+> WP2.3 golden fixtures + product-risk review. **Phase 2 (Python module structure and
+> schema ownership) is next** per `docs/REFACTOR_PLAN.md`.
+>
 > **2026-07-05 — Plan v3 Phase -1 SHIPPED (`main` @ `cbd5a25`).** Scan evidence,
 > documentation truth sync, hermetic catalog tests, prerequisite characterization,
 > vacuous-E2E repair, and the single-main-landmark contract are complete (PRs #105,
