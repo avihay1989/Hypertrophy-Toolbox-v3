@@ -1,15 +1,9 @@
 """Characterization tests for the two extracted filter-value contracts."""
 
-import pytest
-
-from routes import filters as filters_route
 from routes import workout_plan as workout_plan_route
 from utils.constants import MECHANIC
 from utils import filter_values
-from utils.filter_values import (
-    fetch_filter_values,
-    fetch_registered_unique_values,
-)
+from utils.filter_values import fetch_filter_values
 
 
 class TestWorkoutPlanFilterValues:
@@ -19,14 +13,11 @@ class TestWorkoutPlanFilterValues:
     def test_enum_values_come_from_canonical_constants(self, app):
         assert fetch_filter_values("mechanic") == sorted(set(MECHANIC.values()))
 
-    def test_enum_results_are_fresh_and_do_not_mutate_generic_contract(self, app):
+    def test_enum_results_are_fresh(self, app):
         first = fetch_filter_values("mechanic")
         first.append("Mutated")
 
         assert "Mutated" not in fetch_filter_values("mechanic")
-        assert "Mutated" not in fetch_registered_unique_values(
-            "exercises", "mechanic"
-        )
 
     def test_force_values_are_title_cased_and_deduplicated(
         self, app, exercise_factory
@@ -81,53 +72,3 @@ class TestWorkoutPlanFilterValues:
         monkeypatch.setattr(filter_values, "DatabaseHandler", BrokenDatabase)
 
         assert fetch_filter_values("equipment") == []
-
-
-class TestRegisteredUniqueValues:
-    @pytest.mark.parametrize(
-        ("table", "column"),
-        [("not_a_table", "equipment"), ("exercises", "not_a_column")],
-    )
-    def test_invalid_identifiers_raise_for_route_to_shape(self, app, table, column):
-        with pytest.raises(ValueError, match="Invalid"):
-            fetch_registered_unique_values(table, column)
-
-    def test_table_column_query_contract_remains_generic(
-        self, app, exercise_factory, workout_plan_factory
-    ):
-        workout_plan_factory(routine="Routine B")
-        exercise_factory("Second Exercise")
-        workout_plan_factory(
-            exercise_name="Second Exercise",
-            routine="Routine A",
-        )
-
-        assert fetch_registered_unique_values("user_selection", "routine") == [
-            "Routine A",
-            "Routine B",
-        ]
-
-    def test_route_delegates_and_preserves_success_envelope(self, client, monkeypatch):
-        monkeypatch.setattr(
-            filters_route,
-            "fetch_registered_unique_values",
-            lambda table, column: [f"{table}.{column}"],
-        )
-
-        response = client.get("/get_unique_values/exercises/equipment")
-
-        assert response.status_code == 200
-        assert response.get_json()["data"] == ["exercises.equipment"]
-
-    def test_database_failures_propagate_for_route_to_shape(self, monkeypatch):
-        class BrokenDatabase:
-            def __enter__(self):
-                raise RuntimeError("database unavailable")
-
-            def __exit__(self, *args):
-                return False
-
-        monkeypatch.setattr(filter_values, "DatabaseHandler", BrokenDatabase)
-
-        with pytest.raises(RuntimeError, match="database unavailable"):
-            fetch_registered_unique_values("exercises", "equipment")

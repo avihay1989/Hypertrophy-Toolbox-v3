@@ -4,6 +4,12 @@ All notable changes to Hypertrophy Toolbox v3.
 
 ## Unreleased - May 23, 2026
 
+### HTTP endpoint removals (Track B WPB.6)
+
+- Removed five frontend-unreferenced contracts: `GET /get_routine_options`, `GET /get_user_selection`, `GET /get_exercise_details/<id>`, `POST /get_filtered_exercises`, and `GET /get_unique_values/<table>/<column>`. They now return the normal Flask 404 response. No database schema or stored data changed.
+- Migration replacements: use `GET /get_generator_options` for the supported starter-plan configuration (there is no exact replacement for the retired legacy routine hierarchy); use `GET /get_workout_plan` for current plan rows and select the desired `id`; use `GET /get_exercise_info/<exercise_name>` for catalogue metadata by name; use `POST /filter_exercises` for exercise filtering. There is no public HTTP replacement for generic table/column unique-value queries—the workout-plan page receives its normalized filter values server-side through `utils.filter_values.fetch_filter_values`. The distinct internal `ExerciseManager.fetch_unique_values(table, column)` contract remains supported.
+- Removed the endpoint-only `fetch_registered_unique_values()` utility and its characterization tests. The approved test removals reduce pytest collection from **1714 to 1694** (20 tests) and Playwright inventory from **505 to 504** (one API-integration test). Canonical normalization and response-envelope checks were retained against the surviving helpers/endpoints.
+
 ### Workout plan/log validation contract (Track B WPB.2)
 
 - Plan adds, plan edits, plan-to-log imports, and scored-log edits now share canonical server-side bounds: weight is **0–1000 kg inclusive**, RIR is **0–10 inclusive**, and minimum reps cannot exceed maximum reps. Invalid writes return the existing `VALIDATION_ERROR` response envelope with HTTP 400; scored-log fields remain nullable. Imports validate every source row before writing, so invalid legacy plans cannot be partially imported.

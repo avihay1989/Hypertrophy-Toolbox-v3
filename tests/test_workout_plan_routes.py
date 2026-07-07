@@ -200,24 +200,6 @@ class TestAddExercise:
         assert resp.status_code == expected_status
 
 
-class TestGetExerciseDetails:
-    """Tests for GET /get_exercise_details/<id> endpoint."""
-
-    def test_get_exercise_details_success(self, client, clean_db, workout_plan_fixture):
-        """Should return exercise details."""
-        entry = workout_plan_fixture
-        resp = client.get(f"/get_exercise_details/{entry['id']}")
-        assert resp.status_code == 200
-        data = resp.get_json()
-        assert data["ok"] is True
-        assert data["data"]["exercise"] == entry["exercise"]
-
-    def test_get_exercise_details_not_found(self, client, clean_db):
-        """Should return 404 for non-existent exercise."""
-        resp = client.get("/get_exercise_details/99999")
-        assert resp.status_code == 404
-
-
 class TestGetWorkoutPlan:
     """Tests for GET /get_workout_plan endpoint."""
 
@@ -397,24 +379,6 @@ class TestClearWorkoutPlan:
         assert resp.get_json()["data"] == []
 
 
-class TestGetUserSelection:
-    """Tests for GET /get_user_selection endpoint."""
-
-    def test_get_user_selection_empty(self, client, clean_db):
-        """Should return empty array when no selections."""
-        resp = client.get("/get_user_selection")
-        assert resp.status_code == 200
-        data = resp.get_json()
-        assert data["ok"] is True
-
-    def test_get_user_selection_with_data(self, client, clean_db, workout_plan_fixture):
-        """Should return user selection with exercise metadata."""
-        resp = client.get("/get_user_selection")
-        assert resp.status_code == 200
-        data = resp.get_json()
-        assert len(data["data"]) >= 1
-
-
 class TestGetExerciseInfo:
     """Tests for GET /get_exercise_info/<name> endpoint."""
 
@@ -444,18 +408,6 @@ class TestGetRoutineExercises:
         assert resp.status_code == 200
         data = resp.get_json()
         assert data["ok"] is True
-
-
-class TestGetRoutineOptions:
-    """Tests for GET /get_routine_options endpoint."""
-
-    def test_get_routine_options(self, client, clean_db):
-        """Should return structured routine options."""
-        resp = client.get("/get_routine_options")
-        assert resp.status_code == 200
-        data = resp.get_json()
-        assert "Gym" in data
-        assert "Home Workout" in data
 
 
 class TestUpdateExercise:

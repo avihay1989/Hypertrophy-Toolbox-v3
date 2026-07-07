@@ -103,7 +103,7 @@ class TestErrorResponseFormat:
     
     def test_not_found_error_format(self, client):
         """Test that not found errors return standardized format."""
-        response = client.get('/get_exercise_details/99999')
+        response = client.get('/get_exercise_info/NonExistentExercise')
         
         assert response.status_code == 404
         data = response.get_json()
@@ -136,18 +136,6 @@ class TestErrorResponseFormat:
         assert 'code' in data['error']
         assert 'message' in data['error']
     
-    def test_invalid_table_column_error_format(self, client):
-        """Test that invalid table/column errors return standardized format."""
-        response = client.get('/get_unique_values/evil_table/evil_column')
-        
-        assert response.status_code == 400
-        data = response.get_json()
-        
-        assert data['ok'] is False
-        assert 'error' in data
-        assert data['error']['code'] == 'VALIDATION_ERROR'
-        assert 'message' in data['error']
-    
     def test_error_status_codes_match_error_type(self, client):
         """Test that HTTP status codes match error types."""
         # Validation error → 400
@@ -155,7 +143,7 @@ class TestErrorResponseFormat:
         assert response.status_code == 400
         
         # Not found → 404
-        response = client.get('/get_exercise_details/99999')
+        response = client.get('/get_exercise_info/NonExistentExercise')
         assert response.status_code == 404
 
 
@@ -166,7 +154,6 @@ class TestAllEndpointsStandardized:
         ('/get_workout_plan', 'GET', None),
         ('/get_all_exercises', 'GET', None),
         ('/filter_exercises', 'POST', {"Primary Muscle Group": "Chest"}),
-        ('/get_unique_values/exercises/equipment', 'GET', None),
     ])
     def test_endpoints_return_standardized_format(self, client, endpoint, method, payload, exercise_factory):
         """Test that all Priority 0 endpoints return standardized format."""

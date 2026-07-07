@@ -1,6 +1,7 @@
 import pytest
 
 from utils.normalization import normalize_muscle
+from utils.filter_values import fetch_filter_values
 
 
 @pytest.fixture
@@ -101,35 +102,13 @@ def test_workout_plan_endpoint_returns_canonical_muscles(client, normalized_plan
     assert entry["advanced_isolated_muscles"] == "Rear-Shoulder, Middle-Traps, Tfl"
 
 
-def test_get_exercise_details_returns_normalized_fields(client, clean_db, normalized_plan):
-    plan_row = clean_db.fetch_one(
-        "SELECT id FROM user_selection WHERE exercise = ?",
-        (normalized_plan,),
-    )
-    response = client.get(f"/get_exercise_details/{plan_row['id']}")
-    assert response.status_code == 200
-    payload = response.get_json()
-    assert payload["status"] == "success"
-    data = payload["data"]
-    assert data["primary_muscle_group"] == "Rear-Shoulder"
-    assert data["secondary_muscle_group"] == "Middle-Traps"
-    assert data["tertiary_muscle_group"] == "Gluteus Maximus"
-    assert data["advanced_isolated_muscles"] == "Rear-Shoulder, Middle-Traps, Tfl"
-
-
-def test_filters_unique_values_return_canonical_muscles(client, normalized_plan):
-    response = client.get("/get_unique_values/exercises/primary_muscle_group")
-    assert response.status_code == 200
-    payload = response.get_json()
-    values = payload["data"]
+def test_filter_values_return_canonical_muscles(app, normalized_plan):
+    values = fetch_filter_values("primary_muscle_group")
     assert "Rear-Shoulder" in values
     assert all(value != "rear delts" for value in values)
 
 
-def test_filters_unique_values_return_canonical_isolated_muscles(client, normalized_plan):
-    response = client.get("/get_unique_values/exercises/advanced_isolated_muscles")
-    assert response.status_code == 200
-    payload = response.get_json()
-    values = payload["data"]
+def test_filter_values_return_canonical_isolated_muscles(app, normalized_plan):
+    values = fetch_filter_values("advanced_isolated_muscles")
     assert {"Rear-Shoulder", "Middle-Traps", "Tfl"}.issubset(set(values))
     assert all(value.lower() != "rear delts" for value in values)

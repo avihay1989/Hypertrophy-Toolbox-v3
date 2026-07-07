@@ -3,7 +3,6 @@ from utils.filter_predicates import FilterPredicates
 from utils.database import DatabaseHandler
 from utils.errors import success_response, error_response
 from utils.logger import get_logger
-from utils.filter_values import fetch_registered_unique_values
 # The SQL-name allowlists and validators are owned by utils.filter_registry.
 # Re-exported here (unchanged names) so existing callers/tests that do
 # `from routes.filters import ALLOWED_COLUMNS, validate_column_name` keep working.
@@ -310,70 +309,3 @@ def get_all_exercises():
     except Exception as e:
         logger.exception("Error in get_all_exercises")
         return error_response("INTERNAL_ERROR", "Failed to fetch exercises", 500) 
-
-@filters_bp.route("/get_unique_values/<table>/<column>")
-def get_unique_values(table, column):
-    """Get unique values for a given column in a table."""
-    try:
-        # Validate table and column names against whitelist
-        if not validate_table_name(table):
-            logger.warning(f"Invalid table name: {table}")
-            return error_response("VALIDATION_ERROR", f"Invalid table: {table}", 400)
-        
-        if not validate_column_name(column):
-            logger.warning(f"Invalid column name: {column}")
-            return error_response("VALIDATION_ERROR", f"Invalid column: {column}", 400)
-        
-        values = fetch_registered_unique_values(table, column)
-        return jsonify(success_response(data=values))
-    except Exception as e:
-        logger.exception(f"Error fetching unique values for {table}.{column}")
-        return error_response("INTERNAL_ERROR", "Failed to fetch unique values", 500) 
-
-@filters_bp.route("/get_filtered_exercises", methods=["POST"])
-def get_filtered_exercises():
-    """Get exercises based on multiple filter criteria."""
-    try:
-        filters = request.get_json()
-        if not filters:
-            return error_response("VALIDATION_ERROR", "No filters provided", 400)
-        
-        query = """
-        SELECT exercise_name
-        FROM exercises
-        WHERE 1=1
-        """
-        params = []
-        
-        for field, value in filters.items():
-            # Validate column name is whitelisted
-            if not validate_column_name(field):
-                logger.warning(f"Invalid column in filter: {field}")
-                return error_response("VALIDATION_ERROR", f"Invalid filter column: {field}", 400)
-            
-            if value:
-                safe_column = ALLOWED_COLUMNS.get(field.lower())
-                # Special handling for advanced_isolated_muscles - use mapping table
-                if safe_column == "advanced_isolated_muscles":
-                    query += """
-                        AND EXISTS (
-                            SELECT 1
-                            FROM exercise_isolated_muscles m
-                            WHERE m.exercise_name = exercises.exercise_name
-                              AND m.muscle LIKE ?
-                        )
-                    """
-                    params.append(f"%{value}%")
-                else:
-                    query += f" AND {safe_column} LIKE ?"
-                    params.append(f"%{value}%")
-                
-        query += " ORDER BY exercise_name ASC"
-        
-        with DatabaseHandler() as db:
-            results = db.fetch_all(query, params)
-            exercises = [row['exercise_name'] for row in results]
-            return jsonify(success_response(data=exercises))
-    except Exception as e:
-        logger.exception("Error filtering exercises")
-        return error_response("INTERNAL_ERROR", "Failed to filter exercises", 500)
