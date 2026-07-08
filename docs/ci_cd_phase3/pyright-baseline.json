@@ -3,7 +3,7 @@
     "tool": "pyright",
     "note": "Baseline-allowlist for the typecheck CI gate (leftovers A9). Generated under the committed pyrightconfig.json (pythonVersion 3.11, pythonPlatform Windows). Regenerate with scripts/pyright_baseline_diff.py --write-baseline. Do NOT edit by hand to silence a real regression.",
     "total_diagnostics": 186,
-    "distinct_keys": 56
+    "distinct_keys": 57
   },
   "diagnostics": [
     {
@@ -266,6 +266,13 @@
       "count": 4
     },
     {
+      "file": "utils/_profile_estimator/coverage.py",
+      "severity": "error",
+      "rule": "reportOptionalMemberAccess",
+      "message": "\"get\" is not a known attribute of \"None\"",
+      "count": 2
+    },
+    {
       "file": "utils/database.py",
       "severity": "error",
       "rule": "reportArgumentType",
@@ -354,7 +361,7 @@
       "severity": "error",
       "rule": "reportOptionalMemberAccess",
       "message": "\"get\" is not a known attribute of \"None\"",
-      "count": 4
+      "count": 2
     },
     {
       "file": "utils/profile_estimator.py",
