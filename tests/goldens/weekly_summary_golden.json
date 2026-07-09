@@ -1,0 +1,1112 @@
+{
+  "pattern_balanced": {
+    "pattern_coverage": {
+      "ideal_sets_range": {
+        "max": 24,
+        "min": 15
+      },
+      "per_routine": {
+        "Bal R": {
+          "hinge": 4,
+          "horizontal_pull": 4,
+          "horizontal_push": 4,
+          "squat": 4,
+          "vertical_pull": 3,
+          "vertical_push": 3
+        }
+      },
+      "sets_per_routine": {
+        "Bal R": 22
+      },
+      "total": {
+        "hinge": 4,
+        "horizontal_pull": 4,
+        "horizontal_push": 4,
+        "squat": 4,
+        "vertical_pull": 3,
+        "vertical_push": 3
+      },
+      "warnings": []
+    }
+  },
+  "pattern_infer": {
+    "pattern_coverage": {
+      "ideal_sets_range": {
+        "max": 24,
+        "min": 15
+      },
+      "per_routine": {
+        "Infer R": {
+          "core_dynamic": 3,
+          "hinge": 3,
+          "horizontal_pull": 6,
+          "horizontal_push": 3,
+          "lower_isolation": 3,
+          "other": 6,
+          "squat": 3,
+          "upper_isolation": 6,
+          "vertical_pull": 3
+        }
+      },
+      "sets_per_routine": {
+        "Infer R": 36
+      },
+      "total": {
+        "core_dynamic": 3,
+        "hinge": 3,
+        "horizontal_pull": 6,
+        "horizontal_push": 3,
+        "lower_isolation": 3,
+        "other": 6,
+        "squat": 3,
+        "upper_isolation": 6,
+        "vertical_pull": 3
+      },
+      "warnings": [
+        {
+          "description": "No Upper body vertical push (shoulders, triceps) exercises found. Consider adding exercises like overhead press, dips.",
+          "level": "high",
+          "message": "Missing vertical push exercises",
+          "type": "missing_pattern"
+        },
+        {
+          "description": "Consider reducing by 12 sets. High volume (24+ sets) may impair recovery.",
+          "level": "medium",
+          "message": "Routine 'Infer R' has 36 sets",
+          "type": "high_volume"
+        },
+        {
+          "description": "Pull volume (9 sets) exceeds push volume (3 sets). This is generally okay but ensure adequate chest/shoulder work.",
+          "level": "low",
+          "message": "Pull-dominant program",
+          "type": "push_pull_imbalance"
+        }
+      ]
+    }
+  },
+  "pattern_isolation_skew": {
+    "pattern_coverage": {
+      "ideal_sets_range": {
+        "max": 24,
+        "min": 15
+      },
+      "per_routine": {
+        "Iso R": {
+          "lower_isolation": 20,
+          "squat": 4,
+          "upper_isolation": 20
+        }
+      },
+      "sets_per_routine": {
+        "Iso R": 44
+      },
+      "total": {
+        "lower_isolation": 20,
+        "squat": 4,
+        "upper_isolation": 20
+      },
+      "warnings": [
+        {
+          "description": "No Lower body pull (hamstrings, glutes, back) exercises found. Consider adding exercises like deadlifts, hip thrusts.",
+          "level": "high",
+          "message": "Missing hinge exercises",
+          "type": "missing_pattern"
+        },
+        {
+          "description": "No Upper body horizontal push (chest, shoulders, triceps) exercises found. Consider adding exercises like bench press, push-ups.",
+          "level": "high",
+          "message": "Missing horizontal push exercises",
+          "type": "missing_pattern"
+        },
+        {
+          "description": "No Upper body horizontal pull (back, biceps) exercises found. Consider adding exercises like rows, face pulls.",
+          "level": "high",
+          "message": "Missing horizontal pull exercises",
+          "type": "missing_pattern"
+        },
+        {
+          "description": "No Upper body vertical push (shoulders, triceps) exercises found. Consider adding exercises like overhead press, dips.",
+          "level": "high",
+          "message": "Missing vertical push exercises",
+          "type": "missing_pattern"
+        },
+        {
+          "description": "No Upper body vertical pull (lats, biceps) exercises found. Consider adding exercises like pull-ups, lat pulldowns.",
+          "level": "high",
+          "message": "Missing vertical pull exercises",
+          "type": "missing_pattern"
+        },
+        {
+          "description": "Consider reducing by 20 sets. High volume (24+ sets) may impair recovery.",
+          "level": "medium",
+          "message": "Routine 'Iso R' has 44 sets",
+          "type": "high_volume"
+        },
+        {
+          "description": "Isolation work (40 sets) significantly exceeds compound work (4 sets). Consider balancing with more compound movements for better overall development.",
+          "level": "medium",
+          "message": "High isolation-to-compound ratio",
+          "type": "isolation_skew"
+        }
+      ]
+    }
+  },
+  "pattern_pull_dominant": {
+    "pattern_coverage": {
+      "ideal_sets_range": {
+        "max": 24,
+        "min": 15
+      },
+      "per_routine": {
+        "Pull R": {
+          "horizontal_pull": 10,
+          "horizontal_push": 4,
+          "vertical_pull": 8
+        }
+      },
+      "sets_per_routine": {
+        "Pull R": 22
+      },
+      "total": {
+        "horizontal_pull": 10,
+        "horizontal_push": 4,
+        "vertical_pull": 8
+      },
+      "warnings": [
+        {
+          "description": "No Lower body push (quads, glutes) exercises found. Consider adding exercises like squats, leg press.",
+          "level": "high",
+          "message": "Missing squat exercises",
+          "type": "missing_pattern"
+        },
+        {
+          "description": "No Lower body pull (hamstrings, glutes, back) exercises found. Consider adding exercises like deadlifts, hip thrusts.",
+          "level": "high",
+          "message": "Missing hinge exercises",
+          "type": "missing_pattern"
+        },
+        {
+          "description": "No Upper body vertical push (shoulders, triceps) exercises found. Consider adding exercises like overhead press, dips.",
+          "level": "high",
+          "message": "Missing vertical push exercises",
+          "type": "missing_pattern"
+        },
+        {
+          "description": "Pull volume (18 sets) exceeds push volume (4 sets). This is generally okay but ensure adequate chest/shoulder work.",
+          "level": "low",
+          "message": "Pull-dominant program",
+          "type": "push_pull_imbalance"
+        }
+      ]
+    }
+  },
+  "pattern_push_dominant": {
+    "pattern_coverage": {
+      "ideal_sets_range": {
+        "max": 24,
+        "min": 15
+      },
+      "per_routine": {
+        "Push R": {
+          "horizontal_pull": 4,
+          "horizontal_push": 10,
+          "vertical_push": 8
+        }
+      },
+      "sets_per_routine": {
+        "Push R": 22
+      },
+      "total": {
+        "horizontal_pull": 4,
+        "horizontal_push": 10,
+        "vertical_push": 8
+      },
+      "warnings": [
+        {
+          "description": "No Lower body push (quads, glutes) exercises found. Consider adding exercises like squats, leg press.",
+          "level": "high",
+          "message": "Missing squat exercises",
+          "type": "missing_pattern"
+        },
+        {
+          "description": "No Lower body pull (hamstrings, glutes, back) exercises found. Consider adding exercises like deadlifts, hip thrusts.",
+          "level": "high",
+          "message": "Missing hinge exercises",
+          "type": "missing_pattern"
+        },
+        {
+          "description": "No Upper body vertical pull (lats, biceps) exercises found. Consider adding exercises like pull-ups, lat pulldowns.",
+          "level": "high",
+          "message": "Missing vertical pull exercises",
+          "type": "missing_pattern"
+        },
+        {
+          "description": "Push volume (18 sets) exceeds pull volume (4 sets) by more than 50%. Consider adding more pulling exercises for shoulder health.",
+          "level": "medium",
+          "message": "Push-dominant program",
+          "type": "push_pull_imbalance"
+        }
+      ]
+    }
+  },
+  "pattern_volume_boundaries": {
+    "pattern_coverage": {
+      "ideal_sets_range": {
+        "max": 24,
+        "min": 15
+      },
+      "per_routine": {
+        "Vol 14": {
+          "horizontal_push": 14
+        },
+        "Vol 15": {
+          "horizontal_push": 15
+        },
+        "Vol 24": {
+          "horizontal_push": 24
+        },
+        "Vol 25": {
+          "horizontal_push": 25
+        }
+      },
+      "sets_per_routine": {
+        "Vol 14": 14,
+        "Vol 15": 15,
+        "Vol 24": 24,
+        "Vol 25": 25
+      },
+      "total": {
+        "horizontal_push": 78
+      },
+      "warnings": [
+        {
+          "description": "No Lower body push (quads, glutes) exercises found. Consider adding exercises like squats, leg press.",
+          "level": "high",
+          "message": "Missing squat exercises",
+          "type": "missing_pattern"
+        },
+        {
+          "description": "No Lower body pull (hamstrings, glutes, back) exercises found. Consider adding exercises like deadlifts, hip thrusts.",
+          "level": "high",
+          "message": "Missing hinge exercises",
+          "type": "missing_pattern"
+        },
+        {
+          "description": "No Upper body horizontal pull (back, biceps) exercises found. Consider adding exercises like rows, face pulls.",
+          "level": "high",
+          "message": "Missing horizontal pull exercises",
+          "type": "missing_pattern"
+        },
+        {
+          "description": "No Upper body vertical push (shoulders, triceps) exercises found. Consider adding exercises like overhead press, dips.",
+          "level": "high",
+          "message": "Missing vertical push exercises",
+          "type": "missing_pattern"
+        },
+        {
+          "description": "No Upper body vertical pull (lats, biceps) exercises found. Consider adding exercises like pull-ups, lat pulldowns.",
+          "level": "high",
+          "message": "Missing vertical pull exercises",
+          "type": "missing_pattern"
+        },
+        {
+          "description": "Consider adding 1 more sets. Target is 15-24 sets per session for optimal results.",
+          "level": "medium",
+          "message": "Routine 'Vol 14' has only 14 sets",
+          "type": "low_volume"
+        },
+        {
+          "description": "Consider reducing by 1 sets. High volume (24+ sets) may impair recovery.",
+          "level": "medium",
+          "message": "Routine 'Vol 25' has 25 sets",
+          "type": "high_volume"
+        }
+      ]
+    }
+  },
+  "weekly_main": {
+    "exercise_categories": [
+      {
+        "category": "Mechanic",
+        "subcategory": "Compound",
+        "total_exercises": 4
+      },
+      {
+        "category": "Mechanic",
+        "subcategory": "Isolated",
+        "total_exercises": 7
+      },
+      {
+        "category": "Utility",
+        "subcategory": "Auxiliary",
+        "total_exercises": 7
+      },
+      {
+        "category": "Utility",
+        "subcategory": "Basic",
+        "total_exercises": 4
+      },
+      {
+        "category": "Force",
+        "subcategory": "Pull",
+        "total_exercises": 6
+      },
+      {
+        "category": "Force",
+        "subcategory": "Push",
+        "total_exercises": 5
+      },
+      {
+        "category": "Difficulty",
+        "subcategory": "Beginner",
+        "total_exercises": 7
+      },
+      {
+        "category": "Difficulty",
+        "subcategory": "Intermediate",
+        "total_exercises": 4
+      }
+    ],
+    "isolated_muscles": [
+      {
+        "exercise_count": 1,
+        "isolated_muscle": "anterior-deltoid",
+        "total_reps": 90.0,
+        "total_sets": 10,
+        "total_volume": 7200.0
+      },
+      {
+        "exercise_count": 1,
+        "isolated_muscle": "upper-pectoralis",
+        "total_reps": 90.0,
+        "total_sets": 10,
+        "total_volume": 7200.0
+      }
+    ],
+    "pattern_coverage": {
+      "ideal_sets_range": {
+        "max": 24,
+        "min": 15
+      },
+      "per_routine": {
+        "": {
+          "lower_isolation": 6
+        },
+        "Freq A": {
+          "upper_isolation": 2
+        },
+        "Freq B": {
+          "upper_isolation": 2
+        },
+        "Legs A": {
+          "squat": 8
+        },
+        "Pull A": {
+          "horizontal_pull": 6,
+          "upper_isolation": 4
+        },
+        "Push A": {
+          "horizontal_push": 10,
+          "upper_isolation": 5
+        },
+        "Push B": {
+          "horizontal_push": 15
+        }
+      },
+      "sets_per_routine": {
+        "": 6,
+        "Freq A": 2,
+        "Freq B": 2,
+        "Legs A": 8,
+        "Pull A": 10,
+        "Push A": 15,
+        "Push B": 15
+      },
+      "total": {
+        "horizontal_pull": 6,
+        "horizontal_push": 25,
+        "lower_isolation": 6,
+        "squat": 8,
+        "upper_isolation": 13
+      },
+      "warnings": [
+        {
+          "description": "No Lower body pull (hamstrings, glutes, back) exercises found. Consider adding exercises like deadlifts, hip thrusts.",
+          "level": "high",
+          "message": "Missing hinge exercises",
+          "type": "missing_pattern"
+        },
+        {
+          "description": "No Upper body vertical push (shoulders, triceps) exercises found. Consider adding exercises like overhead press, dips.",
+          "level": "high",
+          "message": "Missing vertical push exercises",
+          "type": "missing_pattern"
+        },
+        {
+          "description": "No Upper body vertical pull (lats, biceps) exercises found. Consider adding exercises like pull-ups, lat pulldowns.",
+          "level": "high",
+          "message": "Missing vertical pull exercises",
+          "type": "missing_pattern"
+        },
+        {
+          "description": "Consider adding 9 more sets. Target is 15-24 sets per session for optimal results.",
+          "level": "medium",
+          "message": "Routine '' has only 6 sets",
+          "type": "low_volume"
+        },
+        {
+          "description": "Consider adding 13 more sets. Target is 15-24 sets per session for optimal results.",
+          "level": "medium",
+          "message": "Routine 'Freq A' has only 2 sets",
+          "type": "low_volume"
+        },
+        {
+          "description": "Consider adding 13 more sets. Target is 15-24 sets per session for optimal results.",
+          "level": "medium",
+          "message": "Routine 'Freq B' has only 2 sets",
+          "type": "low_volume"
+        },
+        {
+          "description": "Consider adding 7 more sets. Target is 15-24 sets per session for optimal results.",
+          "level": "medium",
+          "message": "Routine 'Legs A' has only 8 sets",
+          "type": "low_volume"
+        },
+        {
+          "description": "Consider adding 5 more sets. Target is 15-24 sets per session for optimal results.",
+          "level": "medium",
+          "message": "Routine 'Pull A' has only 10 sets",
+          "type": "low_volume"
+        },
+        {
+          "description": "Push volume (25 sets) exceeds pull volume (6 sets) by more than 50%. Consider adding more pulling exercises for shoulder health.",
+          "level": "medium",
+          "message": "Push-dominant program",
+          "type": "push_pull_imbalance"
+        }
+      ]
+    },
+    "weekly_summary": {
+      "effective_direct": {
+        "Biceps": {
+          "avg_sets_per_session": 3.4,
+          "contribution_mode": "direct",
+          "counting_mode": "effective",
+          "effective_weekly_sets": 3.4,
+          "frequency": 1,
+          "max_sets_per_session": 3.4,
+          "raw_total_reps": 36.0,
+          "raw_total_volume": 720.0,
+          "raw_weekly_sets": 4.0,
+          "sets_per_session": 3.4,
+          "status": "low",
+          "total_reps": 30.6,
+          "total_volume": 612.0,
+          "volume_class": "low-volume",
+          "weekly_sets": 3.4
+        },
+        "Calves": {
+          "avg_sets_per_session": 0.0,
+          "contribution_mode": "direct",
+          "counting_mode": "effective",
+          "effective_weekly_sets": 5.1,
+          "frequency": 0,
+          "max_sets_per_session": 0.0,
+          "raw_total_reps": 54.0,
+          "raw_total_volume": 2700.0,
+          "raw_weekly_sets": 6.0,
+          "sets_per_session": 0.85,
+          "status": "low",
+          "total_reps": 45.9,
+          "total_volume": 2295.0,
+          "volume_class": "low-volume",
+          "weekly_sets": 5.1
+        },
+        "Chest": {
+          "avg_sets_per_session": 10.62,
+          "contribution_mode": "direct",
+          "counting_mode": "effective",
+          "effective_weekly_sets": 21.25,
+          "frequency": 2,
+          "max_sets_per_session": 12.75,
+          "raw_total_reps": 225.0,
+          "raw_total_volume": 16650.0,
+          "raw_weekly_sets": 25.0,
+          "sets_per_session": 10.62,
+          "status": "high",
+          "total_reps": 191.25,
+          "total_volume": 14152.5,
+          "volume_class": "high-volume",
+          "weekly_sets": 21.25
+        },
+        "Forearms": {
+          "avg_sets_per_session": 0.0,
+          "contribution_mode": "direct",
+          "counting_mode": "effective",
+          "effective_weekly_sets": 0.77,
+          "frequency": 0,
+          "max_sets_per_session": 0.77,
+          "raw_total_reps": 70.0,
+          "raw_total_volume": 700.0,
+          "raw_weekly_sets": 2.0,
+          "sets_per_session": 0.13,
+          "status": "low",
+          "total_reps": 26.95,
+          "total_volume": 269.5,
+          "volume_class": "low-volume",
+          "weekly_sets": 0.77
+        },
+        "Quadriceps": {
+          "avg_sets_per_session": 6.8,
+          "contribution_mode": "direct",
+          "counting_mode": "effective",
+          "effective_weekly_sets": 6.8,
+          "frequency": 1,
+          "max_sets_per_session": 6.8,
+          "raw_total_reps": 72.0,
+          "raw_total_volume": 7200.0,
+          "raw_weekly_sets": 8.0,
+          "sets_per_session": 6.8,
+          "status": "low",
+          "total_reps": 61.2,
+          "total_volume": 6120.0,
+          "volume_class": "low-volume",
+          "weekly_sets": 6.8
+        },
+        "Rear-Shoulder": {
+          "avg_sets_per_session": 1.7,
+          "contribution_mode": "direct",
+          "counting_mode": "effective",
+          "effective_weekly_sets": 1.7,
+          "frequency": 1,
+          "max_sets_per_session": 1.7,
+          "raw_total_reps": 18.0,
+          "raw_total_volume": 180.0,
+          "raw_weekly_sets": 2.0,
+          "sets_per_session": 1.7,
+          "status": "low",
+          "total_reps": 15.3,
+          "total_volume": 153.0,
+          "volume_class": "low-volume",
+          "weekly_sets": 1.7
+        },
+        "Triceps": {
+          "avg_sets_per_session": 4.25,
+          "contribution_mode": "direct",
+          "counting_mode": "effective",
+          "effective_weekly_sets": 4.25,
+          "frequency": 1,
+          "max_sets_per_session": 4.25,
+          "raw_total_reps": 45.0,
+          "raw_total_volume": 1350.0,
+          "raw_weekly_sets": 5.0,
+          "sets_per_session": 4.25,
+          "status": "low",
+          "total_reps": 38.25,
+          "total_volume": 1147.5,
+          "volume_class": "low-volume",
+          "weekly_sets": 4.25
+        },
+        "Upper Back": {
+          "avg_sets_per_session": 5.1,
+          "contribution_mode": "direct",
+          "counting_mode": "effective",
+          "effective_weekly_sets": 5.1,
+          "frequency": 1,
+          "max_sets_per_session": 5.1,
+          "raw_total_reps": 54.0,
+          "raw_total_volume": 3240.0,
+          "raw_weekly_sets": 6.0,
+          "sets_per_session": 5.1,
+          "status": "low",
+          "total_reps": 45.9,
+          "total_volume": 2754.0,
+          "volume_class": "low-volume",
+          "weekly_sets": 5.1
+        }
+      },
+      "effective_total": {
+        "Biceps": {
+          "avg_sets_per_session": 5.95,
+          "contribution_mode": "total",
+          "counting_mode": "effective",
+          "effective_weekly_sets": 5.95,
+          "frequency": 1,
+          "max_sets_per_session": 5.95,
+          "raw_total_reps": 63.0,
+          "raw_total_volume": 2340.0,
+          "raw_weekly_sets": 7.0,
+          "sets_per_session": 5.95,
+          "status": "low",
+          "total_reps": 53.55,
+          "total_volume": 1989.0,
+          "volume_class": "low-volume",
+          "weekly_sets": 5.95
+        },
+        "Calves": {
+          "avg_sets_per_session": 0.0,
+          "contribution_mode": "total",
+          "counting_mode": "effective",
+          "effective_weekly_sets": 5.1,
+          "frequency": 0,
+          "max_sets_per_session": 0.0,
+          "raw_total_reps": 54.0,
+          "raw_total_volume": 2700.0,
+          "raw_weekly_sets": 6.0,
+          "sets_per_session": 0.85,
+          "status": "low",
+          "total_reps": 45.9,
+          "total_volume": 2295.0,
+          "volume_class": "low-volume",
+          "weekly_sets": 5.1
+        },
+        "Chest": {
+          "avg_sets_per_session": 10.62,
+          "contribution_mode": "total",
+          "counting_mode": "effective",
+          "effective_weekly_sets": 21.25,
+          "frequency": 2,
+          "max_sets_per_session": 12.75,
+          "raw_total_reps": 225.0,
+          "raw_total_volume": 16650.0,
+          "raw_weekly_sets": 25.0,
+          "sets_per_session": 10.62,
+          "status": "high",
+          "total_reps": 191.25,
+          "total_volume": 14152.5,
+          "volume_class": "high-volume",
+          "weekly_sets": 21.25
+        },
+        "Forearms": {
+          "avg_sets_per_session": 0.0,
+          "contribution_mode": "total",
+          "counting_mode": "effective",
+          "effective_weekly_sets": 0.77,
+          "frequency": 0,
+          "max_sets_per_session": 0.77,
+          "raw_total_reps": 70.0,
+          "raw_total_volume": 700.0,
+          "raw_weekly_sets": 2.0,
+          "sets_per_session": 0.13,
+          "status": "low",
+          "total_reps": 26.95,
+          "total_volume": 269.5,
+          "volume_class": "low-volume",
+          "weekly_sets": 0.77
+        },
+        "Front-Shoulder": {
+          "avg_sets_per_session": 2.12,
+          "contribution_mode": "total",
+          "counting_mode": "effective",
+          "effective_weekly_sets": 2.12,
+          "frequency": 1,
+          "max_sets_per_session": 2.12,
+          "raw_total_reps": 22.5,
+          "raw_total_volume": 1800.0,
+          "raw_weekly_sets": 2.5,
+          "sets_per_session": 2.12,
+          "status": "low",
+          "total_reps": 19.12,
+          "total_volume": 1530.0,
+          "volume_class": "low-volume",
+          "weekly_sets": 2.12
+        },
+        "Gluteus Maximus": {
+          "avg_sets_per_session": 3.4,
+          "contribution_mode": "total",
+          "counting_mode": "effective",
+          "effective_weekly_sets": 3.4,
+          "frequency": 1,
+          "max_sets_per_session": 3.4,
+          "raw_total_reps": 36.0,
+          "raw_total_volume": 3600.0,
+          "raw_weekly_sets": 4.0,
+          "sets_per_session": 3.4,
+          "status": "low",
+          "total_reps": 30.6,
+          "total_volume": 3060.0,
+          "volume_class": "low-volume",
+          "weekly_sets": 3.4
+        },
+        "Quadriceps": {
+          "avg_sets_per_session": 6.8,
+          "contribution_mode": "total",
+          "counting_mode": "effective",
+          "effective_weekly_sets": 6.8,
+          "frequency": 1,
+          "max_sets_per_session": 6.8,
+          "raw_total_reps": 72.0,
+          "raw_total_volume": 7200.0,
+          "raw_weekly_sets": 8.0,
+          "sets_per_session": 6.8,
+          "status": "low",
+          "total_reps": 61.2,
+          "total_volume": 6120.0,
+          "volume_class": "low-volume",
+          "weekly_sets": 6.8
+        },
+        "Rear-Shoulder": {
+          "avg_sets_per_session": 1.7,
+          "contribution_mode": "total",
+          "counting_mode": "effective",
+          "effective_weekly_sets": 1.7,
+          "frequency": 1,
+          "max_sets_per_session": 1.7,
+          "raw_total_reps": 18.0,
+          "raw_total_volume": 180.0,
+          "raw_weekly_sets": 2.0,
+          "sets_per_session": 1.7,
+          "status": "low",
+          "total_reps": 15.3,
+          "total_volume": 153.0,
+          "volume_class": "low-volume",
+          "weekly_sets": 1.7
+        },
+        "Triceps": {
+          "avg_sets_per_session": 8.5,
+          "contribution_mode": "total",
+          "counting_mode": "effective",
+          "effective_weekly_sets": 8.5,
+          "frequency": 1,
+          "max_sets_per_session": 8.5,
+          "raw_total_reps": 90.0,
+          "raw_total_volume": 4950.0,
+          "raw_weekly_sets": 10.0,
+          "sets_per_session": 8.5,
+          "status": "low",
+          "total_reps": 76.5,
+          "total_volume": 4207.5,
+          "volume_class": "low-volume",
+          "weekly_sets": 8.5
+        },
+        "Upper Back": {
+          "avg_sets_per_session": 5.1,
+          "contribution_mode": "total",
+          "counting_mode": "effective",
+          "effective_weekly_sets": 5.1,
+          "frequency": 1,
+          "max_sets_per_session": 5.1,
+          "raw_total_reps": 54.0,
+          "raw_total_volume": 3240.0,
+          "raw_weekly_sets": 6.0,
+          "sets_per_session": 5.1,
+          "status": "low",
+          "total_reps": 45.9,
+          "total_volume": 2754.0,
+          "volume_class": "low-volume",
+          "weekly_sets": 5.1
+        }
+      },
+      "raw_direct": {
+        "Biceps": {
+          "avg_sets_per_session": 3.4,
+          "contribution_mode": "direct",
+          "counting_mode": "raw",
+          "effective_weekly_sets": 3.4,
+          "frequency": 1,
+          "max_sets_per_session": 3.4,
+          "raw_total_reps": 36.0,
+          "raw_total_volume": 720.0,
+          "raw_weekly_sets": 4.0,
+          "sets_per_session": 4.0,
+          "status": "low",
+          "total_reps": 30.6,
+          "total_volume": 612.0,
+          "volume_class": "low-volume",
+          "weekly_sets": 4.0
+        },
+        "Calves": {
+          "avg_sets_per_session": 0.0,
+          "contribution_mode": "direct",
+          "counting_mode": "raw",
+          "effective_weekly_sets": 5.1,
+          "frequency": 0,
+          "max_sets_per_session": 0.0,
+          "raw_total_reps": 54.0,
+          "raw_total_volume": 2700.0,
+          "raw_weekly_sets": 6.0,
+          "sets_per_session": 1.0,
+          "status": "low",
+          "total_reps": 45.9,
+          "total_volume": 2295.0,
+          "volume_class": "low-volume",
+          "weekly_sets": 6.0
+        },
+        "Chest": {
+          "avg_sets_per_session": 10.62,
+          "contribution_mode": "direct",
+          "counting_mode": "raw",
+          "effective_weekly_sets": 21.25,
+          "frequency": 2,
+          "max_sets_per_session": 12.75,
+          "raw_total_reps": 225.0,
+          "raw_total_volume": 16650.0,
+          "raw_weekly_sets": 25.0,
+          "sets_per_session": 12.5,
+          "status": "high",
+          "total_reps": 191.25,
+          "total_volume": 14152.5,
+          "volume_class": "high-volume",
+          "weekly_sets": 25.0
+        },
+        "Forearms": {
+          "avg_sets_per_session": 0.0,
+          "contribution_mode": "direct",
+          "counting_mode": "raw",
+          "effective_weekly_sets": 0.77,
+          "frequency": 0,
+          "max_sets_per_session": 0.77,
+          "raw_total_reps": 70.0,
+          "raw_total_volume": 700.0,
+          "raw_weekly_sets": 2.0,
+          "sets_per_session": 0.33,
+          "status": "low",
+          "total_reps": 26.95,
+          "total_volume": 269.5,
+          "volume_class": "low-volume",
+          "weekly_sets": 2.0
+        },
+        "Quadriceps": {
+          "avg_sets_per_session": 6.8,
+          "contribution_mode": "direct",
+          "counting_mode": "raw",
+          "effective_weekly_sets": 6.8,
+          "frequency": 1,
+          "max_sets_per_session": 6.8,
+          "raw_total_reps": 72.0,
+          "raw_total_volume": 7200.0,
+          "raw_weekly_sets": 8.0,
+          "sets_per_session": 8.0,
+          "status": "low",
+          "total_reps": 61.2,
+          "total_volume": 6120.0,
+          "volume_class": "low-volume",
+          "weekly_sets": 8.0
+        },
+        "Rear-Shoulder": {
+          "avg_sets_per_session": 1.7,
+          "contribution_mode": "direct",
+          "counting_mode": "raw",
+          "effective_weekly_sets": 1.7,
+          "frequency": 1,
+          "max_sets_per_session": 1.7,
+          "raw_total_reps": 18.0,
+          "raw_total_volume": 180.0,
+          "raw_weekly_sets": 2.0,
+          "sets_per_session": 2.0,
+          "status": "low",
+          "total_reps": 15.3,
+          "total_volume": 153.0,
+          "volume_class": "low-volume",
+          "weekly_sets": 2.0
+        },
+        "Triceps": {
+          "avg_sets_per_session": 4.25,
+          "contribution_mode": "direct",
+          "counting_mode": "raw",
+          "effective_weekly_sets": 4.25,
+          "frequency": 1,
+          "max_sets_per_session": 4.25,
+          "raw_total_reps": 45.0,
+          "raw_total_volume": 1350.0,
+          "raw_weekly_sets": 5.0,
+          "sets_per_session": 5.0,
+          "status": "low",
+          "total_reps": 38.25,
+          "total_volume": 1147.5,
+          "volume_class": "low-volume",
+          "weekly_sets": 5.0
+        },
+        "Upper Back": {
+          "avg_sets_per_session": 5.1,
+          "contribution_mode": "direct",
+          "counting_mode": "raw",
+          "effective_weekly_sets": 5.1,
+          "frequency": 1,
+          "max_sets_per_session": 5.1,
+          "raw_total_reps": 54.0,
+          "raw_total_volume": 3240.0,
+          "raw_weekly_sets": 6.0,
+          "sets_per_session": 6.0,
+          "status": "low",
+          "total_reps": 45.9,
+          "total_volume": 2754.0,
+          "volume_class": "low-volume",
+          "weekly_sets": 6.0
+        }
+      },
+      "raw_total": {
+        "Biceps": {
+          "avg_sets_per_session": 5.95,
+          "contribution_mode": "total",
+          "counting_mode": "raw",
+          "effective_weekly_sets": 5.95,
+          "frequency": 1,
+          "max_sets_per_session": 5.95,
+          "raw_total_reps": 63.0,
+          "raw_total_volume": 2340.0,
+          "raw_weekly_sets": 7.0,
+          "sets_per_session": 7.0,
+          "status": "low",
+          "total_reps": 53.55,
+          "total_volume": 1989.0,
+          "volume_class": "low-volume",
+          "weekly_sets": 7.0
+        },
+        "Calves": {
+          "avg_sets_per_session": 0.0,
+          "contribution_mode": "total",
+          "counting_mode": "raw",
+          "effective_weekly_sets": 5.1,
+          "frequency": 0,
+          "max_sets_per_session": 0.0,
+          "raw_total_reps": 54.0,
+          "raw_total_volume": 2700.0,
+          "raw_weekly_sets": 6.0,
+          "sets_per_session": 1.0,
+          "status": "low",
+          "total_reps": 45.9,
+          "total_volume": 2295.0,
+          "volume_class": "low-volume",
+          "weekly_sets": 6.0
+        },
+        "Chest": {
+          "avg_sets_per_session": 10.62,
+          "contribution_mode": "total",
+          "counting_mode": "raw",
+          "effective_weekly_sets": 21.25,
+          "frequency": 2,
+          "max_sets_per_session": 12.75,
+          "raw_total_reps": 225.0,
+          "raw_total_volume": 16650.0,
+          "raw_weekly_sets": 25.0,
+          "sets_per_session": 12.5,
+          "status": "high",
+          "total_reps": 191.25,
+          "total_volume": 14152.5,
+          "volume_class": "high-volume",
+          "weekly_sets": 25.0
+        },
+        "Forearms": {
+          "avg_sets_per_session": 0.0,
+          "contribution_mode": "total",
+          "counting_mode": "raw",
+          "effective_weekly_sets": 0.77,
+          "frequency": 0,
+          "max_sets_per_session": 0.77,
+          "raw_total_reps": 70.0,
+          "raw_total_volume": 700.0,
+          "raw_weekly_sets": 2.0,
+          "sets_per_session": 0.33,
+          "status": "low",
+          "total_reps": 26.95,
+          "total_volume": 269.5,
+          "volume_class": "low-volume",
+          "weekly_sets": 2.0
+        },
+        "Front-Shoulder": {
+          "avg_sets_per_session": 2.12,
+          "contribution_mode": "total",
+          "counting_mode": "raw",
+          "effective_weekly_sets": 2.12,
+          "frequency": 1,
+          "max_sets_per_session": 2.12,
+          "raw_total_reps": 22.5,
+          "raw_total_volume": 1800.0,
+          "raw_weekly_sets": 2.5,
+          "sets_per_session": 2.5,
+          "status": "low",
+          "total_reps": 19.12,
+          "total_volume": 1530.0,
+          "volume_class": "low-volume",
+          "weekly_sets": 2.5
+        },
+        "Gluteus Maximus": {
+          "avg_sets_per_session": 3.4,
+          "contribution_mode": "total",
+          "counting_mode": "raw",
+          "effective_weekly_sets": 3.4,
+          "frequency": 1,
+          "max_sets_per_session": 3.4,
+          "raw_total_reps": 36.0,
+          "raw_total_volume": 3600.0,
+          "raw_weekly_sets": 4.0,
+          "sets_per_session": 4.0,
+          "status": "low",
+          "total_reps": 30.6,
+          "total_volume": 3060.0,
+          "volume_class": "low-volume",
+          "weekly_sets": 4.0
+        },
+        "Quadriceps": {
+          "avg_sets_per_session": 6.8,
+          "contribution_mode": "total",
+          "counting_mode": "raw",
+          "effective_weekly_sets": 6.8,
+          "frequency": 1,
+          "max_sets_per_session": 6.8,
+          "raw_total_reps": 72.0,
+          "raw_total_volume": 7200.0,
+          "raw_weekly_sets": 8.0,
+          "sets_per_session": 8.0,
+          "status": "low",
+          "total_reps": 61.2,
+          "total_volume": 6120.0,
+          "volume_class": "low-volume",
+          "weekly_sets": 8.0
+        },
+        "Rear-Shoulder": {
+          "avg_sets_per_session": 1.7,
+          "contribution_mode": "total",
+          "counting_mode": "raw",
+          "effective_weekly_sets": 1.7,
+          "frequency": 1,
+          "max_sets_per_session": 1.7,
+          "raw_total_reps": 18.0,
+          "raw_total_volume": 180.0,
+          "raw_weekly_sets": 2.0,
+          "sets_per_session": 2.0,
+          "status": "low",
+          "total_reps": 15.3,
+          "total_volume": 153.0,
+          "volume_class": "low-volume",
+          "weekly_sets": 2.0
+        },
+        "Triceps": {
+          "avg_sets_per_session": 8.5,
+          "contribution_mode": "total",
+          "counting_mode": "raw",
+          "effective_weekly_sets": 8.5,
+          "frequency": 1,
+          "max_sets_per_session": 8.5,
+          "raw_total_reps": 90.0,
+          "raw_total_volume": 4950.0,
+          "raw_weekly_sets": 10.0,
+          "sets_per_session": 10.0,
+          "status": "low",
+          "total_reps": 76.5,
+          "total_volume": 4207.5,
+          "volume_class": "medium-volume",
+          "weekly_sets": 10.0
+        },
+        "Upper Back": {
+          "avg_sets_per_session": 5.1,
+          "contribution_mode": "total",
+          "counting_mode": "raw",
+          "effective_weekly_sets": 5.1,
+          "frequency": 1,
+          "max_sets_per_session": 5.1,
+          "raw_total_reps": 54.0,
+          "raw_total_volume": 3240.0,
+          "raw_weekly_sets": 6.0,
+          "sets_per_session": 6.0,
+          "status": "low",
+          "total_reps": 45.9,
+          "total_volume": 2754.0,
+          "volume_class": "low-volume",
+          "weekly_sets": 6.0
+        }
+      }
+    }
+  }
+}
