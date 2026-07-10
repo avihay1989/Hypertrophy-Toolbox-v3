@@ -10,6 +10,15 @@ from utils.normalization import normalize_equipment, normalize_muscle
 
 logger = get_logger()
 
+EXERCISE_ISOLATED_MUSCLES_DDL = """
+        CREATE TABLE IF NOT EXISTS exercise_isolated_muscles (
+            exercise_name TEXT NOT NULL,
+            muscle TEXT NOT NULL,
+            PRIMARY KEY (exercise_name, muscle),
+            FOREIGN KEY (exercise_name) REFERENCES exercises(exercise_name) ON DELETE CASCADE
+        )
+        """
+
 # Guard against double initialization during Flask auto-reload
 _INITIALIZATION_LOCK = threading.Lock()
 _INITIALIZATION_COMPLETE = False
@@ -138,16 +147,7 @@ def _initialize_isolated_muscles_table(db: DatabaseHandler) -> None:
         if columns != expected_columns or not fk_valid:
             db.execute_query("DROP TABLE IF EXISTS exercise_isolated_muscles")
 
-    db.execute_query(
-        """
-        CREATE TABLE IF NOT EXISTS exercise_isolated_muscles (
-            exercise_name TEXT NOT NULL,
-            muscle TEXT NOT NULL,
-            PRIMARY KEY (exercise_name, muscle),
-            FOREIGN KEY (exercise_name) REFERENCES exercises(exercise_name) ON DELETE CASCADE
-        )
-        """
-    )
+    db.execute_query(EXERCISE_ISOLATED_MUSCLES_DDL)
     db.execute_query(
         """
         CREATE INDEX IF NOT EXISTS idx_eim_muscle

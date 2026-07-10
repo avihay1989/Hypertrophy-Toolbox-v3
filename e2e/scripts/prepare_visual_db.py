@@ -75,29 +75,13 @@ def apply_migrations(database_path: Path) -> None:
     import utils.config
     utils.config.DB_FILE = str(database_path)
 
-    from utils.db_initializer import initialize_database
-    from utils.database import (
-        add_body_composition_snapshots_table,
-        add_progression_goals_table,
-        add_strength_calibration_tables,
-        add_user_profile_tables,
-        add_volume_tracking_tables,
-    )
-    from routes.program_backup import init_backup_tables
-    from routes.workout_plan import initialize_exercise_order
+    from utils.schema_registry import run_all_initializers
 
     # Mirror app.py's startup table-creation sequence exactly so a visual seed is
-    # schema-identical to a freshly booted app — including the learned-calibration
-    # tables the Profile page reads on every render (a missing table 500s the page
-    # and would freeze a broken render into a baseline).
-    initialize_database()
-    add_progression_goals_table()
-    add_volume_tracking_tables()
-    add_user_profile_tables()
-    add_body_composition_snapshots_table()
-    add_strength_calibration_tables()
-    initialize_exercise_order()
-    init_backup_tables()
+    # schema-identical to a freshly booted app — including learned-calibration and
+    # fatigue-context settings tables the Profile page reads on every render (a
+    # missing table 500s the page and would freeze a broken render into a baseline).
+    run_all_initializers(force_base=False)
 
 
 def main() -> None:

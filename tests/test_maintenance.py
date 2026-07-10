@@ -201,7 +201,11 @@ class TestNormalizeAndRebuildEim:
         
         # Check that CREATE TABLE was called
         create_call = mock_db.execute_query.call_args
-        assert "CREATE TABLE IF NOT EXISTS exercise_isolated_muscles" in create_call[0][0]
+        create_sql = create_call[0][0]
+        assert "CREATE TABLE IF NOT EXISTS exercise_isolated_muscles" in create_sql
+        assert "PRIMARY KEY (exercise_name, muscle)" in create_sql
+        assert "REFERENCES exercises(exercise_name) ON DELETE CASCADE" in create_sql
+        assert "id INTEGER PRIMARY KEY AUTOINCREMENT" not in create_sql
 
     @patch('utils.maintenance._normalize_existing_rows')
     @patch('utils.maintenance._exec_many')

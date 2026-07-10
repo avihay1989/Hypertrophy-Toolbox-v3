@@ -1,28 +1,20 @@
 
 from flask import Flask, jsonify, request, make_response, g
-from utils.db_initializer import initialize_database
-from utils.database import (
-    DatabaseHandler,
-    add_body_composition_snapshots_table,
-    add_fatigue_context_settings_table,
-    add_progression_goals_table,
-    add_strength_calibration_tables,
-    add_user_profile_tables,
-    add_volume_tracking_tables,
-)
+from utils.database import DatabaseHandler
 from utils.auto_backup import create_startup_backup, describe_snapshot
+from utils.schema_registry import drop_all_owned_tables, run_all_initializers
 from routes.workout_log import workout_log_bp
 from routes.weekly_summary import weekly_summary_bp
 from routes.session_summary import session_summary_bp
 from routes.exports import exports_bp
 from routes.filters import filters_bp
-from routes.workout_plan import workout_plan_bp, initialize_exercise_order
+from routes.workout_plan import workout_plan_bp
 from routes.main import main_bp
 from routes.progression_plan import progression_plan_bp
 from routes.user_profile import user_profile_bp
 from routes.body_composition import body_composition_bp
 from routes.volume_splitter import volume_splitter_bp
-from routes.program_backup import program_backup_bp, init_backup_tables
+from routes.program_backup import program_backup_bp
 from routes.fatigue import fatigue_bp
 from datetime import datetime
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -57,25 +49,7 @@ add_request_id_middleware(app)
 register_error_handlers(app)
 
 # Initialize the database
-logger.info("Initializing database...")
-initialize_database()
-logger.info("Adding progression goals table...")
-add_progression_goals_table()
-logger.info("Adding volume tracking tables...")
-add_volume_tracking_tables()
-logger.info("Adding user profile tables...")
-add_user_profile_tables()
-logger.info("Adding body composition snapshots table...")
-add_body_composition_snapshots_table()
-logger.info("Adding strength calibration tables...")
-add_strength_calibration_tables()
-logger.info("Adding fatigue context settings table...")
-add_fatigue_context_settings_table()
-logger.info("Initializing exercise order...")
-initialize_exercise_order()
-logger.info("Initializing backup tables...")
-init_backup_tables()
-logger.info("Database initialization complete")
+run_all_initializers(force_base=False)
 
 # Snapshot the live DB to data/auto_backup/ so a wipe or corruption has a recovery point.
 create_startup_backup()
@@ -176,48 +150,11 @@ def erase_data():
         snapshot_path = create_startup_backup()
         # Drop ALL tables including backup tables (full reset)
         with DatabaseHandler() as db:
-            tables = [
-                'program_backup_items',  # Drop child table first (FK constraint)
-                'program_backups',        # Then parent backup table
-                'ignored_calibration_transfers',
-                'exercise_transfer_ratios',
-                'learned_strength_calibrations',
-                'user_calibration_settings',
-                'fatigue_context_settings',
-                'user_profile_preferences',
-                'user_profile_lifts',
-                'user_profile',
-                'body_composition_snapshots',
-                'user_selection',
-                'progression_goals',
-                'muscle_volumes',
-                'volume_plans',
-                'workout_log'
-            ]
-
-            for table in tables:
-                db.execute_query(f"DROP TABLE IF EXISTS {table}")
+            drop_all_owned_tables(db)
 
         # Reinitialize database - force=True to bypass the initialization guard
         # since we just dropped the tables
-        logger.info("Reinitializing database...")
-        initialize_database(force=True)
-        logger.info("Adding progression goals table...")
-        add_progression_goals_table()
-        logger.info("Adding volume tracking tables...")
-        add_volume_tracking_tables()
-        logger.info("Adding user profile tables...")
-        add_user_profile_tables()
-        logger.info("Adding body composition snapshots table...")
-        add_body_composition_snapshots_table()
-        logger.info("Adding strength calibration tables...")
-        add_strength_calibration_tables()
-        logger.info("Adding fatigue context settings table...")
-        add_fatigue_context_settings_table()
-        logger.info("Initializing exercise order...")
-        initialize_exercise_order()
-        logger.info("Reinitializing backup tables...")
-        init_backup_tables()
+        run_all_initializers(force_base=True)
         
         from utils.errors import success_response
 

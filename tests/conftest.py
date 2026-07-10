@@ -6,17 +6,8 @@ import os
 import shutil
 from pathlib import Path
 from flask import Flask, jsonify
-from utils.database import (
-    DatabaseHandler,
-    add_body_composition_snapshots_table,
-    add_fatigue_context_settings_table,
-    add_progression_goals_table,
-    add_strength_calibration_tables,
-    add_user_profile_tables,
-    add_volume_tracking_tables,
-)
-from utils.db_initializer import initialize_database
-from routes.workout_plan import workout_plan_bp, initialize_exercise_order
+from utils.database import DatabaseHandler
+from routes.workout_plan import workout_plan_bp
 from routes.filters import filters_bp
 from routes.workout_log import workout_log_bp
 from routes.weekly_summary import weekly_summary_bp
@@ -29,7 +20,7 @@ from routes.body_composition import body_composition_bp
 from routes.volume_splitter import volume_splitter_bp
 from routes.program_backup import program_backup_bp
 from routes.fatigue import fatigue_bp
-from utils.program_backup import initialize_backup_tables
+from utils.schema_registry import drop_all_owned_tables, run_all_initializers
 from utils.errors import success_response, error_response
 import utils.config
 
@@ -41,15 +32,7 @@ TEST_DB_FILENAME = "test_hypertrophy_toolbox.db"
 
 def _initialize_test_database() -> None:
     """Create the full test schema for the active database path."""
-    initialize_database(force=True)
-    add_progression_goals_table()
-    add_volume_tracking_tables()
-    add_user_profile_tables()
-    add_body_composition_snapshots_table()
-    add_strength_calibration_tables()
-    add_fatigue_context_settings_table()
-    initialize_exercise_order()
-    initialize_backup_tables()
+    run_all_initializers(force_base=True)
 
 
 def _cleanup_database_files(database_path: str) -> None:
@@ -124,26 +107,7 @@ def app(test_db_path):
         try:
             # Drop ALL tables including backup tables (full reset)
             with DatabaseHandler() as db:
-                tables = [
-                    'program_backup_items',  # Drop child table first (FK constraint)
-                    'program_backups',        # Then parent backup table
-                    'ignored_calibration_transfers',
-                    'exercise_transfer_ratios',
-                    'learned_strength_calibrations',
-                    'user_calibration_settings',
-                    'fatigue_context_settings',
-                    'user_profile_preferences',
-                    'user_profile_lifts',
-                    'user_profile',
-                    'body_composition_snapshots',
-                    'user_selection',
-                    'progression_goals',
-                    'muscle_volumes',
-                    'volume_plans',
-                    'workout_log'
-                ]
-                for table in tables:
-                    db.execute_query(f"DROP TABLE IF EXISTS {table}")
+                drop_all_owned_tables(db)
 
             _initialize_test_database()
 

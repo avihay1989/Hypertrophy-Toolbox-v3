@@ -530,29 +530,23 @@ class DatabaseHandler:
             return tuple(params)
         return (params,)
 
-    # -- Convenience DDL helpers --------------------------------------------
-    def add_progression_goals_table(self) -> None:
-        """Ensure the progression_goals table exists."""
-        ddl = """
-            CREATE TABLE IF NOT EXISTS progression_goals (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                exercise TEXT NOT NULL,
-                goal_type TEXT NOT NULL,
-                current_value REAL,
-                target_value REAL,
-                goal_date DATE NOT NULL,
-                created_at DATETIME NOT NULL,
-                completed BOOLEAN DEFAULT 0,
-                completed_at DATETIME
-            )
-        """
-        self.execute_query(ddl)
-
-
 def add_progression_goals_table() -> None:
     """Module-level helper to create the progression goals table."""
+    ddl = """
+        CREATE TABLE IF NOT EXISTS progression_goals (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            exercise TEXT NOT NULL,
+            goal_type TEXT NOT NULL,
+            current_value REAL,
+            target_value REAL,
+            goal_date DATE NOT NULL,
+            created_at DATETIME NOT NULL,
+            completed BOOLEAN DEFAULT 0,
+            completed_at DATETIME
+        )
+    """
     with DatabaseHandler() as db:
-        db.add_progression_goals_table()
+        db.execute_query(ddl)
 
 
 def add_volume_tracking_tables() -> None:

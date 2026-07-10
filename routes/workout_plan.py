@@ -13,6 +13,7 @@ from utils import supersets as superset_service
 from utils.logger import get_logger
 from utils.filter_values import fetch_filter_values
 from utils.plan_generator import GENERATOR_ROUTINE_PROGRAMS, generate_starter_plan
+from utils import schema_registry
 from utils.volume_progress import get_volume_progress
 from utils.workout_validation import UNSET, validate_workout_bounds
 
@@ -30,6 +31,12 @@ _apply_superset_link = superset_service._apply_superset_link
 _group_exercises_by_routine = superset_service._group_exercises_by_routine
 _find_antagonist_pairings = superset_service._find_antagonist_pairings
 unlink_partner_for_removal = superset_service.unlink_partner_for_removal
+
+# Temporary compatibility re-exports for callers that still import the schema
+# helpers from this route module.
+column_exists = schema_registry.column_exists
+table_exists = schema_registry.table_exists
+initialize_exercise_order = schema_registry.initialize_exercise_order
 
 def fetch_unique_values(column):
     """Backward-compatible route-level alias for the extracted contract."""
@@ -447,76 +454,6 @@ def update_exercise():
             extra={'exercise_id': exercise_id if exercise_id else 'unknown'}
         )
         return error_response("INTERNAL_ERROR", "Failed to update exercise", 500)
-
-def column_exists(db, table_name, column_name):
-    """Check if a column exists in a table using PRAGMA."""
-    query = f"PRAGMA table_info({table_name})"
-    columns = db.fetch_all(query)
-    return any(col['name'] == column_name for col in columns)
-
-def table_exists(db, table_name):
-    """Check if a table exists in the database."""
-    result = db.fetch_one(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
-        (table_name,)
-    )
-    return result is not None
-
-def initialize_exercise_order():
-    """Initialize or update the order column in user_selection table."""
-    try:
-        with DatabaseHandler() as db:
-            # First check if the table exists
-            if not table_exists(db, 'user_selection'):
-                logger.debug("user_selection table does not exist yet, skipping exercise order initialization")
-                return True
-            
-            # Check if column exists using PRAGMA
-            if column_exists(db, 'user_selection', 'exercise_order'):
-                logger.debug("Exercise order column already exists")
-                # Check for any NULL exercise_order values and initialize them
-                null_count = db.fetch_one(
-                    "SELECT COUNT(*) as count FROM user_selection WHERE exercise_order IS NULL"
-                )
-                if null_count and null_count.get('count', 0) > 0:
-                    logger.info(f"Found {null_count['count']} rows with NULL exercise_order, initializing...")
-                    # Get max existing order
-                    max_order = db.fetch_one(
-                        "SELECT COALESCE(MAX(exercise_order), 0) as max_order FROM user_selection"
-                    )
-                    current_order = (max_order.get('max_order', 0) or 0) if max_order else 0
-                    
-                    # Get rows with NULL order, sorted by id (oldest first)
-                    null_rows = db.fetch_all(
-                        "SELECT id FROM user_selection WHERE exercise_order IS NULL ORDER BY id"
-                    )
-                    for row in null_rows:
-                        current_order += 1
-                        db.execute_query(
-                            "UPDATE user_selection SET exercise_order = ? WHERE id = ?",
-                            (current_order, row['id'])
-                        )
-                    logger.info(f"Initialized exercise_order for {len(null_rows)} rows")
-            else:
-                logger.info("Adding exercise_order column")
-                # Add the column
-                db.execute_query("ALTER TABLE user_selection ADD COLUMN exercise_order INTEGER")
-                
-                # Initialize with sequential order
-                db.execute_query("""
-                    UPDATE user_selection 
-                    SET exercise_order = (
-                        SELECT ROW_NUMBER() OVER (ORDER BY routine, exercise) 
-                        FROM user_selection AS t2 
-                        WHERE t2.id = user_selection.id
-                    )
-                """)
-                logger.info("Exercise order column initialized")
-                
-        return True
-    except Exception as e:
-        logger.exception("Error initializing exercise order")
-        return False
 
 @workout_plan_bp.route("/update_exercise_order", methods=["POST"])
 def update_exercise_order():

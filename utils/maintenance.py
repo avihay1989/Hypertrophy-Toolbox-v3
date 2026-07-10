@@ -7,10 +7,12 @@ from typing import Iterable, List, Optional, Tuple
 
 try:  # Prefer package-relative imports when available
     from utils.database import DatabaseHandler
+    from utils.db_initializer import EXERCISE_ISOLATED_MUSCLES_DDL
     from utils.logger import get_logger
     from utils.normalization import normalize_advanced_muscles
 except ImportError:  # pragma: no cover - fallback for direct invocation
     from database import DatabaseHandler  # type: ignore
+    from db_initializer import EXERCISE_ISOLATED_MUSCLES_DDL  # type: ignore
     from logger import get_logger  # type: ignore
     from normalization import normalize_advanced_muscles  # type: ignore
 
@@ -107,15 +109,7 @@ def normalize_and_rebuild_eim() -> None:
     with DatabaseHandler() as db:
         _exec_many(db, NORMALIZE_SQL)
         _normalize_existing_rows(db)
-        db.execute_query(
-            """
-            CREATE TABLE IF NOT EXISTS exercise_isolated_muscles (
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              exercise_name TEXT NOT NULL,
-              muscle TEXT NOT NULL
-            );
-            """
-        )
+        db.execute_query(EXERCISE_ISOLATED_MUSCLES_DDL)
         _exec_many(db, REBUILD_EIM_SQL)
 
 
