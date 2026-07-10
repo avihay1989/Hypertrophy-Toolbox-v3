@@ -1,11 +1,15 @@
-// Pure helpers for the weekly (Plan Volume) summary page.
+// Pure helpers shared by the weekly (Plan Volume) and session summary pages.
 //
-// Extracted verbatim from the page-local inline script in
-// templates/weekly_summary.html (Refactor Plan v3 WP3.2a). These are
-// DOM-free and side-effect-free so they can be unit-tested under the
-// node-environment Vitest runner; the DOM wiring that consumes them lives
-// in weekly-summary.js. Behavior is preserved exactly — this is a move,
-// not a rewrite.
+// Extracted verbatim from the page-local inline scripts in
+// templates/weekly_summary.html (Refactor Plan v3 WP3.2a) and
+// templates/session_summary.html (WP3.2b) — the two pages defined these
+// helpers byte-identically. They are DOM-free and side-effect-free so they
+// can be unit-tested under the node-environment Vitest runner; the DOM wiring
+// that consumes them lives in weekly-summary.js and session-summary.js.
+// Behavior is preserved exactly — this is a move, not a rewrite.
+//
+// (formatPatternName is weekly-only — the session page has no pattern-coverage
+// panel — but it lives here as a pure helper alongside the rest.)
 
 // Volume classification details based on effective sets.
 export function getVolumeDetails(effectiveSets) {
