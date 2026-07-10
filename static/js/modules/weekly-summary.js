@@ -23,7 +23,7 @@ import {
     getApiErrorMessage,
     getCategoryTooltip,
     getSubcategoryTooltip,
-} from './weekly-summary-helpers.js';
+} from './summary-helpers.js';
 
 // Function to fetch and display pattern coverage
 async function updatePatternCoverage() {

@@ -9,7 +9,7 @@ import {
     getApiErrorMessage,
     getCategoryTooltip,
     getSubcategoryTooltip,
-} from '../weekly-summary-helpers.js';
+} from '../summary-helpers.js';
 
 describe('getVolumeDetails', () => {
     it('classifies below 10 as low volume', () => {
