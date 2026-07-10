@@ -631,6 +631,10 @@ Record owners, current semantic differences, tests, and a future convergence dec
 
 Do not consolidate protected logic merely because arithmetic looks identical.
 
+**Shipped** — see [`docs/DUPLICATION_REGISTRY.md`](DUPLICATION_REGISTRY.md) (14 items,
+docs-only, zero code change; no consolidation performed). The one drift-removing
+consolidation (schema-init manifests) is deferred to WP2.6.
+
 ### WP2.6 Schema registry — last Python WP
 
 - Create `utils/schema_registry.py` with
