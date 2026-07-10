@@ -268,33 +268,7 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Global Error Handler -->
-    <script>
-        // Ensure error container is hidden on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            const errorContainer = document.getElementById('error-message-container');
-            if (errorContainer) {
-                errorContainer.classList.add('d-none');
-                errorContainer.classList.remove('show-error');
-                errorContainer.style.display = 'none';
-            }
-        });
-        
-        // Global error handler - only log, don't show UI
-        window.addEventListener('error', function(e) {
-            console.error('Global error caught:', {
-                message: e.error?.message || e.message,
-                filename: e.filename,
-                line: e.lineno,
-                column: e.colno,
-                error: e.error
-            });
-        });
-        
-        // Handle unhandled promise rejections - only log
-        window.addEventListener('unhandledrejection', function(e) {
-            console.error('Unhandled promise rejection:', e.reason);
-        });
-    </script>
+    <script src="{{ url_for('static', filename='js/global-error-handler.js') }}"></script>
     <script type="module" src="{{ url_for('static', filename='js/app.js') }}?v={{ range(1, 1000000) | random }}"></script>
     <script src="{{ url_for('static', filename='js/darkMode.js') }}"></script>
     <script src="{{ url_for('static', filename='js/accessibility.js') }}"></script>
