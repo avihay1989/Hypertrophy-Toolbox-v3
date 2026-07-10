@@ -576,3 +576,30 @@ jobs:
           tsc.txt
         retention-days: 14
 
+  # Refactor Plan v3 WP3.1: Vitest scaffold for plain-JS unit tests (no
+  # TypeScript). Runs `npm run test:js` (vitest run) against the seeded pure-helper
+  # suite under static/js/**/*.test.js. Deliberately a NEW, NON-required job: it is
+  # NOT added to branch protection's required_status_checks, so it starts
+  # accumulating green runs without blocking merges while the JS test track is
+  # young (same green-run pattern as the e2e-*-context/erase jobs). The name below
+  # is new configuration; it renames no existing (load-bearing) required context.
+  js-unit:
+    name: JS Unit (Vitest, non-required)
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install npm dependencies
+      run: npm ci
+
+    - name: Run Vitest
+      run: npm run test:js
+
