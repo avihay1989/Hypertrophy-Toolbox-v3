@@ -25,10 +25,10 @@ def main() -> None:
     # Ensure runtime config points to the requested DB before importing DB users.
     config.DB_FILE = db_file
 
-    from utils.db_initializer import initialize_database
     from utils.database import DatabaseHandler
+    from utils.schema_registry import run_all_initializers
 
-    initialize_database(force=True)
+    run_all_initializers(force_base=True)
 
     with DatabaseHandler() as db:
         # Start from clean state for deterministic assertions.
