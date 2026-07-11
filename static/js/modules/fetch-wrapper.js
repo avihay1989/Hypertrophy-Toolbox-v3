@@ -58,7 +58,7 @@ function normalizeError(error, requestId) {
     if (error.ok === false && error.error) {
         return {
             code: error.error.code || 'UNKNOWN_ERROR',
-            message: error.error.message || 'An unexpected error occurred',
+            message: error.error.message || error.message || 'An unexpected error occurred',
             requestId: error.error.requestId || requestId
         };
     }
@@ -69,6 +69,16 @@ function normalizeError(error, requestId) {
             code: 'NETWORK_ERROR',
             message: error.message || 'Network error occurred',
             requestId: requestId
+        };
+    }
+
+    // Preserve legacy/non-standard JSON error payloads that expose only a
+    // top-level message. Raw callers surfaced this text before consolidation.
+    if (error && typeof error === 'object' && typeof error.message === 'string') {
+        return {
+            code: error.code || 'UNKNOWN_ERROR',
+            message: error.message,
+            requestId: error.requestId || requestId
         };
     }
 
@@ -114,6 +124,7 @@ function delay(ms) {
  * @param {any} options.body - Request body
  * @param {boolean} options.showLoading - Show loading indicator (default: true)
  * @param {boolean} options.showErrorToast - Show error toast on failure (default: true)
+ * @param {boolean} options.useDefaultHeaders - Merge shared JSON headers (default: true)
  * @param {number} options.retries - Number of retries for idempotent requests (default: 2 for GET, 0 for others)
  * @param {number} options.retryDelay - Delay between retries in ms (default: 1000)
  * @returns {Promise<Object>} Response data
@@ -125,6 +136,7 @@ export async function apiFetch(url, options = {}) {
         body = null,
         showLoading = true,
         showErrorToast = true,
+        useDefaultHeaders = true,
         retries = method === 'GET' ? 2 : 0,
         retryDelay = 1000,
         ...fetchOptions
@@ -141,7 +153,7 @@ export async function apiFetch(url, options = {}) {
         'X-Request-ID': requestId,
     };
     
-    const mergedHeaders = { ...defaultHeaders, ...headers };
+    const mergedHeaders = useDefaultHeaders ? { ...defaultHeaders, ...headers } : headers;
     
     // If body is an object, stringify it
     const processedBody = body && typeof body === 'object' ? JSON.stringify(body) : body;

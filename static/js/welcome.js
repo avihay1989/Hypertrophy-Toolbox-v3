@@ -20,13 +20,13 @@
 
         confirmEraseBtn.addEventListener('click', async function() {
             try {
-                const response = await fetch('/erase-data', {
-                    method: 'POST',
+                const { api } = await import('./modules/fetch-wrapper.js');
+                const data = await api.post('/erase-data', { confirm: 'ERASE_ALL_DATA' }, {
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ confirm: 'ERASE_ALL_DATA' })
+                    showLoading: false,
+                    showErrorToast: false,
+                    useDefaultHeaders: false
                 });
-
-                const data = await response.json();
 
                 if (data.ok) {
                     eraseDataModal.hide();

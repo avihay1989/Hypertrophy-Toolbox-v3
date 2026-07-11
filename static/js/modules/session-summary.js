@@ -25,6 +25,7 @@ import {
     getSubcategoryTooltip,
 } from './summary-helpers.js';
 import { getSessionWarningBadge } from './session-summary-helpers.js';
+import { api } from './fetch-wrapper.js';
 
 // Function to update the session summary table based on the selected modes
 async function updateSessionSummary() {
@@ -53,15 +54,18 @@ async function updateSessionSummary() {
             contribution_mode: contributionMode
         });
 
-        const response = await fetch(`/session_summary?${params.toString()}`, {
+        const result = await api.get(`/session_summary?${params.toString()}`, {
             headers: {
                 "Accept": "application/json",
                 "X-Requested-With": "XMLHttpRequest"
-            }
+            },
+            showLoading: false,
+            showErrorToast: false,
+            useDefaultHeaders: false,
+            retries: 0
         });
 
-        const result = await response.json();
-        if (!response.ok || isApiFailure(result)) {
+        if (isApiFailure(result)) {
             throw new Error(getApiErrorMessage(result, "Failed to fetch session summary."));
         }
 

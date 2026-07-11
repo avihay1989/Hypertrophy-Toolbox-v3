@@ -219,29 +219,32 @@ async function clearFilters() {
     
     // Reload all exercises in the exercise dropdown
     try {
-        const response = await fetch("/get_all_exercises");
-        if (response.ok) {
-            const exercises = await response.json();
-            if (exerciseDropdown && Array.isArray(exercises)) {
-                // Clear existing options
-                exerciseDropdown.innerHTML = '<option value="">Select Exercise</option>';
-                
-                // Add all exercises
-                exercises.forEach(exercise => {
-                    if (exercise) {
-                        const option = document.createElement("option");
-                        option.value = exercise;
-                        option.textContent = exercise;
-                        exerciseDropdown.appendChild(option);
-                    }
-                });
-                
-                // Remove filter-applied class if it exists
-                exerciseDropdown.classList.remove('filter-applied', 'filtered');
-                
-                // Trigger rebuild event for enhanced dropdown
-                exerciseDropdown.dispatchEvent(new CustomEvent('wpdd-rebuild', { bubbles: true }));
-            }
+        const response = await api.get("/get_all_exercises", {
+            showLoading: false,
+            showErrorToast: false,
+            useDefaultHeaders: false,
+            retries: 0
+        });
+        const exercises = response.data;
+        if (exerciseDropdown && Array.isArray(exercises)) {
+            // Clear existing options
+            exerciseDropdown.innerHTML = '<option value="">Select Exercise</option>';
+
+            // Add all exercises
+            exercises.forEach(exercise => {
+                if (exercise) {
+                    const option = document.createElement("option");
+                    option.value = exercise;
+                    option.textContent = exercise;
+                    exerciseDropdown.appendChild(option);
+                }
+            });
+
+            // Remove filter-applied class if it exists
+            exerciseDropdown.classList.remove('filter-applied', 'filtered');
+
+            // Trigger rebuild event for enhanced dropdown
+            exerciseDropdown.dispatchEvent(new CustomEvent('wpdd-rebuild', { bubbles: true }));
         }
     } catch (error) {
         console.error("Error reloading exercises:", error);

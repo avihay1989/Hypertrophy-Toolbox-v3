@@ -30,6 +30,7 @@ import { showAutoBackupBanner } from './modules/program-backup.js';
 import { initializeBackupCenter } from './modules/backup-center.js';
 import { initializePlanVolumePanel } from './modules/plan_volume_panel.js';
 import { notifyVolumeAffectingPlanChange } from './modules/workout-plan-events.js';
+import { api } from './modules/fetch-wrapper.js';
 
 const APP_DEBUG = false;
 const appDebugLog = (...args) => {
@@ -112,28 +113,27 @@ window.generateStarterPlan = async function() {
         }
         
         // Make API request
-        const response = await fetch('/generate_starter_plan', {
-            method: 'POST',
+        const result = await api.post('/generate_starter_plan', {
+            training_days: trainingDays,
+            environment: environment,
+            experience_level: experienceLevel,
+            goal: goal,
+            volume_scale: volumeScale,
+            overwrite: overwrite,
+            movement_restrictions: Object.keys(movementRestrictions).length > 0 ? movementRestrictions : null,
+            equipment_whitelist: equipmentWhitelist,
+            priority_muscles: priorityMuscles.length > 0 ? priorityMuscles : null,
+            persist: true
+        }, {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                training_days: trainingDays,
-                environment: environment,
-                experience_level: experienceLevel,
-                goal: goal,
-                volume_scale: volumeScale,
-                overwrite: overwrite,
-                movement_restrictions: Object.keys(movementRestrictions).length > 0 ? movementRestrictions : null,
-                equipment_whitelist: equipmentWhitelist,
-                priority_muscles: priorityMuscles.length > 0 ? priorityMuscles : null,
-                persist: true
-            })
+            showLoading: false,
+            showErrorToast: false,
+            useDefaultHeaders: false
         });
-        
-        const result = await response.json();
-        
-        if (response.ok && result.data) {
+
+        if (result.data) {
             // Close modal
             const modal = bootstrap.Modal.getInstance(document.getElementById('generatePlanModal'));
             modal.hide();
@@ -157,7 +157,10 @@ window.generateStarterPlan = async function() {
         }
     } catch (error) {
         console.error('Error generating plan:', error);
-        showToast('error', 'Error generating plan. Please try again.');
+        const errorMsg = error?.code === 'NETWORK_ERROR'
+            ? 'Error generating plan. Please try again.'
+            : (error?.message || 'Error generating plan. Please try again.');
+        showToast('error', errorMsg);
     } finally {
         // Restore button state
         submitBtn.disabled = false;

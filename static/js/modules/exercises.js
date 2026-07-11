@@ -1,6 +1,7 @@
 import { showToast } from './toast.js';
 import { fetchWorkoutPlan } from './workout-plan.js';
 import { notifyVolumeAffectingPlanChange } from './workout-plan-events.js';
+import { api } from './fetch-wrapper.js';
 
 // Track exercises being deleted to prevent double-delete
 const deletingExercises = new Set();
@@ -21,21 +22,15 @@ export async function removeExercise(exerciseId) {
     deletingExercises.add(exerciseId);
 
     try {
-        const response = await fetch("/remove_exercise", {
-            method: "POST",
+        const result = await api.post("/remove_exercise", { id: exerciseId }, {
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id: exerciseId }),
+            showLoading: false,
+            showErrorToast: false,
+            useDefaultHeaders: false
         });
-
-        const result = await response.json();
-
-        if (response.ok) {
-            showToast(result.message || "Exercise removed successfully!");
-            fetchWorkoutPlan();
-            notifyVolumeAffectingPlanChange('remove-exercise');
-        } else {
-            throw new Error(result.message || "Failed to remove exercise");
-        }
+        showToast(result.message || "Exercise removed successfully!");
+        fetchWorkoutPlan();
+        notifyVolumeAffectingPlanChange('remove-exercise');
     } catch (error) {
         console.error("Error removing exercise:", error);
         showToast(`Unable to remove exercise: ${error.message}`, true);
@@ -55,20 +50,15 @@ export async function clearWorkoutPlan() {
             }
         }
 
-        const response = await fetch('/clear_workout_plan', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
+        const result = await api.post('/clear_workout_plan', null, {
+            headers: { 'Content-Type': 'application/json' },
+            showLoading: false,
+            showErrorToast: false,
+            useDefaultHeaders: false
         });
-
-        const result = await response.json();
-
-        if (response.ok) {
-            showToast(result.message || 'Workout plan cleared successfully!');
-            fetchWorkoutPlan(); // Refresh the table to show empty state
-            notifyVolumeAffectingPlanChange('clear-workout-plan');
-        } else {
-            throw new Error(result.error?.message || result.message || 'Failed to clear workout plan');
-        }
+        showToast(result.message || 'Workout plan cleared successfully!');
+        fetchWorkoutPlan(); // Refresh the table to show empty state
+        notifyVolumeAffectingPlanChange('clear-workout-plan');
     } catch (error) {
         console.error('Error clearing workout plan:', error);
         showToast(`Unable to clear workout plan: ${error.message}`, true);
