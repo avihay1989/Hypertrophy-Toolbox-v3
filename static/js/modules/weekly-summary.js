@@ -24,20 +24,24 @@ import {
     getCategoryTooltip,
     getSubcategoryTooltip,
 } from './summary-helpers.js';
+import { api } from './fetch-wrapper.js';
 
 // Function to fetch and display pattern coverage
 async function updatePatternCoverage() {
     const container = document.getElementById('pattern-coverage-container');
 
     try {
-        const response = await fetch('/api/pattern_coverage', {
+        const result = await api.get('/api/pattern_coverage', {
             headers: {
                 "Accept": "application/json",
                 "X-Requested-With": "XMLHttpRequest"
-            }
+            },
+            showLoading: false,
+            showErrorToast: false,
+            useDefaultHeaders: false,
+            retries: 0
         });
-        const result = await response.json();
-        if (!response.ok || isApiFailure(result)) {
+        if (isApiFailure(result)) {
             throw new Error(getApiErrorMessage(result, 'Failed to fetch pattern coverage'));
         }
 
@@ -174,15 +178,18 @@ async function updateWeeklySummary() {
     }
 
     try {
-        const response = await fetch(`/weekly_summary?contribution_mode=${contributionMode}`, {
+        const result = await api.get(`/weekly_summary?contribution_mode=${contributionMode}`, {
             headers: {
                 "Accept": "application/json",
                 "X-Requested-With": "XMLHttpRequest"
-            }
+            },
+            showLoading: false,
+            showErrorToast: false,
+            useDefaultHeaders: false,
+            retries: 0
         });
 
-        const result = await response.json();
-        if (!response.ok || isApiFailure(result)) {
+        if (isApiFailure(result)) {
             throw new Error(getApiErrorMessage(result, "Failed to fetch weekly summary."));
         }
 

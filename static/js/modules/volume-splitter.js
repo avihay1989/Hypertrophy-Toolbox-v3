@@ -1,4 +1,5 @@
 import { showToast } from './toast.js';
+import { api } from './fetch-wrapper.js';
 
 let volumeConfig = null;
 let currentMode = 'basic';
@@ -19,52 +20,6 @@ const JSON_REQUEST_HEADERS = {
 };
 
 const deepClone = (value) => JSON.parse(JSON.stringify(value || {}));
-
-const isWrappedApiResponse = (payload) => Boolean(
-    payload &&
-    typeof payload === 'object' &&
-    !Array.isArray(payload) &&
-    'data' in payload &&
-    (payload.ok === true || payload.status === 'success' || payload.success === true)
-);
-
-const isApiFailure = (payload) => Boolean(
-    payload &&
-    typeof payload === 'object' &&
-    (payload.ok === false || payload.success === false)
-);
-
-const unwrapApiPayload = (payload) => (isWrappedApiResponse(payload) ? payload.data : payload);
-
-const getApiErrorMessage = (payload, fallbackMessage) => {
-    if (!payload || typeof payload !== 'object') {
-        return fallbackMessage;
-    }
-
-    if (payload.error && typeof payload.error === 'object' && typeof payload.error.message === 'string') {
-        return payload.error.message;
-    }
-
-    if (typeof payload.error === 'string') {
-        return payload.error;
-    }
-
-    if (typeof payload.message === 'string' && payload.message.trim()) {
-        return payload.message;
-    }
-
-    return fallbackMessage;
-};
-
-async function parseJsonResponse(response, fallbackMessage) {
-    const payload = await response.json();
-
-    if (!response.ok || isApiFailure(payload)) {
-        throw new Error(getApiErrorMessage(payload, fallbackMessage));
-    }
-
-    return unwrapApiPayload(payload);
-}
 
 const toNumericRange = (range) => {
     const fallback = { min: 12, max: 20 };
@@ -161,20 +116,21 @@ function calculateVolume() {
     modeVolumeState[currentMode] = volumes;
     modeRangeState[currentMode] = ranges;
 
-    fetch('/api/calculate_volume', {
-        method: 'POST',
+    api.post('/api/calculate_volume', {
+        mode: currentMode,
+        training_days: trainingDays,
+        volumes,
+        ranges
+    }, {
         headers: {
             'Content-Type': 'application/json',
             ...JSON_REQUEST_HEADERS
         },
-        body: JSON.stringify({
-            mode: currentMode,
-            training_days: trainingDays,
-            volumes,
-            ranges
-        })
+        showLoading: false,
+        showErrorToast: false,
+        useDefaultHeaders: false
     })
-        .then(response => parseJsonResponse(response, 'Failed to calculate volume.'))
+        .then(response => response.data)
         .then(handleCalculateResponse)
         .catch(error => {
             console.error('Error calculating volume:', error);
@@ -228,10 +184,14 @@ function resetValues() {
 }
 
 function loadPlan(planId) {
-    fetch(`/api/volume_plan/${planId}`, {
-        headers: JSON_REQUEST_HEADERS
+    api.get(`/api/volume_plan/${planId}`, {
+        headers: JSON_REQUEST_HEADERS,
+        showLoading: false,
+        showErrorToast: false,
+        useDefaultHeaders: false,
+        retries: 0
     })
-        .then(response => parseJsonResponse(response, 'Failed to load plan.'))
+        .then(response => response.data)
         .then(plan => {
             const trainingSelect = document.getElementById('training-days');
             if (trainingSelect) {
@@ -284,11 +244,13 @@ function deletePlan(planId) {
 }
 
 function executeDeletePlan(planId) {
-    fetch(`/api/volume_plan/${planId}`, {
-        method: 'DELETE',
-        headers: JSON_REQUEST_HEADERS
+    api.delete(`/api/volume_plan/${planId}`, {
+        headers: JSON_REQUEST_HEADERS,
+        showLoading: false,
+        showErrorToast: false,
+        useDefaultHeaders: false
     })
-    .then(response => parseJsonResponse(response, 'Failed to delete volume plan.'))
+    .then(response => response.data)
     .then(result => {
         if (deleteModal) deleteModal.hide();
         showToast('success', result?.message || 'Volume plan deleted successfully!');
@@ -316,15 +278,16 @@ function exportVolumePlan(activate = false) {
         activate
     };
     
-    fetch('/api/save_volume_plan', {
-        method: 'POST',
+    api.post('/api/save_volume_plan', data, {
         headers: {
             'Content-Type': 'application/json',
             ...JSON_REQUEST_HEADERS
         },
-        body: JSON.stringify(data)
+        showLoading: false,
+        showErrorToast: false,
+        useDefaultHeaders: false
     })
-    .then(response => parseJsonResponse(response, 'Failed to save volume plan.'))
+    .then(response => response.data)
     .then(result => {
         const planId = result?.plan_id;
         if (!planId) {
@@ -384,10 +347,14 @@ function displaySuggestions(suggestions) {
 }
 
 function loadVolumeHistory() {
-    return fetch('/api/volume_history', {
-        headers: JSON_REQUEST_HEADERS
+    return api.get('/api/volume_history', {
+        headers: JSON_REQUEST_HEADERS,
+        showLoading: false,
+        showErrorToast: false,
+        useDefaultHeaders: false,
+        retries: 0
     })
-        .then(response => parseJsonResponse(response, 'Failed to load volume history.'))
+        .then(response => response.data)
         .then(history => {
             const tbody = document.getElementById('history-body');
             tbody.innerHTML = '';
@@ -827,14 +794,13 @@ function handleHistoryClick(event) {
 
 function toggleActivePlan(planId, isActive) {
     const endpoint = `/api/volume_plan/${planId}/${isActive ? 'deactivate' : 'activate'}`;
-    fetch(endpoint, {
-        method: 'POST',
-        headers: JSON_REQUEST_HEADERS
+    api.post(endpoint, null, {
+        headers: JSON_REQUEST_HEADERS,
+        showLoading: false,
+        showErrorToast: false,
+        useDefaultHeaders: false
     })
-        .then(response => parseJsonResponse(
-            response,
-            isActive ? 'Failed to deactivate volume plan.' : 'Failed to activate volume plan.'
-        ))
+        .then(response => response.data)
         .then(() => {
             showToast('success', isActive ? `Plan #${planId} deactivated.` : `Plan #${planId} activated for Plan tab.`);
             loadVolumeHistory();
