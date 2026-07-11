@@ -4,6 +4,36 @@ import { notifyVolumeAffectingPlanChange } from './workout-plan-events.js';
 import { buildPlayButton } from './exercise-video-modal.js';
 import { escapeHtml, resolveExerciseMediaSrc } from './exercise-helpers.js';
 import { initializeExerciseImagePreview } from './exercise-image-preview.js';
+import { workoutPlanState } from './workout-plan-state.js';
+import {
+    applyRoutineTabFilter,
+    buildAddExercisePayload,
+    buildExecutionStylePayload,
+    buildExerciseOrderPayload,
+    buildFieldUpdatePayload,
+    buildReplacePayload,
+    buildSupersetLinkPayload,
+    buildSupersetUnlinkPayload,
+    clampToAttrRange,
+    collectMissingAddFields,
+    collectMissingRequiredSelections,
+    compareRoutines,
+    computeNudgedValue,
+    estimateProvenanceLabel,
+    fatigueChipTitle,
+    formatRoutineForDisplay,
+    formatRoutineForTab,
+    learnedBadgeText,
+    nextSupersetColorIndex,
+    renderExecutionStyleBadge,
+    resolveMin,
+    resolveProfileEstimate,
+    resolveStep,
+    resolveSwapErrorToast,
+    supersetRowClasses,
+    traceHeadline,
+    traceStepValueText,
+} from './workout-plan-helpers.js';
 
 initializeExerciseImagePreview();
 
@@ -127,43 +157,10 @@ async function handleApiResponse(response) {
     return data.ok === true ? (data.data !== undefined ? data.data : data) : data;
 }
 
-// Module-level state for routine tabs
-let currentRoutineTabFilter = 'all';
-let allExercisesCache = [];
 let isExerciseSubmissionPending = false;
-
-// Superset selection state
-let selectedExerciseIds = new Set();
-let supersetColorMap = new Map(); // Maps superset_group to color index (1-4)
 
 // Execution style state
 let executionStyleOptions = null;
-
-const DEFAULT_PROFILE_ESTIMATE = {
-    weight: 25,
-    sets: 3,
-    min_rep: 6,
-    max_rep: 8,
-    rir: 3,
-    rpe: 7,
-    source: 'default',
-    is_dumbbell: false,
-};
-
-const ESTIMATE_SOURCE_LABELS = {
-    learned: 'learned from your recent logs',
-    related_learned: 'learned from a related exercise',
-    log: 'from your last set',
-    profile: 'from your profile',
-    cold_start: 'from population estimate',
-    default: 'default values',
-};
-
-const CONFIDENCE_LABELS = {
-    high: 'high confidence',
-    medium: 'medium confidence',
-    low: 'low confidence',
-};
 
 /**
  * Fetches execution style options from the API (cached)
@@ -178,50 +175,6 @@ async function getExecutionStyleOptions() {
         console.error('Failed to load execution style options:', error);
         return null;
     }
-}
-
-/**
- * Renders an execution style badge for an exercise
- * @param {Object} exercise - The exercise object
- * @returns {string} HTML string for the badge
- */
-function renderExecutionStyleBadge(exercise) {
-    const style = exercise.execution_style || 'standard';
-    const timeCap = exercise.time_cap_seconds;
-    const emomInterval = exercise.emom_interval_seconds;
-    const emomRounds = exercise.emom_rounds;
-    
-    let badgeClass = 'execution-badge';
-    let icon = '';
-    let label = '';
-    let details = '';
-    
-    switch (style) {
-        case 'amrap':
-            badgeClass += ' execution-badge--amrap';
-            icon = '<i class="fas fa-stopwatch"></i>';
-            label = 'AMRAP';
-            if (timeCap) {
-                details = `<span class="execution-details">${timeCap}s</span>`;
-            }
-            break;
-        case 'emom':
-            badgeClass += ' execution-badge--emom';
-            icon = '<i class="fas fa-clock"></i>';
-            label = 'EMOM';
-            if (emomInterval && emomRounds) {
-                details = `<span class="execution-details">${emomRounds}×${emomInterval}s</span>`;
-            }
-            break;
-        default:
-            badgeClass += ' execution-badge--standard';
-            icon = '<i class="fas fa-dumbbell"></i>';
-            label = 'STD';
-    }
-    
-    return `<button class="btn ${badgeClass}" aria-label="Click to change execution style">
-        ${icon} <span class="execution-label">${label}</span>${details}
-    </button>`;
 }
 
 /**
@@ -380,17 +333,10 @@ async function showExecutionStylePicker(exerciseId, currentExercise) {
     
     picker.querySelector('.btn-save-exec').addEventListener('click', async () => {
         const selectedStyle = picker.querySelector(`input[name="exec-style-${exerciseId}"]:checked`).value;
-        const payload = {
-            exercise_id: exerciseId,
-            execution_style: selectedStyle
-        };
-        
-        if (selectedStyle === 'amrap') {
-            payload.time_cap_seconds = parseInt(picker.querySelector(`#time-cap-${exerciseId}`).value) || 60;
-        } else if (selectedStyle === 'emom') {
-            payload.emom_interval_seconds = parseInt(picker.querySelector(`#emom-interval-${exerciseId}`).value) || 60;
-            payload.emom_rounds = parseInt(picker.querySelector(`#emom-rounds-${exerciseId}`).value) || 5;
-        }
+        const timeCap = parseInt(picker.querySelector(`#time-cap-${exerciseId}`).value);
+        const emomInterval = parseInt(picker.querySelector(`#emom-interval-${exerciseId}`).value);
+        const emomRounds = parseInt(picker.querySelector(`#emom-rounds-${exerciseId}`).value);
+        const payload = buildExecutionStylePayload(exerciseId, selectedStyle, { timeCap, emomInterval, emomRounds });
         
         try {
             const result = await api.post('/api/execution_style', payload);
@@ -411,68 +357,6 @@ async function showExecutionStylePicker(exerciseId, currentExercise) {
     }, 100);
 }
 
-/**
- * Parses a routine string in "Environment - Program - Workout" format
- * @param {string} routine - The routine string to parse
- * @returns {Object} Object with env, program, workout properties
- */
-function parseRoutine(routine) {
-    if (!routine) return { env: '', program: '', workout: '' };
-    const parts = routine.split(' - ').map(p => p.trim());
-    return {
-        env: parts[0] || '',
-        program: parts[1] || '',
-        workout: parts[2] || ''
-    };
-}
-
-/**
- * Formats a routine string for display in 3 lines (Environment, Program, Workout)
- * @param {string} routine - The routine string to format
- * @returns {string} HTML string with routine formatted on 3 lines
- */
-function formatRoutineForDisplay(routine) {
-    if (!routine) return 'N/A';
-    const parsed = parseRoutine(routine);
-    if (!parsed.env && !parsed.program && !parsed.workout) return 'N/A';
-    return `<span class="routine-env">${escapeHtml(parsed.env || '')}</span><span class="routine-program">${escapeHtml(parsed.program || '')}</span><span class="routine-workout">${escapeHtml(parsed.workout || '')}</span>`;
-}
-
-/**
- * Formats a routine string for display in tab labels (3 lines)
- * @param {string} routine - The routine string to format
- * @returns {string} HTML string with routine formatted on 3 lines for tabs
- */
-function formatRoutineForTab(routine) {
-    if (!routine) return 'N/A';
-    const parsed = parseRoutine(routine);
-    if (!parsed.env && !parsed.program && !parsed.workout) return escapeHtml(routine);
-    return `<span class="tab-env">${escapeHtml(parsed.env || '')}</span><span class="tab-program">${escapeHtml(parsed.program || '')}</span><span class="tab-workout">${escapeHtml(parsed.workout || '')}</span>`;
-}
-
-/**
- * Compares two routine strings for sorting
- * Sorts by Environment, then Program, then Workout
- * @param {string} a - First routine
- * @param {string} b - Second routine
- * @returns {number} Comparison result (-1, 0, or 1)
- */
-function compareRoutines(a, b) {
-    const parsedA = parseRoutine(a);
-    const parsedB = parseRoutine(b);
-    
-    // Compare environment first
-    if (parsedA.env !== parsedB.env) {
-        return parsedA.env.localeCompare(parsedB.env);
-    }
-    // Then compare program
-    if (parsedA.program !== parsedB.program) {
-        return parsedA.program.localeCompare(parsedB.program);
-    }
-    // Finally compare workout
-    return parsedA.workout.localeCompare(parsedB.workout);
-}
-
 // Workout plan functionality
 export async function fetchWorkoutPlan() {
     try {
@@ -482,13 +366,13 @@ export async function fetchWorkoutPlan() {
         const exercises = data.data !== undefined ? data.data : data;
         
         // Cache all exercises for tab filtering
-        allExercisesCache = exercises;
+        workoutPlanState.allExercisesCache = exercises;
         
         // Update routine tabs based on available routines
         updateRoutineTabs(exercises);
         
         // Apply current tab filter and render
-        const filteredExercises = applyRoutineTabFilter(exercises, currentRoutineTabFilter);
+        const filteredExercises = applyRoutineTabFilter(exercises, workoutPlanState.currentRoutineTabFilter);
         updateWorkoutPlanTable(filteredExercises);
         updateWorkoutPlanUI(exercises); // Always show totals for all exercises
         
@@ -549,7 +433,7 @@ function updateRoutineTabs(exercises) {
         tabBtn.setAttribute('id', tabId);
         
         // Mark as active if this is the currently selected tab
-        if (routine === currentRoutineTabFilter) {
+        if (routine === workoutPlanState.currentRoutineTabFilter) {
             tabBtn.classList.add('active');
             tabBtn.setAttribute('aria-selected', 'true');
             // Also remove active from "All" tab
@@ -572,7 +456,7 @@ function updateRoutineTabs(exercises) {
     });
     
     // If current filter is "all", ensure the "All" tab is active
-    if (currentRoutineTabFilter === 'all') {
+    if (workoutPlanState.currentRoutineTabFilter === 'all') {
         const allTabBtn = tabsContainer.querySelector('[data-routine="all"]');
         if (allTabBtn) {
             allTabBtn.classList.add('active');
@@ -581,8 +465,8 @@ function updateRoutineTabs(exercises) {
     }
     
     // If the current filter's routine no longer exists, reset to "all"
-    if (currentRoutineTabFilter !== 'all' && !sortedRoutines.includes(currentRoutineTabFilter)) {
-        currentRoutineTabFilter = 'all';
+    if (workoutPlanState.currentRoutineTabFilter !== 'all' && !sortedRoutines.includes(workoutPlanState.currentRoutineTabFilter)) {
+        workoutPlanState.currentRoutineTabFilter = 'all';
         const allTabBtn = tabsContainer.querySelector('[data-routine="all"]');
         if (allTabBtn) {
             allTabBtn.classList.add('active');
@@ -607,24 +491,11 @@ function handleRoutineTabClick(routine) {
     });
     
     // Update current filter
-    currentRoutineTabFilter = routine;
+    workoutPlanState.currentRoutineTabFilter = routine;
     
     // Apply filter and re-render table
-    const filteredExercises = applyRoutineTabFilter(allExercisesCache, routine);
+    const filteredExercises = applyRoutineTabFilter(workoutPlanState.allExercisesCache, routine);
     updateWorkoutPlanTable(filteredExercises);
-}
-
-/**
- * Filters exercises by routine
- * @param {Array} exercises - Array of exercise objects
- * @param {string} routineFilter - The routine to filter by, or 'all'
- * @returns {Array} Filtered exercises
- */
-function applyRoutineTabFilter(exercises, routineFilter) {
-    if (routineFilter === 'all') {
-        return exercises;
-    }
-    return exercises.filter(ex => ex.routine === routineFilter);
 }
 
     const WORKOUT_PLAN_DEBUG = false;
@@ -754,7 +625,7 @@ function initializeWeightDirtyTracking() {
 }
 
 function applyEstimateToWorkoutControls(estimate) {
-    const resolved = { ...DEFAULT_PROFILE_ESTIMATE, ...(estimate || {}) };
+    const resolved = resolveProfileEstimate(estimate);
     if (!weightUserDirty) {
         setWorkoutControlValue('weight', resolved.weight);
     }
@@ -766,7 +637,7 @@ function applyEstimateToWorkoutControls(estimate) {
 
     const provenance = document.getElementById('workout-estimate-provenance');
     if (provenance) {
-        provenance.textContent = ESTIMATE_SOURCE_LABELS[resolved.source] || ESTIMATE_SOURCE_LABELS.default;
+        provenance.textContent = estimateProvenanceLabel(resolved.source);
     }
 
     updateLearnedBadge(resolved);
@@ -786,34 +657,20 @@ function applyEstimateToWorkoutControls(estimate) {
 function updateLearnedBadge(estimate) {
     const badge = document.getElementById('workout-estimate-learned-badge');
     if (!badge) return;
-    const isLearned = ['learned', 'related_learned'].includes(estimate?.source);
-    if (!isLearned) {
+    const info = learnedBadgeText(estimate);
+    if (!info.isLearned) {
         badge.hidden = true;
         badge.dataset.confidence = '';
         badge.removeAttribute('title');
         return;
     }
-    const confidence = estimate?.trace?.confidence || '';
-    const sampleCount = estimate?.trace?.sample_count || 0;
     badge.hidden = false;
-    badge.dataset.confidence = confidence;
+    badge.dataset.confidence = info.confidence;
     const label = badge.querySelector('.workout-estimate-learned-badge-label');
     if (label) {
-        const prefix = estimate?.source === 'related_learned' ? 'Related' : 'Learned';
-        label.textContent = confidence
-            ? `${prefix} · ${CONFIDENCE_LABELS[confidence] || confidence}`
-            : prefix;
+        label.textContent = info.label;
     }
-    if (estimate?.source === 'related_learned') {
-        const source = estimate?.trace?.source_exercise || 'a related exercise';
-        badge.title = sampleCount
-            ? `Suggested from ${sampleCount} scored ${sampleCount === 1 ? 'log' : 'logs'} for ${source}`
-            : `Suggested from ${source}`;
-    } else {
-        badge.title = sampleCount
-            ? `Suggested from ${sampleCount} scored ${sampleCount === 1 ? 'log' : 'logs'} for this exercise`
-            : 'Suggested from your scored logs';
-    }
+    badge.title = info.title;
 }
 
 // Fatigue context (Phase 2D-A) — neutral, non-source chip next to the
@@ -830,9 +687,7 @@ function updateFatigueContextChip(estimate) {
         return;
     }
     chip.hidden = false;
-    chip.title = fatigue.headline
-        ? `${fatigue.headline} ${fatigue.advisory || ''}`.trim()
-        : 'Fatigue context';
+    chip.title = fatigueChipTitle(fatigue);
 }
 
 // Force the current learned suggestion into the Workout Controls inputs.
@@ -924,17 +779,9 @@ function renderEstimateTrace(estimate) {
     const trace = estimate?.trace;
     if (!trace) return;
 
-    const headlineMap = {
-        learned: 'Learned from your recent logs',
-        related_learned: 'Learned from a related exercise',
-        log: 'From your last logged set',
-        profile: 'From your saved reference lift',
-        cold_start: 'From a population estimate',
-        default: 'Default values',
-    };
     const headline = document.createElement('p');
     headline.className = 'workout-estimate-trace-headline';
-    headline.textContent = headlineMap[trace.source] || headlineMap.default;
+    headline.textContent = traceHeadline(trace.source);
     container.appendChild(headline);
 
     const list = document.createElement('ul');
@@ -946,17 +793,11 @@ function renderEstimateTrace(estimate) {
         labelEl.textContent = step.label;
         li.appendChild(labelEl);
 
-        const parts = [];
-        if (step.value !== undefined && step.value !== null && step.value !== '') {
-            parts.push(`${step.value}${step.unit ? ' ' + step.unit : ''}`);
-        }
-        if (step.factor !== undefined && step.factor !== null) {
-            parts.push(`× ${step.factor}`);
-        }
-        if (parts.length > 0) {
+        const valueText = traceStepValueText(step);
+        if (valueText) {
             const valueEl = document.createElement('span');
             valueEl.className = 'workout-estimate-trace-step-value';
-            valueEl.textContent = parts.join(' ');
+            valueEl.textContent = valueText;
             li.appendChild(valueEl);
         }
 
@@ -1037,13 +878,11 @@ function buildFatigueContextSection(fatigue) {
 // own attributes. `step="any"` (weight) and an absent step (sets) both fall back
 // to 1 — i.e. the input's native arrow-key step. No fatigue math here.
 function resolveControlStep(input) {
-    const raw = parseFloat(input.getAttribute('step'));
-    return Number.isFinite(raw) && raw > 0 ? raw : 1;
+    return resolveStep(input.getAttribute('step'));
 }
 
 function resolveControlMin(input) {
-    const raw = parseFloat(input.getAttribute('min'));
-    return Number.isFinite(raw) ? raw : null;
+    return resolveMin(input.getAttribute('min'));
 }
 
 // Step a Workout Controls input up/down by its own manual step, clamped to the
@@ -1055,10 +894,7 @@ function nudgeWorkoutControl(id, direction) {
     const step = resolveControlStep(field);
     const min = resolveControlMin(field);
     const current = parseFloat(field.value);
-    const base = Number.isFinite(current) ? current : (min ?? 0);
-    let next = base + (direction === 'down' ? -step : step);
-    if (min !== null && next < min) next = min;
-    next = Number(next.toFixed(2));
+    const next = computeNudgedValue(current, step, min, direction);
     setWorkoutControlValue(id, next);
 }
 
@@ -1211,7 +1047,7 @@ export async function applyUserProfileEstimateForSelectedExercise() {
         applyEstimateToWorkoutControls(response.data || response);
     } catch (error) {
         console.warn('Unable to apply user profile estimate:', error);
-        applyEstimateToWorkoutControls(DEFAULT_PROFILE_ESTIMATE);
+        applyEstimateToWorkoutControls(null);
     }
 }
 
@@ -1514,9 +1350,7 @@ export function handleAddExercise(e) {
         const routine = document.getElementById('routine')?.value;
         const exercise = document.getElementById('exercise')?.value;
         
-        const missingSelections = [];
-        if (!routine) missingSelections.push('Routine');
-        if (!exercise) missingSelections.push('Exercise');
+        const missingSelections = collectMissingRequiredSelections(routine, exercise);
         
         if (missingSelections.length > 0) {
             showToast(`Please select: ${missingSelections.join(' and ')}`, true);
@@ -1535,13 +1369,7 @@ export function handleAddExercise(e) {
     const rpe = document.getElementById('rpe')?.value;
 
     // Detailed validation
-    const missingFields = [];
-    if (!exercise) missingFields.push('Exercise');
-    if (!routine) missingFields.push('Routine');
-    if (!sets) missingFields.push('Sets');
-    if (!minRepRange) missingFields.push('Min Rep Range');
-    if (!maxRepRange) missingFields.push('Max Rep Range');
-    if (!weight) missingFields.push('Weight');
+    const missingFields = collectMissingAddFields({ exercise, routine, sets, minRepRange, maxRepRange, weight });
 
     if (missingFields.length > 0) {
         const message = `Please fill in the following required fields: ${missingFields.join(', ')}`;
@@ -1552,16 +1380,7 @@ export function handleAddExercise(e) {
     }
 
     // Prepare exercise data
-    const exerciseData = {
-        exercise: exercise,
-        routine: routine,
-        sets: parseInt(sets),
-        min_rep_range: parseInt(minRepRange),
-        max_rep_range: parseInt(maxRepRange),
-        rir: parseInt(rir || 0),
-        weight: parseFloat(weight),
-        rpe: rpe ? parseFloat(rpe) : null
-    };
+    const exerciseData = buildAddExercisePayload({ exercise, routine, sets, minRepRange, maxRepRange, rir, weight, rpe });
 
     workoutPlanDebugLog('Sending exercise data:', exerciseData);
     void sendExerciseData(exerciseData);
@@ -1644,11 +1463,9 @@ function initializeDefaultValues() {
                 if (this.value === '') return;
                 const minAttr = this.getAttribute('min');
                 const maxAttr = this.getAttribute('max');
-                const min = minAttr !== null && minAttr !== '' ? parseFloat(minAttr) : -Infinity;
-                const max = maxAttr !== null && maxAttr !== '' ? parseFloat(maxAttr) : Infinity;
                 const parsed = parseFloat(this.value);
                 if (Number.isNaN(parsed)) return;
-                const clamped = Math.max(min, Math.min(max, parsed));
+                const clamped = clampToAttrRange(parsed, minAttr, maxAttr);
                 if (clamped !== parsed) {
                     this.value = clamped;
                 }
@@ -1742,7 +1559,7 @@ export function updateWorkoutPlanTable(exercises) {
     tbody.innerHTML = '';
     
     // Reset selection state when table is rebuilt
-    selectedExerciseIds.clear();
+    workoutPlanState.selectedExerciseIds.clear();
     updateSupersetActionButtons();
 
     // Sort exercises: first by routine (Environment > Program > Workout), 
@@ -1760,7 +1577,7 @@ export function updateWorkoutPlanTable(exercises) {
     });
     
     // Build superset color map and identify superset pairs
-    supersetColorMap.clear();
+    workoutPlanState.supersetColorMap.clear();
     let colorIndex = 0;
     const supersetGroups = new Map(); // Maps superset_group to array of exercise indices
     
@@ -1768,8 +1585,8 @@ export function updateWorkoutPlanTable(exercises) {
         if (ex.superset_group) {
             if (!supersetGroups.has(ex.superset_group)) {
                 supersetGroups.set(ex.superset_group, []);
-                colorIndex = (colorIndex % 4) + 1;
-                supersetColorMap.set(ex.superset_group, colorIndex);
+                colorIndex = nextSupersetColorIndex(colorIndex);
+                workoutPlanState.supersetColorMap.set(ex.superset_group, colorIndex);
             }
             supersetGroups.get(ex.superset_group).push(idx);
         }
@@ -1788,23 +1605,10 @@ export function updateWorkoutPlanTable(exercises) {
         if (supersetGroup) {
             const groupIndices = supersetGroups.get(supersetGroup) || [];
             const posInGroup = groupIndices.indexOf(idx);
-            const colorNum = supersetColorMap.get(supersetGroup) || 1;
+            const colorNum = workoutPlanState.supersetColorMap.get(supersetGroup) || 1;
             
             row.dataset.supersetGroup = supersetGroup;
-            supersetClasses = `superset-group superset-group-${colorNum}`;
-            
-            // Only add superset-first/superset-last classes if exercises are actually adjacent
-            // This prevents broken visual connectors when viewing "All" routines
-            const isAdjacentSuperset = groupIndices.length >= 2 && 
-                (groupIndices[1] - groupIndices[0] === 1);
-            
-            if (isAdjacentSuperset) {
-                if (posInGroup === 0) {
-                    supersetClasses += ' superset-first';
-                } else if (posInGroup === groupIndices.length - 1) {
-                    supersetClasses += ' superset-last';
-                }
-            }
+            supersetClasses = supersetRowClasses(colorNum, posInGroup, groupIndices);
             
             supersetBadgeHtml = `<span class="superset-badge" style="--superset-row-color: var(--superset-color-${colorNum})"><i class="fas fa-link"></i> SS</span>`;
         }
@@ -1939,10 +1743,10 @@ function handleSupersetCheckboxChange(checkbox) {
     const row = checkbox.closest('tr');
     
     if (checkbox.checked) {
-        selectedExerciseIds.add(exerciseId);
+        workoutPlanState.selectedExerciseIds.add(exerciseId);
         row.classList.add('superset-selected');
     } else {
-        selectedExerciseIds.delete(exerciseId);
+        workoutPlanState.selectedExerciseIds.delete(exerciseId);
         row.classList.remove('superset-selected');
     }
     
@@ -1960,7 +1764,7 @@ function updateSupersetActionButtons() {
     
     if (!actionsContainer || !linkBtn || !unlinkBtn || !infoSpan) return;
     
-    const selectedCount = selectedExerciseIds.size;
+    const selectedCount = workoutPlanState.selectedExerciseIds.size;
     
     if (selectedCount === 0) {
         actionsContainer.style.display = 'none';
@@ -2046,19 +1850,19 @@ function initializeSupersetActions() {
  * Handle linking selected exercises as a superset
  */
 async function handleLinkSuperset() {
-    if (selectedExerciseIds.size !== 2) {
+    if (workoutPlanState.selectedExerciseIds.size !== 2) {
         showToast('Please select exactly 2 exercises to create a superset', true);
         return;
     }
     
-    const exerciseIds = Array.from(selectedExerciseIds);
+    const exerciseIds = Array.from(workoutPlanState.selectedExerciseIds);
     
     try {
-        const data = await api.post('/api/superset/link', { exercise_ids: exerciseIds }, { showErrorToast: false });
+        const data = await api.post('/api/superset/link', buildSupersetLinkPayload(exerciseIds), { showErrorToast: false });
         
         showToast(data.message || 'Superset created successfully');
         // Clear selection and refresh table
-        selectedExerciseIds.clear();
+        workoutPlanState.selectedExerciseIds.clear();
         document.querySelectorAll('.superset-checkbox:checked').forEach(cb => {
             cb.checked = false;
         });
@@ -2085,11 +1889,11 @@ async function handleUnlinkSuperset() {
     const exerciseId = parseInt(selectedCheckbox.dataset.exerciseId);
     
     try {
-        const data = await api.post('/api/superset/unlink', { exercise_id: exerciseId }, { showErrorToast: false });
+        const data = await api.post('/api/superset/unlink', buildSupersetUnlinkPayload(exerciseId), { showErrorToast: false });
         
         showToast(data.message || 'Superset unlinked successfully');
         // Clear selection and refresh table
-        selectedExerciseIds.clear();
+        workoutPlanState.selectedExerciseIds.clear();
         document.querySelectorAll('.superset-checkbox:checked').forEach(cb => {
             cb.checked = false;
         });
@@ -2122,10 +1926,7 @@ async function handleSwapExercise(exerciseId, currentExerciseName) {
     swapBtn.classList.add('loading');
     
     try {
-        const data = await api.post('/replace_exercise', {
-            id: exerciseId,
-            strategy: 'ai'  // Try AI-based suggestion first
-        }, { showLoading: false, showErrorToast: false }); // We handle our own loading state
+        const data = await api.post('/replace_exercise', buildReplacePayload(exerciseId), { showLoading: false, showErrorToast: false }); // We handle our own loading state
         
         // api wrapper returns raw response, check if we got updated_row
         const responseData = data.data || data;
@@ -2163,17 +1964,8 @@ async function handleSwapExercise(exerciseId, currentExerciseName) {
             const reason = responseData?.error?.reason || 'unknown';
             const message = responseData?.error?.message || responseData?.message || 'Failed to replace exercise';
             
-            if (reason === 'no_candidates') {
-                showToast('warning', 'No alternative found for this muscle/equipment.');
-            } else if (reason === 'duplicate') {
-                showToast('warning', 'All alternatives are already in this routine.');
-            } else if (reason === 'not_found') {
-                showToast('error', 'Exercise not found in workout plan.');
-            } else if (reason === 'missing_metadata') {
-                showToast('warning', 'This exercise is missing muscle/equipment data and cannot be replaced.');
-            } else {
-                showToast('error', message);
-            }
+            const t = resolveSwapErrorToast(reason, message);
+            showToast(t.severity, t.message);
         }
         
     } catch (error) {
@@ -2182,17 +1974,8 @@ async function handleSwapExercise(exerciseId, currentExerciseName) {
         const reason = error?.reason || 'unknown';
         const message = error?.message || 'Failed to replace exercise. Please try again.';
         
-        if (reason === 'no_candidates') {
-            showToast('warning', 'No alternative found for this muscle/equipment.');
-        } else if (reason === 'duplicate') {
-            showToast('warning', 'All alternatives are already in this routine.');
-        } else if (reason === 'not_found') {
-            showToast('error', 'Exercise not found in workout plan.');
-        } else if (reason === 'missing_metadata') {
-            showToast('warning', 'This exercise is missing muscle/equipment data and cannot be replaced.');
-        } else {
-            showToast('error', message);
-        }
+        const t = resolveSwapErrorToast(reason, message);
+        showToast(t.severity, t.message);
     } finally {
         // Restore button state
         swapBtn.disabled = false;
@@ -2235,11 +2018,11 @@ function updateRowMetadata(row, updatedData) {
  */
 function updateCachedExercise(exerciseId, updatedData) {
     // Update allExercisesCache if it exists
-    const cacheIndex = allExercisesCache.findIndex(ex => ex.id === exerciseId);
+    const cacheIndex = workoutPlanState.allExercisesCache.findIndex(ex => ex.id === exerciseId);
     if (cacheIndex !== -1) {
         // Merge the updated data while preserving exercise_order
-        allExercisesCache[cacheIndex] = {
-            ...allExercisesCache[cacheIndex],
+        workoutPlanState.allExercisesCache[cacheIndex] = {
+            ...workoutPlanState.allExercisesCache[cacheIndex],
             ...updatedData
         };
     }
@@ -2348,12 +2131,8 @@ function makeTableCellEditable(cell, exerciseId, fieldName) {
 }
 
 async function updateExerciseField(exerciseId, fieldName, value) {
-    const updates = { [fieldName]: value };
     // Use api wrapper with showLoading: false for quick inline edits
-    const data = await api.post('/update_exercise', {
-        id: exerciseId,
-        updates: updates
-    }, { showLoading: false, showErrorToast: false });
+    const data = await api.post('/update_exercise', buildFieldUpdatePayload(exerciseId, fieldName, value), { showLoading: false, showErrorToast: false });
     
     return data.data || data;
 }
@@ -2407,10 +2186,7 @@ function initializeDragAndDrop() {
             
             // Now get the final order and save it
             const rows = Array.from(tbody.querySelectorAll('tr'));
-            const orderData = rows.map((row, index) => ({
-                id: parseInt(row.dataset.exerciseId),
-                order: index + 1
-            }));
+            const orderData = buildExerciseOrderPayload(rows.map(row => parseInt(row.dataset.exerciseId)));
 
             try {
                 const data = await api.post('/update_exercise_order', orderData, { showLoading: false, showErrorToast: false });
