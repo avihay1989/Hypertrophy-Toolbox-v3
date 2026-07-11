@@ -23,8 +23,11 @@ import {
     renderExecutionStyleBadge,
     supersetRowClasses,
 } from './workout-plan-helpers.js';
-import { escapeHtml, resolveExerciseMediaSrc } from './exercise-helpers.js';
-import { buildPlayButton } from './exercise-video-modal.js';
+import { escapeHtml } from './exercise-helpers.js';
+import {
+    appendExerciseVideoButton,
+    buildExerciseThumbnailHtml,
+} from './workout-plan-media.js';
 import { showToast } from './toast.js';
 import { api } from './fetch-wrapper.js';
 import { notifyVolumeAffectingPlanChange } from './workout-plan-events.js';
@@ -363,10 +366,7 @@ export function updateWorkoutPlanTable(exercises) {
         }
 
         const exerciseName = exercise.exercise || 'N/A';
-        const mediaSrc = resolveExerciseMediaSrc(exercise.media_path);
-        const thumbnailHtml = mediaSrc
-            ? `<img class="exercise-thumbnail" src="${escapeHtml(mediaSrc)}" alt="${escapeHtml(exerciseName)} reference" data-preview-label="${escapeHtml(exerciseName)}" loading="lazy" width="32" height="32" tabindex="0">`
-            : '';
+        const thumbnailHtml = buildExerciseThumbnailHtml(exercise);
 
         // Add checkbox column, drag handle and other cells with priority classes and data-labels
         row.innerHTML = `
@@ -425,14 +425,7 @@ export function updateWorkoutPlanTable(exercises) {
         // §5 — append the reference-video play button into the Exercise cell
         // action cluster (next to Swap). DOM-node creation avoids interpolating
         // exercise-name into an inline aria-label or onclick.
-        const cellContent = row.querySelector('.exercise-cell-content');
-        if (cellContent) {
-            const playBtn = buildPlayButton({
-                videoId: exercise.youtube_video_id,
-                exerciseName: exercise.exercise || '',
-            });
-            cellContent.appendChild(playBtn);
-        }
+        appendExerciseVideoButton(row, exercise);
 
         // Add click handlers for editable cells
         row.querySelectorAll('.editable').forEach(cell => {
