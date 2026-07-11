@@ -702,8 +702,14 @@ Delete that file only when all imports/callers are proven gone.
 
 Use separate mechanical PRs, allowing large move-only diffs:
 
-- `state.js`;
-- `table.js` including adjacency/color integration points;
+- `state.js` — **delivered by WP3.3 (#147).** The four shared values
+  (`selectedExerciseIds`, `supersetColorMap`, `allExercisesCache`,
+  `currentRoutineTabFilter`) already live in `workout-plan-state.js` as a singleton the
+  monolith mutates inline; no accessor/mutator functions remain to move, so no separate
+  `state.js` move-only PR is needed. Routine-tab/table behavior folds into WP3.4b below,
+  importing the existing state singleton.
+- `table.js` including adjacency/color integration points, plus the routine-tab filter/render
+  functions (state singleton imported, not re-declared);
 - `estimates.js` including fatigue context/nudge;
 - `execution-style.js`;
 - `replacement.js`;
