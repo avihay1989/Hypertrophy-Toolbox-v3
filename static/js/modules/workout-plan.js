@@ -1,6 +1,5 @@
 import { showToast } from './toast.js';
 import { api } from './fetch-wrapper.js';
-import { initializeExerciseImagePreview } from './exercise-image-preview.js';
 import { workoutPlanState } from './workout-plan-state.js';
 import {
     configureWorkoutPlanTable,
@@ -34,8 +33,9 @@ import {
     initializeSupersetActions,
     updateSupersetActionButtons,
 } from './workout-plan-supersets.js';
+import { initializeWorkoutPlanMedia } from './workout-plan-media.js';
 
-initializeExerciseImagePreview();
+initializeWorkoutPlanMedia();
 
 // Re-export the table renderer so existing importers (and the workout-plan E2E
 // harness that imports this module directly) keep resolving it from here.
