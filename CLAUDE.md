@@ -172,12 +172,13 @@ npx playwright test --project=chromium --reporter=line
 
 ## 5. Current State & Risks
 
-### Verified test counts (2026-07-16 — WP4.0a in progress on `6e0a408`)
+### Verified test counts (2026-07-17 — WP4.0a complete at `ab9dc7b`)
 - Selector/cascade contracts **7**; flake8 **0**; tsc passed; Vitest **93**.
 - Full pytest **1722 + 2 unchanged visual-seed catalog known-reds**; required
-  Chromium **407/407**. Windows visual: **59 + 1 unchanged GIF red**; the 12 new
-  Profile/Backup images pass, but their Linux baselines still require the pinned
-  Ubuntu deep gate. Do not start WP4.0 yet. See `docs/CSS_PHASE4_WP4_0A_EVIDENCE.md`.
+  Chromium **407/407**. Windows visual: **59 + 1 unchanged GIF red**. Linux
+  generate: **78/78**; compare: all **12/12** new images passed, with **11**
+  legacy animated-GIF reds. WP4.0 is next, not started. See
+  `docs/CSS_PHASE4_WP4_0A_EVIDENCE.md`.
 
 Historical baselines live in `docs/MASTER_HANDOVER.md`. Re-verify after significant changes.
 

@@ -788,17 +788,18 @@ WP4.0a remains next and is not included in this packet.
   scheduling their bundles for cleanup.
 - Generate and review both platform baselines before CSS restructuring.
 
-**In progress 2026-07-16 from committed WP4.-1 (`6e0a408`).** The local
-implementation replaces visual-helper presentation classes with explicit
-`data-visual-*` hooks, converts the nav/summary RGB checks to computed-token
-contracts, and adds the missing Profile/Backup matrix. All 12 new Windows
-images were reviewed and pass update-free comparison; all 48 old Windows
-images remain byte-identical. Static/unit/Python gates and the full 407-test
-functional set are verified. The packet remains open because this Windows-only,
-unpublished branch cannot run the pinned Ubuntu renderer: 12 Linux images plus
-the Linux compare run are still required. See
-[`CSS_PHASE4_WP4_0A_EVIDENCE.md`](CSS_PHASE4_WP4_0A_EVIDENCE.md). Do not begin
-WP4.0 until that platform gate is complete.
+**Completed 2026-07-17 from committed WP4.-1 (`6e0a408`).** Stable
+`data-visual-*` hooks replace visual-helper presentation classes, nav/summary
+color contracts resolve their owning CSS variables, and Profile/Backup expand
+each platform matrix from 48 to 60 images. All 12 new images per platform were
+reviewed and passed update-free comparison. The 48 old Windows images stayed
+byte-identical; Linux artifact review rejected 17 regenerated legacy variants
+and imported only the 12 missing images. The Linux compare's 11 reds were all
+confined to pre-existing animated signature/exercise-thumbnail pixels; no new
+route failed. Static/unit/Python gates and the full 407-test functional set are
+verified. See
+[`CSS_PHASE4_WP4_0A_EVIDENCE.md`](CSS_PHASE4_WP4_0A_EVIDENCE.md). WP4.0 is next
+and is not included in this packet.
 
 ### WP4.0 Fresh known-red ledger
 

@@ -1,9 +1,9 @@
 # WP4.0a Visual and Functional Selector Evidence
 
-Status: **implementation verified locally; packet remains open for Linux
-baseline generation and review**. Work started 2026-07-16 from the committed
-WP4.-1 parent `6e0a408` in the isolated `wt/wp4-cascade-foundation` worktree.
-Nothing in this packet has been committed or pushed.
+Status: **complete 2026-07-17**. Work started from the committed WP4.-1 parent
+`6e0a408` in the isolated `wt/wp4-cascade-foundation` worktree. The selector
+packet is commit `9c08c10`; the reviewed Linux additions are commit `ab9dc7b`.
+Both commits are pushed on that branch. WP4.0 is not included.
 
 ## Selector hardening
 
@@ -65,15 +65,24 @@ Windows results:
 
 Linux status:
 
-- The 48 pre-existing Linux images are unchanged, but the 12 new
-  Profile/Backup images are not present yet.
-- This Windows host has neither WSL nor a container runtime. The repository's
-  required Linux renderer is the pinned `ubuntu-24.04` `visual-linux` deep-gate
-  job, which can only generate this unpushed code after a branch is pushed.
-- The owner instructed that nothing be pushed. Therefore WP4.0a is not marked
-  complete; run the deep gate in `generate` mode after push authorization,
-  review its `visual-baselines-linux` artifact, add only the 12 missing Linux
-  images, and run Linux compare mode before continuing.
+- Pinned `ubuntu-24.04` generate run
+  [29536203369](https://github.com/avihay1989/Hypertrophy-Toolbox-v3/actions/runs/29536203369)
+  passed all **78** visual tests and uploaded the 78-file
+  `visual-baselines-linux` artifact.
+- Artifact review found 12 missing Profile/Backup images, 49 byte-identical
+  legacy images, and 17 regenerated legacy hashes. All 12 new images were
+  reviewed across the three viewports and two themes. Only those 12 were
+  imported; none of the 17 legacy variants was accepted.
+- Update-free compare run
+  [29536626464](https://github.com/avihay1989/Hypertrophy-Toolbox-v3/actions/runs/29536626464)
+  proved all **12/12** new Profile/Backup images byte-identical. Its combined
+  result was **51 passed + 11 pre-existing animated-GIF-only reds + 16 not
+  run** after the serial thumbnail spec stopped at its first red.
+- Diff review confined every red to the existing animated signature or
+  exercise-thumbnail pixels: six shared desktop-light signature reds at 807
+  pixels each; workout-plan light/dark at 1,125/957; workout-log light/dark at
+  1,028/1,012; and `plan-desktop-light-advanced` at 6,681. No Profile or Backup
+  image failed. The Linux set is now 60 route images plus 18 thumbnails.
 
 ## Verification
 
@@ -91,6 +100,5 @@ Linux status:
   Its live `data/database.db` stayed byte-identical at SHA-256
   `36ECD8B4EBF747DFA8CFCECF1D1C1C54A6ABFEDF89B66C3AD33B73ABC852071F`.
 
-Next action: finish WP4.0a's 12 Linux baselines and compare run. Only then does
-WP4.0 (the fresh known-red ledger) begin; no WP4.0 or later CSS work is included
-here.
+WP4.0a is complete. Next is WP4.0, the fresh known-red ledger; no WP4.0 or later
+CSS work is included here.

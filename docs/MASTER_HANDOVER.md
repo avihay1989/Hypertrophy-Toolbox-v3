@@ -4,20 +4,21 @@
 
 ## Current State
 
-> **2026-07-16 — WP4.0a implementation verified locally, Linux baseline gate
-> still open (parent `6e0a408`; uncommitted/unpushed).** Screenshot normalization
-> now uses stable `data-visual-*` hooks instead of presentation classes; nav and
-> summary color assertions resolve their owning CSS variables. User Profile and
-> Backup expand the visual matrix from 48 to 60 images per platform. The 12 new
-> Windows images passed repeat comparison and were reviewed; the prior 48 stayed
-> byte-identical. Gates: focused contracts **7**, focused route tests **111**,
-> flake8 **0**, tsc passed, Vitest **93**, full pytest **1,722 + the same 2
-> catalog known-reds**, and required Chromium **407/407**. Full Windows visual:
-> **59 passed + the unchanged 1,039-pixel GIF red**; serial thumbnails reproduced
-> the unchanged 6,262-pixel GIF red. This host cannot generate the 12 missing
-> Linux images with the pinned Ubuntu renderer, and the owner prohibited a push;
-> finish that generate/review/compare gate before marking WP4.0a complete or
-> starting WP4.0. Evidence: `docs/CSS_PHASE4_WP4_0A_EVIDENCE.md`.
+> **2026-07-17 — WP4.0a complete (`9c08c10`, Linux baselines `ab9dc7b`).**
+> Screenshot normalization uses stable `data-visual-*` hooks; nav/summary color
+> assertions resolve their owning CSS variables. Profile and Backup expand the
+> visual matrix from 48 to 60 images per platform. All 12 new images on both
+> platforms were reviewed and passed update-free comparison; the 48 old Windows
+> images stayed byte-identical. Linux generate run 29536203369 passed **78/78**;
+> artifact review rejected 17 changed legacy variants and imported only the 12
+> missing images. Compare run 29536626464 proved those **12/12** byte-identical;
+> its **51 passed + 11 animated-GIF-only reds + 16 not run** are confined to
+> existing signature/exercise-thumbnail pixels. Gates: focused contracts **7**,
+> focused route tests **111**, flake8 **0**, tsc passed, Vitest **93**, full
+> pytest **1,722 + the same 2 catalog known-reds**, and required Chromium
+> **407/407**. No legacy snapshot was rebaselined and the live DB stayed
+> byte-identical. WP4.0 is next and has not started. Evidence:
+> `docs/CSS_PHASE4_WP4_0A_EVIDENCE.md`.
 >
 > **2026-07-16 — Phase 4 WP4.-1 cascade/load-order foundation complete in the
 > isolated `wt/wp4-cascade-foundation` worktree (base `8c6acb6`).** `tokens.css`
