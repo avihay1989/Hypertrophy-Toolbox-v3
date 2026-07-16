@@ -172,17 +172,13 @@ npx playwright test --project=chromium --reporter=line
 
 ## 5. Current State & Risks
 
-### Verified test counts (2026-07-07 — Plan v3 Phase 1 complete on `main`)
-- **Integrated `main` @ `f9bfb50`**: PR #129 CI pytest **1708 passed**;
-  required Chromium functional shards **205 + 202 passed**; smoke **10**, backup
-  **20**, erase-flow **2**, fatigue-context **6**; full inventory **504 tests / 30 specs**.
-- Track A shipped in PRs #91–#98. Phase -1 shipped through PRs #105, #106, and
-  #108–#110. **Phase 1 (route/service boundaries) is complete** — WP1.1 (#123),
-  WP1.2 (#126), WP1.3 (#127), WP1.4 (#130), WP1.5 (#124), WP1.6 (#125), WP1.7 (#121),
-  WP1.8 (#122). Track B has shipped WPB.1 (#103), WPB.2 (#107), WPB.3 (#128), WPB.5
-  (#101), WPB.6 (#129), WPB.7 (#102), WPB.8 (#104), and WPB.9 (#100 plus the
-  2026-07-05 required-context promotion). **Only WPB.4 remains** (gated on WP2.3
-  golden fixtures). Phase 2 (Python module structure and schema ownership) is next.
+### Verified test counts (2026-07-16 — WP4.-1 on base `8c6acb6`)
+- CSS contracts **4 passed**; blocking flake8 **0**; tsc passed; Vitest **93 passed**.
+- Full pytest **1719 passed + 2 unchanged visual-seed catalog known-reds**; required
+  Chromium functional set **407 passed**. Seeded visual output reproduced only the
+  pre-change animated-GIF frame reds; no snapshot or Bootstrap artifact changed.
+- WP4.-1 is complete in its isolated worktree. WP4.0a is next; WP3.6 stays optional
+  and WPB.4 remains product-risk-gated. See `docs/CSS_PHASE4_WP4_-1_EVIDENCE.md`.
 
 Historical baselines live in `docs/MASTER_HANDOVER.md`. Re-verify after significant changes.
 
@@ -200,4 +196,4 @@ Added at startup by `initialize_exercise_order()` (`routes/workout_plan.py:634`)
 (`utils/session_summary.py:9`); the calculations remain independent.
 
 ### Historical audit trail
-Full file-by-file audit log and violation details: `docs/CLAUDE_MD_AUDIT.md`. Resolved items list (Cleanup Waves 1 and 2, `utils/database_indexes.py` retirement 2026-04-18, `volume_export.py` DatabaseHandler migration) lives there.
+Full audit history and resolved violations: `docs/CLAUDE_MD_AUDIT.md`.

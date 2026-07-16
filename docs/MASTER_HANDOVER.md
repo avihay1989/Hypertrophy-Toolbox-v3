@@ -4,6 +4,23 @@
 
 ## Current State
 
+> **2026-07-16 — Phase 4 WP4.-1 cascade/load-order foundation complete in the
+> isolated `wt/wp4-cascade-foundation` worktree (base `8c6acb6`).** `tokens.css`
+> now loads before the SCSS-built Bootstrap artifact and every global/route
+> consumer. A single declaration freezes the old implicit layer precedence as
+> `workout`, `navbar`, `workout-dropdowns`, `welcome`. Runtime ownership remains
+> 8 global + 10 route bundles; no class, token value, API, SCSS, or snapshot
+> changed. The Bootstrap CSSOM inventory records 1,429 unique selector entries:
+> 1,314 Bootstrap, 58 fatigue-partial, and 57 volume-panel-partial entries; see
+> `docs/CSS_PHASE4_WP4_-1_EVIDENCE.md`. Gates: focused contracts **4 passed**;
+> blocking flake8 **0**; tsc passed; Vitest **93 passed**; full pytest **1,719
+> passed + 2 unchanged visual-seed catalog known-reds**; complete required
+> Chromium set **407 passed**. Seeded visuals reproduced the unchanged GIF-frame
+> reds at the exact pre-change pixel counts; `visual.spec.ts` independently ran
+> **47 passed + 1 GIF-only red**. No snapshot was updated, Bootstrap output and
+> the screenshot tree stayed byte-identical, and the main live DB hash stayed
+> unchanged. **WP4.0a is next; no later Phase-4 packet is included here.**
+>
 > **2026-07-07 — Plan v3 Phase 1 COMPLETE (`main` @ `f9bfb50`).** All eight
 > route/service-boundary work packets have landed: WP1.1 central filter registry (#123),
 > WP1.2 both unique-value contracts (#126), WP1.3 replace-exercise service (#127),

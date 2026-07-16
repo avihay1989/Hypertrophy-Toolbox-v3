@@ -766,6 +766,18 @@ existing fatigue/volume-panel partials; remember those selectors are compiled in
 - No class rename, token-value change, or bulk de-`!important` work here.
 - Gate: full functional frontend set plus byte-identical visual comparison.
 
+**Completed 2026-07-16 in the isolated WP4 worktree.** `tokens.css` now loads
+before Bootstrap's compiled app partials and every global/route consumer. One
+explicit order preserves the prior implicit precedence as `workout`, `navbar`,
+`workout-dropdowns`, `welcome`; the 18-bundle cap and all ten route owners are
+unchanged. The compiled artifact inventory found 1,429 unique selector entries,
+including 58 fatigue and 57 workout-plan volume-panel entries owned by SCSS.
+Four focused contracts, blocking static checks, Vitest (93), and the complete
+required Chromium set (407) passed. Seeded visual comparison reproduced the
+unchanged animated-GIF known-reds with identical mismatch counts; no snapshot
+was rebaselined. Full evidence: [`CSS_PHASE4_WP4_-1_EVIDENCE.md`](CSS_PHASE4_WP4_-1_EVIDENCE.md).
+WP4.0a remains next and is not included in this packet.
+
 ### WP4.0a Harden visual and functional selectors
 
 - Replace visual-helper hardcoded presentation classes with stable `data-testid`/data

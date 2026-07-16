@@ -1,3 +1,6 @@
+/* Preserve the pre-WP4 implicit layer precedence before any cascade cleanup. */
+@layer workout, navbar, workout-dropdowns, welcome;
+
 /* ============================================================
    CSS DESIGN TOKENS - Responsive Scaling System
    ============================================================
