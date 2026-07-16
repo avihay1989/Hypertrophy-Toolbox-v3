@@ -4,6 +4,21 @@
 
 ## Current State
 
+> **2026-07-16 — WP4.0a implementation verified locally, Linux baseline gate
+> still open (parent `6e0a408`; uncommitted/unpushed).** Screenshot normalization
+> now uses stable `data-visual-*` hooks instead of presentation classes; nav and
+> summary color assertions resolve their owning CSS variables. User Profile and
+> Backup expand the visual matrix from 48 to 60 images per platform. The 12 new
+> Windows images passed repeat comparison and were reviewed; the prior 48 stayed
+> byte-identical. Gates: focused contracts **7**, focused route tests **111**,
+> flake8 **0**, tsc passed, Vitest **93**, full pytest **1,722 + the same 2
+> catalog known-reds**, and required Chromium **407/407**. Full Windows visual:
+> **59 passed + the unchanged 1,039-pixel GIF red**; serial thumbnails reproduced
+> the unchanged 6,262-pixel GIF red. This host cannot generate the 12 missing
+> Linux images with the pinned Ubuntu renderer, and the owner prohibited a push;
+> finish that generate/review/compare gate before marking WP4.0a complete or
+> starting WP4.0. Evidence: `docs/CSS_PHASE4_WP4_0A_EVIDENCE.md`.
+>
 > **2026-07-16 — Phase 4 WP4.-1 cascade/load-order foundation complete in the
 > isolated `wt/wp4-cascade-foundation` worktree (base `8c6acb6`).** `tokens.css`
 > now loads before the SCSS-built Bootstrap artifact and every global/route

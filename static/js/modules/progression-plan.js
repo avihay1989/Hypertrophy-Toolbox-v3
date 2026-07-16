@@ -364,7 +364,7 @@ export function initializeProgressionPlan() {
             const currentValue = (suggestion.current_value !== undefined && suggestion.current_value !== null) ? suggestion.current_value : '';
             const suggestedValue = (suggestion.suggested_value !== undefined && suggestion.suggested_value !== null) ? suggestion.suggested_value : '';
             card.innerHTML = `
-                <div class="card suggestion-card glass-neumorph-card h-100 w-100" data-goal-type="${suggestion.type}">
+                <div class="card suggestion-card glass-neumorph-card h-100 w-100" data-visual-surface data-goal-type="${suggestion.type}">
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title">${suggestion.title}</h5>
                         <p class="card-text">${suggestion.description}</p>

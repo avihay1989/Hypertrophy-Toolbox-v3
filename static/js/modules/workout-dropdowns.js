@@ -60,6 +60,7 @@ function enhanceSelect(select, prefersReducedMotion) {
   // Create button
   const button = document.createElement('button');
   button.className = 'wpdd-button';
+  button.dataset.visualControl = '';
   button.type = 'button';
   button.setAttribute('aria-haspopup', 'listbox');
   button.setAttribute('aria-expanded', 'false');
@@ -73,6 +74,7 @@ function enhanceSelect(select, prefersReducedMotion) {
   // Caret icon (SVG inline)
   const caret = document.createElement('span');
   caret.className = 'wpdd-caret';
+  caret.dataset.visualIcon = '';
   caret.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   caret.setAttribute('aria-hidden', 'true');
   button.appendChild(caret);

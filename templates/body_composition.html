@@ -14,7 +14,7 @@
       data-profile-height-cm="{{ profile.get('height_cm') or '' }}"
       data-profile-weight-kg="{{ profile.get('weight_kg') or '' }}">
     <div class="container-fluid">
-        <header class="page-header text-center body-composition-header">
+        <header class="page-header text-center body-composition-header" data-visual-surface>
             <h1>Body Composition</h1>
             <div class="header-underline" aria-hidden="true"></div>
             <p class="lead">
@@ -25,7 +25,7 @@
 
         {% set demographics_complete = profile and profile.get('gender') and profile.get('age') and profile.get('height_cm') and profile.get('weight_kg') %}
         {% if not demographics_complete %}
-        <section class="frame-calm-glass body-composition-warning" data-section="missing-demographics" role="alert">
+        <section class="frame-calm-glass body-composition-warning" data-visual-surface data-section="missing-demographics" role="alert">
             <div class="bc-warning-body">
                 <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
                 <div>
@@ -39,7 +39,7 @@
         {% endif %}
 
         <div class="body-composition-grid">
-            <section class="frame-calm-glass body-composition-panel"
+            <section class="frame-calm-glass body-composition-panel" data-visual-surface
                      data-section="body fat calculator"
                      aria-labelledby="bc-calculator-title">
                 <div class="frame-header frame-header-2025">
@@ -145,7 +145,7 @@
                 </div>
             </section>
 
-            <section class="frame-calm-glass body-composition-panel"
+            <section class="frame-calm-glass body-composition-panel" data-visual-surface
                      data-section="snapshot history"
                      aria-labelledby="bc-history-title">
                 <div class="frame-header frame-header-2025">
@@ -167,7 +167,7 @@
                     </div>
 
                     <div class="bc-table-wrap tbl-wrap tbl-wrap--full" role="region" aria-label="Snapshot history">
-                        <table class="table table-striped table-calm tbl tbl--responsive bc-table">
+                        <table class="table table-striped table-calm tbl tbl--responsive bc-table" data-visual-surface>
                             <thead>
                                 <tr>
                                     <th scope="col" data-label="Date">Date</th>

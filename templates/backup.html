@@ -18,17 +18,17 @@
     </header>
 
     <section class="backup-center-overview" aria-label="Backup overview">
-        <article class="backup-summary-card frame-calm-glass">
+        <article class="backup-summary-card frame-calm-glass" data-visual-surface>
             <span class="backup-summary-label">Current Program</span>
             <strong class="backup-summary-value" id="backup-active-count">{{ active_program_count }}</strong>
             <p class="backup-summary-copy">Exercises currently in the active plan.</p>
         </article>
-        <article class="backup-summary-card frame-calm-glass">
+        <article class="backup-summary-card frame-calm-glass" data-visual-surface>
             <span class="backup-summary-label">Saved Snapshots</span>
             <strong class="backup-summary-value" id="backup-total-count">{{ initial_backup_count }}</strong>
             <p class="backup-summary-copy">Manual and auto backups stored in the library.</p>
         </article>
-        <article class="backup-summary-card frame-calm-glass">
+        <article class="backup-summary-card frame-calm-glass" data-visual-surface>
             <span class="backup-summary-label">Manual Backups</span>
             <strong class="backup-summary-value" id="backup-manual-count">{{ initial_manual_count }}</strong>
             <p class="backup-summary-copy" id="backup-latest-manual">
@@ -39,7 +39,7 @@
                 {% endif %}
             </p>
         </article>
-        <article class="backup-summary-card frame-calm-glass">
+        <article class="backup-summary-card frame-calm-glass" data-visual-surface>
             <span class="backup-summary-label">Auto Recovery</span>
             <strong class="backup-summary-value" id="backup-auto-count">{{ initial_auto_count }}</strong>
             <p class="backup-summary-copy" id="backup-latest-auto">
@@ -54,7 +54,7 @@
 
     <section class="backup-center-workspace" aria-label="Backup center workspace">
         <div class="backup-center-sidebar">
-            <section id="backup-save-panel" class="frame-calm-glass backup-panel">
+            <section id="backup-save-panel" class="frame-calm-glass backup-panel" data-visual-surface>
                 <div class="backup-panel-head">
                     <div>
                         <p class="backup-panel-kicker">Create Snapshot</p>
@@ -99,7 +99,7 @@
                 </form>
             </section>
 
-            <section id="backup-library-panel" class="frame-calm-glass backup-panel">
+            <section id="backup-library-panel" class="frame-calm-glass backup-panel" data-visual-surface>
                 <div class="backup-panel-head">
                     <div>
                         <p class="backup-panel-kicker">Browse</p>
@@ -135,7 +135,7 @@
             </section>
         </div>
 
-        <section class="frame-calm-glass backup-panel backup-detail-shell" data-testid="backup-center-detail" aria-label="Selected backup details">
+        <section class="frame-calm-glass backup-panel backup-detail-shell" data-visual-surface data-testid="backup-center-detail" aria-label="Selected backup details">
             <div id="backup-detail-empty" class="backup-detail-empty">
                 <i class="fas fa-database" aria-hidden="true"></i>
                 <h2>Select a backup</h2>
@@ -204,7 +204,7 @@
                 </div>
 
                 <div class="backup-detail-table-wrap tbl-wrap tbl-wrap--full" role="region" aria-label="Backup exercise preview">
-                    <table class="table table-striped table-calm tbl tbl--responsive backup-detail-table">
+                    <table class="table table-striped table-calm tbl tbl--responsive backup-detail-table" data-visual-surface>
                         <thead>
                             <tr>
                                 <th scope="col" class="col--high" data-label="Routine">Routine</th>
