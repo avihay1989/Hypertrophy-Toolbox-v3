@@ -4,6 +4,36 @@
 
 ## Current State
 
+> **2026-07-17 — Optional WP3.6 user-profile split completed and WP2.2 reviewed.**
+> The 1,483-line `user-profile.js` is now a 25-line coordinator over focused data,
+> forms/autosave, insights, bodymap, settings, and calibration-review modules. This is a
+> move-only split: initialization order, DOM hooks, request endpoints/payloads, toasts,
+> error rollback, and both intentionally distinct optimistic-toggle paths are preserved.
+> Pure estimator-seam tests were added. Gates: Vitest **105 passed**, focused Python
+> **75 passed**, full pytest **1,723 passed**, and user-profile + learned-calibration +
+> fatigue-context Chromium **38 passed** using `artifacts/e2e/database.e2e.db`. Review of the uncommitted WP2.2
+> recovery found no correctness or contract issues. Phase 3 is complete. Separately,
+> `wt/wp4-cascade-foundation` has committed WP4.-1/WP4.0a and currently carries WP4.0
+> evidence work; finish WP4.0 and integrate that branch next. WPB.4 remains behavior-
+> changing: its one-synthetic-session denominator semantics and exact golden delta must
+> receive owner acceptance before implementation.
+>
+> **2026-07-16 — Missing WP2.2 recovered and verified (on top of `main` @ `8c6acb6`).**
+> The mandatory plan-generator decomposition was the only Phase-2 packet absent from
+> history even though WP2.1a–f and WP2.3–WP2.6 had landed before the completed Phase-3
+> core sequence. `utils/plan_generator.py` now delegates exercise scoring, priority-set
+> allocation, persistence preparation/inserts, and public result assembly to focused
+> helpers. Behavior is frozen: `_score_exercise` keeps its signature and random tie-break
+> order; priority allocation remains accessory-first; row insert failures still log and
+> continue while connection/setup failures re-raise; response fields are unchanged.
+> Added six focused contracts in `tests/test_plan_generator_refactor_contracts.py`.
+> Verification: pre-change **1,717 pytest passed**; focused post-change **97 passed**;
+> full post-change **1,723 passed**; complete `api-integration` + `workout-plan` Chromium
+> specs **92 passed**. Blocking flake8 selection and `git diff --check` passed. The E2E
+> run used `artifacts/e2e/database.e2e.db`; the live `data/database.db` was untouched.
+> Phase 2 is now complete. Phase 3 core work through WP3.5 is already on `main`; WP3.6
+> remains optional. WPB.4 remains behavior-changing and gated on product-risk review.
+>
 > **2026-07-07 — Plan v3 Phase 1 COMPLETE (`main` @ `f9bfb50`).** All eight
 > route/service-boundary work packets have landed: WP1.1 central filter registry (#123),
 > WP1.2 both unique-value contracts (#126), WP1.3 replace-exercise service (#127),

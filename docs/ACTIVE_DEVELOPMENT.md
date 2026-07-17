@@ -4,14 +4,15 @@ This file is the execution source of truth for autonomous development sessions. 
 
 ## Current Objective
 
-**2026-07-05 — Deep Refactor Plan v3 Phase -1 shipped; Phase 0 next.** Current `main`
-baseline is `cbd5a25`: Phase -1 closed through PR #110 with 1684 pytest tests and
-required functional shards 206 + 202 green. Track B has shipped WPB.1 (#103), WPB.2
-(#107), WPB.5 (#101), WPB.7 (#102), WPB.8 (#104), and WPB.9 (#100 plus the
-required-context promotion after PRs #100–#109 ran green). WPB.3, WPB.4, and WPB.6
-remain prerequisite-gated. WP0.1 and WP0.2 have read-only execution audits; Phase-0
-source changes have not started. See `docs/REFACTOR_PLAN.md` and
-`docs/MASTER_HANDOVER.md` for the canonical packet/status map.
+**2026-07-17 — Phase 3 complete in the current working tree; finish Phase-4 WP4.0
+next.** `main` remains at `8c6acb6` with the verified WP2.2 recovery and optional WP3.6
+user-profile split uncommitted locally. The isolated `wt/wp4-cascade-foundation` branch
+has committed WP4.-1 and WP4.0a through `e46b67e`; WP4.0 fresh-known-red evidence is
+currently uncommitted in that worktree. Finish/verify WP4.0 there, then integrate the
+Phase-4 branch without reimplementing its completed packets. WPB.4 is the only remaining
+Track-B behavior change and still requires explicit acceptance of its synthetic
+`Unassigned`-session denominator semantics plus an intentional golden-diff review. See
+`docs/REFACTOR_PLAN.md` and `docs/MASTER_HANDOVER.md` for the packet/status map.
 
 ---
 

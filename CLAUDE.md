@@ -172,17 +172,15 @@ npx playwright test --project=chromium --reporter=line
 
 ## 5. Current State & Risks
 
-### Verified test counts (2026-07-07 — Plan v3 Phase 1 complete on `main`)
-- **Integrated `main` @ `f9bfb50`**: PR #129 CI pytest **1708 passed**;
-  required Chromium functional shards **205 + 202 passed**; smoke **10**, backup
-  **20**, erase-flow **2**, fatigue-context **6**; full inventory **504 tests / 30 specs**.
-- Track A shipped in PRs #91–#98. Phase -1 shipped through PRs #105, #106, and
-  #108–#110. **Phase 1 (route/service boundaries) is complete** — WP1.1 (#123),
-  WP1.2 (#126), WP1.3 (#127), WP1.4 (#130), WP1.5 (#124), WP1.6 (#125), WP1.7 (#121),
-  WP1.8 (#122). Track B has shipped WPB.1 (#103), WPB.2 (#107), WPB.3 (#128), WPB.5
-  (#101), WPB.6 (#129), WPB.7 (#102), WPB.8 (#104), and WPB.9 (#100 plus the
-  2026-07-05 required-context promotion). **Only WPB.4 remains** (gated on WP2.3
-  golden fixtures). Phase 2 (Python module structure and schema ownership) is next.
+### Verified test counts (2026-07-17 — Phase 3 complete in working tree)
+- **Integrated `main` @ `8c6acb6`** pre-change baseline: pytest **1717 passed**.
+- **WP2.2 working tree**: focused pytest **97 passed**; full pytest **1723 passed**;
+  Chromium API + workout-plan **92 passed**; isolated E2E DB used; live DB untouched.
+- **WP3.6 working tree**: Vitest **105 passed**; focused pytest **75 passed**; profile,
+  learned-calibration, and fatigue-context Chromium **38 passed**.
+- Track A and Phases -1–3 are complete in the current working tree. **Only WPB.4
+  remains**, gated on product-risk review. The isolated Phase-4 branch has WP4.-1 and
+  WP4.0a committed; WP4.0 evidence work is in progress there.
 
 Historical baselines live in `docs/MASTER_HANDOVER.md`. Re-verify after significant changes.
 
