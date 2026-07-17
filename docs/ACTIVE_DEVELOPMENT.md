@@ -4,16 +4,21 @@ This file is the execution source of truth for autonomous development sessions. 
 
 ## Current Objective
 
-**2026-07-17 — Phase-4 WP4.0 fresh known-red ledger complete; integrate before
-WP4.1.** The unchanged Phase-4 measurement head is `e46b67e` (WP4.-1/WP4.0a), with
-the complete WP4.0 evidence in `docs/CSS_PHASE4_WP4_0_EVIDENCE.md`. Separately, local
-`main` now contains WP2.2 at `c461840` and optional WP3.6 plus final Phase-3 status at
-`0cbedac`; neither commit has been rebased or merged into this worktree. The next safe
-action is to rebase `wt/wp4-cascade-foundation` onto `main`, resolve the four shared
-documentation paths by preserving both workstreams' newest facts, rerun the focused
-post-rebase gates, and only then begin WP4.1. Do not push or merge without owner
-authorization. WPB.4 remains out of scope and gated on explicit acceptance of the one
-synthetic `Unassigned` session, denominator behavior, and intentional golden diff.
+**2026-07-17 — Phase 3 and Phase-4 WP4.0 are locally integrated and verified;
+WP4.1 is next but not started.** WP2.2 (`c461840`) and optional WP3.6 (`0cbedac`) are committed.
+WP4.-1 (`6e0a408`), WP4.0a (`9c08c10`, Linux baselines `ab9dc7b`, close `e46b67e`),
+and the WP4.0 ledger (`ca725c2`) are complete. The WP4.0 visual evidence was measured
+on unchanged head `e46b67e`; integrating later Phase-3 commits does not rewrite that
+provenance. Integrated results: diff check, blocking flake8, tsc, and node syntax passed;
+Vitest **105/105**; full pytest **1,728 passed + the two catalog known-reds**; profile +
+learned-calibration + fatigue-context Chromium **38/38**; required Chromium **407/407**;
+selector/cascade contracts **7/7**. Update-free Windows visuals reproduced only the exact
+recorded artifacts, and all 156 screenshots plus both live DBs stayed byte-identical.
+No push was made; the existing pinned-Linux WP4.0 comparison remains the Linux result.
+Do not push and do not start WP4.1 during integration.
+WPB.4 remains unimplemented and gated on retaining one synthetic `Unassigned` session,
+an explicit unresolved denominator decision, and intentional review of the exact golden
+diff before any behavior change.
 
 ---
 

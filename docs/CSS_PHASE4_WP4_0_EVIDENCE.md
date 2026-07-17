@@ -177,7 +177,8 @@ complete. WP4.1 is next and has not started.
 After the immutable WP4.0 measurements above, the parallel main-checkout packet
 was committed locally as `c461840` (WP2.2) followed by `0cbedac` (optional WP3.6
 and final Phase-3 status documentation). Those commits do not alter or invalidate
-the evidence captured at `e46b67e`; they are not yet present on this branch. The
-safest next operation is to rebase this Phase-4 branch onto local `main`, merge
-the four overlapping current-state documents deliberately, and rerun focused
-post-rebase gates before WP4.1. No push or merge is part of WP4.0.
+the evidence captured at `e46b67e`. They were subsequently integrated with a
+history-preserving merge because the Phase-4 commits through `e46b67e` were already
+published. The four overlapping current-state documents were resolved deliberately
+and the integrated gates rerun before WP4.1. This does not change the immutable
+measurement provenance above. No push or WP4.1 work is part of this integration.

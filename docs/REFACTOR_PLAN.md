@@ -1,10 +1,11 @@
 # Deep Refactor Plan — v3 (2026-07-04, full-scan grounded)
 
 **Status: Track A, Phases -1 through 3, and Phase-4 packets WP4.-1, WP4.0a,
-and WP4.0 completed across two local branches. Optional WP3.6 is committed on
-local `main` at `0cbedac`; the Phase-4 branch has not yet integrated it. Track B
-is mostly shipped; WPB.4 remains product-risk gated. Rebase/integration is next;
-WP4.1 has not started.**
+and WP4.0 are complete. WP2.2 is committed as `c461840`; optional WP3.6 is
+committed as `0cbedac`. WP4.0 measurement provenance remains unchanged head
+`e46b67e`, with its ledger committed as `ca725c2`. Local integration verification
+is complete; WP4.1 is next but has not started. Track B is mostly shipped;
+WPB.4 remains unimplemented and product-risk gated.**
 
 This supersedes v2. It incorporates:
 
@@ -309,6 +310,26 @@ Playwright inventory **504 tests / 30 specs**.
 - Gate: weekly-summary pytest + goldens diff reviewed as intentional, plus
   weekly-summary visual/E2E specs.
 
+**Risk-mitigation gate (reviewed 2026-07-17):**
+
+- The production schema makes `routine` `TEXT NOT NULL`; the reachable case is an empty
+  string, while `None` remains relevant to mocked/legacy rows. State explicitly that all
+  falsy routine values coalesce into one synthetic `Unassigned` session.
+- Freeze scope to session-derived metrics only: weekly raw/effective totals, reps, volume,
+  status, contribution weights, rounding, response fields, and pattern coverage must not
+  change. Decide separately whether `global_sessions` includes the synthetic bucket; do
+  not let that denominator change happen implicitly.
+- Add focused cases for empty/`None`, above- and below-1.0 frequency thresholds, multiple
+  anonymous rows accumulating into one bucket, and mixed named/anonymous routines across
+  the full counting-mode x contribution-mode matrix.
+- Regenerate the WP2.3 golden only after reviewing the exact delta. For the existing Calves
+  sentinel, the intended change is frequency `0 -> 1`; effective-mode `sets_per_session`
+  `0.85 -> 5.1`; raw-mode `sets_per_session` `1 -> 6`; and effective-derived average/max
+  `0/0 -> 5.1/5.1`. Weekly totals and classifications must remain identical.
+- Add route/E2E assertions for the displayed frequency and average/max-per-session values,
+  run summary-page functional and visual gates, and include migration notes describing the
+  intentional semantic change and the conservative one-bucket assumption.
+
 ### WPB.5 (OD5) Experience-aware increment below 20 kg
 
 - Protected calc zone. In `_calculate_weight_increment`, experienced lifters get
@@ -597,6 +618,12 @@ file-to-package conversion.
   separate internal-caller proof authorizes it. The unused loop variable may be cleaned.
 - Gate: unmodified plan-generator tests plus starter-plan E2E.
 
+**Completed 2026-07-16.** Extracted scoring, priority-allocation, persistence, and
+result-assembly helpers without changing the public callable signature, score ordering,
+row-order mutation, or the inner-continue/outer-reraise exception tiers. Added explicit
+contract tests for those seams. Local gate: **1,723 pytest passed** and the complete
+API-integration + workout-plan Chromium pair **92 passed**.
+
 ### WP2.3 Weekly-summary decomposition with durable goldens
 
 - First commit deterministic seeded golden fixtures for both public calculations,
@@ -742,6 +769,15 @@ Only after the core JS track: characterize and split the 1,483-line file by demo
 reference lifts, coverage/bodymap, calibration review, and settings toggles. Consolidating
 the two optimistic-toggle paths is a later behavior-aware cleanup, not part of move-only PRs.
 
+**Completed 2026-07-17 in the current working tree.** The original entry module is now a
+small coordinator over focused data, forms/autosave, insights, bodymap, settings, and
+calibration-review modules. Initialization order, DOM hooks, API endpoints, payloads,
+toasts, rollback behavior, and the two distinct optimistic-toggle implementations are
+unchanged. Added pure estimator-seam characterization tests. Gate: Vitest **105 passed**,
+focused Python **75 passed**, full pytest **1,723 passed**, and profile +
+learned-calibration + fatigue-context Chromium **38 passed** against the isolated E2E
+database.
+
 ---
 
 ## Phase 4 — CSS foundation, visual harness, then cleanup
@@ -778,7 +814,7 @@ Four focused contracts, blocking static checks, Vitest (93), and the complete
 required Chromium set (407) passed. Seeded visual comparison reproduced the
 unchanged animated-GIF known-reds with identical mismatch counts; no snapshot
 was rebaselined. Full evidence: [`CSS_PHASE4_WP4_-1_EVIDENCE.md`](CSS_PHASE4_WP4_-1_EVIDENCE.md).
-WP4.0a remains next and is not included in this packet.
+WP4.0a followed and is not included in this packet.
 
 ### WP4.0a Harden visual and functional selectors
 
@@ -800,7 +836,7 @@ and imported only the 12 missing images. The Linux compare's 11 reds were all
 confined to pre-existing animated signature/exercise-thumbnail pixels; no new
 route failed. Static/unit/Python gates and the full 407-test functional set are
 verified. See
-[`CSS_PHASE4_WP4_0A_EVIDENCE.md`](CSS_PHASE4_WP4_0A_EVIDENCE.md). WP4.0 is next
+[`CSS_PHASE4_WP4_0A_EVIDENCE.md`](CSS_PHASE4_WP4_0A_EVIDENCE.md). WP4.0 followed
 and is not included in this packet.
 
 ### WP4.0 Fresh known-red ledger

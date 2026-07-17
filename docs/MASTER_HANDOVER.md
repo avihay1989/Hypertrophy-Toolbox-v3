@@ -17,11 +17,17 @@
 > transient skip-link frames—not cascade/layout drift. The 156 snapshots,
 > Bootstrap artifact, main live DB, and five unrelated main-checkout WP2.2 files
 > stayed byte-identical; no snapshot was updated. Evidence:
-> `docs/CSS_PHASE4_WP4_0_EVIDENCE.md`. Separately, local `main` now has WP2.2
-> committed as `c461840` and optional WP3.6 plus the final Phase-3 documentation
-> committed as `0cbedac`; those commits are not yet integrated here. Rebase this
-> branch onto that local `main`, preserving both documentation histories, before
-> starting WP4.1. **WP4.1 is next and has not started.**
+> `docs/CSS_PHASE4_WP4_0_EVIDENCE.md`. WP2.2 is committed as `c461840` and optional
+> WP3.6 plus the final Phase-3 documentation as `0cbedac`; they were integrated by
+> a history-preserving merge, without changing the immutable WP4.0 measurement
+> provenance at `e46b67e`. Post-merge gates: diff check, blocking flake8, tsc, and
+> node syntax passed; Vitest **105/105**; full pytest **1,728 passed + the same two
+> catalog known-reds**; profile/calibration/fatigue-context Chromium **38/38**;
+> required Chromium **407/407**; selector/cascade contracts **7/7**. Update-free
+> Windows comparisons reproduced byte-identical prior red artifacts; all 156
+> screenshots and both live DBs remained byte-identical. No push was made, so the
+> existing pinned-Linux WP4.0 evidence remains the available Linux result.
+> **WP4.1 is next and has not started.**
 >
 > **2026-07-17 — WP4.0a complete (`9c08c10`, Linux baselines `ab9dc7b`).**
 > Screenshot normalization uses stable `data-visual-*` hooks; nav/summary color
@@ -54,7 +60,38 @@
 > reds at the exact pre-change pixel counts; `visual.spec.ts` independently ran
 > **47 passed + 1 GIF-only red**. No snapshot was updated, Bootstrap output and
 > the screenshot tree stayed byte-identical, and the main live DB hash stayed
-> unchanged. **WP4.0a is next; no later Phase-4 packet is included here.**
+> unchanged. **WP4.0a followed; no later Phase-4 packet is included in this
+> WP4.-1 record.**
+>
+> **2026-07-17 — Optional WP3.6 user-profile split completed and WP2.2 reviewed.**
+> The 1,483-line `user-profile.js` is now a 25-line coordinator over focused data,
+> forms/autosave, insights, bodymap, settings, and calibration-review modules. This is a
+> move-only split: initialization order, DOM hooks, request endpoints/payloads, toasts,
+> error rollback, and both intentionally distinct optimistic-toggle paths are preserved.
+> Pure estimator-seam tests were added. Gates: Vitest **105 passed**, focused Python
+> **75 passed**, full pytest **1,723 passed**, and user-profile + learned-calibration +
+> fatigue-context Chromium **38 passed** using `artifacts/e2e/database.e2e.db`. Review
+> of the committed WP2.2 recovery found no correctness or contract issues. Phase 3 is
+> complete. Phase-4 WP4.-1, WP4.0a, and WP4.0 are also complete and locally integrated;
+> WP4.1 is next but not started. WPB.4 remains behavior-changing and unimplemented:
+> retain one synthetic `Unassigned` session, leave denominator behavior unresolved,
+> and require owner acceptance plus intentional review of the exact golden delta.
+>
+> **2026-07-16 — Missing WP2.2 recovered and verified (on top of `main` @ `8c6acb6`).**
+> The mandatory plan-generator decomposition was the only Phase-2 packet absent from
+> history even though WP2.1a–f and WP2.3–WP2.6 had landed before the completed Phase-3
+> core sequence. `utils/plan_generator.py` now delegates exercise scoring, priority-set
+> allocation, persistence preparation/inserts, and public result assembly to focused
+> helpers. Behavior is frozen: `_score_exercise` keeps its signature and random tie-break
+> order; priority allocation remains accessory-first; row insert failures still log and
+> continue while connection/setup failures re-raise; response fields are unchanged.
+> Added six focused contracts in `tests/test_plan_generator_refactor_contracts.py`.
+> Verification: pre-change **1,717 pytest passed**; focused post-change **97 passed**;
+> full post-change **1,723 passed**; complete `api-integration` + `workout-plan` Chromium
+> specs **92 passed**. Blocking flake8 selection and `git diff --check` passed. The E2E
+> run used `artifacts/e2e/database.e2e.db`; the live `data/database.db` was untouched.
+> Phase 2 is now complete. Phase 3 core work through WP3.5 and optional WP3.6 are
+> complete. WPB.4 remains behavior-changing and gated on product-risk review.
 >
 > **2026-07-07 — Plan v3 Phase 1 COMPLETE (`main` @ `f9bfb50`).** All eight
 > route/service-boundary work packets have landed: WP1.1 central filter registry (#123),
