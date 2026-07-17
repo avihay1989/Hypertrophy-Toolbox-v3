@@ -19,14 +19,23 @@
 
 :root {
   /* ============================================================
-     SPACING SCALE - Base/Default values
+     RESPONSIVE LAYOUT SPACING - Base/Default values
      ============================================================ */
-  --space-xs: 0.25rem;
-  --space-sm: 0.5rem;
-  --space-md: 0.75rem;
-  --space-lg: 1rem;
-  --space-xl: 1.5rem;
-  --space-2xl: 2rem;
+  --layout-space-xs: 0.25rem;
+  --layout-space-sm: 0.5rem;
+  --layout-space-md: 0.75rem;
+  --layout-space-lg: 1rem;
+  --layout-space-xl: 1.5rem;
+  --layout-space-2xl: 2rem;
+
+  /* Deprecated compatibility aliases. New layout consumers use
+     --layout-space-*; fixed component spacing uses --s-*. */
+  --space-xs: var(--layout-space-xs);
+  --space-sm: var(--layout-space-sm);
+  --space-md: var(--layout-space-md);
+  --space-lg: var(--layout-space-lg);
+  --space-xl: var(--layout-space-xl);
+  --space-2xl: var(--layout-space-2xl);
 
   /* ============================================================
      CONTAINER WIDTHS
@@ -91,11 +100,11 @@
    ============================================================ */
 @media screen and (max-width: 1280px) {
   :root {
-    --space-xs: 0.125rem;
-    --space-sm: 0.25rem;
-    --space-md: 0.375rem;
-    --space-lg: 0.5rem;
-    --space-xl: 0.75rem;
+    --layout-space-xs: 0.125rem;
+    --layout-space-sm: 0.25rem;
+    --layout-space-md: 0.375rem;
+    --layout-space-lg: 0.5rem;
+    --layout-space-xl: 0.75rem;
     
     --input-height-sm: 24px;
     --input-height-md: 26px;
@@ -132,11 +141,11 @@
    ============================================================ */
 @media screen and (min-width: 1281px) and (max-width: 1366px) {
   :root {
-    --space-xs: 0.15rem;
-    --space-sm: 0.3rem;
-    --space-md: 0.4rem;
-    --space-lg: 0.6rem;
-    --space-xl: 0.85rem;
+    --layout-space-xs: 0.15rem;
+    --layout-space-sm: 0.3rem;
+    --layout-space-md: 0.4rem;
+    --layout-space-lg: 0.6rem;
+    --layout-space-xl: 0.85rem;
     
     --input-height-sm: 25px;
     --input-height-md: 28px;
@@ -173,11 +182,11 @@
    ============================================================ */
 @media screen and (min-width: 1367px) and (max-width: 1536px) {
   :root {
-    --space-xs: 0.175rem;
-    --space-sm: 0.325rem;
-    --space-md: 0.45rem;
-    --space-lg: 0.65rem;
-    --space-xl: 0.9rem;
+    --layout-space-xs: 0.175rem;
+    --layout-space-sm: 0.325rem;
+    --layout-space-md: 0.45rem;
+    --layout-space-lg: 0.65rem;
+    --layout-space-xl: 0.9rem;
     
     --input-height-sm: 26px;
     --input-height-md: 30px;
@@ -214,11 +223,11 @@
    ============================================================ */
 @media screen and (min-width: 1537px) and (max-width: 1600px) {
   :root {
-    --space-xs: 0.185rem;
-    --space-sm: 0.35rem;
-    --space-md: 0.475rem;
-    --space-lg: 0.7rem;
-    --space-xl: 0.95rem;
+    --layout-space-xs: 0.185rem;
+    --layout-space-sm: 0.35rem;
+    --layout-space-md: 0.475rem;
+    --layout-space-lg: 0.7rem;
+    --layout-space-xl: 0.95rem;
     
     --input-height-sm: 27px;
     --input-height-md: 30px;
@@ -255,11 +264,11 @@
    ============================================================ */
 @media screen and (min-width: 1601px) and (max-width: 1920px) {
   :root {
-    --space-xs: 0.2rem;
-    --space-sm: 0.375rem;
-    --space-md: 0.5rem;
-    --space-lg: 0.75rem;
-    --space-xl: 1rem;
+    --layout-space-xs: 0.2rem;
+    --layout-space-sm: 0.375rem;
+    --layout-space-md: 0.5rem;
+    --layout-space-lg: 0.75rem;
+    --layout-space-xl: 1rem;
     
     --input-height-sm: 28px;
     --input-height-md: 32px;
@@ -296,11 +305,11 @@
    ============================================================ */
 @media screen and (min-width: 1921px) and (max-width: 2560px) {
   :root {
-    --space-xs: 0.25rem;
-    --space-sm: 0.5rem;
-    --space-md: 0.75rem;
-    --space-lg: 1rem;
-    --space-xl: 1.25rem;
+    --layout-space-xs: 0.25rem;
+    --layout-space-sm: 0.5rem;
+    --layout-space-md: 0.75rem;
+    --layout-space-lg: 1rem;
+    --layout-space-xl: 1.25rem;
     
     --input-height-sm: 32px;
     --input-height-md: 38px;
@@ -337,11 +346,11 @@
    ============================================================ */
 @media screen and (min-width: 2561px) {
   :root {
-    --space-xs: 0.375rem;
-    --space-sm: 0.75rem;
-    --space-md: 1rem;
-    --space-lg: 1.5rem;
-    --space-xl: 2rem;
+    --layout-space-xs: 0.375rem;
+    --layout-space-sm: 0.75rem;
+    --layout-space-md: 1rem;
+    --layout-space-lg: 1.5rem;
+    --layout-space-xl: 2rem;
     
     --input-height-sm: 40px;
     --input-height-md: 48px;
@@ -375,7 +384,7 @@
 
 
 /* Calm Glass 2026 redesign tokens.
-   Additive only: do not override legacy responsive or glass token names. */
+   --s-* is the canonical fixed component-spacing scale. */
 
 :root {
   --surface-0: #eef1f6;

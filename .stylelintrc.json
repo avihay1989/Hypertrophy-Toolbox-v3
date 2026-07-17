@@ -1,0 +1,35 @@
+{
+  "defaultSeverity": "warning",
+  "rules": {
+    "color-no-invalid-hex": true,
+    "declaration-block-no-duplicate-custom-properties": true,
+    "declaration-block-no-duplicate-properties": [
+      true,
+      {
+        "ignore": [
+          "consecutive-duplicates-with-different-values"
+        ]
+      }
+    ],
+    "declaration-no-important": true,
+    "declaration-property-value-disallowed-list": {
+      "/^(?:--|background(?:-color)?$|border(?:-(?:top|right|bottom|left))?-color$|box-shadow$|caret-color$|color$|fill$|outline-color$|stroke$|text-decoration-color$|text-shadow$)/": [
+        "/(?:#[0-9a-f]{3,8}\\b|(?:rgb|hsl)a?\\()/i"
+      ]
+    },
+    "no-descending-specificity": true,
+    "no-duplicate-selectors": true,
+    "property-no-unknown": true,
+    "selector-max-compound-selectors": 6,
+    "selector-max-id": 1,
+    "selector-max-specificity": "1,6,2"
+  },
+  "overrides": [
+    {
+      "files": [
+        "scss/**/*.scss"
+      ],
+      "customSyntax": "postcss-scss"
+    }
+  ]
+}

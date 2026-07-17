@@ -4,6 +4,23 @@
 
 ## Current State
 
+> **2026-07-17 — WP4.1 token vocabulary consolidation complete in isolated
+> `wt/wp4-1-token-vocabulary`.** A frozen 21-source inventory records the
+> hardcoded-value surface, duplicate responsive/fixed spacing scales, and all
+> six local namespaces. New `--layout-space-*` tokens receive the exact former
+> responsive values; `--space-*` remains a deprecated compatibility alias and
+> `--s-*` remains fixed. Only exact welcome status/duration and navbar spacing
+> matches were aliased. Pinned Stylelint 16.11.0 records a committed 7,202-warning
+> baseline and runs in a new non-required measure-only CI job; no required context
+> was renamed. Gates: contracts **10**, flake8 **0**, tsc/node syntax passed,
+> Vitest **105**, full pytest **1,731 + 2 unchanged catalog known-reds**, affected
+> Chromium **47/47**, and required Chromium **407/407**. Update-free Windows
+> comparisons reproduced the exact WP4.0 reds at **1,039** and **6,262** pixels
+> on every attempt. All 156 snapshots, generated Bootstrap CSS, and the main,
+> Phase-4, and visual-seed DBs stayed byte-identical. No snapshot was updated and
+> no push was made; pinned-Linux WP4.0 evidence remains authoritative. Evidence:
+> `docs/CSS_PHASE4_WP4_1_EVIDENCE.md`. **WP4.2 is next and has not started.**
+>
 > **2026-07-17 — WP4.0 fresh known-red ledger complete on unchanged
 > `wt/wp4-cascade-foundation` head `e46b67e`.** Fresh gates: contracts **7**,
 > blocking flake8 **0**, tsc passed, Vitest **93**, full pytest **1,722 + 2
@@ -243,6 +260,13 @@
 - None.
 
 ## Next Safe Step
+
+**Current:** review the isolated WP4.1 commit, integrate it into local `main`
+with a history-preserving merge, and re-run the narrow integration gates. Do
+not push and do not begin WP4.2 until that local integration is clean. The
+older Stage-4 paragraph below is retained as historical context, not the
+current next action.
+
 Use [docs/ACTIVE_DEVELOPMENT.md](ACTIVE_DEVELOPMENT.md) as the execution source of truth. **Local `main` is in sync with `origin/main` (0 commits ahead) after pushing `df9b6f9` (movement_pattern cleanup), `f2cdc23` (Stage 4 observer tooling), and the 2026-05-29 handover sync.** The active tracking item is **Fatigue Meter Phase 2 Stage 4 calibration window — OPEN 2026-05-24, earliest close 2026-06-07** (≥2 weeks real use). The Stage 4 calibration observer (`scripts/fatigue_stage4_observer.py`, daily scheduled task) is ready and strictly read-only; it stays idle and appends nothing while `workout_log` is empty (verified 2026-05-29). **Automation observability tooling added 2026-05-30:** `scripts/check_fatigue_stage4_automation.ps1` (read-only health check — classifies the automation as [BROKEN] / [SKIPPED] / [IDLE] / [READY], explains task result codes incl. `0` and `0x800710E0`, reports the live `workout_log` count via the read-only `scripts/fatigue_stage4_status.py` helper) and `scripts/install_fatigue_stage4_observer_task.ps1` (idempotent `schtasks /Create ... /F` installer/repair, default daily 20:00). Verified 2026-05-30: check -> **[IDLE]** (last result `0`, `workout_log` empty); installer idempotent; `schtasks /Run` succeeded. No thresholds / scenarios / boundary tests / DB touched — see [PHASE2_PLANNING.md §10](fatigue_meter/PHASE2_PLANNING.md). Working tree should remain clean except for `data/database.db` runtime dirt after committing this tooling. Pre-existing closed-workstream rules still hold: redesign post-P8 triage closed (10 shipped, #1 deferred by owner choice), phase5_3i_plan closed as accepted-as-shipped. Fatigue calibration guardrails: no per-muscle threshold tuning without ≥2 same-direction real-use disagreements; no edits to `utils/fatigue.py::MUSCLE_VOLUME_LANDMARKS` / `SESSION_FATIGUE_BANDS` / `WEEKLY_FATIGUE_BANDS`; no `tests/test_fatigue.py` boundary-test edits; no `scripts/fatigue_calibration_report.py::SCENARIOS` tuning without a fresh owner override. See [docs/fatigue_meter/PHASE2_PLANNING.md](fatigue_meter/PHASE2_PLANNING.md) Stage 4 + §10 for evidence-collection guidance.
 
 **Verification of Body Composition Issue #21 second slice (2026-05-20, later):**
