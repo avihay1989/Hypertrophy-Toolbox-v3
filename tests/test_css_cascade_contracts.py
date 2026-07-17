@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path
 
@@ -106,3 +107,56 @@ def test_bootstrap_artifact_keeps_scss_owned_selector_families() -> None:
         "#vpToggle",
     ):
         assert selector in compiled
+
+
+def test_deprecated_spacing_names_are_neutral_layout_aliases() -> None:
+    tokens = (ROOT / "static" / "css" / "tokens.css").read_text(encoding="utf-8")
+    spacing_names = ("xs", "sm", "md", "lg", "xl", "2xl")
+
+    for name in spacing_names:
+        assert tokens.count(f"--space-{name}:") == 1
+        assert f"--space-{name}: var(--layout-space-{name});" in tokens
+
+    assert len(re.findall(r"^\s*--layout-space-[\w-]+:", tokens, re.MULTILINE)) == 41
+    assert "--s-1: 4px;" in tokens
+    assert "--s-7: 48px;" in tokens
+
+
+def test_only_exact_local_values_use_shared_aliases() -> None:
+    welcome = (ROOT / "static" / "css" / "pages-welcome.css").read_text(
+        encoding="utf-8"
+    )
+    navbar = (ROOT / "static" / "css" / "navbar.css").read_text(encoding="utf-8")
+
+    for local, shared in (
+        ("--wl-success", "--success"),
+        ("--wl-warning", "--warning"),
+        ("--wl-danger", "--danger"),
+        ("--wl-duration-fast", "--dur-fast"),
+    ):
+        assert f"{local}: var({shared});" in welcome
+
+    assert "--nav-gap: var(--s-3);" in navbar
+    assert "--nav-padding-y: var(--s-3);" in navbar
+    assert "--nav-padding-x: 1rem;" in navbar
+
+
+def test_stylelint_is_pinned_measure_only_with_committed_baseline() -> None:
+    package = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))
+    workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(
+        encoding="utf-8"
+    )
+    baseline = json.loads(
+        (ROOT / "docs" / "CSS_PHASE4_WP4_1_STYLELINT_BASELINE.json").read_text(
+            encoding="utf-8"
+        )
+    )
+
+    assert package["devDependencies"]["stylelint"] == "16.11.0"
+    assert package["devDependencies"]["postcss-scss"] == "4.0.9"
+    assert "css-stylelint-measure:" in workflow
+    assert "name: CSS Stylelint Measurement (non-required)" in workflow
+    assert "continue-on-error: true" in workflow
+    assert baseline["sourceCommit"] == "9ee763889e1e021d6cd1fe8d8782dccb4cb40d52"
+    assert baseline["warningCount"] == 7202
+    assert baseline["parseErrorCount"] == 0

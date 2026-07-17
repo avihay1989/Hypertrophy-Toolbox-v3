@@ -1,0 +1,4 @@
+static/css/bootstrap.custom.min.css
+static/css/bootstrap.custom.min.css.map
+artifacts/**
+node_modules/**

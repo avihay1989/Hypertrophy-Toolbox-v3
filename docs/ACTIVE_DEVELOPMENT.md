@@ -4,21 +4,27 @@ This file is the execution source of truth for autonomous development sessions. 
 
 ## Current Objective
 
-**2026-07-17 — Phase 3 and Phase-4 WP4.0 are locally integrated and verified;
-WP4.1 is next but not started.** WP2.2 (`c461840`) and optional WP3.6 (`0cbedac`) are committed.
-WP4.-1 (`6e0a408`), WP4.0a (`9c08c10`, Linux baselines `ab9dc7b`, close `e46b67e`),
-and the WP4.0 ledger (`ca725c2`) are complete. The WP4.0 visual evidence was measured
-on unchanged head `e46b67e`; integrating later Phase-3 commits does not rewrite that
-provenance. Integrated results: diff check, blocking flake8, tsc, and node syntax passed;
-Vitest **105/105**; full pytest **1,728 passed + the two catalog known-reds**; profile +
-learned-calibration + fatigue-context Chromium **38/38**; required Chromium **407/407**;
-selector/cascade contracts **7/7**. Update-free Windows visuals reproduced only the exact
-recorded artifacts, and all 156 screenshots plus both live DBs stayed byte-identical.
-No push was made; the existing pinned-Linux WP4.0 comparison remains the Linux result.
-Do not push and do not start WP4.1 during integration.
+**2026-07-17 — Phase-4 WP4.1 token vocabulary consolidation is complete in
+`wt/wp4-1-token-vocabulary`; WP4.2 is next but not started.** The inventory and
+mapping distinguish responsive `--layout-space-*` from fixed `--s-*`, preserve
+deprecated `--space-*` compatibility aliases, and alias only exact welcome/navbar
+matches. Pinned Stylelint 16.11.0 records 7,202 pre-change warnings across 21 sources
+and runs as a new non-required measure-only CI job without renaming a required context.
+Gates: diff check, blocking flake8, tsc, and node syntax passed; Vitest **105/105**;
+full pytest **1,731 passed + the two catalog known-reds**; affected Chromium **47/47**;
+required Chromium **407/407**; selector/cascade contracts **10/10**. Update-free Windows
+visuals reproduced the exact WP4.0 1,039- and 6,262-pixel animated/skip-link reds.
+All 156 screenshots, generated Bootstrap CSS, and all live DBs stayed byte-identical.
+No push was made; the existing pinned-Linux WP4.0 comparison remains authoritative.
 WPB.4 remains unimplemented and gated on retaining one synthetic `Unassigned` session,
 an explicit unresolved denominator decision, and intentional review of the exact golden
 diff before any behavior change.
+
+## Next Action
+
+Review and commit WP4.1, then integrate that commit into local `main` with a
+history-preserving merge and re-run the narrow integration gates. Do not push
+and do not begin WP4.2 until the local integration is clean.
 
 ---
 

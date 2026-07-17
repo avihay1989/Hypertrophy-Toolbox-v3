@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "9ee763889e1e021d6cd1fe8d8782dccb4cb40d52",
+  "tools": {
+    "stylelint": "16.11.0",
+    "postcssScss": "4.0.9"
+  },
+  "sources": [
+    "static/css/**/*.css",
+    "scss/**/*.scss"
+  ],
+  "exclusions": [
+    "static/css/bootstrap.custom.min.css",
+    "static/css/bootstrap.custom.min.css.map"
+  ],
+  "fileCount": 21,
+  "filesWithWarnings": 20,
+  "warningCount": 7202,
+  "erroredFileCount": 0,
+  "parseErrorCount": 0,
+  "invalidOptionWarningCount": 0,
+  "rawReportSha256": "1a44e76cefd1e770c301c2a1c02ac70e967078ddaff91cfcf8f7370e964006a0",
+  "byRule": {
+    "color-no-invalid-hex": 0,
+    "declaration-block-no-duplicate-custom-properties": 0,
+    "declaration-block-no-duplicate-properties": 8,
+    "declaration-no-important": 2566,
+    "declaration-property-value-disallowed-list": 3378,
+    "no-descending-specificity": 783,
+    "no-duplicate-selectors": 86,
+    "property-no-unknown": 2,
+    "selector-max-compound-selectors": 0,
+    "selector-max-id": 191,
+    "selector-max-specificity": 188
+  },
+  "byFile": {
+    "scss/_fatigue.scss": 106,
+    "scss/custom-bootstrap.scss": 0,
+    "scss/pages/_workout_plan_volume_panel.scss": 50,
+    "static/css/a11y.css": 135,
+    "static/css/base.css": 15,
+    "static/css/components.css": 1787,
+    "static/css/layout.css": 102,
+    "static/css/motion.css": 16,
+    "static/css/navbar.css": 362,
+    "static/css/pages-backup.css": 41,
+    "static/css/pages-body-composition.css": 37,
+    "static/css/pages-progression.css": 65,
+    "static/css/pages-session-summary.css": 368,
+    "static/css/pages-user-profile.css": 246,
+    "static/css/pages-volume-splitter.css": 158,
+    "static/css/pages-weekly-summary.css": 369,
+    "static/css/pages-welcome.css": 147,
+    "static/css/pages-workout-log.css": 1015,
+    "static/css/pages-workout-plan.css": 1891,
+    "static/css/theme-dark.css": 264,
+    "static/css/tokens.css": 28
+  }
+}

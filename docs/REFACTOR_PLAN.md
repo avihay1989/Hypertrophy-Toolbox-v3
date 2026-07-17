@@ -1,10 +1,10 @@
 # Deep Refactor Plan — v3 (2026-07-04, full-scan grounded)
 
 **Status: Track A, Phases -1 through 3, and Phase-4 packets WP4.-1, WP4.0a,
-and WP4.0 are complete. WP2.2 is committed as `c461840`; optional WP3.6 is
+WP4.0, and WP4.1 are complete. WP2.2 is committed as `c461840`; optional WP3.6 is
 committed as `0cbedac`. WP4.0 measurement provenance remains unchanged head
 `e46b67e`, with its ledger committed as `ca725c2`. Local integration verification
-is complete; WP4.1 is next but has not started. Track B is mostly shipped;
+is complete through WP4.0; WP4.2 is next but has not started. Track B is mostly shipped;
 WPB.4 remains unimplemented and product-risk gated.**
 
 This supersedes v2. It incorporates:
@@ -869,6 +869,20 @@ and is not included in this packet.
 - Define alias/deprecation mapping before consumption; adding aliases must be visually
   neutral.
 - Add stylelint as non-required measure-only CI with pinned rules and a baseline report.
+
+**Completed 2026-07-17 in the isolated `wt/wp4-1-token-vocabulary`
+worktree.** The frozen inventory distinguishes responsive layout spacing from
+fixed component spacing: new `--layout-space-*` definitions retain every
+former `--space-*` value, while `--space-*` remains a compatibility alias and
+`--s-*` remains fixed. Only exact `--wl-*` status/duration and `--nav-*`
+spacing matches were aliased; all other local feature namespaces remain
+intact. Pinned Stylelint 16.11.0 measures 7,202 pre-change warnings across 21
+sources and reports a non-blocking CI delta; no required context was renamed.
+Static, unit, Python, functional Chromium, and update-free visual gates passed
+with only the exact WP4.0 known reds. All 156 screenshots, generated Bootstrap
+CSS, and live databases stayed byte-identical. Evidence:
+[`CSS_PHASE4_WP4_1_EVIDENCE.md`](CSS_PHASE4_WP4_1_EVIDENCE.md). WP4.2 is next
+and is not included in this packet.
 
 ### WP4.2 Shared-frame dedupe and ownership repair
 
