@@ -499,13 +499,33 @@ class ExerciseSelector:
         routine: str,
     ) -> float:
         """Score an exercise for a given slot. Higher is better."""
-        score = 0.0
+        pattern_score = self._score_pattern_match(exercise, slot)
+        if pattern_score == -1000:
+            return -1000
+
+        score = pattern_score
+        score += self._score_subpattern_preference(exercise, slot)
+        score += self._score_role_fit(exercise, slot)
+        score += self._score_preference(exercise, slot)
+        score += self._score_reuse(exercise, slot)
+
+        # Small random factor to break ties
+        score += random.uniform(0, 5)
+
+        return score
+
+    def _score_pattern_match(
+        self,
+        exercise: Dict[str, Any],
+        slot: SlotDefinition,
+    ) -> float:
+        """Return the movement-pattern score or the non-match sentinel."""
         exercise_name = exercise.get("exercise_name", "")
-        
+
         # Check if exercise matches requested pattern
         stored_pattern = exercise.get("movement_pattern")
         if stored_pattern and stored_pattern == slot.pattern.value:
-            score += 100
+            return 100
         else:
             # Try to classify on the fly
             pattern, subpattern = classify_exercise(
@@ -514,10 +534,18 @@ class ExerciseSelector:
                 exercise.get("mechanic"),
             )
             if pattern == slot.pattern:
-                score += 100
-            else:
-                return -1000  # Pattern doesn't match
-        
+                return 100
+            return -1000  # Pattern doesn't match
+
+    def _score_subpattern_preference(
+        self,
+        exercise: Dict[str, Any],
+        slot: SlotDefinition,
+    ) -> float:
+        """Score the requested subpattern without changing fallback order."""
+        score = 0.0
+        exercise_name = exercise.get("exercise_name", "")
+
         # Subpattern preference bonus
         if slot.subpattern_preference:
             stored_subpattern = exercise.get("movement_subpattern")
@@ -541,11 +569,21 @@ class ExerciseSelector:
                 keywords = subpattern_keywords.get(slot.subpattern_preference, [])
                 if any(kw in name_lower for kw in keywords):
                     score += 20
-        
+
+        return score
+
+    def _score_role_fit(
+        self,
+        exercise: Dict[str, Any],
+        slot: SlotDefinition,
+    ) -> float:
+        """Score utility and mechanic fit for the slot role."""
+        score = 0.0
+
         # Role-based scoring
         utility = (exercise.get("utility") or "").lower()
         mechanic = (exercise.get("mechanic") or "").lower()
-        
+
         if slot.role == "main":
             # Prefer Basic utility for main lifts
             if utility == "basic":
@@ -561,28 +599,39 @@ class ExerciseSelector:
             if slot.pattern in (MovementPattern.UPPER_ISOLATION, MovementPattern.LOWER_ISOLATION):
                 if mechanic in ("isolated", "isolation"):
                     score += 15
-        
+
+        return score
+
+    def _score_preference(
+        self,
+        exercise: Dict[str, Any],
+        slot: SlotDefinition,
+    ) -> float:
+        """Score an explicitly preferred exercise."""
         # Preferred exercises get a big boost
         if self.config.preferred_exercises:
             pattern_prefs = self.config.preferred_exercises.get(slot.pattern.value, [])
-            if exercise_name in pattern_prefs:
-                score += 50
-        
+            if exercise.get("exercise_name", "") in pattern_prefs:
+                return 50
+        return 0
+
+    def _score_reuse(
+        self,
+        exercise: Dict[str, Any],
+        slot: SlotDefinition,
+    ) -> float:
+        """Score reuse according to experience and consistency settings."""
+        exercise_name = exercise.get("exercise_name", "")
+
         # Penalize already-used exercises (unless beginner consistency mode)
         if exercise_name in self._used_exercises:
             if self.config.beginner_consistency_mode and self.config.experience_level == "novice":
                 # For novices, only penalize accessories, not main lifts
                 if slot.role == "main":
-                    score += 5  # Actually prefer consistency for main lifts
-                else:
-                    score -= 30
-            else:
-                score -= 40  # Variety is preferred for non-novices
-        
-        # Small random factor to break ties
-        score += random.uniform(0, 5)
-        
-        return score
+                    return 5  # Actually prefer consistency for main lifts
+                return -30
+            return -40  # Variety is preferred for non-novices
+        return 0
     
     def select_exercise(self, slot: SlotDefinition, routine: str) -> Optional[Dict[str, Any]]:
         """Select the best exercise for a given slot."""
@@ -863,96 +912,161 @@ class PlanGenerator:
         """
         if not self.config.priority_muscles:
             return routines
-        
+
         rules = PrescriptionRules()
         priority_lower = [m.lower() for m in self.config.priority_muscles]
-        
-        # Get relevant patterns and subpatterns for priority muscles
-        relevant_patterns: Set[MovementPattern] = set()
-        relevant_subpatterns: Set[MovementSubpattern] = set()
-        
-        for muscle in priority_lower:
-            mapping = MUSCLE_TO_PATTERNS.get(muscle)
-            if mapping:
-                relevant_patterns.update(mapping.get("patterns", []))
-                relevant_subpatterns.update(mapping.get("isolation_subpatterns", []))
-        
+        relevant_patterns, relevant_subpatterns = self._get_priority_pattern_targets(
+            priority_lower
+        )
+
         logger.debug("Priority muscles: %s", priority_lower)
         logger.debug("Relevant patterns: %s", [p.value for p in relevant_patterns])
         logger.debug("Relevant subpatterns: %s", [s.value for s in relevant_subpatterns])
-        
+
         for routine_name, exercises in routines.items():
-            total_sets = sum(ex.sets for ex in exercises)
-            sets_budget = rules.MAX_SETS_PER_SESSION - total_sets
-            
-            if sets_budget <= 0:
-                # Need to "clear volume" - reduce non-priority accessories first
-                cleared = self._clear_volume_for_priority(
-                    exercises, 
-                    relevant_patterns, 
-                    target_sets_to_clear=2
-                )
-                sets_budget += cleared
-            
+            sets_budget = self._get_priority_sets_budget(
+                exercises,
+                relevant_patterns,
+                rules.MAX_SETS_PER_SESSION,
+            )
+
             if sets_budget <= 0:
                 logger.debug(
                     "Routine %s: No budget for priority boost after clearing",
                     routine_name,
                 )
                 continue
-            
-            # Find exercises targeting priority muscles (by pattern or muscle group)
-            priority_exercises = []
-            for ex in exercises:
-                # Check by muscle group match (via DB lookup or cached data)
-                is_priority = self._exercise_targets_priority_muscle(
-                    ex.exercise, priority_lower
+
+            priority_exercises = self._find_priority_accessories(
+                exercises,
+                priority_lower,
+                relevant_patterns,
+            )
+            sets_budget, boosted = self._boost_priority_accessories(
+                priority_exercises,
+                routine_name,
+                sets_budget,
+            )
+
+            if boosted == 0 and sets_budget > 0:
+                self._boost_priority_main_lifts(
+                    exercises,
+                    routine_name,
+                    relevant_patterns,
+                    sets_budget,
                 )
-                
-                # Also check by pattern match
-                if ex.pattern:
-                    pattern = MovementPattern(ex.pattern) if ex.pattern else None
-                    if pattern in relevant_patterns:
-                        is_priority = True
-                
-                if is_priority and ex.role == "accessory":
-                    priority_exercises.append(ex)
-            
-            # Boost priority exercises (add 1 set each, within budget)
-            boosted = 0
-            for ex in priority_exercises:
-                if sets_budget <= 0:
-                    break
-                if ex.sets < 4:  # Cap accessory sets at 4
+
+        return routines
+
+    def _get_priority_pattern_targets(
+        self,
+        priority_muscles: List[str],
+    ) -> Tuple[Set[MovementPattern], Set[MovementSubpattern]]:
+        """Collect pattern and subpattern targets for priority muscles."""
+        relevant_patterns: Set[MovementPattern] = set()
+        relevant_subpatterns: Set[MovementSubpattern] = set()
+
+        for muscle in priority_muscles:
+            mapping = MUSCLE_TO_PATTERNS.get(muscle)
+            if mapping:
+                relevant_patterns.update(mapping.get("patterns", []))
+                relevant_subpatterns.update(mapping.get("isolation_subpatterns", []))
+
+        return relevant_patterns, relevant_subpatterns
+
+    def _get_priority_sets_budget(
+        self,
+        exercises: List[ExerciseRow],
+        relevant_patterns: Set[MovementPattern],
+        max_sets_per_session: int,
+    ) -> int:
+        """Calculate priority-set budget, clearing volume when required."""
+        total_sets = sum(ex.sets for ex in exercises)
+        sets_budget = max_sets_per_session - total_sets
+
+        if sets_budget <= 0:
+            # Need to "clear volume" - reduce non-priority accessories first
+            cleared = self._clear_volume_for_priority(
+                exercises,
+                relevant_patterns,
+                target_sets_to_clear=2,
+            )
+            sets_budget += cleared
+
+        return sets_budget
+
+    def _find_priority_accessories(
+        self,
+        exercises: List[ExerciseRow],
+        priority_muscles: List[str],
+        relevant_patterns: Set[MovementPattern],
+    ) -> List[ExerciseRow]:
+        """Return accessory rows that target a configured priority muscle."""
+        priority_exercises = []
+        for ex in exercises:
+            # Check by muscle group match (via DB lookup or cached data)
+            is_priority = self._exercise_targets_priority_muscle(
+                ex.exercise, priority_muscles
+            )
+
+            # Also check by pattern match
+            if ex.pattern:
+                pattern = MovementPattern(ex.pattern) if ex.pattern else None
+                if pattern in relevant_patterns:
+                    is_priority = True
+
+            if is_priority and ex.role == "accessory":
+                priority_exercises.append(ex)
+
+        return priority_exercises
+
+    def _boost_priority_accessories(
+        self,
+        exercises: List[ExerciseRow],
+        routine_name: str,
+        sets_budget: int,
+    ) -> Tuple[int, int]:
+        """Boost priority accessories and return remaining budget and count."""
+        boosted = 0
+        for ex in exercises:
+            if sets_budget <= 0:
+                break
+            if ex.sets < 4:  # Cap accessory sets at 4
+                ex.sets += 1
+                sets_budget -= 1
+                boosted += 1
+                logger.debug(
+                    "Boosted %s in routine %s to %d sets",
+                    ex.exercise,
+                    routine_name,
+                    ex.sets,
+                )
+
+        return sets_budget, boosted
+
+    def _boost_priority_main_lifts(
+        self,
+        exercises: List[ExerciseRow],
+        routine_name: str,
+        relevant_patterns: Set[MovementPattern],
+        sets_budget: int,
+    ) -> None:
+        """Use remaining priority budget on matching main lifts."""
+        for ex in exercises:
+            if sets_budget <= 0:
+                break
+
+            if ex.pattern:
+                pattern = MovementPattern(ex.pattern) if ex.pattern else None
+                if pattern in relevant_patterns and ex.role == "main" and ex.sets < 5:
                     ex.sets += 1
                     sets_budget -= 1
-                    boosted += 1
                     logger.debug(
-                        "Boosted %s in routine %s to %d sets",
+                        "Boosted main lift %s in routine %s to %d sets",
                         ex.exercise,
                         routine_name,
                         ex.sets,
                     )
-            
-            if boosted == 0 and sets_budget > 0:
-                # No accessories to boost, try boosting main lifts
-                for ex in exercises:
-                    if sets_budget <= 0:
-                        break
-                    
-                    if ex.pattern:
-                        pattern = MovementPattern(ex.pattern) if ex.pattern else None
-                        if pattern in relevant_patterns and ex.role == "main" and ex.sets < 5:
-                            ex.sets += 1
-                            sets_budget -= 1
-                            logger.debug(
-                                "Boosted main lift %s in routine %s to %d sets",
-                                ex.exercise,
-                                routine_name,
-                                ex.sets,
-                            )
-        
-        return routines
     
     def _clear_volume_for_priority(
         self,
@@ -1256,95 +1370,164 @@ class PlanGenerator:
         
         results = {}
         routine_names = list(plan.routines.keys())
-        
+
         try:
             with DatabaseHandler() as db:
-                # Handle overwrite behavior
-                if self.config.overwrite:
-                    # Delete existing rows for the routines we're about to create
-                    for routine in self._get_overwrite_routine_names(routine_names):
-                        self._delete_routine_family(db, routine)
-                else:
-                    # Generate new routine names to avoid clobbering
-                    # Check for existing routines and add suffix
-                    for i, routine in enumerate(routine_names):
-                        existing = db.fetch_one(
-                            "SELECT COUNT(*) as count FROM user_selection WHERE routine = ?",
-                            (routine,),
-                        )
-                        if existing and existing.get("count", 0) > 0:
-                            # Find a unique suffix
-                            suffix = 1
-                            while True:
-                                new_name = f"{routine}_gen{suffix}"
-                                check = db.fetch_one(
-                                    "SELECT COUNT(*) as count FROM user_selection WHERE routine = ?",
-                                    (new_name,),
-                                )
-                                if not check or check.get("count", 0) == 0:
-                                    # Update the routine name in the plan
-                                    old_exercises = plan.routines.pop(routine)
-                                    for ex in old_exercises:
-                                        ex.routine = new_name
-                                    plan.routines[new_name] = old_exercises
-                                    break
-                                suffix += 1
-                
-                # Get the current max exercise_order
-                max_order_result = db.fetch_one(
-                    "SELECT COALESCE(MAX(exercise_order), 0) AS max_order FROM user_selection"
+                self._prepare_routines_for_persistence(
+                    db,
+                    plan,
+                    routine_names,
                 )
-                base_order = 0
-                if max_order_result is not None:
-                    base_order = max_order_result.get("max_order", 0) or 0
-                
-                # Insert exercises
-                insert_query = """
-                    INSERT INTO user_selection 
-                    (routine, exercise, sets, min_rep_range, max_rep_range, rir, rpe, weight, exercise_order)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """
-                
-                for routine_name, exercises in plan.routines.items():
-                    inserted = 0
-                    for ex in exercises:
-                        base_order += 1
-                        try:
-                            db.execute_query(
-                                insert_query,
-                                (
-                                    ex.routine,
-                                    ex.exercise,
-                                    ex.sets,
-                                    ex.min_rep_range,
-                                    ex.max_rep_range,
-                                    ex.rir,
-                                    ex.rpe,
-                                    ex.weight,
-                                    base_order,
-                                ),
-                            )
-                            inserted += 1
-                        except Exception as e:
-                            logger.warning(
-                                "Failed to insert exercise %s into routine %s: %s",
-                                ex.exercise,
-                                ex.routine,
-                                e,
-                            )
-                    
-                    results[routine_name] = inserted
-                    logger.info(
-                        "Inserted %d exercises into routine %s",
-                        inserted,
-                        routine_name,
-                    )
-        
+                base_order = self._get_base_exercise_order(db)
+                results = self._insert_plan_routines(db, plan, base_order)
+
         except Exception as e:
             logger.exception("Failed to persist generated plan")
             raise
-        
+
         return results
+
+    def _prepare_routines_for_persistence(
+        self,
+        db: DatabaseHandler,
+        plan: GeneratedPlan,
+        routine_names: List[str],
+    ) -> None:
+        """Delete overwrite targets or assign collision-free routine names."""
+        if self.config.overwrite:
+            # Delete existing rows for the routines we're about to create
+            for routine in self._get_overwrite_routine_names(routine_names):
+                self._delete_routine_family(db, routine)
+            return
+
+        # Generate new routine names to avoid clobbering
+        # Check for existing routines and add suffix
+        for routine in routine_names:
+            existing = db.fetch_one(
+                "SELECT COUNT(*) as count FROM user_selection WHERE routine = ?",
+                (routine,),
+            )
+            if existing and existing.get("count", 0) > 0:
+                # Find a unique suffix
+                suffix = 1
+                while True:
+                    new_name = f"{routine}_gen{suffix}"
+                    check = db.fetch_one(
+                        "SELECT COUNT(*) as count FROM user_selection WHERE routine = ?",
+                        (new_name,),
+                    )
+                    if not check or check.get("count", 0) == 0:
+                        # Update the routine name in the plan
+                        old_exercises = plan.routines.pop(routine)
+                        for ex in old_exercises:
+                            ex.routine = new_name
+                        plan.routines[new_name] = old_exercises
+                        break
+                    suffix += 1
+
+    def _get_base_exercise_order(self, db: DatabaseHandler) -> int:
+        """Return the current maximum persisted exercise order."""
+        max_order_result = db.fetch_one(
+            "SELECT COALESCE(MAX(exercise_order), 0) AS max_order FROM user_selection"
+        )
+        if max_order_result is not None:
+            return max_order_result.get("max_order", 0) or 0
+        return 0
+
+    def _insert_plan_routines(
+        self,
+        db: DatabaseHandler,
+        plan: GeneratedPlan,
+        base_order: int,
+    ) -> Dict[str, int]:
+        """Insert plan rows, logging and continuing after individual failures."""
+        results = {}
+        insert_query = """
+            INSERT INTO user_selection
+            (routine, exercise, sets, min_rep_range, max_rep_range, rir, rpe, weight, exercise_order)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """
+
+        for routine_name, exercises in plan.routines.items():
+            inserted = 0
+            for ex in exercises:
+                base_order += 1
+                try:
+                    db.execute_query(
+                        insert_query,
+                        (
+                            ex.routine,
+                            ex.exercise,
+                            ex.sets,
+                            ex.min_rep_range,
+                            ex.max_rep_range,
+                            ex.rir,
+                            ex.rpe,
+                            ex.weight,
+                            base_order,
+                        ),
+                    )
+                    inserted += 1
+                except Exception as e:
+                    logger.warning(
+                        "Failed to insert exercise %s into routine %s: %s",
+                        ex.exercise,
+                        ex.routine,
+                        e,
+                    )
+
+            results[routine_name] = inserted
+            logger.info(
+                "Inserted %d exercises into routine %s",
+                inserted,
+                routine_name,
+            )
+
+        return results
+
+
+def _build_starter_plan_result(
+    generator: PlanGenerator,
+    plan: GeneratedPlan,
+) -> Dict[str, Any]:
+    """Serialize a generated plan and attach optional generation metadata."""
+    config = plan.config
+    result = plan.to_dict()
+    result["total_exercises"] = plan.total_exercises
+    result["sets_per_routine"] = plan.total_sets_per_routine
+
+    # Add estimated duration if time budget optimization was applied
+    if config.time_budget_minutes:
+        result["estimated_duration_minutes"] = {
+            routine: generator._estimate_workout_duration(exercises)
+            for routine, exercises in plan.routines.items()
+        }
+        result["time_budget_minutes"] = config.time_budget_minutes
+
+    # Indicate merge mode was used
+    if config.merge_mode:
+        result["merge_mode"] = True
+
+    return result
+
+
+def _add_persistence_result(
+    generator: PlanGenerator,
+    plan: GeneratedPlan,
+    result: Dict[str, Any],
+    should_persist: bool,
+) -> None:
+    """Attach persistence outcome fields without changing API error behavior."""
+    if should_persist:
+        try:
+            inserted = generator.persist(plan)
+            result["persisted"] = True
+            result["inserted_counts"] = inserted
+        except Exception as e:
+            result["persisted"] = False
+            result["persist_error"] = str(e)
+    else:
+        result["persisted"] = False
 
 
 def generate_starter_plan(
@@ -1410,32 +1593,8 @@ def generate_starter_plan(
     
     generator = PlanGenerator(config)
     plan = generator.generate()
-    
-    result = plan.to_dict()
-    result["total_exercises"] = plan.total_exercises
-    result["sets_per_routine"] = plan.total_sets_per_routine
-    
-    # Add estimated duration if time budget optimization was applied
-    if config.time_budget_minutes:
-        result["estimated_duration_minutes"] = {
-            routine: generator._estimate_workout_duration(exercises)
-            for routine, exercises in plan.routines.items()
-        }
-        result["time_budget_minutes"] = config.time_budget_minutes
-    
-    # Indicate merge mode was used
-    if config.merge_mode:
-        result["merge_mode"] = True
-    
-    if persist:
-        try:
-            inserted = generator.persist(plan)
-            result["persisted"] = True
-            result["inserted_counts"] = inserted
-        except Exception as e:
-            result["persisted"] = False
-            result["persist_error"] = str(e)
-    else:
-        result["persisted"] = False
-    
+
+    result = _build_starter_plan_result(generator, plan)
+    _add_persistence_result(generator, plan, result, persist)
+
     return result
