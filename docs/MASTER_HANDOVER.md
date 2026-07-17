@@ -4,6 +4,25 @@
 
 ## Current State
 
+> **2026-07-17 — WP4.0 fresh known-red ledger complete on unchanged
+> `wt/wp4-cascade-foundation` head `e46b67e`.** Fresh gates: contracts **7**,
+> blocking flake8 **0**, tsc passed, Vitest **93**, full pytest **1,722 + 2
+> visual-seed catalog known-reds**, and required Chromium **407/407**.
+> Update-free Windows comparison: visual **59 + 1 animated-frame red**;
+> serial thumbnails **1 + 1 animated-frame red + 16 not run**. Fresh pinned
+> Linux compare [run 29539611526](https://github.com/avihay1989/Hypertrophy-Toolbox-v3/actions/runs/29539611526):
+> **51 passed + 11 animated-frame reds + 16 not run**, plus one profile
+> initial-attempt GIF flake that passed retry. Every report/diff was inspected;
+> all differences are confined to the signature, exercise GIF/video-control, or
+> transient skip-link frames—not cascade/layout drift. The 156 snapshots,
+> Bootstrap artifact, main live DB, and five unrelated main-checkout WP2.2 files
+> stayed byte-identical; no snapshot was updated. Evidence:
+> `docs/CSS_PHASE4_WP4_0_EVIDENCE.md`. Separately, local `main` now has WP2.2
+> committed as `c461840` and optional WP3.6 plus the final Phase-3 documentation
+> committed as `0cbedac`; those commits are not yet integrated here. Rebase this
+> branch onto that local `main`, preserving both documentation histories, before
+> starting WP4.1. **WP4.1 is next and has not started.**
+>
 > **2026-07-17 — WP4.0a complete (`9c08c10`, Linux baselines `ab9dc7b`).**
 > Screenshot normalization uses stable `data-visual-*` hooks; nav/summary color
 > assertions resolve their owning CSS variables. Profile and Backup expand the
@@ -17,7 +36,7 @@
 > focused route tests **111**, flake8 **0**, tsc passed, Vitest **93**, full
 > pytest **1,722 + the same 2 catalog known-reds**, and required Chromium
 > **407/407**. No legacy snapshot was rebaselined and the live DB stayed
-> byte-identical. WP4.0 is next and has not started. Evidence:
+> byte-identical. WP4.0 followed in the block above. Evidence:
 > `docs/CSS_PHASE4_WP4_0A_EVIDENCE.md`.
 >
 > **2026-07-16 — Phase 4 WP4.-1 cascade/load-order foundation complete in the

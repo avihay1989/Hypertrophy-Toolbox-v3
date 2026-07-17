@@ -1,8 +1,10 @@
 # Deep Refactor Plan — v3 (2026-07-04, full-scan grounded)
 
-**Status: Track A, Phase -1, and Phase 1 (WP1.1–WP1.8) completed; Track B
-mostly shipped (WPB.3 and WPB.6 landed 2026-07-07; WPB.4 remains gated); Plan-v3
-structural-refactor execution approved by the owner on 2026-07-05. Phase 2 is next.**
+**Status: Track A, Phases -1 through 3, and Phase-4 packets WP4.-1, WP4.0a,
+and WP4.0 completed across two local branches. Optional WP3.6 is committed on
+local `main` at `0cbedac`; the Phase-4 branch has not yet integrated it. Track B
+is mostly shipped; WPB.4 remains product-risk gated. Rebase/integration is next;
+WP4.1 has not started.**
 
 This supersedes v2. It incorporates:
 
@@ -805,6 +807,23 @@ and is not included in this packet.
 
 - Run the complete functional and visual deep gates on unchanged `main` after WP4.0a.
 - Record exact current reds in this plan and handover. Do not inherit the May ledger.
+
+**Completed 2026-07-17 on unchanged branch head `e46b67e`.** Fresh gates:
+selector/cascade contracts **7**, blocking flake8 **0**, tsc passed, Vitest
+**93**, full pytest **1,722 passed + 2 visual-seed catalog reds**, and the exact
+required Chromium functional list **407/407**. Update-free Windows visual
+comparison produced **59 passed + 1 animated-frame red**; its serial thumbnail
+companion produced **1 passed + 1 animated-frame red + 16 not run**. Fresh
+pinned-Linux compare run
+[29539611526](https://github.com/avihay1989/Hypertrophy-Toolbox-v3/actions/runs/29539611526)
+produced **51 passed + 11 animated-frame reds + 16 not run**, plus one
+initial-attempt profile GIF flake that passed retry. Every report/diff was
+inspected; there was no unexplained cascade or layout regression. All 156
+snapshot PNGs, generated Bootstrap CSS, the main live DB, and the unrelated
+main-checkout WP2.2 edits stayed byte-identical. No snapshot was updated.
+Complete ledger:
+[`CSS_PHASE4_WP4_0_EVIDENCE.md`](CSS_PHASE4_WP4_0_EVIDENCE.md). WP4.1 is next
+and is not included in this packet.
 
 ### WP4.1 Token vocabulary consolidation
 

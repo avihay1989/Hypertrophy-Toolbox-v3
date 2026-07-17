@@ -172,13 +172,15 @@ npx playwright test --project=chromium --reporter=line
 
 ## 5. Current State & Risks
 
-### Verified test counts (2026-07-17 — WP4.0a complete at `ab9dc7b`)
+### Verified test counts (2026-07-17 — WP4.0 complete at `e46b67e`)
 - Selector/cascade contracts **7**; flake8 **0**; tsc passed; Vitest **93**.
 - Full pytest **1722 + 2 unchanged visual-seed catalog known-reds**; required
-  Chromium **407/407**. Windows visual: **59 + 1 unchanged GIF red**. Linux
-  generate: **78/78**; compare: all **12/12** new images passed, with **11**
-  legacy animated-GIF reds. WP4.0 is next, not started. See
-  `docs/CSS_PHASE4_WP4_0A_EVIDENCE.md`.
+  Chromium **407/407**. Windows visual: **59 + 1 animated-frame red**; serial
+  thumbnails **1 + 1 red + 16 not run**. Linux compare: **51 + 11
+  animated-frame reds + 16 not run**. WP4.1 is next, not started. See
+  `docs/CSS_PHASE4_WP4_0_EVIDENCE.md`.
+- Integration is pending: local `main` has WP2.2 `c461840` and WP3.6 `0cbedac`;
+  rebase this Phase-4 branch before starting WP4.1.
 
 Historical baselines live in `docs/MASTER_HANDOVER.md`. Re-verify after significant changes.
 
