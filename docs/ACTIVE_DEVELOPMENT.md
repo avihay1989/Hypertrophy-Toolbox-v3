@@ -4,33 +4,29 @@ This file is the execution source of truth for autonomous development sessions. 
 
 ## Current Objective
 
-**2026-07-18 — Phase-4 WP4.3b Body Composition dark/token cleanup is integrated
-into local `main` as history-preserving merge `92291ed`.** Three exact repeated
-values now use semantic page-local tokens.
-The dead route heading colors were removed after browser proof showed shared
-important component rules already win in both themes; the unused dark
-`--bc-accent-soft` remap was also removed without changing any rendered value.
-Stylelint is **6,428 warnings** (**-7**, all hardcoded values), with duplicate,
-specificity, and important counts unchanged. Gates: contracts **14/14**, Flake8
-**0**, tsc, Node **64/64**, Vitest **105/105**, focused Body Composition Chromium
-**9/9**, required Chromium **407/407**, and pytest **1,735 + the two catalog
-known-reds**. All six Windows Body Composition variants passed; the twelve
-committed route images are byte-identical. Full update-free visuals reproduced
-only the exact 1,039- and 6,262-pixel known reds. All 156 screenshots, generated
-Bootstrap, and both protected DBs are byte-identical. The narrow post-merge
-git-diff, CSS-contract, Flake8, tsc, Node-syntax, and Vitest gates all passed;
-all 156 screenshot hashes and protected DB/Bootstrap identities remained
-unchanged. Nothing was pushed, and Progression, another WP4.3 page, and WP4.4
-had not started. Evidence:
-`docs/CSS_PHASE4_WP4_3B_EVIDENCE.md`.
+**2026-07-18 — Phase-4 WP4.3c Progression dark/token cleanup is complete in
+isolated `wt/wp4-3-progression-dark-token-cleanup`; it is not merged or pushed.**
+Exact repeated route values now use page-local tokens, including a dark
+Flatpickr-subtree vocabulary. Browser proof removed only a shared-owned dead dark
+card-copy rule and redundant fatigue colors; live dark goal-badge, fatigue-mix,
+and Flatpickr declarations remain. All 33 audited computed targets are identical
+in both themes, with stylesheet order and hooks unchanged. Stylelint is **6,404
+warnings** (**-24**, all hardcoded values), with duplicate, specificity, and
+important counts unchanged. Gates: contracts **15/15**, Flake8 **0**, tsc, Node
+**64/64**, Vitest **105/105**, focused Progression Chromium **26/26**, required
+Chromium **407/407**, and pytest **1,736 + the two catalog known-reds**. All six
+Windows Progression variants passed; all twelve route images and all 156
+screenshots are byte-identical. Full update-free visuals reproduced only the exact
+1,039- and 6,262-pixel known reds. Generated Bootstrap and both protected DBs are
+unchanged. Evidence: `docs/CSS_PHASE4_WP4_3C_EVIDENCE.md`.
 WPB.4 remains unimplemented and gated on retaining one synthetic `Unassigned` session,
 an explicit unresolved denominator decision, and intentional review of the exact golden
 diff before any behavior change.
 
 ## Next Action
 
-WP4.3b is integrated locally. Do not push or begin Progression, another WP4.3
-page, or WP4.4 until the next packet is explicitly directed.
+Review and integrate only the isolated WP4.3c Progression packet. Do not push or
+begin Volume Splitter, another WP4.3 page, or WP4.4 until explicitly directed.
 
 ---
 
