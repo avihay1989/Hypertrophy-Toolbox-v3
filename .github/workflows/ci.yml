@@ -25,7 +25,9 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        
+        # PYSEC-2026-3447 affects setuptools 79.0.1; upgrade to the fixed release.
+        python -m pip install --upgrade "setuptools>=83.0.0"
+
     - name: Run pip-audit
       run: |
         pip install pip-audit
