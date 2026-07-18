@@ -4,6 +4,19 @@
 
 ## Current State
 
+> **2026-07-19 (LATEST) — everything below is now PUSHED; `main` == `origin/main`
+> at `bdec996`.** The dated entries below that end with "Nothing was pushed" are
+> **historical point-in-time records**, superseded by this note. The whole
+> WP4.0–WP4.3d line plus the origin-only security fix #157 reached `origin/main`
+> via **PR #158** (`ae081cd`); the Agent Workflow v2 line — agent charters and the
+> KI-005 Workout-Controls persistence feature — reached it via **PR #156**
+> (`bdec996`). Local `main` was fast-forwarded to match; no worktree divergence
+> remains. **Agent Workflow v2 Phase 5 (end-to-end dry-run on KI-005) ran and
+> shipped** — full gate evidence in `docs/ki005_controls_persistence/PLANNING.md`
+> (Gate 0 2026-07-12; Gate 1 owner rulings 2026-07-12 and 2026-07-13; blind
+> `automation-qa` acceptance tests; council review). The `wt/agent-workflow`
+> worktree branch is fully merged and can be retired.
+>
 > **2026-07-19 — WP4.3d Volume Splitter dark/token cleanup integrated locally as
 > merge `40bc09f`.** Exact repeated status,
 > accent, heading, and dark-surface values now use page-local semantic tokens.

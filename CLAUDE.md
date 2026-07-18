@@ -172,7 +172,10 @@ npx playwright test --project=chromium --reporter=line
 
 ## 5. Current State & Risks
 
-### Verified test counts (2026-07-19 — Phase 3 through WP4.3d integrated locally)
+> **2026-07-19 UPDATE — everything below is now PUSHED. `main` == `origin/main` at `bdec996`.**
+> The per-WP "Nothing was pushed" notes below are **historical point-in-time records**, no longer the current state. The full WP4.0–WP4.3d line + the origin-only security fix #157 landed on `origin/main` via **PR #158** (`ae081cd`); the Agent Workflow v2 line (agent charters + KI-005 controls-persistence feature) landed via **PR #156** (`bdec996`). Local `main` was fast-forwarded to match; no worktree divergence remains. **Phase 5 of Agent Workflow v2 (end-to-end dry-run on KI-005) ran and shipped** — evidence in `docs/ki005_controls_persistence/PLANNING.md` (Gate 0 2026-07-12, Gate 1 rulings 2026-07-12/07-13, blind automation-qa tests, council review).
+
+### Verified test counts (2026-07-19 — Phase 3 through WP4.3d; now pushed to origin/main via #158)
 - WP4.2 was integrated into local `main` by history-preserving merge `d695188`;
   its documentation closeout is `e9062bc`. Nothing was pushed.
 - WP4.3a is complete in isolated `wt/wp4-3-backup-dark-token-cleanup`: contracts
