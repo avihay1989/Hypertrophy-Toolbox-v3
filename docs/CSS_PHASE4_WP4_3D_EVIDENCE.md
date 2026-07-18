@@ -1,7 +1,9 @@
 # CSS Phase 4 WP4.3d Evidence — Volume Splitter Dark/Token Cleanup
 
-Date: 2026-07-18  
-Branch: `wt/wp4-3-volume-splitter-dark-token-cleanup`  
+Date: 2026-07-18
+
+Branch: `wt/wp4-3-volume-splitter-dark-token-cleanup`
+
 Base: local `main` at `7a454e599896f228bc16ebdc5563231d8de13f1d`
 
 ## Scope and isolation
@@ -171,6 +173,8 @@ The twelve committed Volume Splitter images remained byte-identical:
 
 ## Next action
 
-WP4.3d is complete only on the isolated branch. It has not been merged or
-pushed, and the worktree/branch must remain available for review. Do not begin
+WP4.3d was integrated into local `main` by history-preserving merge `40bc09f`.
+The narrow post-merge git-diff, contract, PostCSS, Flake8, tsc, Node-syntax, and
+Vitest gates passed, and the protected identities remained unchanged. Nothing
+was pushed; the worktree/branch remain available for review. Do not begin
 Welcome, another WP4.3 page, or WP4.4 without explicit direction.

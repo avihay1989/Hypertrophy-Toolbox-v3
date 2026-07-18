@@ -4,8 +4,8 @@
 
 ## Current State
 
-> **2026-07-18 — WP4.3d Volume Splitter dark/token cleanup complete in isolated
-> `wt/wp4-3-volume-splitter-dark-token-cleanup`.** Exact repeated status,
+> **2026-07-19 — WP4.3d Volume Splitter dark/token cleanup integrated locally as
+> merge `40bc09f`.** Exact repeated status,
 > accent, heading, and dark-surface values now use page-local semantic tokens.
 > Browser declaration-owner proof removed only redundant route dark properties
 > already owned by shared components or later type-specific rules; every live
@@ -19,10 +19,12 @@
 > and pytest **1,737 + 2 exact catalog known-reds**. All six Windows variants
 > pass update-free; all twelve route images and all 156 screenshots are
 > byte-identical. Full visuals reproduce only the exact **1,039/6,262** known
-> reds. Generated Bootstrap and both protected DBs are unchanged. Nothing was
-> merged or pushed; the isolated worktree and branch remain for review. Evidence:
+> reds. Generated Bootstrap and both protected DBs are unchanged. The narrow
+> post-merge git-diff, contract, PostCSS, Flake8, tsc, Node-syntax, and Vitest
+> gates passed; protected identities remained unchanged. Nothing was pushed;
+> the isolated worktree and branch remain for review. Evidence:
 > `docs/CSS_PHASE4_WP4_3D_EVIDENCE.md`. **Wait for explicit direction before
-> integration or beginning Welcome, another WP4.3 page, or WP4.4.**
+> beginning Welcome, another WP4.3 page, or WP4.4.**
 >
 > **2026-07-18 — WP4.3c Progression dark/token cleanup integrated locally as
 > merge `e7feffa`.** Exact

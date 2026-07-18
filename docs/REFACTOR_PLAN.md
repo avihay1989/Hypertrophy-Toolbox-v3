@@ -1,11 +1,11 @@
 # Deep Refactor Plan — v3 (2026-07-04, full-scan grounded)
 
 **Status: Track A, Phases -1 through 3, and Phase-4 packets WP4.-1, WP4.0a,
-WP4.0, WP4.1, WP4.2, WP4.3a, WP4.3b, WP4.3c, and isolated WP4.3d are complete. WP2.2 is committed as `c461840`; optional WP3.6 is
+WP4.0, WP4.1, WP4.2, WP4.3a, WP4.3b, WP4.3c, and WP4.3d are complete. WP2.2 is committed as `c461840`; optional WP3.6 is
 committed as `0cbedac`. WP4.0 measurement provenance remains unchanged head
 `e46b67e`, with its ledger committed as `ca725c2`. Local integration verification
-is complete through WP4.3c. WP4.3d is complete only on its isolated branch and
-has not been integrated. Nothing was pushed. Welcome and later packets have not started.
+is complete through WP4.3d: its history-preserving local merge is `40bc09f` and
+the narrow post-merge gates passed. Nothing was pushed. Welcome and later packets have not started.
 Track B is mostly shipped; WPB.4 remains unimplemented
 and product-risk gated.**
 
@@ -996,9 +996,11 @@ declarations **-4**, with duplicate and specificity counts unchanged. Contracts
 All six Windows route variants pass; all twelve committed Volume Splitter images
 and every integrity lock are unchanged. Full visuals reproduce only the exact
 WP4.0 known reds. Evidence:
-[`CSS_PHASE4_WP4_3D_EVIDENCE.md`](CSS_PHASE4_WP4_3D_EVIDENCE.md). The packet has
-not been merged or pushed; leave its isolated worktree and branch for review and
-wait for explicit direction before integration or another packet.
+[`CSS_PHASE4_WP4_3D_EVIDENCE.md`](CSS_PHASE4_WP4_3D_EVIDENCE.md). The packet was
+integrated into local `main` as merge `40bc09f`; narrow post-merge gates passed,
+all protected identities remained unchanged, and nothing was pushed. Leave its
+isolated worktree and branch for review and wait for explicit direction before
+another packet.
 
 ### WP4.4 Shared bundles, navbar, and `theme-dark.css`
 
