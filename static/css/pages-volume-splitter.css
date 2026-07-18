@@ -1,11 +1,25 @@
 :root {
     --volume-track-bg: #e9ecef;
     --volume-track-optimal: #0d6efd;
+    --volume-status-low: #ffc107;
+    --volume-status-optimal: #28a745;
+    --volume-status-alert: #dc3545;
+    --volume-positive-accent: #198754;
+    --volume-heading-ink: var(--text-primary, #1f2937);
+    --volume-pill-optimal-accent: #7adf8a;
+    --volume-header-accent-soft: rgba(79, 140, 255, 0.3);
 }
 
 [data-theme='dark'] {
     --volume-track-bg: #343a40;
     --volume-track-optimal: #4dabf7;
+    --volume-dark-ink: #e0e0e0;
+    --volume-dark-surface: #2d2d2d;
+    --volume-dark-surface-subtle: #252525;
+    --volume-dark-border: #404040;
+    --volume-dark-focus-ring: #1a1a1a;
+    --volume-dark-focus-halo: rgba(77, 171, 247, 0.25);
+    --volume-header-shadow-dark: rgba(0, 0, 0, 0.3);
 }
 
 /* Optimized Volume Splitter Layout */
@@ -53,7 +67,7 @@
     height: 1px;
     background: linear-gradient(90deg,
         transparent 0%,
-        rgba(79, 140, 255, 0.3) 50%,
+        var(--volume-header-accent-soft) 50%,
         transparent 100%);
 }
 
@@ -74,7 +88,7 @@
         rgba(79, 140, 255, 0.6) 100%);
     margin: 8px auto 0;
     border-radius: 3px;
-    box-shadow: 0 2px 8px rgba(79, 140, 255, 0.3);
+    box-shadow: 0 2px 8px var(--volume-header-accent-soft);
     transition: width 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -94,7 +108,7 @@
         rgba(26, 32, 44, 0.9) 0%,
         rgba(20, 25, 35, 0.95) 100%);
     box-shadow:
-        0 8px 32px rgba(0, 0, 0, 0.3),
+        0 8px 32px var(--volume-header-shadow-dark),
         0 2px 8px rgba(0, 0, 0, 0.2),
         inset 0 1px 0 rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -108,7 +122,7 @@
 }
 
 [data-theme='dark'] .volume-splitter-header h1 {
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    text-shadow: 0 1px 3px var(--volume-header-shadow-dark);
 }
 
 /* Left Column - Controls */
@@ -237,19 +251,19 @@
 }
 
 .status-optimal {
-    color: #28a745;
+    color: var(--volume-status-optimal);
 }
 
 .status-low {
-    color: #ffc107;
+    color: var(--volume-status-low);
 }
 
 .status-high {
-    color: #dc3545;
+    color: var(--volume-status-alert);
 }
 
 .status-excessive {
-    color: #dc3545;
+    color: var(--volume-status-alert);
     font-weight: bold;
 }
 
@@ -284,7 +298,7 @@
 
 /* Card Types */
 .suggestion-card[data-type="warning"] {
-    border-left-color: #ffc107;
+    border-left-color: var(--volume-status-low);
     background-color: rgba(255, 193, 7, 0.1);
 }
 
@@ -294,7 +308,7 @@
 }
 
 .suggestion-card[data-type="suggestion"] {
-    border-left-color: #198754;
+    border-left-color: var(--volume-positive-accent);
     background-color: rgba(25, 135, 84, 0.1);
 }
 
@@ -334,10 +348,6 @@
 }
 
 /* Dark Mode Adjustments */
-[data-theme="dark"] .suggestion-card {
-    background-color: var(--card-bg);
-}
-
 [data-theme="dark"] .suggestion-card[data-type="warning"] {
     background-color: rgba(255, 193, 7, 0.15);
 }
@@ -383,10 +393,6 @@
     border-radius: 8px;
 }
 
-[data-theme='dark'] .volume-history-section {
-    background-color: #212529;
-}
-
 .volume-history-section tr.active {
     background-color: rgba(40, 167, 69, 0.1);
 }
@@ -430,39 +436,35 @@
 
 /* Add these dark mode styles */
 [data-theme='dark'] .results-section {
-    background-color: #2d2d2d !important;
-    border-color: #404040 !important;
+    border-color: var(--volume-dark-border) !important;
 }
 
 [data-theme='dark'] .results-section table {
-    color: #e0e0e0 !important;
-    background-color: #2d2d2d !important;
+    color: var(--volume-dark-ink) !important;
+    background-color: var(--volume-dark-surface) !important;
 }
 
 [data-theme='dark'] .results-section thead th {
-    background: #343a40 !important;
-    color: #e0e0e0 !important;
-    border-color: #404040 !important;
+    border-color: var(--volume-dark-border) !important;
     box-shadow: none !important;
 }
 
 [data-theme='dark'] .results-section tbody tr {
-    background-color: #2d2d2d !important;
+    background-color: var(--volume-dark-surface) !important;
 }
 
 [data-theme='dark'] .results-section tbody td {
-    background: #2d2d2d !important;
-    color: #e0e0e0 !important;
-    border-color: #404040 !important;
+    background: var(--volume-dark-surface) !important;
+    border-color: var(--volume-dark-border) !important;
     box-shadow: none !important;
 }
 
 [data-theme='dark'] .results-section tbody tr:nth-of-type(odd) {
-    background-color: #252525 !important;
+    background-color: var(--volume-dark-surface-subtle) !important;
 }
 
 [data-theme='dark'] .results-section tbody tr:nth-of-type(odd) td {
-    background: #252525 !important;
+    background: var(--volume-dark-surface-subtle) !important;
 }
 
 [data-theme='dark'] .results-section tbody tr:hover td {
@@ -532,7 +534,7 @@
 
 .volume-value-pill--optimal {
     background: #d1f7d6;
-    border-color: #7adf8a;
+    border-color: var(--volume-pill-optimal-accent);
     color: #0f5132;
 }
 
@@ -557,14 +559,14 @@
 [data-theme='dark'] .muscle-row .muscle-name,
 [data-theme='dark'] .volume-sliders .form-label,
 [data-theme='dark'] .volume-sliders label {
-    color: #e0e0e0 !important;
+    color: var(--volume-dark-ink) !important;
 }
 
 /* Dark mode for volume value pills */
 [data-theme='dark'] .volume-value-pill {
-    background: #2d2d2d;
-    border-color: #404040;
-    color: #e0e0e0;
+    background: var(--volume-dark-surface);
+    border-color: var(--volume-dark-border);
+    color: var(--volume-dark-ink);
 }
 
 [data-theme='dark'] .volume-value-pill--low {
@@ -576,7 +578,7 @@
 [data-theme='dark'] .volume-value-pill--optimal {
     background: #1b4332;
     border-color: #2d6a4f;
-    color: #7adf8a;
+    color: var(--volume-pill-optimal-accent);
 }
 
 [data-theme='dark'] .volume-value-pill--high {
@@ -593,20 +595,20 @@
 
 /* Dark mode for slider track - form-range */
 [data-theme='dark'] .volume-sliders .form-range::-webkit-slider-runnable-track {
-    background-color: #343a40;
+    background-color: var(--volume-track-bg);
 }
 
 [data-theme='dark'] .volume-sliders .form-range::-moz-range-track {
-    background-color: #343a40;
+    background-color: var(--volume-track-bg);
 }
 
 /* Dark mode slider focus states */
 [data-theme='dark'] .form-range:focus::-webkit-slider-thumb {
-    box-shadow: 0 0 0 1px #1a1a1a, 0 0 0 0.25rem rgba(77, 171, 247, 0.25) !important;
+    box-shadow: 0 0 0 1px var(--volume-dark-focus-ring), 0 0 0 0.25rem var(--volume-dark-focus-halo) !important;
 }
 
 [data-theme='dark'] .form-range:focus::-moz-range-thumb {
-    box-shadow: 0 0 0 1px #1a1a1a, 0 0 0 0.25rem rgba(77, 171, 247, 0.25) !important;
+    box-shadow: 0 0 0 1px var(--volume-dark-focus-ring), 0 0 0 0.25rem var(--volume-dark-focus-halo) !important;
 }
 
 /* Dark mode for volume section headers */
@@ -614,7 +616,7 @@
 [data-theme='dark'] .frequency-section h3,
 [data-theme='dark'] .results-section h3,
 [data-theme='dark'] .volume-history-section h3 {
-    color: #e0e0e0 !important;
+    color: var(--volume-dark-ink) !important;
 }
 
 /* Dark mode for volume section descriptions */
@@ -627,12 +629,12 @@
 
 /* Dark mode for volume form container */
 [data-theme='dark'] .volume-form-container {
-    color: #e0e0e0;
+    color: var(--volume-dark-ink);
 }
 
 /* Dark mode for current value display in sliders */
 [data-theme='dark'] .volume-sliders .current-value {
-    color: #e0e0e0;
+    color: var(--volume-dark-ink);
 }
 
 /* ========================================================================
@@ -699,7 +701,7 @@
 .volume-section-heading h2,
 .volume-insights-panel h2 {
     margin: 0;
-    color: var(--text-primary, #1f2937);
+    color: var(--volume-heading-ink);
     font-size: 1rem;
     font-weight: 700;
     line-height: 1.25;
@@ -721,7 +723,7 @@
 .volume-toolbar__label {
     display: block;
     margin-bottom: 0.35rem;
-    color: var(--text-primary, #1f2937);
+    color: var(--volume-heading-ink);
     font-size: 0.82rem;
     font-weight: 700;
     line-height: 1.2;
@@ -797,16 +799,16 @@
 }
 
 .volume-sliders .muscle-row.status-low {
-    border-left-color: #ffc107;
+    border-left-color: var(--volume-status-low);
 }
 
 .volume-sliders .muscle-row.status-optimal {
-    border-left-color: #28a745;
+    border-left-color: var(--volume-status-optimal);
 }
 
 .volume-sliders .muscle-row.status-high,
 .volume-sliders .muscle-row.status-excessive {
-    border-left-color: #dc3545;
+    border-left-color: var(--volume-status-alert);
 }
 
 .volume-sliders .form-label {
@@ -818,7 +820,7 @@
 .volume-sliders .muscle-name {
     min-width: 0;
     overflow-wrap: anywhere;
-    color: var(--text-primary, #1f2937);
+    color: var(--volume-heading-ink);
     font-size: 0.9rem;
     font-weight: 700;
     line-height: 1.25;
@@ -880,7 +882,7 @@
 [data-theme='dark'] .volume-insights-panel > .results-section,
 [data-theme='dark'] .volume-insights-panel > .ai-suggestions-section,
 [data-theme='dark'] .volume-insights-panel > .volume-history-section {
-    color: #e0e0e0;
+    color: var(--volume-dark-ink);
     background: var(--volume-panel-bg);
     border-color: var(--volume-panel-border);
 }
@@ -891,7 +893,7 @@
 [data-theme='dark'] .volume-toolbar__field label,
 [data-theme='dark'] .volume-toolbar__label,
 [data-theme='dark'] .volume-sliders .muscle-name {
-    color: #e0e0e0;
+    color: var(--volume-dark-ink);
 }
 
 @media (max-width: 1199.98px) {
@@ -981,7 +983,7 @@
 
 /* Volume Classification Colors */
 .low-volume {
-    background-color: #dc3545; /* Red */
+    background-color: var(--volume-status-alert); /* Red */
 }
 
 .medium-volume {
@@ -989,7 +991,7 @@
 }
 
 .high-volume {
-    background-color: #198754; /* Green */
+    background-color: var(--volume-positive-accent); /* Green */
 }
 
 .ultra-volume {
@@ -1021,27 +1023,27 @@
 
 /* Dark mode for volume legend */
 [data-theme='dark'] .volume-legend {
-    color: #e0e0e0;
+    color: var(--volume-dark-ink);
 }
 
 [data-theme='dark'] .volume-legend h5,
 [data-theme='dark'] .volume-legend .text-muted,
 [data-theme='dark'] .volume-legend span {
-    color: #e0e0e0 !important;
+    color: var(--volume-dark-ink) !important;
 }
 
 [data-theme='dark'] .volume-legend .legend-item span {
-    color: #e0e0e0;
+    color: var(--volume-dark-ink);
 }
 
 /* Dark mode volume indicator border */
 [data-theme='dark'] .volume-indicator {
-    border: 1px solid #404040;
+    border: 1px solid var(--volume-dark-border);
 }
 
 /* Dark mode volume classification text */
 [data-theme='dark'] .volume-classification span:not(.volume-badge) {
-    color: #e0e0e0;
+    color: var(--volume-dark-ink);
 }
 
 /* Filter Styles */

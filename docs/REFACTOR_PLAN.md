@@ -1,12 +1,11 @@
 # Deep Refactor Plan — v3 (2026-07-04, full-scan grounded)
 
 **Status: Track A, Phases -1 through 3, and Phase-4 packets WP4.-1, WP4.0a,
-WP4.0, WP4.1, WP4.2, WP4.3a, WP4.3b, and WP4.3c are complete. WP2.2 is committed as `c461840`; optional WP3.6 is
+WP4.0, WP4.1, WP4.2, WP4.3a, WP4.3b, WP4.3c, and isolated WP4.3d are complete. WP2.2 is committed as `c461840`; optional WP3.6 is
 committed as `0cbedac`. WP4.0 measurement provenance remains unchanged head
 `e46b67e`, with its ledger committed as `ca725c2`. Local integration verification
-is complete through WP4.3c: its history-preserving local merge is `e7feffa`, the
-narrow post-merge gates passed, and protected identities remained unchanged.
-Nothing was pushed. Volume Splitter and later packets have not started.
+is complete through WP4.3c. WP4.3d is complete only on its isolated branch and
+has not been integrated. Nothing was pushed. Welcome and later packets have not started.
 Track B is mostly shipped; WPB.4 remains unimplemented
 and product-risk gated.**
 
@@ -981,6 +980,25 @@ integrated into local `main` as merge `e7feffa`; narrow post-merge gates passed,
 all protected identities remained unchanged, and nothing was pushed. Volume
 Splitter and later packets have not started; wait for explicit direction before
 another packet begins.
+
+**WP4.3d Volume Splitter completed 2026-07-18 in isolated
+`wt/wp4-3-volume-splitter-dark-token-cleanup`.** Exact repeated status, accent,
+heading, and dark-surface values now use semantic page-local tokens. Browser
+auditing proved that shared component rules own the removed dark result-section,
+table-copy, and history properties, while later type-specific rules own every
+runtime suggestion-card background. Only those dead/redundant declarations were
+removed; live result borders, backgrounds, shadows, focus styles, and suggestion
+types remain. Thirty-seven stable dynamic targets are identical in both themes.
+Pinned Stylelint falls **6,404 → 6,364**: hardcoded values **-36** and important
+declarations **-4**, with duplicate and specificity counts unchanged. Contracts
+**16/16**, focused Volume Splitter Chromium **27/27**, required Chromium
+**407/407**, and pytest **1,737 + 2 catalog known-reds** match the expected gates.
+All six Windows route variants pass; all twelve committed Volume Splitter images
+and every integrity lock are unchanged. Full visuals reproduce only the exact
+WP4.0 known reds. Evidence:
+[`CSS_PHASE4_WP4_3D_EVIDENCE.md`](CSS_PHASE4_WP4_3D_EVIDENCE.md). The packet has
+not been merged or pushed; leave its isolated worktree and branch for review and
+wait for explicit direction before integration or another packet.
 
 ### WP4.4 Shared bundles, navbar, and `theme-dark.css`
 
