@@ -172,14 +172,16 @@ npx playwright test --project=chromium --reporter=line
 
 ## 5. Current State & Risks
 
-### Verified test counts (2026-07-18 — Phase 3 through WP4.2 complete)
-- WP4.2 was integrated into local `main` by history-preserving merge `d695188`.
-  Narrow post-merge gates passed; nothing was pushed and WP4.3 had not started.
-- WP4.2 gates: contracts **12**, flake8 **0**, tsc pass, Node syntax **64/64**,
-  Vitest **105**, pytest **1733 + 2 catalog known-reds**, affected Chromium
-  **84/84**, and required Chromium **407/407**. Both visual reds exactly match
-  the WP4.0 evidence at 1,039 and 6,262 pixels; all 156 snapshots are unchanged.
-- Phases -1–3 and WP4.-1/0a/0/1/2 are complete; WP4.3 has not started. **WPB.4 is
+### Verified test counts (2026-07-18 — Phase 3 through WP4.3a complete)
+- WP4.2 was integrated into local `main` by history-preserving merge `d695188`;
+  its documentation closeout is `e9062bc`. Nothing was pushed.
+- WP4.3a is complete in isolated `wt/wp4-3-backup-dark-token-cleanup`: contracts
+  **13**, flake8 **0**, tsc pass, Node syntax **64/64**, Vitest **105**, pytest
+  **1734 + 2 catalog known-reds**, focused Backup Chromium **20/20**, and required
+  Chromium **407/407**. Both visual reds exactly match WP4.0 at 1,039 and 6,262
+  pixels; all six Backup variants and all 156 screenshot hashes are unchanged.
+- Phases -1–3 and WP4.-1/0a/0/1/2/3a are complete; WP4.3a awaits review and local
+  integration, and no later page packet has started. **WPB.4 is
   unimplemented** pending one `Unassigned` session, unresolved denominator behavior, and golden review.
 Historical baselines live in `docs/MASTER_HANDOVER.md`. Re-verify after significant changes.
 

@@ -1,11 +1,13 @@
 # Deep Refactor Plan — v3 (2026-07-04, full-scan grounded)
 
 **Status: Track A, Phases -1 through 3, and Phase-4 packets WP4.-1, WP4.0a,
-WP4.0, WP4.1, and WP4.2 are complete. WP2.2 is committed as `c461840`; optional WP3.6 is
+WP4.0, WP4.1, WP4.2, and WP4.3a are complete. WP2.2 is committed as `c461840`; optional WP3.6 is
 committed as `0cbedac`. WP4.0 measurement provenance remains unchanged head
 `e46b67e`, with its ledger committed as `ca725c2`. Local integration verification
 is complete through WP4.2: the history-preserving local merge is `d695188`, its
-narrow post-merge gates passed, and nothing was pushed. WP4.3 has not started.
+narrow post-merge gates passed, and nothing was pushed. WP4.3a is complete in an
+isolated branch based on `e9062bc`, awaiting review and integration; no later page
+packet has started.
 Track B is mostly shipped; WPB.4 remains unimplemented
 and product-risk gated.**
 
@@ -926,6 +928,20 @@ not churn it merely for consistency. Suggested order:
 9. workout plan, split into coherent internal sections;
 10. workout log, split into multiple WPs because its per-theme colors and 375
     `!important` declarations make it redesign-sized.
+
+**WP4.3a Backup completed 2026-07-18 in isolated
+`wt/wp4-3-backup-dark-token-cleanup`.** Five exact repeated Backup values now use
+semantic page-local tokens, unused `--backup-warm` was removed, and the existing
+exact border token was reused. No shared near-match or page-local dark rule was
+mechanically changed. Browser auditing preserved computed values and declaration
+owners for 16 representative dynamic targets in both themes. Pinned Stylelint
+falls **6,444 → 6,435** with no increase to duplicate, specificity, or important
+counts. Contracts **13/13**, focused Backup Chromium **20/20**, required Chromium
+**407/407**, and pytest **1,734 + 2 catalog known-reds** match the expected gates;
+all six Backup variants pass and the full suites reproduce only the exact WP4.0
+known reds. All integrity locks are unchanged. Evidence:
+[`CSS_PHASE4_WP4_3A_EVIDENCE.md`](CSS_PHASE4_WP4_3A_EVIDENCE.md). Review and
+integrate this packet only; the next WP4.3 page has not started.
 
 ### WP4.4 Shared bundles, navbar, and `theme-dark.css`
 
