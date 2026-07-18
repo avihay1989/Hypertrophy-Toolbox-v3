@@ -4,8 +4,8 @@
 
 ## Current State
 
-> **2026-07-18 — WP4.3a Backup token cleanup complete in isolated
-> `wt/wp4-3-backup-dark-token-cleanup`, based on local `main` at `e9062bc`.**
+> **2026-07-18 — WP4.3a Backup token cleanup integrated locally as merge
+> `dc607fe`.**
 > Backup retains page-local ownership: five exact repeated values now use
 > semantic `--backup-*` tokens, unused `--backup-warm` is removed, and the
 > existing exact border token is reused. There was no page-local dark selector
@@ -19,9 +19,12 @@
 > 2 exact catalog known-reds**. All six Backup variants pass update-free; the
 > full visual suites reproduce only the exact **1,039/6,262** known reds. All
 > 156 screenshots, generated Bootstrap, and both protected DBs are
-> byte-identical. Nothing was pushed or merged and no later WP4.3 page or WP4.4
-> work started. Evidence: `docs/CSS_PHASE4_WP4_3A_EVIDENCE.md`. **Review and
-> integrate this isolated packet only.**
+> byte-identical. The narrow post-merge git-diff, CSS-contract, Flake8, tsc,
+> Node-syntax, and Vitest gates passed; all 156 screenshot hashes and protected
+> DB/Bootstrap identities remained unchanged. Nothing was pushed and WP4.3b had
+> not started. Evidence: `docs/CSS_PHASE4_WP4_3A_EVIDENCE.md`. **Begin only
+> WP4.3b Body Composition dark-mode/token cleanup in a new visual-seeded
+> isolated worktree.**
 >
 > **2026-07-18 — WP4.2 shared-frame dedupe integrated locally as merge
 > `d695188`.** The four-copy frame infrastructure is owned
@@ -299,12 +302,13 @@
 
 ## Next Safe Step
 
-**Current:** WP4.2 is integrated into local `main` as history-preserving merge
-`d695188`; its narrow post-merge gates passed and nothing was pushed. Begin only
-WP4.3a Backup page dark-mode/token cleanup in a new visual-seeded isolated
-worktree. Do not push, merge the WP4.3a branch, or begin another WP4.3 page. The
-older Stage-4 paragraph below is retained as historical context, not the current
-next action.
+**Current:** WP4.3a is integrated into local `main` as history-preserving merge
+`dc607fe`; its narrow post-merge gates passed, protected identities remained
+unchanged, and nothing was pushed. Begin only WP4.3b Body Composition page
+dark-mode/token cleanup in a new visual-seeded isolated worktree. Do not push,
+merge the WP4.3b branch, begin Progression, or start another WP4.3 page. The older
+Stage-4 paragraph below is retained as historical context, not the current next
+action.
 
 Use [docs/ACTIVE_DEVELOPMENT.md](ACTIVE_DEVELOPMENT.md) as the execution source of truth. **Local `main` is in sync with `origin/main` (0 commits ahead) after pushing `df9b6f9` (movement_pattern cleanup), `f2cdc23` (Stage 4 observer tooling), and the 2026-05-29 handover sync.** The active tracking item is **Fatigue Meter Phase 2 Stage 4 calibration window — OPEN 2026-05-24, earliest close 2026-06-07** (≥2 weeks real use). The Stage 4 calibration observer (`scripts/fatigue_stage4_observer.py`, daily scheduled task) is ready and strictly read-only; it stays idle and appends nothing while `workout_log` is empty (verified 2026-05-29). **Automation observability tooling added 2026-05-30:** `scripts/check_fatigue_stage4_automation.ps1` (read-only health check — classifies the automation as [BROKEN] / [SKIPPED] / [IDLE] / [READY], explains task result codes incl. `0` and `0x800710E0`, reports the live `workout_log` count via the read-only `scripts/fatigue_stage4_status.py` helper) and `scripts/install_fatigue_stage4_observer_task.ps1` (idempotent `schtasks /Create ... /F` installer/repair, default daily 20:00). Verified 2026-05-30: check -> **[IDLE]** (last result `0`, `workout_log` empty); installer idempotent; `schtasks /Run` succeeded. No thresholds / scenarios / boundary tests / DB touched — see [PHASE2_PLANNING.md §10](fatigue_meter/PHASE2_PLANNING.md). Working tree should remain clean except for `data/database.db` runtime dirt after committing this tooling. Pre-existing closed-workstream rules still hold: redesign post-P8 triage closed (10 shipped, #1 deferred by owner choice), phase5_3i_plan closed as accepted-as-shipped. Fatigue calibration guardrails: no per-muscle threshold tuning without ≥2 same-direction real-use disagreements; no edits to `utils/fatigue.py::MUSCLE_VOLUME_LANDMARKS` / `SESSION_FATIGUE_BANDS` / `WEEKLY_FATIGUE_BANDS`; no `tests/test_fatigue.py` boundary-test edits; no `scripts/fatigue_calibration_report.py::SCENARIOS` tuning without a fresh owner override. See [docs/fatigue_meter/PHASE2_PLANNING.md](fatigue_meter/PHASE2_PLANNING.md) Stage 4 + §10 for evidence-collection guidance.
 

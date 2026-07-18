@@ -150,5 +150,9 @@ The twelve committed Backup images also remained byte-identical:
 
 ## Next action
 
-Review and integrate this isolated WP4.3a commit only. Nothing was pushed or
-merged, no snapshot was changed, and no second WP4.3 page or WP4.4 work started.
+WP4.3a was subsequently integrated into local `main` by the history-preserving
+merge `dc607fe`. Narrow post-merge git-diff, CSS-contract, Flake8, tsc,
+Node-syntax, and Vitest gates passed. All 156 screenshot hashes and the protected
+Bootstrap and database identities remained unchanged. Nothing was pushed and
+WP4.3b had not started. Begin only the Body Composition page packet in a new
+visual-seeded isolated worktree.

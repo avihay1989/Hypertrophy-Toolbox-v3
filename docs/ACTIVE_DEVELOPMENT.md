@@ -4,8 +4,8 @@ This file is the execution source of truth for autonomous development sessions. 
 
 ## Current Objective
 
-**2026-07-18 — Phase-4 WP4.3a Backup token cleanup is complete in isolated
-`wt/wp4-3-backup-dark-token-cleanup`, based on local `main` at `e9062bc`.** The
+**2026-07-18 — Phase-4 WP4.3a Backup token cleanup is integrated into local
+`main` as history-preserving merge `dc607fe`.** The
 Backup namespace remains page-owned; five exact repeated values now have semantic
 local tokens, the unused `--backup-warm` token is gone, and the existing exact
 border token is reused. No page-local dark override existed to delete. Browser
@@ -16,8 +16,10 @@ values), with duplicate/specificity/important counts unchanged. Gates: contracts
 Chromium **20/20**, required Chromium **407/407**, and pytest **1,734 + the two
 catalog known-reds**. All six Backup variants passed; full update-free visuals
 reproduced only the exact 1,039- and 6,262-pixel known reds. All 156 screenshots,
-generated Bootstrap, and both protected DBs are byte-identical. Nothing was pushed
-or merged, and no second WP4.3 page or WP4.4 work started. Evidence:
+generated Bootstrap, and both protected DBs are byte-identical. The narrow
+post-merge git-diff, CSS-contract, Flake8, tsc, Node-syntax, and Vitest gates all
+passed; all 156 screenshot hashes and protected DB/Bootstrap identities remained
+unchanged. Nothing was pushed, and WP4.3b or WP4.4 work had not started. Evidence:
 `docs/CSS_PHASE4_WP4_3A_EVIDENCE.md`.
 WPB.4 remains unimplemented and gated on retaining one synthetic `Unassigned` session,
 an explicit unresolved denominator decision, and intentional review of the exact golden
@@ -25,8 +27,9 @@ diff before any behavior change.
 
 ## Next Action
 
-Review and integrate only the isolated WP4.3a commit. Do not push or begin the
-next WP4.3 page or WP4.4.
+Create a visual-seeded isolated worktree from the updated local `main`, then
+begin only WP4.3b Body Composition page dark-mode/token cleanup. Do not push,
+merge the WP4.3b branch, begin Progression, or start another WP4.3 page.
 
 ---
 
