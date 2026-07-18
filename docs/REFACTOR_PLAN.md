@@ -892,6 +892,21 @@ and is not included in this packet.
 - Delete only template/JS/E2E-proven dead selectors.
 - Treat this as cascade-sensitive structural movement with full visual gates.
 
+**Completed 2026-07-18 in the isolated `wt/wp4-2-shared-frame-dedupe`
+worktree.** The shared block is owned once in `components.css` under
+`:where(#workout, .workout-log-page, .summary-frame)`; route-specific log and
+summary surfaces remain later in their route bundles. A diagnostic rejected the
+initial document-wide `html:has(...)` gate: it changed masked Chromium
+compositing on Progression despite no changed matched rule or computed value.
+Direct container scope restores byte-identical Progression output. The five CSS
+files shrink by a net **3,668 lines**. Contracts **12/12**, affected Chromium
+**84/84**, required Chromium **407/407**, pytest **1,733 + 2 known catalog reds**,
+and update-free visual locks all match. Stylelint falls from the 7,202 baseline
+to **6,444** with unchanged selector ceiling warning counts and zero parse/config
+errors. All 156 snapshots, generated Bootstrap, and protected DBs are unchanged.
+Evidence: [`CSS_PHASE4_WP4_2_EVIDENCE.md`](CSS_PHASE4_WP4_2_EVIDENCE.md). WP4.3
+has not started.
+
 ### WP4.3 Page dark-mode/token cleanup
 
 One page per PR, smallest first. Use `pages-user-profile.css` as the target pattern but do
