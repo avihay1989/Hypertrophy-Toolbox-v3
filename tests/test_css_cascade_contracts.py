@@ -242,3 +242,37 @@ def test_relocated_frame_selectors_remain_reachable_from_runtime_hooks() -> None
     assert 'class="progression-plan-container"' in progression
     for route_hook in ('id="workout"', "workout-log-page", "summary-frame"):
         assert route_hook not in progression
+
+
+def test_backup_tokens_remain_page_owned_under_the_late_global_theme() -> None:
+    base = (ROOT / "templates" / "base.html").read_text(encoding="utf-8")
+    template = (ROOT / "templates" / "backup.html").read_text(encoding="utf-8")
+    css = (ROOT / "static" / "css" / "pages-backup.css").read_text(
+        encoding="utf-8"
+    )
+    backup_js = (
+        ROOT / "static" / "js" / "modules" / "backup-center.js"
+    ).read_text(encoding="utf-8")
+
+    # The route bundle supplies Backup's local vocabulary. The later shared
+    # theme keeps ownership of generic dark headings, forms, and tables.
+    assert base.index("{% block page_css %}") < base.index("css/theme-dark.css")
+    assert css.startswith(".backup-center-page {")
+    assert ":root" not in css
+    assert "[data-theme" not in css
+    assert "!important" not in css
+
+    for token in (
+        "--backup-accent-wash",
+        "--backup-border",
+        "--backup-copy",
+        "--backup-surface-raised",
+        "--backup-warning-border",
+        "--backup-warning-ink",
+    ):
+        assert css.count(f"{token}:") == 1
+        assert css.count(f"var({token})") >= 1
+
+    assert "--backup-warm" not in css
+    assert 'class="backup-center-page" data-page="backup-center"' in template
+    assert "document.querySelector('[data-page=\"backup-center\"]')" in backup_js

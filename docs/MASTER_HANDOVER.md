@@ -4,6 +4,25 @@
 
 ## Current State
 
+> **2026-07-18 — WP4.3a Backup token cleanup complete in isolated
+> `wt/wp4-3-backup-dark-token-cleanup`, based on local `main` at `e9062bc`.**
+> Backup retains page-local ownership: five exact repeated values now use
+> semantic `--backup-*` tokens, unused `--backup-warm` is removed, and the
+> existing exact border token is reused. There was no page-local dark selector
+> to remove and no exact shared-token equivalent for the core feature palette.
+> A browser audit preserved computed values and declaration-owner identities for
+> 16 dynamic targets in both themes, including the late `theme-dark.css`
+> heading/table boundary. Stylelint is **6,435 warnings (-9)** with duplicate,
+> specificity, and important counts unchanged and zero parse/config errors.
+> Gates: contracts **13/13**, Flake8 **0**, tsc, Node **64/64**, Vitest **105**,
+> Backup Chromium **20/20**, required Chromium **407/407**, and pytest **1,734 +
+> 2 exact catalog known-reds**. All six Backup variants pass update-free; the
+> full visual suites reproduce only the exact **1,039/6,262** known reds. All
+> 156 screenshots, generated Bootstrap, and both protected DBs are
+> byte-identical. Nothing was pushed or merged and no later WP4.3 page or WP4.4
+> work started. Evidence: `docs/CSS_PHASE4_WP4_3A_EVIDENCE.md`. **Review and
+> integrate this isolated packet only.**
+>
 > **2026-07-18 — WP4.2 shared-frame dedupe integrated locally as merge
 > `d695188`.** The four-copy frame infrastructure is owned
 > once in `components.css`, under zero-specificity direct route-container scope;

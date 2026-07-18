@@ -4,28 +4,29 @@ This file is the execution source of truth for autonomous development sessions. 
 
 ## Current Objective
 
-**2026-07-18 — Phase-4 WP4.2 shared-frame dedupe is integrated into local
-`main` as history-preserving merge `d695188`; WP4.3 has not started.** Shared frame rules are
-owned once in `components.css` under direct zero-specificity route scope; log and
-summary surfaces remain route-owned. The rejected document-wide `html:has(...)`
-gate changed Chromium's masked Progression raster without changing a winning rule;
-direct scope restores byte-identical output. Net CSS reduction: **3,668 lines**.
-Gates: diff check, blocking flake8, tsc, Node **64/64**, Vitest **105/105**, full
-pytest **1,733 + the two catalog known-reds**, affected Chromium **84/84**, required
-Chromium **407/407**, and contracts **12/12**. Final Stylelint is **6,444 warnings**
-with zero parse/config errors. Update-free visuals reproduced the exact WP4.0
-1,039- and 6,262-pixel known reds. All 156 screenshots, generated Bootstrap CSS,
-and both protected DBs stayed byte-identical. The narrow post-merge gates passed;
-nothing was pushed and no WP4.3 work occurred.
+**2026-07-18 — Phase-4 WP4.3a Backup token cleanup is complete in isolated
+`wt/wp4-3-backup-dark-token-cleanup`, based on local `main` at `e9062bc`.** The
+Backup namespace remains page-owned; five exact repeated values now have semantic
+local tokens, the unused `--backup-warm` token is gone, and the existing exact
+border token is reused. No page-local dark override existed to delete. Browser
+proof preserved computed values and declaration-owner identities across 16 dynamic
+targets in light and dark. Stylelint is **6,435 warnings** (**-9**, all hardcoded
+values), with duplicate/specificity/important counts unchanged. Gates: contracts
+**13/13**, Flake8 **0**, tsc, Node **64/64**, Vitest **105/105**, focused Backup
+Chromium **20/20**, required Chromium **407/407**, and pytest **1,734 + the two
+catalog known-reds**. All six Backup variants passed; full update-free visuals
+reproduced only the exact 1,039- and 6,262-pixel known reds. All 156 screenshots,
+generated Bootstrap, and both protected DBs are byte-identical. Nothing was pushed
+or merged, and no second WP4.3 page or WP4.4 work started. Evidence:
+`docs/CSS_PHASE4_WP4_3A_EVIDENCE.md`.
 WPB.4 remains unimplemented and gated on retaining one synthetic `Unassigned` session,
 an explicit unresolved denominator decision, and intentional review of the exact golden
 diff before any behavior change.
 
 ## Next Action
 
-Create a visual-seeded isolated worktree from the updated local `main`, then
-begin only WP4.3a Backup page dark-mode/token cleanup. Do not push, merge the
-WP4.3a branch, or begin another WP4.3 page.
+Review and integrate only the isolated WP4.3a commit. Do not push or begin the
+next WP4.3 page or WP4.4.
 
 ---
 
