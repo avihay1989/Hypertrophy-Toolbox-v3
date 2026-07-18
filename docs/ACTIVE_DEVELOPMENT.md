@@ -4,31 +4,31 @@ This file is the execution source of truth for autonomous development sessions. 
 
 ## Current Objective
 
-**2026-07-18 — Phase-4 WP4.3c Progression dark/token cleanup is integrated into
-local `main` as history-preserving merge `e7feffa`.**
-Exact repeated route values now use page-local tokens, including a dark
-Flatpickr-subtree vocabulary. Browser proof removed only a shared-owned dead dark
-card-copy rule and redundant fatigue colors; live dark goal-badge, fatigue-mix,
-and Flatpickr declarations remain. All 33 audited computed targets are identical
-in both themes, with stylesheet order and hooks unchanged. Stylelint is **6,404
-warnings** (**-24**, all hardcoded values), with duplicate, specificity, and
-important counts unchanged. Gates: contracts **15/15**, Flake8 **0**, tsc, Node
-**64/64**, Vitest **105/105**, focused Progression Chromium **26/26**, required
-Chromium **407/407**, and pytest **1,736 + the two catalog known-reds**. All six
-Windows Progression variants passed; all twelve route images and all 156
-screenshots are byte-identical. Full update-free visuals reproduced only the exact
-1,039- and 6,262-pixel known reds. Generated Bootstrap and both protected DBs are
-unchanged. The narrow post-merge git-diff, CSS-contract, PostCSS, Flake8, tsc,
-Node-syntax, and Vitest gates passed; all protected identities remained unchanged.
-Nothing was pushed. Evidence: `docs/CSS_PHASE4_WP4_3C_EVIDENCE.md`.
+**2026-07-18 — Phase-4 WP4.3d Volume Splitter dark/token cleanup is complete only
+in isolated `wt/wp4-3-volume-splitter-dark-token-cleanup`.** Exact repeated
+status, accent, heading, and dark-surface values now use page-local semantic
+tokens. Browser ownership proof removed only dead/redundant dark properties
+already won by shared components or later type-specific rules; all live result
+and suggestion owners remain. Thirty-seven stable dynamic targets per theme are
+identical, with stylesheet order and hooks unchanged. Stylelint is **6,364
+warnings** (**-40**: hardcoded **-36**, important **-4**) with duplicate and
+specificity counts unchanged. Gates: contracts **16/16**, Flake8 **0**, tsc,
+Node **64/64**, Vitest **105/105**, focused Volume Splitter Chromium **27/27**,
+required Chromium **407/407**, and pytest **1,737 + the two catalog known-reds**.
+All six Windows Volume Splitter variants passed; all twelve route images and all
+156 screenshots are byte-identical. Full update-free visuals reproduced only the
+exact 1,039- and 6,262-pixel known reds. Generated Bootstrap and both protected
+DBs are unchanged. Nothing was merged or pushed. Evidence:
+`docs/CSS_PHASE4_WP4_3D_EVIDENCE.md`.
 WPB.4 remains unimplemented and gated on retaining one synthetic `Unassigned` session,
 an explicit unresolved denominator decision, and intentional review of the exact golden
 diff before any behavior change.
 
 ## Next Action
 
-WP4.3c is integrated locally. Do not push or begin Volume Splitter, another WP4.3
-page, or WP4.4 until the next packet is explicitly directed.
+WP4.3d is complete in its isolated worktree. Leave the branch/worktree intact;
+do not merge, push, or begin Welcome, another WP4.3 page, or WP4.4 until explicit
+direction.
 
 ---
 

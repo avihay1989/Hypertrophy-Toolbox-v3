@@ -4,6 +4,26 @@
 
 ## Current State
 
+> **2026-07-18 — WP4.3d Volume Splitter dark/token cleanup complete in isolated
+> `wt/wp4-3-volume-splitter-dark-token-cleanup`.** Exact repeated status,
+> accent, heading, and dark-surface values now use page-local semantic tokens.
+> Browser declaration-owner proof removed only redundant route dark properties
+> already owned by shared components or later type-specific rules; every live
+> result border/background/shadow/focus owner remains. Thirty-seven stable
+> dynamic targets per theme have identical selectors, classes, computed values,
+> and inline styles; stylesheet order and hooks are unchanged. Stylelint is
+> **6,364 warnings (-40)**: hardcoded values **-36** and important declarations
+> **-4**, with duplicate/specificity counts unchanged and zero parse/config
+> errors. Gates: contracts **16/16**, Flake8 **0**, tsc, Node **64/64**, Vitest
+> **105/105**, Volume Splitter Chromium **27/27**, required Chromium **407/407**,
+> and pytest **1,737 + 2 exact catalog known-reds**. All six Windows variants
+> pass update-free; all twelve route images and all 156 screenshots are
+> byte-identical. Full visuals reproduce only the exact **1,039/6,262** known
+> reds. Generated Bootstrap and both protected DBs are unchanged. Nothing was
+> merged or pushed; the isolated worktree and branch remain for review. Evidence:
+> `docs/CSS_PHASE4_WP4_3D_EVIDENCE.md`. **Wait for explicit direction before
+> integration or beginning Welcome, another WP4.3 page, or WP4.4.**
+>
 > **2026-07-18 — WP4.3c Progression dark/token cleanup integrated locally as
 > merge `e7feffa`.** Exact
 > repeated route values now use semantic page-local tokens, including a narrowly

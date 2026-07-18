@@ -172,7 +172,7 @@ npx playwright test --project=chromium --reporter=line
 
 ## 5. Current State & Risks
 
-### Verified test counts (2026-07-18 — Phase 3 through WP4.3c complete)
+### Verified test counts (2026-07-18 — Phase 3 through isolated WP4.3d complete)
 - WP4.2 was integrated into local `main` by history-preserving merge `d695188`;
   its documentation closeout is `e9062bc`. Nothing was pushed.
 - WP4.3a is complete in isolated `wt/wp4-3-backup-dark-token-cleanup`: contracts
@@ -201,7 +201,14 @@ npx playwright test --project=chromium --reporter=line
 - WP4.3c was integrated into local `main` by history-preserving merge `e7feffa`;
   its narrow post-merge gates passed and all protected identities remained
   unchanged. Nothing was pushed, and no later packet started.
-- Phases -1–3 and WP4.-1/0a/0/1/2/3a/3b/3c are complete. **WPB.4 is
+- WP4.3d is complete only in isolated
+  `wt/wp4-3-volume-splitter-dark-token-cleanup`: contracts **16/16**, Flake8
+  **0**, tsc pass, Node syntax **64/64**, Vitest **105/105**, pytest **1,737 + 2
+  catalog known-reds**, focused Volume Splitter Chromium **27/27**, and required
+  Chromium **407/407**. Both visual reds remain exactly 1,039 and 6,262 pixels;
+  all twelve route images and all 156 screenshot hashes are unchanged. It has
+  not been merged or pushed.
+- Phases -1–3 and WP4.-1/0a/0/1/2/3a/3b/3c/3d are complete. **WPB.4 is
   unimplemented** pending one `Unassigned` session, unresolved denominator behavior, and golden review.
 Historical baselines live in `docs/MASTER_HANDOVER.md`. Re-verify after significant changes.
 

@@ -402,3 +402,97 @@ def test_progression_tokens_preserve_route_ownership_and_live_dark_cascade() -> 
     assert 'id="suggestionsFatigueContext" hidden' in template
     assert "document.getElementById('exerciseSelect')" in progression_js
     assert "section.className = 'progression-fatigue'" in progression_js
+
+
+def test_volume_splitter_tokens_preserve_runtime_ownership_and_dark_winners() -> None:
+    base = (ROOT / "templates" / "base.html").read_text(encoding="utf-8")
+    template = (ROOT / "templates" / "volume_splitter.html").read_text(
+        encoding="utf-8"
+    )
+    css = (ROOT / "static" / "css" / "pages-volume-splitter.css").read_text(
+        encoding="utf-8"
+    )
+    components = (ROOT / "static" / "css" / "components.css").read_text(
+        encoding="utf-8"
+    )
+    volume_js = (
+        ROOT / "static" / "js" / "modules" / "volume-splitter.js"
+    ).read_text(encoding="utf-8")
+
+    # The route remains between a11y and the late motion/theme boundary. No
+    # document-wide :has() scope is introduced (WP4.2 proved it raster-unsafe).
+    assert base.index("css/a11y.css") < base.index("{% block page_css %}")
+    assert base.index("{% block page_css %}") < base.index("css/motion.css")
+    assert base.index("css/motion.css") < base.index("css/theme-dark.css")
+    assert "html:has(" not in css
+    assert css.count(":root {") == 2
+    assert css.count("[data-theme='dark'] {") == 2
+
+    for token, minimum_consumers in (
+        ("--volume-status-low", 3),
+        ("--volume-status-optimal", 2),
+        ("--volume-status-alert", 4),
+        ("--volume-positive-accent", 2),
+        ("--volume-heading-ink", 3),
+        ("--volume-pill-optimal-accent", 2),
+        ("--volume-header-accent-soft", 2),
+        ("--volume-dark-ink", 12),
+        ("--volume-dark-surface", 4),
+        ("--volume-dark-surface-subtle", 2),
+        ("--volume-dark-border", 5),
+        ("--volume-dark-focus-ring", 2),
+        ("--volume-dark-focus-halo", 2),
+        ("--volume-header-shadow-dark", 2),
+    ):
+        assert css.count(f"{token}:") == 1
+        assert css.count(f"var({token})") >= minimum_consumers
+
+    # Components own the dark panel surface, heading ink, and table cell ink.
+    # The route keeps its live table surface/border geometry and status palette.
+    assert "[data-theme='dark'] .volume-splitter-container .results-section" in components
+    assert "[data-theme='dark'] .volume-splitter-container .table thead th" in components
+    assert "[data-theme='dark'] .volume-splitter-container .table tbody td" in components
+    assert '[data-theme="dark"] .suggestion-card {' not in css
+    assert "[data-theme='dark'] .volume-history-section {" not in css
+
+    results_block = re.search(
+        r"\[data-theme='dark'\] \.results-section\s*\{(?P<body>.*?)\}",
+        css,
+        re.DOTALL,
+    )
+    heading_block = re.search(
+        r"\[data-theme='dark'\] \.results-section thead th\s*\{(?P<body>.*?)\}",
+        css,
+        re.DOTALL,
+    )
+    cell_block = re.search(
+        r"\[data-theme='dark'\] \.results-section tbody td\s*\{(?P<body>.*?)\}",
+        css,
+        re.DOTALL,
+    )
+    assert results_block is not None
+    assert "background" not in results_block.group("body")
+    assert "border-color: var(--volume-dark-border) !important;" in results_block.group("body")
+    assert heading_block is not None
+    assert "background" not in heading_block.group("body")
+    assert re.search(r"^\s*color\s*:", heading_block.group("body"), re.MULTILINE) is None
+    assert cell_block is not None
+    assert "background: var(--volume-dark-surface) !important;" in cell_block.group("body")
+    assert re.search(r"^\s*color\s*:", cell_block.group("body"), re.MULTILINE) is None
+
+    # All existing responsive boundaries and runtime-created hooks stay intact.
+    for breakpoint in ("1400px", "1200px", "768px", "1199.98px", "767.98px"):
+        assert css.count(f"@media (max-width: {breakpoint})") == 1
+    for hook in (
+        'id="volume-splitter-app"',
+        'id="sliders" class="volume-sliders"',
+        'class="results-section d-none"',
+        'class="ai-suggestions-section d-none"',
+        'class="volume-history-section"',
+        'id="deleteVolumePlanModal"',
+    ):
+        assert hook in template
+    assert "row.className = 'muscle-row mb-3'" in volume_js
+    assert "card.dataset.type = suggestion.type" in volume_js
+    assert "'volume-value-pill--excessive'" in volume_js
+    assert "getPropertyValue('--volume-track-bg')" in volume_js
