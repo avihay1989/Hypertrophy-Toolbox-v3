@@ -4,11 +4,14 @@
     --bc-accent-deep: #163d80;
     --bc-border: rgba(45, 108, 223, 0.16);
     --bc-shadow: 0 24px 50px rgba(20, 40, 80, 0.10);
+    --bc-copy-muted: #56626a;
+    --bc-copy-supporting: #283b5a;
     --bc-band-essential: #6c8cff;
     --bc-band-athletes: #36b37e;
     --bc-band-fitness: #f3c143;
     --bc-band-average: #ef8b3b;
     --bc-band-obese: #d04d4d;
+    --bc-band-tick: #111;
     padding: 1.25rem;
 }
 
@@ -17,7 +20,6 @@
 }
 
 .body-composition-header h1 {
-    color: var(--bc-accent-deep);
     margin-bottom: 0.4rem;
 }
 
@@ -89,7 +91,7 @@
 .bc-form-guide {
     background: var(--bc-accent-soft);
     border-radius: 12px;
-    color: #283b5a;
+    color: var(--bc-copy-supporting);
     margin-bottom: 0.75rem;
     padding: 0.6rem 0.9rem;
 }
@@ -155,7 +157,7 @@
 }
 
 .bc-results-bfp-unit {
-    color: #56626a;
+    color: var(--bc-copy-muted);
     font-size: 0.95rem;
 }
 
@@ -173,7 +175,7 @@
 }
 
 .bc-results-label {
-    color: #56626a;
+    color: var(--bc-copy-muted);
     display: block;
     font-size: 0.72rem;
     font-weight: 600;
@@ -192,7 +194,7 @@
 }
 
 .bc-band-title {
-    color: #56626a;
+    color: var(--bc-copy-muted);
     display: block;
     font-size: 0.72rem;
     font-weight: 700;
@@ -225,7 +227,7 @@
 .bc-band-segment[data-band-label='Obese']          { background: var(--bc-band-obese); }
 
 .bc-band-tick {
-    background: #111;
+    background: var(--bc-band-tick);
     border-left: 2px solid #fff;
     border-right: 2px solid #fff;
     height: 100%;
@@ -245,7 +247,7 @@
 }
 
 .bc-jp-line {
-    color: #283b5a;
+    color: var(--bc-copy-supporting);
     margin: 0;
 }
 
@@ -271,7 +273,7 @@
 }
 
 .bc-trend-empty {
-    color: #56626a;
+    color: var(--bc-copy-muted);
     margin: 0;
     text-align: center;
 }
@@ -286,18 +288,16 @@
 }
 
 .bc-empty {
-    color: #56626a;
+    color: var(--bc-copy-muted);
     margin: 0.75rem 0 0;
     text-align: center;
 }
 
 [data-theme='dark'] .body-composition-page {
-    --bc-accent-soft: rgba(45, 108, 223, 0.18);
     --bc-border: rgba(120, 160, 220, 0.22);
     --bc-shadow: 0 24px 50px rgba(0, 0, 0, 0.4);
 }
 
-[data-theme='dark'] .body-composition-header h1,
 [data-theme='dark'] .bc-results-bfp,
 [data-theme='dark'] .bc-results-value,
 [data-theme='dark'] .bc-band-current {
@@ -320,5 +320,5 @@
 
 [data-theme='dark'] .bc-band-tick {
     background: #f5f5f5;
-    border-color: #111;
+    border-color: var(--bc-band-tick);
 }
