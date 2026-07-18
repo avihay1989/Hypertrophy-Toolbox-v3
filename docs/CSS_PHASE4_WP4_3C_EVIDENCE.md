@@ -180,6 +180,9 @@ The twelve committed Progression images also remained byte-identical:
 
 ## Next action
 
-Review and integrate this isolated WP4.3c commit only. Nothing was pushed or
-merged, no snapshot was changed, and Volume Splitter, another WP4.3 page, and
-WP4.4 must not begin until this packet is integrated and explicitly directed.
+WP4.3c was subsequently integrated into local `main` by the history-preserving
+merge `e7feffa`. Narrow post-merge git-diff, CSS-contract, PostCSS, Flake8, tsc,
+Node-syntax, and Vitest gates passed. All 156 screenshot hashes and the protected
+Bootstrap and database identities remained unchanged. Nothing was pushed, no
+snapshot was changed, and Volume Splitter, another WP4.3 page, and WP4.4 have not
+started. Wait for explicit direction before beginning another packet.

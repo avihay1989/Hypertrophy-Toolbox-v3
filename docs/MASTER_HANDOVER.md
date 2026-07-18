@@ -4,8 +4,8 @@
 
 ## Current State
 
-> **2026-07-18 — WP4.3c Progression dark/token cleanup complete in isolated
-> `wt/wp4-3-progression-dark-token-cleanup`; not merged or pushed.** Exact
+> **2026-07-18 — WP4.3c Progression dark/token cleanup integrated locally as
+> merge `e7feffa`.** Exact
 > repeated route values now use semantic page-local tokens, including a narrowly
 > scoped dark Flatpickr vocabulary. Browser proof removed only the dead shared-
 > owned dark card-copy rule and redundant fatigue colors; live dark goal-badge,
@@ -18,9 +18,12 @@
 > known-reds**. All six Windows Progression variants pass update-free; all twelve
 > committed route images and all 156 screenshots are byte-identical. The full
 > visual suites reproduce only the exact **1,039/6,262** known reds. Generated
-> Bootstrap and both protected DBs are unchanged. Evidence:
-> `docs/CSS_PHASE4_WP4_3C_EVIDENCE.md`. **Review and integrate only this packet;
-> do not begin Volume Splitter, another WP4.3 page, or WP4.4.**
+> Bootstrap and both protected DBs are unchanged. The narrow post-merge
+> git-diff, CSS-contract, PostCSS, Flake8, tsc, Node-syntax, and Vitest gates
+> passed; all 156 screenshot hashes and protected identities remained unchanged.
+> Nothing was pushed. Evidence: `docs/CSS_PHASE4_WP4_3C_EVIDENCE.md`. **Wait for
+> explicit direction before beginning Volume Splitter, another WP4.3 page, or
+> WP4.4.**
 >
 > **2026-07-18 — WP4.3b Body Composition dark/token cleanup integrated locally
 > as merge `92291ed`.** Three exact repeated values now use semantic page-local

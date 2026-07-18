@@ -197,7 +197,10 @@ npx playwright test --project=chromium --reporter=line
   pytest **1736 + 2 catalog known-reds**, focused Progression Chromium **26/26**,
   and required Chromium **407/407**. Both visual reds exactly match WP4.0 at
   1,039 and 6,262 pixels; all twelve Progression images and all 156 screenshot
-  hashes are unchanged. It is not merged or pushed, and no later packet started.
+  hashes are unchanged.
+- WP4.3c was integrated into local `main` by history-preserving merge `e7feffa`;
+  its narrow post-merge gates passed and all protected identities remained
+  unchanged. Nothing was pushed, and no later packet started.
 - Phases -1–3 and WP4.-1/0a/0/1/2/3a/3b/3c are complete. **WPB.4 is
   unimplemented** pending one `Unassigned` session, unresolved denominator behavior, and golden review.
 Historical baselines live in `docs/MASTER_HANDOVER.md`. Re-verify after significant changes.

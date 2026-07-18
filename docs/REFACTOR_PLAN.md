@@ -4,10 +4,9 @@
 WP4.0, WP4.1, WP4.2, WP4.3a, WP4.3b, and WP4.3c are complete. WP2.2 is committed as `c461840`; optional WP3.6 is
 committed as `0cbedac`. WP4.0 measurement provenance remains unchanged head
 `e46b67e`, with its ledger committed as `ca725c2`. Local integration verification
-is complete through WP4.3b: the history-preserving local merge is `92291ed`, its
+is complete through WP4.3c: its history-preserving local merge is `e7feffa`, the
 narrow post-merge gates passed, and protected identities remained unchanged.
-WP4.3c is complete on its isolated branch but is not merged or pushed. Volume
-Splitter and later packets have not started.
+Nothing was pushed. Volume Splitter and later packets have not started.
 Track B is mostly shipped; WPB.4 remains unimplemented
 and product-risk gated.**
 
@@ -977,9 +976,11 @@ Chromium **26/26**, required Chromium **407/407**, and pytest **1,736 + 2 catalo
 known-reds** match the expected gates. All six Windows route variants pass; all
 twelve committed Progression images and all integrity locks are unchanged. The
 full suites reproduce only the exact WP4.0 known reds. Evidence:
-[`CSS_PHASE4_WP4_3C_EVIDENCE.md`](CSS_PHASE4_WP4_3C_EVIDENCE.md). The packet is
-not merged or pushed. Volume Splitter and later packets have not started; review
-and integrate only WP4.3c before another packet begins.
+[`CSS_PHASE4_WP4_3C_EVIDENCE.md`](CSS_PHASE4_WP4_3C_EVIDENCE.md). The packet was
+integrated into local `main` as merge `e7feffa`; narrow post-merge gates passed,
+all protected identities remained unchanged, and nothing was pushed. Volume
+Splitter and later packets have not started; wait for explicit direction before
+another packet begins.
 
 ### WP4.4 Shared bundles, navbar, and `theme-dark.css`
 

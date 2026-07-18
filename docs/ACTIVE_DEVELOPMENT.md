@@ -4,8 +4,8 @@ This file is the execution source of truth for autonomous development sessions. 
 
 ## Current Objective
 
-**2026-07-18 — Phase-4 WP4.3c Progression dark/token cleanup is complete in
-isolated `wt/wp4-3-progression-dark-token-cleanup`; it is not merged or pushed.**
+**2026-07-18 — Phase-4 WP4.3c Progression dark/token cleanup is integrated into
+local `main` as history-preserving merge `e7feffa`.**
 Exact repeated route values now use page-local tokens, including a dark
 Flatpickr-subtree vocabulary. Browser proof removed only a shared-owned dead dark
 card-copy rule and redundant fatigue colors; live dark goal-badge, fatigue-mix,
@@ -18,15 +18,17 @@ Chromium **407/407**, and pytest **1,736 + the two catalog known-reds**. All six
 Windows Progression variants passed; all twelve route images and all 156
 screenshots are byte-identical. Full update-free visuals reproduced only the exact
 1,039- and 6,262-pixel known reds. Generated Bootstrap and both protected DBs are
-unchanged. Evidence: `docs/CSS_PHASE4_WP4_3C_EVIDENCE.md`.
+unchanged. The narrow post-merge git-diff, CSS-contract, PostCSS, Flake8, tsc,
+Node-syntax, and Vitest gates passed; all protected identities remained unchanged.
+Nothing was pushed. Evidence: `docs/CSS_PHASE4_WP4_3C_EVIDENCE.md`.
 WPB.4 remains unimplemented and gated on retaining one synthetic `Unassigned` session,
 an explicit unresolved denominator decision, and intentional review of the exact golden
 diff before any behavior change.
 
 ## Next Action
 
-Review and integrate only the isolated WP4.3c Progression packet. Do not push or
-begin Volume Splitter, another WP4.3 page, or WP4.4 until explicitly directed.
+WP4.3c is integrated locally. Do not push or begin Volume Splitter, another WP4.3
+page, or WP4.4 until the next packet is explicitly directed.
 
 ---
 
