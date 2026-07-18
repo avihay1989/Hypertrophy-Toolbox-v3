@@ -1,12 +1,13 @@
 # Deep Refactor Plan — v3 (2026-07-04, full-scan grounded)
 
 **Status: Track A, Phases -1 through 3, and Phase-4 packets WP4.-1, WP4.0a,
-WP4.0, WP4.1, WP4.2, WP4.3a, and WP4.3b are complete. WP2.2 is committed as `c461840`; optional WP3.6 is
+WP4.0, WP4.1, WP4.2, WP4.3a, WP4.3b, and WP4.3c are complete. WP2.2 is committed as `c461840`; optional WP3.6 is
 committed as `0cbedac`. WP4.0 measurement provenance remains unchanged head
 `e46b67e`, with its ledger committed as `ca725c2`. Local integration verification
 is complete through WP4.3b: the history-preserving local merge is `92291ed`, its
-narrow post-merge gates passed, protected identities remained unchanged, and
-nothing was pushed. Progression and later packets have not started.
+narrow post-merge gates passed, and protected identities remained unchanged.
+WP4.3c is complete on its isolated branch but is not merged or pushed. Volume
+Splitter and later packets have not started.
 Track B is mostly shipped; WPB.4 remains unimplemented
 and product-risk gated.**
 
@@ -961,6 +962,24 @@ integrated into local `main` as merge `92291ed`; narrow post-merge gates passed,
 all protected identities remained unchanged, and nothing was pushed. Progression
 and later packets have not started; wait for explicit direction before beginning
 another packet.
+
+**WP4.3c Progression completed 2026-07-18 in isolated
+`wt/wp4-3-progression-dark-token-cleanup`.** Exact repeated route expressions now
+use semantic `--progression-*` tokens; repeated dark Flatpickr literals use four
+tokens scoped to the existing calendar owner. Browser auditing proved that the
+dark suggestion-card copy declaration was shared-owned and that three fatigue
+colors were redundant under the global dark token remaps. Only those dead or
+redundant properties were removed; live goal-badge, fatigue-mix, and Flatpickr
+dark owners remain. Computed values for 33 targets are identical in both themes.
+Pinned Stylelint falls **6,428 → 6,404** with no increase to duplicate,
+specificity, or important counts. Contracts **15/15**, focused Progression
+Chromium **26/26**, required Chromium **407/407**, and pytest **1,736 + 2 catalog
+known-reds** match the expected gates. All six Windows route variants pass; all
+twelve committed Progression images and all integrity locks are unchanged. The
+full suites reproduce only the exact WP4.0 known reds. Evidence:
+[`CSS_PHASE4_WP4_3C_EVIDENCE.md`](CSS_PHASE4_WP4_3C_EVIDENCE.md). The packet is
+not merged or pushed. Volume Splitter and later packets have not started; review
+and integrate only WP4.3c before another packet begins.
 
 ### WP4.4 Shared bundles, navbar, and `theme-dark.css`
 

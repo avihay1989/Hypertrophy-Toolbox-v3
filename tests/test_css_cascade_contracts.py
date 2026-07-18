@@ -319,3 +319,86 @@ def test_body_composition_tokens_keep_page_ownership_and_shared_heading_winner()
     assert 'data-page="body-composition"' in template
     assert 'data-bc-app="true"' in template
     assert "document.querySelector('[data-bc-app]')" in body_composition_js
+
+
+def test_progression_tokens_preserve_route_ownership_and_live_dark_cascade() -> None:
+    base = (ROOT / "templates" / "base.html").read_text(encoding="utf-8")
+    template = (ROOT / "templates" / "progression_plan.html").read_text(
+        encoding="utf-8"
+    )
+    css = (ROOT / "static" / "css" / "pages-progression.css").read_text(
+        encoding="utf-8"
+    )
+    components = (ROOT / "static" / "css" / "components.css").read_text(
+        encoding="utf-8"
+    )
+    progression_js = (
+        ROOT / "static" / "js" / "modules" / "progression-plan.js"
+    ).read_text(encoding="utf-8")
+
+    # Flatpickr loads immediately before the route bundle. The route remains
+    # before the late shared motion/theme boundary, and no document-wide :has()
+    # scope is introduced (it altered Progression mask compositing in WP4.2).
+    assert template.index("flatpickr.min.css") < template.index(
+        "css/pages-progression.css"
+    )
+    assert base.index("{% block page_css %}") < base.index("css/motion.css")
+    assert base.index("css/motion.css") < base.index("css/theme-dark.css")
+    assert "html:has(" not in css
+    assert ":root" not in css
+
+    for token, minimum_consumers in (
+        ("--progression-accent", 5),
+        ("--progression-badge-ink", 2),
+        ("--progression-badge-surface", 2),
+        ("--progression-copy-muted", 6),
+        ("--progression-copy-muted-dark", 2),
+        ("--progression-success", 3),
+        ("--progression-success-dark", 2),
+        ("--progression-calendar-accent", 3),
+        ("--progression-calendar-border", 3),
+        ("--progression-calendar-ink", 5),
+        ("--progression-calendar-surface", 5),
+    ):
+        assert css.count(f"{token}:") == 1
+        assert css.count(f"var({token})") >= minimum_consumers
+
+    # Shared important component rules own headings, suggestion-card titles,
+    # dark card copy, and table colors. The former route dark card-copy rule
+    # was dead; the remaining fatigue dark rule owns only its live mix changes.
+    assert ".glass-neumorph-card .card-title" in components
+    assert (
+        "[data-theme='dark'] .progression-plan-container "
+        ".glass-neumorph-card .card-text"
+    ) in components
+    assert "[data-theme='dark'] .progression-plan-container .suggestion-card .card-text" not in css
+    assert "[data-theme='dark'] .progression-fatigue__headline" not in css
+    assert "[data-theme='dark'] .progression-fatigue__advisory" not in css
+    dark_chip = re.search(
+        r"\[data-theme='dark'\] \.progression-fatigue__chip\s*\{(?P<body>.*?)\}",
+        css,
+        re.DOTALL,
+    )
+    assert dark_chip is not None
+    assert "background:" in dark_chip.group("body")
+    assert "border-color:" in dark_chip.group("body")
+    assert re.search(r"^\s*color\s*:", dark_chip.group("body"), re.MULTILINE) is None
+
+    # Live route-owned behavior and geometry selectors stay intact.
+    for selector in (
+        "#goalSettingModal {",
+        "#goalSettingModal.show {",
+        "[data-theme='dark'] .current-goals .goal-status-badge.bg-primary {",
+        "[data-theme='dark'] .current-goals .goal-status-badge.bg-success {",
+        "[data-theme='dark'] .flatpickr-calendar {",
+        ".progression-fatigue {",
+    ):
+        assert css.count(selector) == 1
+    assert css.count("@media (max-width: 767.98px)") == 1
+    assert css.count("@media (max-width: 768px)") == 1
+
+    assert 'class="progression-plan-container"' in template
+    assert 'id="exerciseSelect"' in template
+    assert 'id="suggestionsFatigueContext" hidden' in template
+    assert "document.getElementById('exerciseSelect')" in progression_js
+    assert "section.className = 'progression-fatigue'" in progression_js
