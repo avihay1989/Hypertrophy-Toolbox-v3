@@ -14,10 +14,8 @@ import {
     collectMissingAddFields,
     collectMissingRequiredSelections,
 } from './workout-plan-helpers.js';
-import {
-    applyUserProfileEstimateForSelectedExercise,
-    resetWeightUserDirty,
-} from './workout-plan-estimates.js';
+import { neutralizeEstimateState } from './workout-plan-estimates.js';
+import { WORKOUT_CONTROL_DEFAULTS } from './workout-controls-persistence.js';
 
 const addExerciseDeps = {
     refreshPlan: () => {},
@@ -281,7 +279,18 @@ async function sendExerciseData(exerciseData) {
         }
         addExerciseDeps.refreshPlan(); // Refresh the table
         notifyVolumeAffectingPlanChange('add-exercise');
-        resetFormFields();
+        // KI-005 criterion 3 (OWNER-2 ruling — Reading A): a successful Add
+        // Exercise RETAINS the user's pre-add control values. The former
+        // post-success reset (resetWeightUserDirty + re-apply of the profile
+        // estimate) overwrote them with defaults/estimates, so it is gone. Only
+        // a deliberate new exercise selection re-applies a recommendation.
+        //
+        // KI-005 / OWNER-10 (re-scoped OWNER-8): because Reading A keeps the user's
+        // own values, the estimate metadata no longer necessarily describes what is
+        // displayed, so it must not falsely claim to have produced it. Neutralize
+        // the estimate-only UI — display/state cleanup only; the six controls and
+        // their stored record are untouched.
+        neutralizeEstimateState();
     } catch (error) {
         logApiError('Error adding exercise:', error);
         showToast(isHandledApiError(error) ? 'warning' : 'error', error.message || 'Failed to add exercise');
@@ -291,23 +300,13 @@ async function sendExerciseData(exerciseData) {
     }
 }
 
-function resetFormFields() {
-    resetWeightUserDirty();
-    void applyUserProfileEstimateForSelectedExercise();
-}
-
 export function initializeDefaultValues() {
-    const defaultValues = {
-        'weight': 25,
-        'sets': 3,
-        'rir': 3,
-        'rpe': 7,
-        'min_rep': 6,
-        'max_rep_range': 8
-    };
-
-    // Set default values for each input field
-    Object.entries(defaultValues).forEach(([id, value]) => {
+    // Set default values for each input field. The pinned defaults live in one
+    // place — WORKOUT_CONTROL_DEFAULTS in the persistence module (KI-005 / TS-7).
+    // The init population here, the criterion-9 restore fallback, the Clear Plan
+    // reset, and the updateExerciseForm() fallback all source from that single
+    // set, so they cannot drift apart.
+    Object.entries(WORKOUT_CONTROL_DEFAULTS).forEach(([id, value]) => {
         const input = document.getElementById(id);
         if (input) {
             input.value = value;

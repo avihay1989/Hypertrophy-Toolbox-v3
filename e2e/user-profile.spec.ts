@@ -643,20 +643,43 @@ test.describe('User Profile', () => {
     await expect(page.locator('#workout-estimate-provenance')).toHaveText('from your profile');
     expect(estimateRequests).toBe(1);
 
-    const postAddEstimate = page.waitForResponse(response =>
-      response.url().includes('/api/user_profile/estimate') && response.status() === 200
-    );
     await page.locator(SELECTORS.ADD_EXERCISE_BTN).click();
-    await postAddEstimate;
     await expect(page.locator(SELECTORS.TOAST_BODY)).toContainText(/added|already/i);
 
+    // KI-005 / OWNER-2 (Reading A): a successful Add Exercise preserves the
+    // PRE-ADD control values. The six assertions below are the contract.
     await expect(page.locator('#weight')).toHaveValue('28.75');
     await expect(page.locator('#sets')).toHaveValue('3');
     await expect(page.locator('#min_rep')).toHaveValue('10');
     await expect(page.locator('#max_rep_range')).toHaveValue('15');
     await expect(page.locator('#rir')).toHaveValue('2');
     await expect(page.locator('#rpe')).toHaveValue('7.5');
-    await expect(page.locator('#workout-estimate-provenance')).toHaveText('from your profile');
+
+    // KI-005 / OWNER-10 (re-scoped OWNER-8): after a successful Add Exercise the
+    // ancillary estimate metadata — provenance explicitly named — must be
+    // NEUTRALIZED. Reading A keeps the user's pre-add values, so the estimate
+    // metadata no longer necessarily describes what is displayed and must NOT
+    // keep claiming a source for it. Neutral wording such as "current values"
+    // is fine (or the line may be hidden/cleared); a false source claim such as
+    // "from your profile" is not. This assertion is CRITERIA-DERIVED from the
+    // OWNER-10 ruling text alone (not from the implementation diff), and OWNER-10
+    // supersedes the OWNER-6-pinned `toHaveText('from your profile')` HERE only.
+    // The six Reading-A value assertions above and both estimateRequests locks
+    // (kept per OWNER-6) are untouched — the PRE-add provenance assertion (an
+    // exercise IS selected there, so the claim is true) also stays as-is.
+    const postAddProvenance = page.locator('#workout-estimate-provenance');
+    if (await postAddProvenance.isVisible()) {
+      await expect(postAddProvenance).not.toHaveText(
+        /from your profile|from your last set|population estimate|related exercise|learned/i,
+      );
+    }
+
+    // ...and it preserves them WITHOUT re-fetching/re-applying the estimate:
+    // the post-success reset/estimate path is gone (OWNER-2), so the estimate
+    // request count must be unchanged from the single deliberate-selection
+    // fetch above. A post-add estimate request here would mean the estimate is
+    // overwriting the user's values (the rejected Reading B).
+    expect(estimateRequests).toBe(1);
   });
 
   test('coverage map renders, flips Chest to measured after saving bench, and scrolls on click (Issue #19)', async ({ page }) => {

@@ -5,6 +5,7 @@
 // bindEstimateTraceToggle) and re-exports the first to preserve its surface.
 import { showToast } from './toast.js';
 import { api } from './fetch-wrapper.js';
+import { saveWorkoutControls } from './workout-controls-persistence.js';
 import {
     computeNudgedValue,
     estimateProvenanceLabel,
@@ -70,6 +71,73 @@ function applyEstimateToWorkoutControls(estimate) {
     }
 
     updateEstimateTraceUI(resolved);
+
+    // KI-005 / OWNER-9: this is one complete logical control update — ordinary
+    // estimate application AND the learned-reset / ignore-transfer re-apply both
+    // arrive here. `setWorkoutControlValue()` writes `field.value` directly (no
+    // `input` event), so no capture listener runs; persist once, after all six
+    // fields are settled, so the stored record matches what is displayed.
+    saveWorkoutControls();
+}
+
+// KI-005 / OWNER-10 — neutralize the estimate-ONLY UI so it no longer claims or
+// acts on an exercise that is no longer the displayed one. Two callers:
+//   - empty selection (the exercise dropdown was cleared) — the six controls and
+//     their stored record are left untouched (criterion 5), but the stale
+//     provenance / badge / chip / hand hint / trace and its action controls must
+//     not keep describing (or operating on) the de-selected exercise; and
+//   - a successful Add Exercise — Reading A retains the user's own control values
+//     (criterion 3), which no longer necessarily match the estimate metadata, so
+//     that metadata must not falsely claim to have produced them.
+// Display/state cleanup ONLY: it writes NO control value, issues NO estimate
+// request, recomputes NO fatigue, and mutates NO calibration (PR-1). If the
+// provenance label stays visible it carries neutral wording ("current values") —
+// never a false source claim.
+export function neutralizeEstimateState() {
+    // Forget the remembered estimate so the learned Apply/Keep/Reset actions, the
+    // ± nudges, and "Reset to suggestion" — all of which read latestTracePayload —
+    // cannot act on the de-selected exercise even if a stray node lingered.
+    latestTracePayload = null;
+
+    const provenance = document.getElementById('workout-estimate-provenance');
+    if (provenance) {
+        provenance.textContent = 'current values';
+    }
+
+    const badge = document.getElementById('workout-estimate-learned-badge');
+    if (badge) {
+        badge.hidden = true;
+        badge.dataset.confidence = '';
+        badge.removeAttribute('title');
+    }
+
+    const chip = document.getElementById('workout-estimate-fatigue-chip');
+    if (chip) {
+        chip.hidden = true;
+        chip.removeAttribute('title');
+    }
+
+    const handHint = document.getElementById('weight-hand-hint');
+    if (handHint) {
+        handHint.hidden = true;
+    }
+
+    // The learned Apply/Keep/Reset row and the ± nudge / Reset-to-suggestion row
+    // are rendered INSIDE the trace container. Clearing + hiding it (and hiding
+    // its toggle) removes those action controls, so none stays rendered and
+    // operable against a phantom prior exercise.
+    const toggle = document.getElementById('workout-estimate-trace-toggle');
+    const container = document.getElementById('workout-estimate-trace');
+    if (container) {
+        container.innerHTML = '';
+        container.hidden = true;
+    }
+    if (toggle) {
+        toggle.hidden = true;
+        toggle.setAttribute('aria-expanded', 'false');
+        const labelEl = toggle.querySelector('.workout-estimate-trace-toggle-label');
+        if (labelEl) labelEl.textContent = 'Show the math';
+    }
 }
 
 // Learned Calibration — compact source badge next to the provenance line.
@@ -126,6 +194,9 @@ function applyLearnedSuggestionToInputs() {
     // The user explicitly accepted the suggestion, so the weight is no longer a
     // pending manual edit — let later estimates flow in again.
     resetWeightUserDirty();
+    // KI-005 / OWNER-9: persist once, after the complete logical update, so the
+    // applied suggestion survives a reload (the writes above fire no `input`).
+    saveWorkoutControls();
     showToast('Suggestion applied');
 }
 
@@ -317,6 +388,10 @@ function nudgeWorkoutControl(id, direction) {
     const current = parseFloat(field.value);
     const next = computeNudgedValue(current, step, min, direction);
     setWorkoutControlValue(id, next);
+    // KI-005 / OWNER-9: a nudge is one complete logical control update. It writes
+    // `field.value` directly (no `input` event, deliberately), so persist here or
+    // the nudged value is lost on reload.
+    saveWorkoutControls();
 }
 
 // Restore the estimator's original Weight + Sets exactly from the last estimate.
@@ -327,6 +402,9 @@ function resetWorkoutControlsToSuggestion() {
     if (!estimate) return;
     setWorkoutControlValue('weight', estimate.weight);
     setWorkoutControlValue('sets', estimate.sets);
+    // KI-005 / OWNER-9: "Reset to suggestion" is one complete logical control
+    // update; persist the reset values so they survive a reload.
+    saveWorkoutControls();
 }
 
 // Build one labeled ± stepper group for a single Workout Controls input.
