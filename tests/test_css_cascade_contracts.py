@@ -276,3 +276,46 @@ def test_backup_tokens_remain_page_owned_under_the_late_global_theme() -> None:
     assert "--backup-warm" not in css
     assert 'class="backup-center-page" data-page="backup-center"' in template
     assert "document.querySelector('[data-page=\"backup-center\"]')" in backup_js
+
+
+def test_body_composition_tokens_keep_page_ownership_and_shared_heading_winner() -> None:
+    base = (ROOT / "templates" / "base.html").read_text(encoding="utf-8")
+    template = (ROOT / "templates" / "body_composition.html").read_text(
+        encoding="utf-8"
+    )
+    css = (ROOT / "static" / "css" / "pages-body-composition.css").read_text(
+        encoding="utf-8"
+    )
+    body_composition_js = (
+        ROOT / "static" / "js" / "modules" / "body-composition.js"
+    ).read_text(encoding="utf-8")
+
+    # The route bundle owns its exact feature vocabulary and loads before the
+    # shared theme. Generic heading color remains shared-components owned under
+    # both theme states.
+    assert base.index("{% block page_css %}") < base.index("css/theme-dark.css")
+    assert css.startswith(".body-composition-page {")
+    assert ":root" not in css
+    assert "!important" not in css
+
+    for token in (
+        "--bc-band-tick",
+        "--bc-copy-muted",
+        "--bc-copy-supporting",
+    ):
+        assert css.count(f"{token}:") == 1
+        assert css.count(f"var({token})") >= 2
+
+    assert css.count("--bc-accent-soft:") == 1
+    assert "[data-theme='dark'] .body-composition-header h1" not in css
+    heading_block = re.search(
+        r"\.body-composition-header h1\s*\{(?P<body>.*?)\}", css, re.DOTALL
+    )
+    assert heading_block is not None
+    assert "color:" not in heading_block.group("body")
+    assert "margin-bottom: 0.4rem;" in heading_block.group("body")
+
+    assert css.count("@media (min-width: 1100px)") == 1
+    assert 'data-page="body-composition"' in template
+    assert 'data-bc-app="true"' in template
+    assert "document.querySelector('[data-bc-app]')" in body_composition_js

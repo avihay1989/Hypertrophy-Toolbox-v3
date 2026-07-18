@@ -1,12 +1,13 @@
 # Deep Refactor Plan — v3 (2026-07-04, full-scan grounded)
 
 **Status: Track A, Phases -1 through 3, and Phase-4 packets WP4.-1, WP4.0a,
-WP4.0, WP4.1, WP4.2, and WP4.3a are complete. WP2.2 is committed as `c461840`; optional WP3.6 is
+WP4.0, WP4.1, WP4.2, WP4.3a, and WP4.3b are complete. WP2.2 is committed as `c461840`; optional WP3.6 is
 committed as `0cbedac`. WP4.0 measurement provenance remains unchanged head
 `e46b67e`, with its ledger committed as `ca725c2`. Local integration verification
 is complete through WP4.3a: the history-preserving local merge is `dc607fe`, its
 narrow post-merge gates passed, protected identities remained unchanged, and
-nothing was pushed. WP4.3b has not started.
+nothing was pushed. WP4.3b is complete in an isolated branch based on `b80c222`,
+awaiting review and integration; Progression and later packets have not started.
 Track B is mostly shipped; WPB.4 remains unimplemented
 and product-risk gated.**
 
@@ -943,6 +944,21 @@ known reds. All integrity locks are unchanged. Evidence:
 integrated into local `main` as merge `dc607fe`; narrow post-merge gates passed,
 all protected identities remained unchanged, nothing was pushed, and WP4.3b had
 not started. Begin only the Body Composition page packet next.
+
+**WP4.3b Body Composition completed 2026-07-18 in isolated
+`wt/wp4-3-body-composition-dark-token-cleanup`.** Three exact repeated route
+values now use semantic `--bc-*` tokens. Browser auditing proved the route's
+heading colors were dead because shared important component rules already win in
+both themes; those declarations and an unused dark `--bc-accent-soft` remap were
+removed with no rendered computed-style delta. Pinned Stylelint falls **6,435 →
+6,428** with no increase to duplicate, specificity, or important counts.
+Contracts **14/14**, focused Body Composition Chromium **9/9**, required
+Chromium **407/407**, and pytest **1,735 + 2 catalog known-reds** match the
+expected gates. All six Windows route variants pass; all twelve committed Body
+Composition images and all integrity locks are unchanged. The full suites
+reproduce only the exact WP4.0 known reds. Evidence:
+[`CSS_PHASE4_WP4_3B_EVIDENCE.md`](CSS_PHASE4_WP4_3B_EVIDENCE.md). Review and
+integrate this packet only; Progression and later packets have not started.
 
 ### WP4.4 Shared bundles, navbar, and `theme-dark.css`
 

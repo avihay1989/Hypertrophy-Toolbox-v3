@@ -4,6 +4,25 @@
 
 ## Current State
 
+> **2026-07-18 — WP4.3b Body Composition dark/token cleanup complete in
+> isolated `wt/wp4-3-body-composition-dark-token-cleanup`, based on local `main`
+> at `b80c222`.** Three exact repeated values now use semantic page-local tokens.
+> Browser proof established that shared important component rules—not the route
+> or late generic theme rule—own the heading color in both themes, so the dead
+> route declarations were removed. The unused dark `--bc-accent-soft` remap was
+> also removed with no rendered computed-style delta. Stylelint is **6,428
+> warnings (-7)** with duplicate, specificity, and important counts unchanged
+> and zero parse/config errors. Gates: contracts **14/14**, Flake8 **0**, tsc,
+> Node **64/64**, Vitest **105**, Body Composition Chromium **9/9**, required
+> Chromium **407/407**, and pytest **1,735 + 2 exact catalog known-reds**. All
+> six Windows route variants pass update-free; all twelve committed Body
+> Composition images are byte-identical. The full visual suites reproduce only
+> the exact **1,039/6,262** known reds. All 156 screenshots, generated Bootstrap,
+> and both protected DBs are byte-identical. Nothing was pushed or merged and
+> Progression, another WP4.3 page, and WP4.4 did not start. Evidence:
+> `docs/CSS_PHASE4_WP4_3B_EVIDENCE.md`. **Review and integrate this isolated
+> packet only.**
+>
 > **2026-07-18 — WP4.3a Backup token cleanup integrated locally as merge
 > `dc607fe`.**
 > Backup retains page-local ownership: five exact repeated values now use
