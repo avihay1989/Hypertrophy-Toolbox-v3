@@ -4,8 +4,9 @@
 WP4.0, WP4.1, and WP4.2 are complete. WP2.2 is committed as `c461840`; optional WP3.6 is
 committed as `0cbedac`. WP4.0 measurement provenance remains unchanged head
 `e46b67e`, with its ledger committed as `ca725c2`. Local integration verification
-is complete through WP4.1; WP4.2 is committed locally for review and integration,
-and WP4.3 has not started. Track B is mostly shipped; WPB.4 remains unimplemented
+is complete through WP4.2: the history-preserving local merge is `d695188`, its
+narrow post-merge gates passed, and nothing was pushed. WP4.3 has not started.
+Track B is mostly shipped; WPB.4 remains unimplemented
 and product-risk gated.**
 
 This supersedes v2. It incorporates:
@@ -905,8 +906,9 @@ files shrink by a net **3,668 lines**. Contracts **12/12**, affected Chromium
 and update-free visual locks all match. Stylelint falls from the 7,202 baseline
 to **6,444** with unchanged selector ceiling warning counts and zero parse/config
 errors. All 156 snapshots, generated Bootstrap, and protected DBs are unchanged.
-Evidence: [`CSS_PHASE4_WP4_2_EVIDENCE.md`](CSS_PHASE4_WP4_2_EVIDENCE.md). WP4.3
-has not started.
+Evidence: [`CSS_PHASE4_WP4_2_EVIDENCE.md`](CSS_PHASE4_WP4_2_EVIDENCE.md). The
+packet was integrated into local `main` as merge `d695188`; narrow post-merge
+gates passed, nothing was pushed, and WP4.3 had not started.
 
 ### WP4.3 Page dark-mode/token cleanup
 

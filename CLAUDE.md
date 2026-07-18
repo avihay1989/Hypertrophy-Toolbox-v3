@@ -173,6 +173,8 @@ npx playwright test --project=chromium --reporter=line
 ## 5. Current State & Risks
 
 ### Verified test counts (2026-07-18 — Phase 3 through WP4.2 complete)
+- WP4.2 was integrated into local `main` by history-preserving merge `d695188`.
+  Narrow post-merge gates passed; nothing was pushed and WP4.3 had not started.
 - WP4.2 gates: contracts **12**, flake8 **0**, tsc pass, Node syntax **64/64**,
   Vitest **105**, pytest **1733 + 2 catalog known-reds**, affected Chromium
   **84/84**, and required Chromium **407/407**. Both visual reds exactly match

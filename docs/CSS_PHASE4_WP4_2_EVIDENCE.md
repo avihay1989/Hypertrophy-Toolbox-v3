@@ -127,6 +127,7 @@ No snapshot was updated and no push, merge, rebase, or WP4.3 work occurred.
 
 ## Next action
 
-Review and integrate the local WP4.2 commit into local `main` with a
-history-preserving merge, then rerun the narrow integration gates. Do not push;
-begin WP4.3 only after that local integration is explicitly accepted.
+WP4.2 was subsequently integrated into local `main` by the history-preserving
+merge `d695188`. The narrow post-merge gates passed; nothing was pushed and
+WP4.3 had not started. Begin only WP4.3a Backup page dark-mode/token cleanup in
+a new visual-seeded isolated worktree.

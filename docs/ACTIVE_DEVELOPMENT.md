@@ -4,8 +4,8 @@ This file is the execution source of truth for autonomous development sessions. 
 
 ## Current Objective
 
-**2026-07-18 — Phase-4 WP4.2 shared-frame dedupe is complete in
-`wt/wp4-2-shared-frame-dedupe`; WP4.3 has not started.** Shared frame rules are
+**2026-07-18 — Phase-4 WP4.2 shared-frame dedupe is integrated into local
+`main` as history-preserving merge `d695188`; WP4.3 has not started.** Shared frame rules are
 owned once in `components.css` under direct zero-specificity route scope; log and
 summary surfaces remain route-owned. The rejected document-wide `html:has(...)`
 gate changed Chromium's masked Progression raster without changing a winning rule;
@@ -15,16 +15,17 @@ pytest **1,733 + the two catalog known-reds**, affected Chromium **84/84**, requ
 Chromium **407/407**, and contracts **12/12**. Final Stylelint is **6,444 warnings**
 with zero parse/config errors. Update-free visuals reproduced the exact WP4.0
 1,039- and 6,262-pixel known reds. All 156 screenshots, generated Bootstrap CSS,
-and both protected DBs stayed byte-identical. No push, merge, rebase, or WP4.3 work.
+and both protected DBs stayed byte-identical. The narrow post-merge gates passed;
+nothing was pushed and no WP4.3 work occurred.
 WPB.4 remains unimplemented and gated on retaining one synthetic `Unassigned` session,
 an explicit unresolved denominator decision, and intentional review of the exact golden
 diff before any behavior change.
 
 ## Next Action
 
-Review and integrate the local WP4.2 commit into local `main` with a
-history-preserving merge and re-run the narrow integration gates. Do not push;
-begin WP4.3 only after the local integration is explicitly accepted.
+Create a visual-seeded isolated worktree from the updated local `main`, then
+begin only WP4.3a Backup page dark-mode/token cleanup. Do not push, merge the
+WP4.3a branch, or begin another WP4.3 page.
 
 ---
 
