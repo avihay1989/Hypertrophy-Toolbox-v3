@@ -150,6 +150,9 @@ The twelve committed Body Composition images also remained byte-identical:
 
 ## Next action
 
-Review and integrate this isolated WP4.3b commit only. Nothing was pushed or
-merged, no snapshot was changed, and Progression, another WP4.3 page, and WP4.4
-must not begin until this packet is integrated and explicitly directed.
+WP4.3b was subsequently integrated into local `main` by the history-preserving
+merge `92291ed`. Narrow post-merge git-diff, CSS-contract, Flake8, tsc,
+Node-syntax, and Vitest gates passed. All 156 screenshot hashes and the protected
+Bootstrap and database identities remained unchanged. Nothing was pushed, and
+Progression, another WP4.3 page, and WP4.4 had not started. Wait for explicit
+direction before beginning another packet.

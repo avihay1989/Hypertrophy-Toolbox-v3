@@ -4,9 +4,9 @@ This file is the execution source of truth for autonomous development sessions. 
 
 ## Current Objective
 
-**2026-07-18 — Phase-4 WP4.3b Body Composition dark/token cleanup is complete
-in isolated `wt/wp4-3-body-composition-dark-token-cleanup`, based on local `main`
-at `b80c222`.** Three exact repeated values now use semantic page-local tokens.
+**2026-07-18 — Phase-4 WP4.3b Body Composition dark/token cleanup is integrated
+into local `main` as history-preserving merge `92291ed`.** Three exact repeated
+values now use semantic page-local tokens.
 The dead route heading colors were removed after browser proof showed shared
 important component rules already win in both themes; the unused dark
 `--bc-accent-soft` remap was also removed without changing any rendered value.
@@ -17,8 +17,11 @@ specificity, and important counts unchanged. Gates: contracts **14/14**, Flake8
 known-reds**. All six Windows Body Composition variants passed; the twelve
 committed route images are byte-identical. Full update-free visuals reproduced
 only the exact 1,039- and 6,262-pixel known reds. All 156 screenshots, generated
-Bootstrap, and both protected DBs are byte-identical. Nothing was pushed or
-merged, and Progression, another WP4.3 page, and WP4.4 did not start. Evidence:
+Bootstrap, and both protected DBs are byte-identical. The narrow post-merge
+git-diff, CSS-contract, Flake8, tsc, Node-syntax, and Vitest gates all passed;
+all 156 screenshot hashes and protected DB/Bootstrap identities remained
+unchanged. Nothing was pushed, and Progression, another WP4.3 page, and WP4.4
+had not started. Evidence:
 `docs/CSS_PHASE4_WP4_3B_EVIDENCE.md`.
 WPB.4 remains unimplemented and gated on retaining one synthetic `Unassigned` session,
 an explicit unresolved denominator decision, and intentional review of the exact golden
@@ -26,9 +29,8 @@ diff before any behavior change.
 
 ## Next Action
 
-Review and integrate only the isolated WP4.3b commit. Do not push or begin
-Progression, another WP4.3 page, or WP4.4 until integration is complete and the
-next packet is explicitly directed.
+WP4.3b is integrated locally. Do not push or begin Progression, another WP4.3
+page, or WP4.4 until the next packet is explicitly directed.
 
 ---
 

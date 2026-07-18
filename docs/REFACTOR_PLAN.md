@@ -4,10 +4,9 @@
 WP4.0, WP4.1, WP4.2, WP4.3a, and WP4.3b are complete. WP2.2 is committed as `c461840`; optional WP3.6 is
 committed as `0cbedac`. WP4.0 measurement provenance remains unchanged head
 `e46b67e`, with its ledger committed as `ca725c2`. Local integration verification
-is complete through WP4.3a: the history-preserving local merge is `dc607fe`, its
+is complete through WP4.3b: the history-preserving local merge is `92291ed`, its
 narrow post-merge gates passed, protected identities remained unchanged, and
-nothing was pushed. WP4.3b is complete in an isolated branch based on `b80c222`,
-awaiting review and integration; Progression and later packets have not started.
+nothing was pushed. Progression and later packets have not started.
 Track B is mostly shipped; WPB.4 remains unimplemented
 and product-risk gated.**
 
@@ -957,8 +956,11 @@ Chromium **407/407**, and pytest **1,735 + 2 catalog known-reds** match the
 expected gates. All six Windows route variants pass; all twelve committed Body
 Composition images and all integrity locks are unchanged. The full suites
 reproduce only the exact WP4.0 known reds. Evidence:
-[`CSS_PHASE4_WP4_3B_EVIDENCE.md`](CSS_PHASE4_WP4_3B_EVIDENCE.md). Review and
-integrate this packet only; Progression and later packets have not started.
+[`CSS_PHASE4_WP4_3B_EVIDENCE.md`](CSS_PHASE4_WP4_3B_EVIDENCE.md). The packet was
+integrated into local `main` as merge `92291ed`; narrow post-merge gates passed,
+all protected identities remained unchanged, and nothing was pushed. Progression
+and later packets have not started; wait for explicit direction before beginning
+another packet.
 
 ### WP4.4 Shared bundles, navbar, and `theme-dark.css`
 

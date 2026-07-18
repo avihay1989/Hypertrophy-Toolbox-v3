@@ -189,8 +189,10 @@ npx playwright test --project=chromium --reporter=line
   **9/9**, and required Chromium **407/407**. Both visual reds exactly match
   WP4.0 at 1,039 and 6,262 pixels; all twelve Body Composition images and all
   156 screenshot hashes are unchanged.
-- Phases -1–3 and WP4.-1/0a/0/1/2/3a/3b are complete; WP4.3b awaits review and
-  local integration, and Progression has not started. **WPB.4 is
+- WP4.3b was integrated into local `main` by history-preserving merge `92291ed`;
+  its narrow post-merge gates passed and all protected identities remained
+  unchanged. Nothing was pushed and Progression had not started.
+- Phases -1–3 and WP4.-1/0a/0/1/2/3a/3b are complete. **WPB.4 is
   unimplemented** pending one `Unassigned` session, unresolved denominator behavior, and golden review.
 Historical baselines live in `docs/MASTER_HANDOVER.md`. Re-verify after significant changes.
 
