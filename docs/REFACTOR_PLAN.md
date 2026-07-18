@@ -1,11 +1,12 @@
 # Deep Refactor Plan — v3 (2026-07-04, full-scan grounded)
 
 **Status: Track A, Phases -1 through 3, and Phase-4 packets WP4.-1, WP4.0a,
-WP4.0, and WP4.1 are complete. WP2.2 is committed as `c461840`; optional WP3.6 is
+WP4.0, WP4.1, and WP4.2 are complete. WP2.2 is committed as `c461840`; optional WP3.6 is
 committed as `0cbedac`. WP4.0 measurement provenance remains unchanged head
 `e46b67e`, with its ledger committed as `ca725c2`. Local integration verification
-is complete through WP4.0; WP4.2 is next but has not started. Track B is mostly shipped;
-WPB.4 remains unimplemented and product-risk gated.**
+is complete through WP4.1; WP4.2 is committed locally for review and integration,
+and WP4.3 has not started. Track B is mostly shipped; WPB.4 remains unimplemented
+and product-risk gated.**
 
 This supersedes v2. It incorporates:
 
