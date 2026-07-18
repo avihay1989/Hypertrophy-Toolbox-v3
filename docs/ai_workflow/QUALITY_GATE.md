@@ -2,6 +2,23 @@
 
 *Required gates per change type. Used by `/unslop` and `/verify-and-polish` to decide which tests and reviewers to run. This file is the canonical implemented version of the Tier 1 quality gate.*
 
+## Plan-stage routing
+
+Planning size determines which approval gates happen before implementation. It does
+not change the test or reviewer requirements derived from the changed paths below.
+
+| Planning size | Definition | Required planning gates | Repository examples |
+|---|---|---|---|
+| **Trivial** | Fully specified, single-file, and **no schema, API, or calculation surface** | No Gate 0 or council; proceed to the applicable implementation gate | Correct a product-doc typo; rename a local test variable; clarify a comment without changing behavior |
+| **Medium** | Bounded behavior or workflow change with known scope and contracts | Gate 1 (plan approval); Gate 0 may be added when requirements are ambiguous | Add a validation case to an existing route; adjust one existing UI interaction with known E2E coverage; extract a bounded helper while preserving its interface |
+| **Large / ambiguous / new workflow** | Cross-cutting work, unclear requirements, a new workflow, or any schema/API/calculation-surface change | Gate 0 (requirements approval) + Gate 1 (council-reviewed plan approval) | Add a new blueprint or table; change Effective Sets/progression/fatigue calculations; introduce a new agent workflow |
+
+**Run the union, never the weaker set.** Planning size never removes a test or
+reviewer required by the change-type table. The empty-union `/verify-suite` fallback
+under Targeted-test derivation applies only to implementation-gate derivation; a
+docs-only change whose row explicitly requires no tests does not escalate to the full
+suite.
+
 ## Change-type → gates table
 
 | Change type | Path globs | Required gates | Required reviewers |
