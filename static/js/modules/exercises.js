@@ -1,5 +1,5 @@
 import { showToast } from './toast.js';
-import { fetchWorkoutPlan } from './workout-plan.js';
+import { fetchWorkoutPlan, resetWorkoutControlsToDefaults } from './workout-plan.js';
 import { notifyVolumeAffectingPlanChange } from './workout-plan-events.js';
 import { api } from './fetch-wrapper.js';
 
@@ -59,6 +59,10 @@ export async function clearWorkoutPlan() {
         showToast(result.message || 'Workout plan cleared successfully!');
         fetchWorkoutPlan(); // Refresh the table to show empty state
         notifyVolumeAffectingPlanChange('clear-workout-plan');
+        // KI-005 criterion 4: Clear Plan resets the six Workout Controls to
+        // the pinned template defaults (under suppression) and removes the
+        // stored record LAST, leaving the key absent (OWNER-1.4).
+        resetWorkoutControlsToDefaults();
     } catch (error) {
         console.error('Error clearing workout plan:', error);
         showToast(`Unable to clear workout plan: ${error.message}`, true);

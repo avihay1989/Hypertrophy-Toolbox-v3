@@ -9,6 +9,8 @@
 - `.claude/SHARED_PLAN.md` — optional local planning/audit trail if present; Tier 1 artifacts here should stand on their own
 
 ## Active feature plans
+- [Agent workflow v2.2](../agent_roles/PLANNING.md) — manager, requirements,
+  implementation, and independent-QA role rollout; Gate 0/Gate 1 approved 2026-07-11
 - [Fatigue meter](../fatigue_meter/PLANNING.md) — Phase 1 shipped; Phase 2 Path 1 shipped 2026-05-23 via PR #35 (`d5b80bf`); Phase 2 Stage 3 verify-suite gate closed 2026-05-24 (`1a93f66`); [Phase 2 Stage 4](../fatigue_meter/PHASE2_PLANNING.md) calibration window open 2026-05-24, earliest close 2026-06-07 (no per-muscle threshold tuning without ≥2 same-direction real-use disagreements). Phase 1 Stage 4 closed 2026-05-20 with no threshold changes.
 - [workout.cool integration](../workout_cool_integration/PLANNING.md) — §3 + §3.6 + §4 + §4.6 + §5 all shipped (§3.6 Profile bodymap landed 2026-05-23, `18ad223`; §5 first curated batch landed 2026-05-22, `cf21191`)
 - [YouTube reference videos](../workout_cool_integration/YOUTUBE_REFERENCE_VIDEOS.md) — closed 2026-05-23 (`cf21191` 36 rows + `ff244aa` +20 rows = **56 curated rows**); long tail uses the search fallback by design
@@ -27,6 +29,8 @@
 ## Workflow artifacts
 - [Quality Gate](QUALITY_GATE.md) — change-type → required tests/reviewers map
 - [Autonomy Model](AUTONOMY.md) — Codex/Claude approval, sandbox, worktree, and review boundaries
+- [Parallel Workflow](PARALLEL_WORKFLOW.md) — one manager-led feature per checkout,
+  DB isolation, and the tracked-DB commit rule
 - Folder orientation maps (Claude Code auto-loads on path entry):
   - [routes/CLAUDE.md](../../routes/CLAUDE.md)
   - [utils/CLAUDE.md](../../utils/CLAUDE.md)
@@ -34,10 +38,19 @@
   - [e2e/CLAUDE.md](../../e2e/CLAUDE.md)
   - [templates/CLAUDE.md](../../templates/CLAUDE.md)
   - [static/js/CLAUDE.md](../../static/js/CLAUDE.md)
-- [Plan Review Template](PLAN_REVIEW_TEMPLATE.md) — Plan v1 → council findings → response matrix → Plan v2 (used by `/council-plan`)
+- [Plan Review Template](PLAN_REVIEW_TEMPLATE.md) — size-conditional Section 0 / Gate 0 → Plan v1 → council findings → response matrix → Plan v2
+- Skills live in `.claude/skills/<name>/SKILL.md`; the requirements workflow lives
+  at `.claude/skills/requirements/SKILL.md`, is owned by `product-manager`, and stays
+  strictly Section-0-only (stops at Gate 0). `product-manager`'s broader write
+  ownership — the entire active `docs/<feature>/PLANNING.md`, including Plan v1, the
+  response matrix, and Plan v2 when the read-only `manager` delegates them during
+  `/council-plan` — is documented in [AUTONOMY.md](AUTONOMY.md#workflow-roles).
 - Slash commands: `/handover`, `/unslop`, `/verify-and-polish`, `/council-plan` (in `.claude/commands/`)
 - Agents (diff-time): `code-reviewer`, `unslop-reviewer` (in `.claude/agents/`)
 - Agents (plan-time, council): `architecture-reviewer`, `test-strategist`, `product-risk-reviewer` (in `.claude/agents/`)
+- Active workflow roles: `manager`, `product-manager`, `senior-developer`,
+  `automation-qa`, `manual-qa-reviewer` (implemented and dry-run in Phase 3 of
+  the agent workflow plan; default-manager activation remains Phase 6-gated).
 
 ## Baselines (gitignored, generated locally)
 - `baseline_pytest.txt`, `baseline_e2e.txt` — last full-suite outputs; not in git

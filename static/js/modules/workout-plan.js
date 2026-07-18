@@ -14,6 +14,7 @@ import {
     applyUserProfileEstimateForSelectedExercise,
     bindEstimateTraceToggle,
     initializeWeightDirtyTracking,
+    neutralizeEstimateState,
     resetWeightUserDirty,
 } from './workout-plan-estimates.js';
 import {
@@ -34,6 +35,17 @@ import {
     updateSupersetActionButtons,
 } from './workout-plan-supersets.js';
 import { initializeWorkoutPlanMedia } from './workout-plan-media.js';
+import {
+    applyWorkoutControlDefaults,
+    beginHydration,
+    clearWorkoutControls,
+    endHydration,
+    restoreWorkoutControls,
+    saveWorkoutControls,
+    withHydrationSuppressed,
+    WORKOUT_CONTROL_DEFAULTS,
+    WORKOUT_CONTROL_IDS,
+} from './workout-controls-persistence.js';
 
 initializeWorkoutPlanMedia();
 
@@ -180,15 +192,10 @@ export async function updateExerciseForm(exercise) {
     // Preserve the currently selected routine
     const selectedRoutine = document.getElementById('routine').value;
 
-    // Define default values
-    const defaultValues = {
-        'sets': '3',
-        'min_rep': '6',
-        'max_rep_range': '8',
-        'rir': '3',
-        'weight': '25',  // Default weight is 25
-        'rpe': '7'
-    };
+    // KI-005 cleanup: source the fallback defaults from the single pinned set in
+    // the persistence module (its keys are exactly the six control ids) instead
+    // of a third hardcoded copy, so the "single source of defaults" claim holds.
+    const defaultValues = WORKOUT_CONTROL_DEFAULTS;
 
     try {
         const data = await api.get(`/get_exercise_info/${exercise}`, { showLoading: false, showErrorToast: false });
@@ -209,7 +216,7 @@ export async function updateExerciseForm(exercise) {
     } catch (error) {
         console.error('Error updating exercise form:', error);
         showToast(error.message || 'Failed to load exercise recommendations', true);
-        
+
         // On error, set default values
         document.getElementById('sets').value = defaultValues.sets;
         document.getElementById('min_rep').value = defaultValues.min_rep;
@@ -218,6 +225,11 @@ export async function updateExerciseForm(exercise) {
         document.getElementById('weight').value = defaultValues.weight;
         document.getElementById('rpe').value = defaultValues.rpe;
     }
+
+    // KI-005 cleanup: no persistence hook here. `updateExerciseForm()` has no
+    // in-app caller — it is reached only through the legacy `window.updateExerciseForm`
+    // global (static/js/app.js) — so the deliberate-selection save lives on the
+    // exercise `change` handler (handleExerciseSelection), which is the real path.
 }
 
 function handleExerciseSelection() {
@@ -227,17 +239,40 @@ function handleExerciseSelection() {
     exerciseSelect.addEventListener('change', (e) => {
         const selectedExercise = e.target.value;
 
-        // Clear validation error when user selects a valid value
-        if (selectedExercise) {
-            setFieldValidationState('exercise', false);
-            updateExerciseDetails(selectedExercise);
+        // KI-005 criterion 5 (OWNER-4 ruling): an EMPTY selection must not touch
+        // the six Workout Controls AT ALL. Clearing the dropdown is not a
+        // deliberate exercise choice — it happens on Clear Filters
+        // (filters.js clearFilters()) and whenever a filter/routine rebuild
+        // drops the current selection (updateExerciseDropdown() below). The
+        // estimate path writes the generic default estimate into all six
+        // controls but skips the save, which desynced the DOM from
+        // sessionStorage and resurrected the cleared values on the next reload.
+        // Writing-and-saving the defaults instead is explicitly rejected: that
+        // would CLEAR the controls, contradicting criterion 5's "retain".
+        //
+        // KI-005 / OWNER-10: the six controls stay put, but the estimate-ONLY UI
+        // from the previously selected exercise must not keep claiming (or acting
+        // on) an exercise that is no longer selected. Neutralize it — display/state
+        // cleanup only, no control-value write, no estimate request.
+        if (!selectedExercise) {
+            neutralizeEstimateState();
+            return;
         }
-        // Exercise selection is the one-shot trigger that re-applies the
-        // profile estimate (Issue #5). Reset the dirty flag so the new
-        // estimate overwrites whatever the user typed for the previous
+
+        // Clear validation error when user selects a valid value
+        setFieldValidationState('exercise', false);
+        updateExerciseDetails(selectedExercise);
+
+        // A deliberate exercise selection is the one-shot trigger that
+        // re-applies the profile estimate (Issue #5). Reset the dirty flag so
+        // the new estimate overwrites whatever the user typed for the previous
         // exercise.
         resetWeightUserDirty();
-        void applyUserProfileEstimateForSelectedExercise();
+        void applyUserProfileEstimateForSelectedExercise().then(() => {
+            // KI-005 (AR-1 × OWNER-1.3): a DELIBERATE selection's recommendation
+            // IS the intended displayed state, so persist it.
+            saveWorkoutControls();
+        });
     });
 }
 
@@ -353,13 +388,74 @@ export function updateWorkoutPlanUI(data) {
     }
 }
 
-export function initializeWorkoutPlanHandlers() {
-    // Initialize default values
-    initializeDefaultValues();
+/**
+ * KI-005 — attach the Workout Controls capture listeners. Called only after
+ * hydration has restored the stored record (OWNER-1.2).
+ *
+ * `input` (AR-4 ruling) is the capture trigger: synchronous, no debounce, and
+ * purely a read — it never clamps, parses back into, or otherwise mutates the
+ * field, so a mid-entry value survives a reload without the user ever blurring.
+ * The pre-existing `change` handler (registered above, so it runs first) still
+ * owns commit-time clamping; the listener below then persists the final clamped
+ * value.
+ */
+function initializeWorkoutControlsPersistence() {
+    WORKOUT_CONTROL_IDS.forEach((id) => {
+        const input = document.getElementById(id);
+        if (!input) return;
+        input.addEventListener('input', () => saveWorkoutControls());
+        input.addEventListener('change', () => saveWorkoutControls());
+    });
+}
 
-    // Track manual edits to the Weight input so the profile estimate does
-    // not overwrite them on subsequent re-applies (Issue #5).
-    initializeWeightDirtyTracking();
+/**
+ * KI-005 criterion 4 (AR-2 / OWNER-1.4) — reset the six controls to the pinned
+ * template defaults and drop the stored record. Exported for `clearWorkoutPlan()`.
+ *
+ * The DOM reset runs under suppression, and the key is removed LAST so it is
+ * left ABSENT rather than immediately re-saved as defaults.
+ */
+export function resetWorkoutControlsToDefaults() {
+    withHydrationSuppressed(() => {
+        applyWorkoutControlDefaults();
+    });
+    clearWorkoutControls();
+}
+
+export function initializeWorkoutPlanHandlers() {
+    // KI-005 hydration ordering (OWNER-1): every save path is suppressed until
+    // the stored record has been restored, so initial default population cannot
+    // overwrite it, and no listener can replace it before restore has run.
+    beginHydration();
+    try {
+        // Initialize default values
+        initializeDefaultValues();
+
+        // Track manual edits to the Weight input so the profile estimate does
+        // not overwrite them on subsequent re-applies (Issue #5).
+        initializeWeightDirtyTracking();
+
+        // Restore the stored controls over the just-populated template defaults —
+        // saved-wins (criterion 8); invalid values fall back per field (criterion 9).
+        const { restored } = restoreWorkoutControls();
+
+        // AR-3 ruling: a restored #weight counts as a user edit, so an unrelated
+        // profile-estimate re-apply cannot immediately clobber it. Re-using the
+        // field's own `input` signal is what `initializeWeightDirtyTracking()`
+        // already listens for. A deliberate exercise selection still resets the flag
+        // and applies that exercise's recommendation (unchanged behavior).
+        if (restored.includes('weight')) {
+            document.getElementById('weight')?.dispatchEvent(new Event('input'));
+        }
+
+        // Capture listeners go live only now (OWNER-1.2).
+        initializeWorkoutControlsPersistence();
+    } finally {
+        // Correctness cleanup (KI-005): end hydration in `finally` so a throw
+        // anywhere above cannot leave `hydrating` stuck true for the page's life,
+        // which would silently no-op every subsequent save.
+        endHydration();
+    }
 
     // Issue #17 — bind the per-suggestion "show the math" trace expander.
     bindEstimateTraceToggle();

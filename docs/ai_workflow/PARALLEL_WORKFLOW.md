@@ -23,6 +23,14 @@ Don't fork for:
 - Single-agent sequential work — the main checkout is fine.
 - Docs-only edits that don't touch `data/`.
 
+## Manager-session ownership
+
+One manager-led feature owns one checkout. For sequential work, launch the manager in
+the main checkout. Before starting a second feature concurrently, create its isolated
+checkout first and launch a separate manager session there. Subagents operate inside
+their parent manager's checkout; the manager does not create, merge, or move
+worktrees.
+
 ## Forking — the short version
 
 ```powershell
@@ -62,11 +70,14 @@ Auto-backups land in the worktree's own `data/auto_backup/`. They never need to 
 
 `data/database.db` is currently tracked in this repo, so `git worktree add` checks HEAD's copy out into the new worktree before the seed step runs. The script then calls `git update-index --skip-worktree data/database.db` *inside the new worktree only*. That hides subsequent seed writes from `git status` and lets `git worktree remove` succeed cleanly when you tear down.
 
-If you ever genuinely need to commit a `data/database.db` change from a worktree, undo the flag first:
+### Tracked-DB commit rule
 
-```powershell
-git update-index --no-skip-worktree data/database.db
-```
+Only one workstream at a time may prepare a deliberate `data/database.db` change, and
+only the repository owner may commit it from the main checkout. Feature worktrees may
+copy and mutate their isolated DB for development or verification, but must never
+stage or commit that binary. Do not undo `--skip-worktree` in a feature worktree to
+bypass this rule. Coordinate the exceptional owner-led DB commit before making it so
+no other workstream is preparing one concurrently.
 
 The root cause is that `data/database.db` should arguably not be tracked at all. Untracking it (`git rm --cached data/database.db`) is a separate, larger change with cross-cutting consequences for fresh clones — out of scope for the worktree script.
 
