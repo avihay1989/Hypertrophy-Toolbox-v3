@@ -79,7 +79,7 @@ test.describe('§4 visual baseline — workout_plan thumbnails', () => {
 
           // Save screenshot artifact (full table only — keeps diff size sane).
           await prepareForScreenshot(page);
-          const target = page.locator('.workout-plan-table, #workout_plan_table_body').first();
+          const target = page.getByTestId('exercise-table');
           await expect(target).toHaveScreenshot(`${label}.png`, elementScreenshotOptions());
 
           await context.close();
@@ -121,7 +121,7 @@ test.describe('§4 visual baseline — workout_log thumbnails', () => {
         expect(htmlTheme).toBe(theme);
 
         await prepareForScreenshot(page);
-        const target = page.locator('.workout-log-table, #workout-log-table').first();
+        const target = page.getByTestId('workout-log-table');
         await expect(target).toHaveScreenshot(`${label}.png`, elementScreenshotOptions());
 
         await context.close();

@@ -4,14 +4,32 @@ This file is the execution source of truth for autonomous development sessions. 
 
 ## Current Objective
 
-**2026-07-05 — Deep Refactor Plan v3 Phase -1 shipped; Phase 0 next.** Current `main`
-baseline is `cbd5a25`: Phase -1 closed through PR #110 with 1684 pytest tests and
-required functional shards 206 + 202 green. Track B has shipped WPB.1 (#103), WPB.2
-(#107), WPB.5 (#101), WPB.7 (#102), WPB.8 (#104), and WPB.9 (#100 plus the
-required-context promotion after PRs #100–#109 ran green). WPB.3, WPB.4, and WPB.6
-remain prerequisite-gated. WP0.1 and WP0.2 have read-only execution audits; Phase-0
-source changes have not started. See `docs/REFACTOR_PLAN.md` and
-`docs/MASTER_HANDOVER.md` for the canonical packet/status map.
+**2026-07-19 — Phase-4 WP4.3d Volume Splitter dark/token cleanup is integrated
+into local `main` as history-preserving merge `40bc09f`.** Exact repeated
+status, accent, heading, and dark-surface values now use page-local semantic
+tokens. Browser ownership proof removed only dead/redundant dark properties
+already won by shared components or later type-specific rules; all live result
+and suggestion owners remain. Thirty-seven stable dynamic targets per theme are
+identical, with stylesheet order and hooks unchanged. Stylelint is **6,364
+warnings** (**-40**: hardcoded **-36**, important **-4**) with duplicate and
+specificity counts unchanged. Gates: contracts **16/16**, Flake8 **0**, tsc,
+Node **64/64**, Vitest **105/105**, focused Volume Splitter Chromium **27/27**,
+required Chromium **407/407**, and pytest **1,737 + the two catalog known-reds**.
+All six Windows Volume Splitter variants passed; all twelve route images and all
+156 screenshots are byte-identical. Full update-free visuals reproduced only the
+exact 1,039- and 6,262-pixel known reds. Generated Bootstrap and both protected
+DBs are unchanged. The narrow post-merge git-diff, contract, PostCSS, Flake8,
+tsc, Node-syntax, and Vitest gates passed; all protected identities remained
+unchanged. Nothing was pushed. Evidence:
+`docs/CSS_PHASE4_WP4_3D_EVIDENCE.md`.
+WPB.4 remains unimplemented and gated on retaining one synthetic `Unassigned` session,
+an explicit unresolved denominator decision, and intentional review of the exact golden
+diff before any behavior change.
+
+## Next Action
+
+WP4.3d is integrated locally. Leave the branch/worktree intact; do not push or
+begin Welcome, another WP4.3 page, or WP4.4 until explicit direction.
 
 ---
 

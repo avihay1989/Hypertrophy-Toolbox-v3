@@ -8,21 +8,21 @@
 
 {% block content %}
 <div class="container-fluid px-1 workout-log-page">
-    <div class="page-header text-center">
+    <div class="page-header text-center" data-visual-surface>
         <h1>{{ page_title }}</h1>
         <div class="header-underline"></div>
     </div>
 
     <!-- Import Controls Section -->
     <div class="workout-log-controls-frame mb-4">
-        <div class="collapsible-frame action-frame" data-section="import-controls">
+        <div class="collapsible-frame action-frame" data-visual-surface data-section="import-controls">
             <div class="frame-header frame-header-2025">
                 <div class="frame-header-left">
                     <span class="frame-title"><i class="fas fa-download me-2"></i>Import from Workout Plan</span>
                 </div>
                 <div class="frame-header-right">
                     <button class="collapse-toggle" type="button" title="Collapse import controls" aria-expanded="true" aria-controls="import-content">
-                        <i class="fas fa-chevron-up toggle-icon" aria-hidden="true"></i>
+                        <i class="fas fa-chevron-up toggle-icon" data-visual-icon aria-hidden="true"></i>
                         <span class="toggle-text">Hide</span>
                     </button>
                 </div>
@@ -62,7 +62,8 @@
         <!-- AGENT:START B-2 PRIORITY-CLASSES -->
         <div class="tbl-wrap tbl-wrap--full" role="region" aria-label="Workout log table">
             <table id="workout-log-table"
-                   class="table table-striped workout-log-table table-calm tbl tbl--responsive"
+                   data-testid="workout-log-table"
+                   class="table table-striped workout-log-table table-calm tbl tbl--responsive" data-visual-surface
                    role="table" 
                    aria-label="Workout log entries">
                 <thead>
@@ -259,7 +260,7 @@
 <!-- Clear Log Confirmation Modal -->
 <div class="modal fade" id="clearLogModal" tabindex="-1" aria-labelledby="clearLogModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content frame-calm-glass">
+        <div class="modal-content frame-calm-glass" data-visual-surface>
             <div class="modal-header bg-danger text-white">
                 <h5 class="modal-title" id="clearLogModalLabel">
                     <i class="fas fa-exclamation-triangle me-2"></i>Confirm Clear Log

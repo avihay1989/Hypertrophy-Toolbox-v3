@@ -74,6 +74,7 @@ export async function showExecutionStylePicker(exerciseId, currentExercise) {
     // Create picker element
     const picker = document.createElement('div');
     picker.className = 'execution-style-picker frame-calm-glass';
+    picker.dataset.visualSurface = '';
     picker.innerHTML = `
         <div class="execution-picker-content">
             <div class="execution-picker-header">

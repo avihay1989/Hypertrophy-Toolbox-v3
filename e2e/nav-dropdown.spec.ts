@@ -91,18 +91,43 @@ test.describe('P5 navbar dropdown and backup navigation', () => {
     await page.goto(ROUTES.HOME);
     await waitForPageReady(page);
 
-    const profileIcon = page.locator('#nav-user-profile .nav-fa-icon');
-    const bodyCompositionIcon = page.locator('#nav-body-composition .nav-fa-icon');
-    const backupIcon = page.locator('#nav-backup .nav-fa-icon');
+    const profile = page.locator(SELECTORS.NAV_USER_PROFILE);
+    const bodyComposition = page.locator(SELECTORS.NAV_BODY_COMPOSITION);
+    const backup = page.locator(SELECTORS.NAV_BACKUP);
+    const icons = [profile, bodyComposition, backup].map((item) =>
+      item.locator('[data-nav-icon]'),
+    );
 
-    await expect(profileIcon).toHaveCSS('color', 'rgb(109, 93, 252)');
-    await expect(bodyCompositionIcon).toHaveCSS('color', 'rgb(15, 159, 143)');
-    await expect(backupIcon).toHaveCSS('color', 'rgb(217, 119, 6)');
+    const accents = await Promise.all(icons.map(async (icon) => {
+      await expect(icon).toBeVisible();
+      return icon.evaluate((element) => {
+        const style = getComputedStyle(element);
+        return {
+          color: style.color,
+          token: style.getPropertyValue('--nav-icon-accent').trim(),
+        };
+      });
+    }));
+    for (const accent of accents) {
+      expect(accent.token).not.toBe('');
+      expect(accent.color).toBe(
+        await page.evaluate((token) => {
+          const probe = document.createElement('span');
+          probe.style.color = token;
+          document.body.appendChild(probe);
+          const color = getComputedStyle(probe).color;
+          probe.remove();
+          return color;
+        }, accent.token),
+      );
+    }
+    expect(new Set(accents.map(({ color }) => color)).size).toBe(3);
 
-    await page.locator('#nav-user-profile').hover();
+    const [profileIcon, , backupIcon] = icons;
+    await profile.hover();
     await expect(profileIcon).toHaveCSS('transform', 'none');
 
-    await page.locator('#nav-backup').hover();
+    await backup.hover();
     await expect(backupIcon).not.toHaveCSS('transform', 'none');
   });
 

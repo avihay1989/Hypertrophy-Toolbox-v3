@@ -29,9 +29,9 @@
     --nav-glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.8);
 
     /* Spacing & Layout */
-    --nav-gap: 12px;
+    --nav-gap: var(--s-3);
     --nav-padding-x: 1rem;
-    --nav-padding-y: 12px;
+    --nav-padding-y: var(--s-3);
     --nav-height: 64px;
     --nav-height-compact: 56px;
 
@@ -1375,32 +1375,38 @@ body:not(:has(#navbar)) .navbar {
 }
 
 #navbar #nav-user-profile .nav-fa-icon {
-  color: #6d5dfc !important;
+  --nav-icon-accent: #6d5dfc;
+  color: var(--nav-icon-accent) !important;
   filter: drop-shadow(0 2px 4px rgba(109, 93, 252, 0.24));
 }
 
 #navbar #nav-body-composition .nav-fa-icon {
-  color: #0f9f8f !important;
+  --nav-icon-accent: #0f9f8f;
+  color: var(--nav-icon-accent) !important;
   filter: drop-shadow(0 2px 4px rgba(15, 159, 143, 0.24));
 }
 
 #navbar #nav-backup .nav-fa-icon {
-  color: #d97706 !important;
+  --nav-icon-accent: #d97706;
+  color: var(--nav-icon-accent) !important;
   filter: drop-shadow(0 2px 4px rgba(217, 119, 6, 0.24));
 }
 
 [data-theme="dark"] #navbar #nav-user-profile .nav-fa-icon {
-  color: #a78bfa !important;
+  --nav-icon-accent: #a78bfa;
+  color: var(--nav-icon-accent) !important;
   filter: drop-shadow(0 2px 6px rgba(167, 139, 250, 0.3));
 }
 
 [data-theme="dark"] #navbar #nav-body-composition .nav-fa-icon {
-  color: #2dd4bf !important;
+  --nav-icon-accent: #2dd4bf;
+  color: var(--nav-icon-accent) !important;
   filter: drop-shadow(0 2px 6px rgba(45, 212, 191, 0.28));
 }
 
 [data-theme="dark"] #navbar #nav-backup .nav-fa-icon {
-  color: #fbbf24 !important;
+  --nav-icon-accent: #fbbf24;
+  color: var(--nav-icon-accent) !important;
   filter: drop-shadow(0 2px 6px rgba(251, 191, 36, 0.28));
 }
 

@@ -1,8 +1,13 @@
 # Deep Refactor Plan — v3 (2026-07-04, full-scan grounded)
 
-**Status: Track A, Phase -1, and Phase 1 (WP1.1–WP1.8) completed; Track B
-mostly shipped (WPB.3 and WPB.6 landed 2026-07-07; WPB.4 remains gated); Plan-v3
-structural-refactor execution approved by the owner on 2026-07-05. Phase 2 is next.**
+**Status: Track A, Phases -1 through 3, and Phase-4 packets WP4.-1, WP4.0a,
+WP4.0, WP4.1, WP4.2, WP4.3a, WP4.3b, WP4.3c, and WP4.3d are complete. WP2.2 is committed as `c461840`; optional WP3.6 is
+committed as `0cbedac`. WP4.0 measurement provenance remains unchanged head
+`e46b67e`, with its ledger committed as `ca725c2`. Local integration verification
+is complete through WP4.3d: its history-preserving local merge is `40bc09f` and
+the narrow post-merge gates passed. Nothing was pushed. Welcome and later packets have not started.
+Track B is mostly shipped; WPB.4 remains unimplemented
+and product-risk gated.**
 
 This supersedes v2. It incorporates:
 
@@ -307,6 +312,26 @@ Playwright inventory **504 tests / 30 specs**.
 - Gate: weekly-summary pytest + goldens diff reviewed as intentional, plus
   weekly-summary visual/E2E specs.
 
+**Risk-mitigation gate (reviewed 2026-07-17):**
+
+- The production schema makes `routine` `TEXT NOT NULL`; the reachable case is an empty
+  string, while `None` remains relevant to mocked/legacy rows. State explicitly that all
+  falsy routine values coalesce into one synthetic `Unassigned` session.
+- Freeze scope to session-derived metrics only: weekly raw/effective totals, reps, volume,
+  status, contribution weights, rounding, response fields, and pattern coverage must not
+  change. Decide separately whether `global_sessions` includes the synthetic bucket; do
+  not let that denominator change happen implicitly.
+- Add focused cases for empty/`None`, above- and below-1.0 frequency thresholds, multiple
+  anonymous rows accumulating into one bucket, and mixed named/anonymous routines across
+  the full counting-mode x contribution-mode matrix.
+- Regenerate the WP2.3 golden only after reviewing the exact delta. For the existing Calves
+  sentinel, the intended change is frequency `0 -> 1`; effective-mode `sets_per_session`
+  `0.85 -> 5.1`; raw-mode `sets_per_session` `1 -> 6`; and effective-derived average/max
+  `0/0 -> 5.1/5.1`. Weekly totals and classifications must remain identical.
+- Add route/E2E assertions for the displayed frequency and average/max-per-session values,
+  run summary-page functional and visual gates, and include migration notes describing the
+  intentional semantic change and the conservative one-bucket assumption.
+
 ### WPB.5 (OD5) Experience-aware increment below 20 kg
 
 - Protected calc zone. In `_calculate_weight_increment`, experienced lifters get
@@ -595,6 +620,12 @@ file-to-package conversion.
   separate internal-caller proof authorizes it. The unused loop variable may be cleaned.
 - Gate: unmodified plan-generator tests plus starter-plan E2E.
 
+**Completed 2026-07-16.** Extracted scoring, priority-allocation, persistence, and
+result-assembly helpers without changing the public callable signature, score ordering,
+row-order mutation, or the inner-continue/outer-reraise exception tiers. Added explicit
+contract tests for those seams. Local gate: **1,723 pytest passed** and the complete
+API-integration + workout-plan Chromium pair **92 passed**.
+
 ### WP2.3 Weekly-summary decomposition with durable goldens
 
 - First commit deterministic seeded golden fixtures for both public calculations,
@@ -740,6 +771,15 @@ Only after the core JS track: characterize and split the 1,483-line file by demo
 reference lifts, coverage/bodymap, calibration review, and settings toggles. Consolidating
 the two optimistic-toggle paths is a later behavior-aware cleanup, not part of move-only PRs.
 
+**Completed 2026-07-17 in the current working tree.** The original entry module is now a
+small coordinator over focused data, forms/autosave, insights, bodymap, settings, and
+calibration-review modules. Initialization order, DOM hooks, API endpoints, payloads,
+toasts, rollback behavior, and the two distinct optimistic-toggle implementations are
+unchanged. Added pure estimator-seam characterization tests. Gate: Vitest **105 passed**,
+focused Python **75 passed**, full pytest **1,723 passed**, and profile +
+learned-calibration + fatigue-context Chromium **38 passed** against the isolated E2E
+database.
+
 ---
 
 ## Phase 4 — CSS foundation, visual harness, then cleanup
@@ -766,6 +806,18 @@ existing fatigue/volume-panel partials; remember those selectors are compiled in
 - No class rename, token-value change, or bulk de-`!important` work here.
 - Gate: full functional frontend set plus byte-identical visual comparison.
 
+**Completed 2026-07-16 in the isolated WP4 worktree.** `tokens.css` now loads
+before Bootstrap's compiled app partials and every global/route consumer. One
+explicit order preserves the prior implicit precedence as `workout`, `navbar`,
+`workout-dropdowns`, `welcome`; the 18-bundle cap and all ten route owners are
+unchanged. The compiled artifact inventory found 1,429 unique selector entries,
+including 58 fatigue and 57 workout-plan volume-panel entries owned by SCSS.
+Four focused contracts, blocking static checks, Vitest (93), and the complete
+required Chromium set (407) passed. Seeded visual comparison reproduced the
+unchanged animated-GIF known-reds with identical mismatch counts; no snapshot
+was rebaselined. Full evidence: [`CSS_PHASE4_WP4_-1_EVIDENCE.md`](CSS_PHASE4_WP4_-1_EVIDENCE.md).
+WP4.0a followed and is not included in this packet.
+
 ### WP4.0a Harden visual and functional selectors
 
 - Replace visual-helper hardcoded presentation classes with stable `data-testid`/data
@@ -776,10 +828,40 @@ existing fatigue/volume-panel partials; remember those selectors are compiled in
   scheduling their bundles for cleanup.
 - Generate and review both platform baselines before CSS restructuring.
 
+**Completed 2026-07-17 from committed WP4.-1 (`6e0a408`).** Stable
+`data-visual-*` hooks replace visual-helper presentation classes, nav/summary
+color contracts resolve their owning CSS variables, and Profile/Backup expand
+each platform matrix from 48 to 60 images. All 12 new images per platform were
+reviewed and passed update-free comparison. The 48 old Windows images stayed
+byte-identical; Linux artifact review rejected 17 regenerated legacy variants
+and imported only the 12 missing images. The Linux compare's 11 reds were all
+confined to pre-existing animated signature/exercise-thumbnail pixels; no new
+route failed. Static/unit/Python gates and the full 407-test functional set are
+verified. See
+[`CSS_PHASE4_WP4_0A_EVIDENCE.md`](CSS_PHASE4_WP4_0A_EVIDENCE.md). WP4.0 followed
+and is not included in this packet.
+
 ### WP4.0 Fresh known-red ledger
 
 - Run the complete functional and visual deep gates on unchanged `main` after WP4.0a.
 - Record exact current reds in this plan and handover. Do not inherit the May ledger.
+
+**Completed 2026-07-17 on unchanged branch head `e46b67e`.** Fresh gates:
+selector/cascade contracts **7**, blocking flake8 **0**, tsc passed, Vitest
+**93**, full pytest **1,722 passed + 2 visual-seed catalog reds**, and the exact
+required Chromium functional list **407/407**. Update-free Windows visual
+comparison produced **59 passed + 1 animated-frame red**; its serial thumbnail
+companion produced **1 passed + 1 animated-frame red + 16 not run**. Fresh
+pinned-Linux compare run
+[29539611526](https://github.com/avihay1989/Hypertrophy-Toolbox-v3/actions/runs/29539611526)
+produced **51 passed + 11 animated-frame reds + 16 not run**, plus one
+initial-attempt profile GIF flake that passed retry. Every report/diff was
+inspected; there was no unexplained cascade or layout regression. All 156
+snapshot PNGs, generated Bootstrap CSS, the main live DB, and the unrelated
+main-checkout WP2.2 edits stayed byte-identical. No snapshot was updated.
+Complete ledger:
+[`CSS_PHASE4_WP4_0_EVIDENCE.md`](CSS_PHASE4_WP4_0_EVIDENCE.md). WP4.1 is next
+and is not included in this packet.
 
 ### WP4.1 Token vocabulary consolidation
 
@@ -790,6 +872,20 @@ existing fatigue/volume-panel partials; remember those selectors are compiled in
   neutral.
 - Add stylelint as non-required measure-only CI with pinned rules and a baseline report.
 
+**Completed 2026-07-17 in the isolated `wt/wp4-1-token-vocabulary`
+worktree.** The frozen inventory distinguishes responsive layout spacing from
+fixed component spacing: new `--layout-space-*` definitions retain every
+former `--space-*` value, while `--space-*` remains a compatibility alias and
+`--s-*` remains fixed. Only exact `--wl-*` status/duration and `--nav-*`
+spacing matches were aliased; all other local feature namespaces remain
+intact. Pinned Stylelint 16.11.0 measures 7,202 pre-change warnings across 21
+sources and reports a non-blocking CI delta; no required context was renamed.
+Static, unit, Python, functional Chromium, and update-free visual gates passed
+with only the exact WP4.0 known reds. All 156 screenshots, generated Bootstrap
+CSS, and live databases stayed byte-identical. Evidence:
+[`CSS_PHASE4_WP4_1_EVIDENCE.md`](CSS_PHASE4_WP4_1_EVIDENCE.md). WP4.2 is next
+and is not included in this packet.
+
 ### WP4.2 Shared-frame dedupe and ownership repair
 
 - Extract the four-copy weekly/session/log/plan frame block once into `components.css`.
@@ -797,6 +893,22 @@ existing fatigue/volume-panel partials; remember those selectors are compiled in
   `pages-workout-plan.css`.
 - Delete only template/JS/E2E-proven dead selectors.
 - Treat this as cascade-sensitive structural movement with full visual gates.
+
+**Completed 2026-07-18 in the isolated `wt/wp4-2-shared-frame-dedupe`
+worktree.** The shared block is owned once in `components.css` under
+`:where(#workout, .workout-log-page, .summary-frame)`; route-specific log and
+summary surfaces remain later in their route bundles. A diagnostic rejected the
+initial document-wide `html:has(...)` gate: it changed masked Chromium
+compositing on Progression despite no changed matched rule or computed value.
+Direct container scope restores byte-identical Progression output. The five CSS
+files shrink by a net **3,668 lines**. Contracts **12/12**, affected Chromium
+**84/84**, required Chromium **407/407**, pytest **1,733 + 2 known catalog reds**,
+and update-free visual locks all match. Stylelint falls from the 7,202 baseline
+to **6,444** with unchanged selector ceiling warning counts and zero parse/config
+errors. All 156 snapshots, generated Bootstrap, and protected DBs are unchanged.
+Evidence: [`CSS_PHASE4_WP4_2_EVIDENCE.md`](CSS_PHASE4_WP4_2_EVIDENCE.md). The
+packet was integrated into local `main` as merge `d695188`; narrow post-merge
+gates passed, nothing was pushed, and WP4.3 had not started.
 
 ### WP4.3 Page dark-mode/token cleanup
 
@@ -814,6 +926,81 @@ not churn it merely for consistency. Suggested order:
 9. workout plan, split into coherent internal sections;
 10. workout log, split into multiple WPs because its per-theme colors and 375
     `!important` declarations make it redesign-sized.
+
+**WP4.3a Backup completed 2026-07-18 in isolated
+`wt/wp4-3-backup-dark-token-cleanup`.** Five exact repeated Backup values now use
+semantic page-local tokens, unused `--backup-warm` was removed, and the existing
+exact border token was reused. No shared near-match or page-local dark rule was
+mechanically changed. Browser auditing preserved computed values and declaration
+owners for 16 representative dynamic targets in both themes. Pinned Stylelint
+falls **6,444 → 6,435** with no increase to duplicate, specificity, or important
+counts. Contracts **13/13**, focused Backup Chromium **20/20**, required Chromium
+**407/407**, and pytest **1,734 + 2 catalog known-reds** match the expected gates;
+all six Backup variants pass and the full suites reproduce only the exact WP4.0
+known reds. All integrity locks are unchanged. Evidence:
+[`CSS_PHASE4_WP4_3A_EVIDENCE.md`](CSS_PHASE4_WP4_3A_EVIDENCE.md). The packet was
+integrated into local `main` as merge `dc607fe`; narrow post-merge gates passed,
+all protected identities remained unchanged, nothing was pushed, and WP4.3b had
+not started. Begin only the Body Composition page packet next.
+
+**WP4.3b Body Composition completed 2026-07-18 in isolated
+`wt/wp4-3-body-composition-dark-token-cleanup`.** Three exact repeated route
+values now use semantic `--bc-*` tokens. Browser auditing proved the route's
+heading colors were dead because shared important component rules already win in
+both themes; those declarations and an unused dark `--bc-accent-soft` remap were
+removed with no rendered computed-style delta. Pinned Stylelint falls **6,435 →
+6,428** with no increase to duplicate, specificity, or important counts.
+Contracts **14/14**, focused Body Composition Chromium **9/9**, required
+Chromium **407/407**, and pytest **1,735 + 2 catalog known-reds** match the
+expected gates. All six Windows route variants pass; all twelve committed Body
+Composition images and all integrity locks are unchanged. The full suites
+reproduce only the exact WP4.0 known reds. Evidence:
+[`CSS_PHASE4_WP4_3B_EVIDENCE.md`](CSS_PHASE4_WP4_3B_EVIDENCE.md). The packet was
+integrated into local `main` as merge `92291ed`; narrow post-merge gates passed,
+all protected identities remained unchanged, and nothing was pushed. Progression
+and later packets have not started; wait for explicit direction before beginning
+another packet.
+
+**WP4.3c Progression completed 2026-07-18 in isolated
+`wt/wp4-3-progression-dark-token-cleanup`.** Exact repeated route expressions now
+use semantic `--progression-*` tokens; repeated dark Flatpickr literals use four
+tokens scoped to the existing calendar owner. Browser auditing proved that the
+dark suggestion-card copy declaration was shared-owned and that three fatigue
+colors were redundant under the global dark token remaps. Only those dead or
+redundant properties were removed; live goal-badge, fatigue-mix, and Flatpickr
+dark owners remain. Computed values for 33 targets are identical in both themes.
+Pinned Stylelint falls **6,428 → 6,404** with no increase to duplicate,
+specificity, or important counts. Contracts **15/15**, focused Progression
+Chromium **26/26**, required Chromium **407/407**, and pytest **1,736 + 2 catalog
+known-reds** match the expected gates. All six Windows route variants pass; all
+twelve committed Progression images and all integrity locks are unchanged. The
+full suites reproduce only the exact WP4.0 known reds. Evidence:
+[`CSS_PHASE4_WP4_3C_EVIDENCE.md`](CSS_PHASE4_WP4_3C_EVIDENCE.md). The packet was
+integrated into local `main` as merge `e7feffa`; narrow post-merge gates passed,
+all protected identities remained unchanged, and nothing was pushed. Volume
+Splitter and later packets have not started; wait for explicit direction before
+another packet begins.
+
+**WP4.3d Volume Splitter completed 2026-07-18 in isolated
+`wt/wp4-3-volume-splitter-dark-token-cleanup`.** Exact repeated status, accent,
+heading, and dark-surface values now use semantic page-local tokens. Browser
+auditing proved that shared component rules own the removed dark result-section,
+table-copy, and history properties, while later type-specific rules own every
+runtime suggestion-card background. Only those dead/redundant declarations were
+removed; live result borders, backgrounds, shadows, focus styles, and suggestion
+types remain. Thirty-seven stable dynamic targets are identical in both themes.
+Pinned Stylelint falls **6,404 → 6,364**: hardcoded values **-36** and important
+declarations **-4**, with duplicate and specificity counts unchanged. Contracts
+**16/16**, focused Volume Splitter Chromium **27/27**, required Chromium
+**407/407**, and pytest **1,737 + 2 catalog known-reds** match the expected gates.
+All six Windows route variants pass; all twelve committed Volume Splitter images
+and every integrity lock are unchanged. Full visuals reproduce only the exact
+WP4.0 known reds. Evidence:
+[`CSS_PHASE4_WP4_3D_EVIDENCE.md`](CSS_PHASE4_WP4_3D_EVIDENCE.md). The packet was
+integrated into local `main` as merge `40bc09f`; narrow post-merge gates passed,
+all protected identities remained unchanged, and nothing was pushed. Leave its
+isolated worktree and branch for review and wait for explicit direction before
+another packet.
 
 ### WP4.4 Shared bundles, navbar, and `theme-dark.css`
 

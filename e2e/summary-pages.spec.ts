@@ -29,22 +29,29 @@ function unwrapApiData(payload: unknown) {
 }
 
 async function expectSharedLegendSwatches(page: Page) {
-  await expect(page.locator('.volume-legend .volume-indicator.low-volume')).toHaveCSS(
-    'background-color',
-    'rgb(220, 53, 69)'
-  );
-  await expect(page.locator('.volume-legend .volume-indicator.medium-volume')).toHaveCSS(
-    'background-color',
-    'rgb(253, 126, 20)'
-  );
-  await expect(page.locator('.volume-legend .volume-indicator.high-volume')).toHaveCSS(
-    'background-color',
-    'rgb(25, 135, 84)'
-  );
-  await expect(page.locator('.volume-legend .volume-indicator.ultra-volume')).toHaveCSS(
-    'background-color',
-    'rgb(111, 66, 193)'
-  );
+  const tokenByVolume = {
+    low: '--bs-danger',
+    medium: '--bs-orange',
+    high: '--bs-success',
+    ultra: '--bs-purple',
+  } as const;
+
+  for (const [volume, token] of Object.entries(tokenByVolume)) {
+    const swatch = page.locator(`[data-volume-level="${volume}"]`);
+    await expect(swatch).toBeVisible();
+    const styles = await swatch.evaluate((element, property) => {
+      const rootStyle = getComputedStyle(document.documentElement);
+      const swatchStyle = getComputedStyle(element);
+      const probe = document.createElement('span');
+      probe.style.backgroundColor = rootStyle.getPropertyValue(property).trim();
+      document.body.appendChild(probe);
+      const tokenColor = getComputedStyle(probe).backgroundColor;
+      probe.remove();
+      return { swatchColor: swatchStyle.backgroundColor, tokenColor };
+    }, token);
+    expect(styles.tokenColor).not.toBe('rgba(0, 0, 0, 0)');
+    expect(styles.swatchColor).toBe(styles.tokenColor);
+  }
 }
 
 async function expectMethodSelectorContract(page: Page, updaterName: string) {

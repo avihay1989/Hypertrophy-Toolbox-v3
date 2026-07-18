@@ -7,14 +7,14 @@
 {% endblock %}
 
 {% block content %}
-<div id="user-profile" class="user-profile-page" data-page="user-profile">
+<div id="user-profile" class="user-profile-page" data-page="user-profile" data-testid="user-profile-page">
     <div class="container-fluid">
-        <header class="table-header text-center">
+        <header class="table-header text-center" data-visual-surface data-visual-header>
             <h1>User Profile</h1>
-            <div class="table-header-underline" aria-hidden="true"></div>
+            <div class="table-header-underline" data-visual-accent aria-hidden="true"></div>
         </header>
 
-        <section class="collapsible-frame action-frame frame-calm-glass profile-onboarding" data-section="onboarding" aria-labelledby="profile-onboarding-title">
+        <section class="collapsible-frame action-frame frame-calm-glass profile-onboarding" data-visual-surface data-section="onboarding" aria-labelledby="profile-onboarding-title">
             <div class="frame-header frame-header-2025">
                 <div class="frame-header-left">
                     <span class="frame-title" id="profile-onboarding-title">
@@ -24,7 +24,7 @@
                 </div>
                 <div class="frame-header-right">
                     <button class="collapse-toggle" type="button" title="Collapse onboarding" aria-expanded="true" aria-controls="profile-onboarding-content">
-                        <i class="fas fa-chevron-up toggle-icon" aria-hidden="true"></i>
+                        <i class="fas fa-chevron-up toggle-icon" data-visual-icon aria-hidden="true"></i>
                         <span class="toggle-text">Hide</span>
                     </button>
                 </div>
@@ -61,7 +61,7 @@
         {% set cohort = profile_insights.cohort_ranges %}
         {% set tiles = cohort.tiles %}
         <div class="profile-overview-grid">
-        <section class="collapsible-frame action-frame frame-calm-glass profile-insights" data-section="profile insights" aria-labelledby="profile-insights-title" data-band="{{ band.band }}">
+        <section class="collapsible-frame action-frame frame-calm-glass profile-insights" data-visual-surface data-section="profile insights" aria-labelledby="profile-insights-title" data-band="{{ band.band }}">
             <div class="frame-header frame-header-2025">
                 <div class="frame-header-left">
                     <span class="frame-title" id="profile-insights-title">
@@ -71,7 +71,7 @@
                 </div>
                 <div class="frame-header-right">
                     <button class="collapse-toggle" type="button" title="Collapse insights" aria-expanded="true" aria-controls="profile-insights-content">
-                        <i class="fas fa-chevron-up toggle-icon" aria-hidden="true"></i>
+                        <i class="fas fa-chevron-up toggle-icon" data-visual-icon aria-hidden="true"></i>
                         <span class="toggle-text">Hide</span>
                     </button>
                 </div>
@@ -215,7 +215,7 @@
         </section>
 
         {% set coverage = profile_insights.muscle_coverage %}
-        <section class="collapsible-frame action-frame frame-calm-glass profile-bodymap" data-section="muscle coverage" aria-labelledby="profile-bodymap-title">
+        <section class="collapsible-frame action-frame frame-calm-glass profile-bodymap" data-visual-surface data-section="muscle coverage" aria-labelledby="profile-bodymap-title">
             <div class="frame-header frame-header-2025">
                 <div class="frame-header-left">
                     <span class="frame-title" id="profile-bodymap-title">
@@ -225,7 +225,7 @@
                 </div>
                 <div class="frame-header-right">
                     <button class="collapse-toggle" type="button" title="Collapse coverage map" aria-expanded="true" aria-controls="profile-bodymap-content">
-                        <i class="fas fa-chevron-up toggle-icon" aria-hidden="true"></i>
+                        <i class="fas fa-chevron-up toggle-icon" data-visual-icon aria-hidden="true"></i>
                         <span class="toggle-text">Hide</span>
                     </button>
                 </div>
@@ -283,14 +283,14 @@
         </div>{# /.profile-overview-grid #}
 
         <div class="user-profile-layout">
-            <section class="collapsible-frame action-frame frame-calm-glass" data-section="demographics">
+            <section class="collapsible-frame action-frame frame-calm-glass" data-visual-surface data-section="demographics">
                 <div class="frame-header frame-header-2025">
                     <div class="frame-header-left">
                         <span class="frame-title">Demographics</span>
                     </div>
                     <div class="frame-header-right">
                         <button class="collapse-toggle" type="button" title="Collapse demographics" aria-expanded="true" aria-controls="profile-demographics-content">
-                            <i class="fas fa-chevron-up toggle-icon" aria-hidden="true"></i>
+                            <i class="fas fa-chevron-up toggle-icon" data-visual-icon aria-hidden="true"></i>
                             <span class="toggle-text">Hide</span>
                         </button>
                     </div>
@@ -388,14 +388,14 @@
                         ('anterior',  'Reference Lifts &mdash; Anterior',  reference_lift_groups_anterior),
                         ('posterior', 'Reference Lifts &mdash; Posterior', reference_lift_groups_posterior)
                     ] %}
-                    <section class="collapsible-frame action-frame frame-calm-glass reference-lifts-card" data-section="reference lifts {{ side }}" data-side="{{ side }}">
+                    <section class="collapsible-frame action-frame frame-calm-glass reference-lifts-card" data-visual-surface data-section="reference lifts {{ side }}" data-side="{{ side }}">
                         <div class="frame-header frame-header-2025">
                             <div class="frame-header-left">
                                 <span class="frame-title">{{ card_label | safe }}</span>
                             </div>
                             <div class="frame-header-right">
                                 <button class="collapse-toggle" type="button" title="Collapse reference lifts {{ side }}" aria-expanded="true" aria-controls="profile-lifts-content-{{ side }}">
-                                    <i class="fas fa-chevron-up toggle-icon" aria-hidden="true"></i>
+                                    <i class="fas fa-chevron-up toggle-icon" data-visual-icon aria-hidden="true"></i>
                                     <span class="toggle-text">Hide</span>
                                 </button>
                             </div>
@@ -441,14 +441,14 @@
                 </div>
             </form>
 
-            <section class="collapsible-frame action-frame frame-calm-glass" data-section="rep preferences">
+            <section class="collapsible-frame action-frame frame-calm-glass" data-visual-surface data-section="rep preferences">
                 <div class="frame-header frame-header-2025">
                     <div class="frame-header-left">
                         <span class="frame-title">Rep-Range Preferences</span>
                     </div>
                     <div class="frame-header-right">
                         <button class="collapse-toggle" type="button" title="Collapse rep-range preferences" aria-expanded="true" aria-controls="profile-preferences-content">
-                            <i class="fas fa-chevron-up toggle-icon" aria-hidden="true"></i>
+                            <i class="fas fa-chevron-up toggle-icon" data-visual-icon aria-hidden="true"></i>
                             <span class="toggle-text">Hide</span>
                         </button>
                     </div>
@@ -486,14 +486,14 @@
                scored logs over the static Profile estimate. Per-exercise reset
                lives on the Plan page where an exercise context exists. See
                docs/user_profile/LEARNED_CALIBRATION_PLAN.md. #}
-            <section class="collapsible-frame action-frame frame-calm-glass profile-calibration" data-section="learned calibration">
+            <section class="collapsible-frame action-frame frame-calm-glass profile-calibration" data-visual-surface data-section="learned calibration">
                 <div class="frame-header frame-header-2025">
                     <div class="frame-header-left">
                         <span class="frame-title">Learned Calibration</span>
                     </div>
                     <div class="frame-header-right">
                         <button class="collapse-toggle" type="button" title="Collapse learned calibration" aria-expanded="true" aria-controls="profile-calibration-content">
-                            <i class="fas fa-chevron-up toggle-icon" aria-hidden="true"></i>
+                            <i class="fas fa-chevron-up toggle-icon" data-visual-icon aria-hidden="true"></i>
                             <span class="toggle-text">Hide</span>
                         </button>
                     </div>
@@ -586,14 +586,14 @@
                Workout Controls shows a read-only fatigue note inside "show the
                math"; it never changes the suggested weight/reps/sets. See
                docs/user_profile/LEARNED_CALIBRATION_PLAN.md §"Phase 2D-A". #}
-            <section class="collapsible-frame action-frame frame-calm-glass profile-fatigue-context" data-section="fatigue context">
+            <section class="collapsible-frame action-frame frame-calm-glass profile-fatigue-context" data-visual-surface data-section="fatigue context">
                 <div class="frame-header frame-header-2025">
                     <div class="frame-header-left">
                         <span class="frame-title">Fatigue Context</span>
                     </div>
                     <div class="frame-header-right">
                         <button class="collapse-toggle" type="button" title="Collapse fatigue context" aria-expanded="true" aria-controls="profile-fatigue-context-content">
-                            <i class="fas fa-chevron-up toggle-icon" aria-hidden="true"></i>
+                            <i class="fas fa-chevron-up toggle-icon" data-visual-icon aria-hidden="true"></i>
                             <span class="toggle-text">Hide</span>
                         </button>
                     </div>

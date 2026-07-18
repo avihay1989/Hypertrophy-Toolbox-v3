@@ -15,6 +15,8 @@ const pages = [
   { name: 'progression', route: ROUTES.PROGRESSION },
   { name: 'body-composition', route: ROUTES.BODY_COMPOSITION },
   { name: 'volume-splitter', route: ROUTES.VOLUME_SPLITTER },
+  { name: 'user-profile', route: ROUTES.USER_PROFILE },
+  { name: 'backup', route: ROUTES.BACKUP },
 ] as const;
 
 const viewports = [

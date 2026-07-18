@@ -172,18 +172,46 @@ npx playwright test --project=chromium --reporter=line
 
 ## 5. Current State & Risks
 
-### Verified test counts (2026-07-07 — Plan v3 Phase 1 complete on `main`)
-- **Integrated `main` @ `f9bfb50`**: PR #129 CI pytest **1708 passed**;
-  required Chromium functional shards **205 + 202 passed**; smoke **10**, backup
-  **20**, erase-flow **2**, fatigue-context **6**; full inventory **504 tests / 30 specs**.
-- Track A shipped in PRs #91–#98. Phase -1 shipped through PRs #105, #106, and
-  #108–#110. **Phase 1 (route/service boundaries) is complete** — WP1.1 (#123),
-  WP1.2 (#126), WP1.3 (#127), WP1.4 (#130), WP1.5 (#124), WP1.6 (#125), WP1.7 (#121),
-  WP1.8 (#122). Track B has shipped WPB.1 (#103), WPB.2 (#107), WPB.3 (#128), WPB.5
-  (#101), WPB.6 (#129), WPB.7 (#102), WPB.8 (#104), and WPB.9 (#100 plus the
-  2026-07-05 required-context promotion). **Only WPB.4 remains** (gated on WP2.3
-  golden fixtures). Phase 2 (Python module structure and schema ownership) is next.
-
+### Verified test counts (2026-07-19 — Phase 3 through WP4.3d integrated locally)
+- WP4.2 was integrated into local `main` by history-preserving merge `d695188`;
+  its documentation closeout is `e9062bc`. Nothing was pushed.
+- WP4.3a is complete in isolated `wt/wp4-3-backup-dark-token-cleanup`: contracts
+  **13**, flake8 **0**, tsc pass, Node syntax **64/64**, Vitest **105**, pytest
+  **1734 + 2 catalog known-reds**, focused Backup Chromium **20/20**, and required
+  Chromium **407/407**. Both visual reds exactly match WP4.0 at 1,039 and 6,262
+  pixels; all six Backup variants and all 156 screenshot hashes are unchanged.
+- WP4.3a was integrated into local `main` by history-preserving merge `dc607fe`;
+  its narrow post-merge gates passed and all protected identities remained
+  unchanged. Nothing was pushed.
+- WP4.3b is complete in isolated `wt/wp4-3-body-composition-dark-token-cleanup`:
+  contracts **14**, Flake8 **0**, tsc pass, Node syntax **64/64**, Vitest **105**,
+  pytest **1735 + 2 catalog known-reds**, focused Body Composition Chromium
+  **9/9**, and required Chromium **407/407**. Both visual reds exactly match
+  WP4.0 at 1,039 and 6,262 pixels; all twelve Body Composition images and all
+  156 screenshot hashes are unchanged.
+- WP4.3b was integrated into local `main` by history-preserving merge `92291ed`;
+  its narrow post-merge gates passed and all protected identities remained
+  unchanged. Nothing was pushed and Progression had not started.
+- WP4.3c is complete in isolated `wt/wp4-3-progression-dark-token-cleanup`:
+  contracts **15**, Flake8 **0**, tsc pass, Node syntax **64/64**, Vitest **105**,
+  pytest **1736 + 2 catalog known-reds**, focused Progression Chromium **26/26**,
+  and required Chromium **407/407**. Both visual reds exactly match WP4.0 at
+  1,039 and 6,262 pixels; all twelve Progression images and all 156 screenshot
+  hashes are unchanged.
+- WP4.3c was integrated into local `main` by history-preserving merge `e7feffa`;
+  its narrow post-merge gates passed and all protected identities remained
+  unchanged. Nothing was pushed, and no later packet started.
+- WP4.3d completed in isolated
+  `wt/wp4-3-volume-splitter-dark-token-cleanup`: contracts **16/16**, Flake8
+  **0**, tsc pass, Node syntax **64/64**, Vitest **105/105**, pytest **1,737 + 2
+  catalog known-reds**, focused Volume Splitter Chromium **27/27**, and required
+  Chromium **407/407**. Both visual reds remain exactly 1,039 and 6,262 pixels;
+  all twelve route images and all 156 screenshot hashes are unchanged.
+- WP4.3d was integrated into local `main` by history-preserving merge `40bc09f`;
+  its narrow post-merge gates passed and all protected identities remained
+  unchanged. Nothing was pushed, and no later packet started.
+- Phases -1–3 and WP4.-1/0a/0/1/2/3a/3b/3c/3d are complete. **WPB.4 is
+  unimplemented** pending one `Unassigned` session, unresolved denominator behavior, and golden review.
 Historical baselines live in `docs/MASTER_HANDOVER.md`. Re-verify after significant changes.
 
 ### Known response-contract exceptions (2026-05-21)
@@ -200,4 +228,4 @@ Added at startup by `initialize_exercise_order()` (`routes/workout_plan.py:634`)
 (`utils/session_summary.py:9`); the calculations remain independent.
 
 ### Historical audit trail
-Full file-by-file audit log and violation details: `docs/CLAUDE_MD_AUDIT.md`. Resolved items list (Cleanup Waves 1 and 2, `utils/database_indexes.py` retirement 2026-04-18, `volume_export.py` DatabaseHandler migration) lives there.
+Full audit history and resolved violations: `docs/CLAUDE_MD_AUDIT.md`.

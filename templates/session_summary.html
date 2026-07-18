@@ -9,13 +9,13 @@
 
 {% block content %}
 <div class="container-fluid px-4">
-    <div class="page-header text-center">
+    <div class="page-header text-center" data-visual-surface>
         <h1>Session Summary</h1>
         <div class="header-underline"></div>
     </div>
 
     <!-- Add base layer frame -->
-    <div class="summary-frame frame-calm-glass">
+    <div class="summary-frame frame-calm-glass" data-visual-surface>
         {% include "_fatigue_badge.html" with context %}
         <!-- Method Selection and Legend with full width -->
         <div class="summary-header">
@@ -27,19 +27,19 @@
                 <h5>Volume Classification Legend <small class="text-muted">(Based on Effective Sets)</small></h5>
                 <div class="legend-indicators">
                     <div class="legend-item">
-                        <div class="volume-indicator low-volume"></div>
+                        <div class="volume-indicator low-volume" data-volume-level="low"></div>
                         <span>Low Volume: Below 10 effective sets</span>
                     </div>
                     <div class="legend-item">
-                        <div class="volume-indicator medium-volume"></div>
+                        <div class="volume-indicator medium-volume" data-volume-level="medium"></div>
                         <span>Medium Volume: 10-19 effective sets</span>
                     </div>
                     <div class="legend-item">
-                        <div class="volume-indicator high-volume"></div>
+                        <div class="volume-indicator high-volume" data-volume-level="high"></div>
                         <span>High Volume: 20-29 effective sets</span>
                     </div>
                     <div class="legend-item">
-                        <div class="volume-indicator ultra-volume"></div>
+                        <div class="volume-indicator ultra-volume" data-volume-level="ultra"></div>
                         <span>Excessive Volume: 30+ effective sets</span>
                     </div>
                 </div>
@@ -93,7 +93,7 @@
             <div class="summary-section">
                 <div id="session-summary-container" class="table-container">
                     <div class="tbl-wrap tbl-wrap--full" role="region" aria-label="Session summary table">
-                        <table class="table table-striped table-calm tbl tbl--responsive"
+                        <table class="table table-striped table-calm tbl tbl--responsive" data-visual-surface
                                role="table" 
                                aria-label="Session muscle group summary">
                             <thead>
@@ -117,7 +117,7 @@
             <div class="summary-section">
                 <h3 class="text-center">Exercise Categories Summary</h3>
                 <div class="tbl-wrap tbl-wrap--full" role="region" aria-label="Exercise categories table">
-                    <table class="table table-striped table-calm tbl tbl--responsive"
+                    <table class="table table-striped table-calm tbl tbl--responsive" data-visual-surface
                            role="table" 
                            aria-label="Exercise categories">
                         <thead>
@@ -155,7 +155,7 @@
                 <h3 class="text-center">Advanced Isolated Muscles Statistics</h3>
                 <p class="text-center text-muted small mb-2">This table uses raw (unweighted) sets regardless of counting mode.</p>
                 <div class="tbl-wrap tbl-wrap--full" role="region" aria-label="Isolated muscles statistics table">
-                    <table class="table table-striped table-calm tbl tbl--responsive"
+                    <table class="table table-striped table-calm tbl tbl--responsive" data-visual-surface
                            role="table" 
                            aria-label="Isolated muscles statistics">
                         <thead>

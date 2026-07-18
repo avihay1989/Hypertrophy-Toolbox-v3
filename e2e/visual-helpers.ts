@@ -65,16 +65,7 @@ export async function prepareForScreenshot(page: Page): Promise<void> {
         background-attachment: scroll !important;
       }
 
-      html[data-theme='dark'] :is(
-        .card,
-        .collapsible-frame,
-        .frame-calm-glass,
-        .glass-neumorph-card,
-        .page-header,
-        .summary-frame,
-        .table-header,
-        .table.table-calm
-      ) {
+      html[data-theme='dark'] [data-visual-surface][data-visual-surface] {
         background: var(--visual-surface-1) !important;
         background-image: none !important;
         border-color: #273145 !important;
@@ -82,10 +73,10 @@ export async function prepareForScreenshot(page: Page): Promise<void> {
         box-shadow: none !important;
         text-shadow: none !important;
       }
-      html[data-theme='dark'] #workout[data-page="workout-plan"] .table-header::before {
+      html[data-theme='dark'] [data-page="workout-plan"] [data-visual-header]::before {
         background: transparent !important;
       }
-      html[data-theme='dark'] #workout[data-page="workout-plan"] .table-header-underline {
+      html[data-theme='dark'] [data-page="workout-plan"] [data-visual-accent] {
         background: #4f8cff !important;
         border-radius: 0 !important;
         box-shadow: none !important;
@@ -94,67 +85,43 @@ export async function prepareForScreenshot(page: Page): Promise<void> {
       }
 
       input, textarea { caret-color: transparent !important; }
-      select,
-      .form-select {
+      select {
         appearance: none !important;
         -webkit-appearance: none !important;
         background-image: none !important;
       }
-      .wpdd-button,
-      .form-control,
-      .form-select,
+      [data-visual-control],
+      input,
+      textarea,
       select,
       input[type="number"] {
         border-radius: 0 !important;
         box-shadow: none !important;
         text-shadow: none !important;
       }
-      #workout[data-page="workout-plan"] .wpdd-button,
-      #workout[data-page="workout-plan"] .filter-dropdown,
-      #workout[data-page="workout-plan"] .form-select,
-      #workout[data-page="workout-plan"] .uniform-input,
-      #workout[data-page="workout-plan"] input[type="number"] {
-        border-radius: 0 !important;
-        box-shadow: none !important;
-        text-shadow: none !important;
-      }
-      #navbar .nav-link::before,
-      #navbar .navbar-brand::before,
-      #navbar #darkModeToggle::before,
-      #navbar #muscleModeToggle::before {
+      [data-testid="navbar"] a::before,
+      [data-testid="navbar"] button::before {
         background-color: transparent !important;
         border-radius: 0 !important;
         transform: none !important;
         transition: none !important;
       }
-      #navbar .dropdown-toggle::after {
+      [data-visual-dropdown-toggle]::after {
         border-color: transparent !important;
       }
-      #navbar .nav-icon,
-      #navbar .navbar-brand-icon,
-      #navbar .navbar-toggler-icon,
-      #navbar .nav-fa-icon,
-      #navbar #darkModeToggle i,
-      #navbar #muscleModeToggle i,
-      #navbar .signature-icon {
+      [data-visual-icon] {
         visibility: hidden !important;
       }
-      #navbar .scale-btn-compact,
-      #navbar .scale-indicator {
+      [data-visual-scale-control] {
         background: transparent !important;
         border-color: transparent !important;
         color: transparent !important;
-      }
-      .toggle-icon,
-      .collapsible-frame .toggle-icon {
-        visibility: hidden !important;
       }
       input[type="number"]::-webkit-outer-spin-button,
       input[type="number"]::-webkit-inner-spin-button {
         -webkit-appearance: none !important;
         margin: 0 !important;
       }
-      .wpdd-caret { visibility: hidden !important; }
       ::-webkit-scrollbar { display: none; }
     `,
   });
@@ -162,7 +129,7 @@ export async function prepareForScreenshot(page: Page): Promise<void> {
   await page.evaluate(async () => {
     document
       .querySelectorAll<HTMLElement>(
-        '.wpdd-button, .form-control, .form-select, input[type="number"]',
+        '[data-visual-control], input, textarea, select',
       )
       .forEach((element) => {
         element.style.setProperty('border-radius', '0', 'important');

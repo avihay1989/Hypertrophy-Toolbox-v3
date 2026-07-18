@@ -605,3 +605,55 @@ jobs:
     - name: Run Vitest
       run: npm run test:js
 
+  # Refactor Plan v3 WP4.1: pinned stylelint measurement for the hand-authored
+  # CSS/SCSS surface. This is a NEW, NON-required job and renames no existing
+  # required context. Existing debt is reported against the committed baseline;
+  # neither warnings nor tool/parser failures block the workflow in this WP.
+  css-stylelint-measure:
+    name: CSS Stylelint Measurement (non-required)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install npm dependencies
+      run: npm ci
+
+    - name: Measure CSS and SCSS debt
+      run: |
+        mkdir -p artifacts/stylelint
+        set +e
+        npx stylelint "static/css/**/*.css" "scss/**/*.scss" \
+          --formatter json \
+          --output-file artifacts/stylelint/stylelint.json \
+          >/dev/null 2>&1
+        STATUS=$?
+        set -e
+        echo "$STATUS" > artifacts/stylelint/exit-code.txt
+        echo "::notice title=stylelint (non-blocking)::stylelint exited $STATUS; warnings are measure-only in WP4.1"
+
+    - name: Summarize against committed baseline
+      if: always()
+      continue-on-error: true
+      run: |
+        node scripts/stylelint-report.mjs \
+          artifacts/stylelint/stylelint.json \
+          artifacts/stylelint/summary.json \
+          docs/CSS_PHASE4_WP4_1_STYLELINT_BASELINE.json
+
+    - name: Upload stylelint measurement
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: static-analysis-stylelint
+        path: artifacts/stylelint
+        retention-days: 14
+
