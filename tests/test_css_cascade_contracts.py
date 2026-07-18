@@ -36,6 +36,12 @@ ROUTE_BUNDLES = {
     "backup.html": "pages-backup.css",
 }
 LAYER_ORDER = ("workout", "navbar", "workout-dropdowns", "welcome")
+FRAME_ROUTE_BUNDLES = {
+    "plan": "pages-workout-plan.css",
+    "log": "pages-workout-log.css",
+    "weekly": "pages-weekly-summary.css",
+    "session": "pages-session-summary.css",
+}
 
 
 def _css_links(template: str) -> list[str]:
@@ -160,3 +166,79 @@ def test_stylelint_is_pinned_measure_only_with_committed_baseline() -> None:
     assert baseline["sourceCommit"] == "9ee763889e1e021d6cd1fe8d8782dccb4cb40d52"
     assert baseline["warningCount"] == 7202
     assert baseline["parseErrorCount"] == 0
+
+
+def test_shared_frame_and_route_surfaces_have_one_owner() -> None:
+    css_dir = ROOT / "static" / "css"
+    components = (css_dir / "components.css").read_text(encoding="utf-8")
+    routes = {
+        name: (css_dir / filename).read_text(encoding="utf-8")
+        for name, filename in FRAME_ROUTE_BUNDLES.items()
+    }
+
+    shared_marker = "/* Shared frame infrastructure used by Workout Plan"
+    shared_start = "/* Frame Base Styles - Glass Effect */"
+    log_start = "/* Base Layer Frame for Workout Log - 2026 Glass Style */"
+    summary_start = "/* Summary Frame Styles - 2026 Glass Style */"
+
+    assert components.count(shared_marker) == 1
+    assert components.count(shared_start) == 1
+    assert components.count(
+        ":where(#workout, .workout-log-page, .summary-frame) {"
+    ) == 1
+    assert "html:has(" not in components
+    assert "&[data-theme='dark']" not in components
+    assert components.count("[data-theme='dark'] & .frame-title") == 2
+    assert sum(css.count(shared_start) for css in routes.values()) == 0
+    assert len(re.findall(r"^\.frame-header-2025 \{", components, re.MULTILINE)) == 1
+    assert sum(
+        len(re.findall(r"^\.frame-header-2025 \{", css, re.MULTILINE))
+        for css in routes.values()
+    ) == 0
+
+    assert routes["log"].count(log_start) == 1
+    assert routes["log"].count(summary_start) == 0
+    assert routes["weekly"].count(summary_start) == 1
+    assert routes["session"].count(summary_start) == 1
+    assert routes["weekly"].count(log_start) == 0
+    assert routes["session"].count(log_start) == 0
+    assert routes["plan"].count(log_start) == 0
+    assert routes["plan"].count(summary_start) == 0
+
+    # The weekly-only filter remains route-owned; WP4.2 does not delete it.
+    assert "#isolated_muscles_filter" in routes["weekly"]
+    assert "#isolated_muscles_filter" not in routes["session"]
+
+
+def test_relocated_frame_selectors_remain_reachable_from_runtime_hooks() -> None:
+    plan = (ROOT / "templates" / "workout_plan.html").read_text(encoding="utf-8")
+    log = (ROOT / "templates" / "workout_log.html").read_text(encoding="utf-8")
+    weekly = (ROOT / "templates" / "weekly_summary.html").read_text(
+        encoding="utf-8"
+    )
+    session = (ROOT / "templates" / "session_summary.html").read_text(
+        encoding="utf-8"
+    )
+    progression = (ROOT / "templates" / "progression_plan.html").read_text(
+        encoding="utf-8"
+    )
+    log_js = (ROOT / "static" / "js" / "modules" / "workout-log.js").read_text(
+        encoding="utf-8"
+    )
+    plan_js = (
+        ROOT / "static" / "js" / "modules" / "workout-plan-page.js"
+    ).read_text(encoding="utf-8")
+    fixtures = (ROOT / "e2e" / "fixtures.ts").read_text(encoding="utf-8")
+
+    for template in (plan, log):
+        assert 'class="collapsible-frame' in template
+        assert "frame-header-2025" in template
+    assert ".collapsible-frame" in plan_js
+    assert ".collapsible-frame" in log_js
+    assert 'class="workout-log-frame"' in log
+    assert "PAGE_WORKOUT_LOG: '.workout-log-frame'" in fixtures
+    assert 'class="summary-frame frame-calm-glass"' in weekly
+    assert 'class="summary-frame frame-calm-glass"' in session
+    assert 'class="progression-plan-container"' in progression
+    for route_hook in ('id="workout"', "workout-log-page", "summary-frame"):
+        assert route_hook not in progression

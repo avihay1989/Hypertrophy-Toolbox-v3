@@ -172,12 +172,12 @@ npx playwright test --project=chromium --reporter=line
 
 ## 5. Current State & Risks
 
-### Verified test counts (2026-07-17 — Phase 3 through WP4.1 complete)
-- WP4.1 gates: contracts **10**, flake8 **0**, tsc/node syntax pass, Vitest **105**,
-  pytest **1731 + 2 catalog known-reds**, affected Chromium **47**, and required
-  Chromium **407/407**. Both visual reds exactly match the WP4.0 animated/skip-link
-  evidence at 1,039 and 6,262 pixels; all 156 snapshots are unchanged.
-- Phases -1–3 and WP4.-1/0a/0/1 are complete; WP4.2 is next, not started. **WPB.4 is
+### Verified test counts (2026-07-18 — Phase 3 through WP4.2 complete)
+- WP4.2 gates: contracts **12**, flake8 **0**, tsc pass, Node syntax **64/64**,
+  Vitest **105**, pytest **1733 + 2 catalog known-reds**, affected Chromium
+  **84/84**, and required Chromium **407/407**. Both visual reds exactly match
+  the WP4.0 evidence at 1,039 and 6,262 pixels; all 156 snapshots are unchanged.
+- Phases -1–3 and WP4.-1/0a/0/1/2 are complete; WP4.3 has not started. **WPB.4 is
   unimplemented** pending one `Unassigned` session, unresolved denominator behavior, and golden review.
 Historical baselines live in `docs/MASTER_HANDOVER.md`. Re-verify after significant changes.
 

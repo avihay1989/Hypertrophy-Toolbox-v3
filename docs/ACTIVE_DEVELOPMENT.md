@@ -4,27 +4,27 @@ This file is the execution source of truth for autonomous development sessions. 
 
 ## Current Objective
 
-**2026-07-17 — Phase-4 WP4.1 token vocabulary consolidation is complete in
-`wt/wp4-1-token-vocabulary`; WP4.2 is next but not started.** The inventory and
-mapping distinguish responsive `--layout-space-*` from fixed `--s-*`, preserve
-deprecated `--space-*` compatibility aliases, and alias only exact welcome/navbar
-matches. Pinned Stylelint 16.11.0 records 7,202 pre-change warnings across 21 sources
-and runs as a new non-required measure-only CI job without renaming a required context.
-Gates: diff check, blocking flake8, tsc, and node syntax passed; Vitest **105/105**;
-full pytest **1,731 passed + the two catalog known-reds**; affected Chromium **47/47**;
-required Chromium **407/407**; selector/cascade contracts **10/10**. Update-free Windows
-visuals reproduced the exact WP4.0 1,039- and 6,262-pixel animated/skip-link reds.
-All 156 screenshots, generated Bootstrap CSS, and all live DBs stayed byte-identical.
-No push was made; the existing pinned-Linux WP4.0 comparison remains authoritative.
+**2026-07-18 — Phase-4 WP4.2 shared-frame dedupe is complete in
+`wt/wp4-2-shared-frame-dedupe`; WP4.3 has not started.** Shared frame rules are
+owned once in `components.css` under direct zero-specificity route scope; log and
+summary surfaces remain route-owned. The rejected document-wide `html:has(...)`
+gate changed Chromium's masked Progression raster without changing a winning rule;
+direct scope restores byte-identical output. Net CSS reduction: **3,668 lines**.
+Gates: diff check, blocking flake8, tsc, Node **64/64**, Vitest **105/105**, full
+pytest **1,733 + the two catalog known-reds**, affected Chromium **84/84**, required
+Chromium **407/407**, and contracts **12/12**. Final Stylelint is **6,444 warnings**
+with zero parse/config errors. Update-free visuals reproduced the exact WP4.0
+1,039- and 6,262-pixel known reds. All 156 screenshots, generated Bootstrap CSS,
+and both protected DBs stayed byte-identical. No push, merge, rebase, or WP4.3 work.
 WPB.4 remains unimplemented and gated on retaining one synthetic `Unassigned` session,
 an explicit unresolved denominator decision, and intentional review of the exact golden
 diff before any behavior change.
 
 ## Next Action
 
-Review and commit WP4.1, then integrate that commit into local `main` with a
-history-preserving merge and re-run the narrow integration gates. Do not push
-and do not begin WP4.2 until the local integration is clean.
+Review and integrate the local WP4.2 commit into local `main` with a
+history-preserving merge and re-run the narrow integration gates. Do not push;
+begin WP4.3 only after the local integration is explicitly accepted.
 
 ---
 

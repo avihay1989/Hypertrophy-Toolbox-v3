@@ -4,6 +4,24 @@
 
 ## Current State
 
+> **2026-07-18 — WP4.2 shared-frame dedupe complete in isolated
+> `wt/wp4-2-shared-frame-dedupe`.** The four-copy frame infrastructure is owned
+> once in `components.css`, under zero-specificity direct route-container scope;
+> log and summary surfaces remain route-owned. A rejected document-wide
+> `html:has(...)` gate changed Chromium mask compositing on Progression despite
+> changing no matched rule or computed value; direct scope restores the committed
+> screenshot byte-for-byte. Net CSS reduction: **3,668 lines**. Final Stylelint:
+> **6,444 warnings**, duplicate selectors **50**, duplicate properties **2**,
+> descending specificity **673**, declaration-important **2,341**, lexical
+> `!important` **2,345**, selector ID/specificity ceilings **191/188**, and zero
+> parse/config errors. Gates: contracts **12**, Flake8 **0**, tsc, Node **64/64**,
+> Vitest **105**, pytest **1,733 + 2 unchanged catalog known-reds**, affected
+> Chromium **84/84**, required Chromium **407/407**. Update-free visuals match
+> the exact **1,039/6,262** WP4.0 known-reds; all 156 snapshots, Bootstrap, and
+> both protected DBs are byte-identical. No push/merge/rebase or WP4.3 work.
+> Evidence: `docs/CSS_PHASE4_WP4_2_EVIDENCE.md`. **Review and locally integrate
+> WP4.2 next; WP4.3 has not started.**
+>
 > **2026-07-17 — WP4.1 token vocabulary consolidation complete in isolated
 > `wt/wp4-1-token-vocabulary`.** A frozen 21-source inventory records the
 > hardcoded-value surface, duplicate responsive/fixed spacing scales, and all
@@ -19,7 +37,7 @@
 > on every attempt. All 156 snapshots, generated Bootstrap CSS, and the main,
 > Phase-4, and visual-seed DBs stayed byte-identical. No snapshot was updated and
 > no push was made; pinned-Linux WP4.0 evidence remains authoritative. Evidence:
-> `docs/CSS_PHASE4_WP4_1_EVIDENCE.md`. **WP4.2 is next and has not started.**
+> `docs/CSS_PHASE4_WP4_1_EVIDENCE.md`. WP4.2 followed in the block above.
 >
 > **2026-07-17 — WP4.0 fresh known-red ledger complete on unchanged
 > `wt/wp4-cascade-foundation` head `e46b67e`.** Fresh gates: contracts **7**,
@@ -261,11 +279,11 @@
 
 ## Next Safe Step
 
-**Current:** review the isolated WP4.1 commit, integrate it into local `main`
+**Current:** review the isolated WP4.2 commit, integrate it into local `main`
 with a history-preserving merge, and re-run the narrow integration gates. Do
-not push and do not begin WP4.2 until that local integration is clean. The
-older Stage-4 paragraph below is retained as historical context, not the
-current next action.
+not push and do not begin WP4.3 until that local integration is explicitly
+accepted. The older Stage-4 paragraph below is retained as historical context,
+not the current next action.
 
 Use [docs/ACTIVE_DEVELOPMENT.md](ACTIVE_DEVELOPMENT.md) as the execution source of truth. **Local `main` is in sync with `origin/main` (0 commits ahead) after pushing `df9b6f9` (movement_pattern cleanup), `f2cdc23` (Stage 4 observer tooling), and the 2026-05-29 handover sync.** The active tracking item is **Fatigue Meter Phase 2 Stage 4 calibration window — OPEN 2026-05-24, earliest close 2026-06-07** (≥2 weeks real use). The Stage 4 calibration observer (`scripts/fatigue_stage4_observer.py`, daily scheduled task) is ready and strictly read-only; it stays idle and appends nothing while `workout_log` is empty (verified 2026-05-29). **Automation observability tooling added 2026-05-30:** `scripts/check_fatigue_stage4_automation.ps1` (read-only health check — classifies the automation as [BROKEN] / [SKIPPED] / [IDLE] / [READY], explains task result codes incl. `0` and `0x800710E0`, reports the live `workout_log` count via the read-only `scripts/fatigue_stage4_status.py` helper) and `scripts/install_fatigue_stage4_observer_task.ps1` (idempotent `schtasks /Create ... /F` installer/repair, default daily 20:00). Verified 2026-05-30: check -> **[IDLE]** (last result `0`, `workout_log` empty); installer idempotent; `schtasks /Run` succeeded. No thresholds / scenarios / boundary tests / DB touched — see [PHASE2_PLANNING.md §10](fatigue_meter/PHASE2_PLANNING.md). Working tree should remain clean except for `data/database.db` runtime dirt after committing this tooling. Pre-existing closed-workstream rules still hold: redesign post-P8 triage closed (10 shipped, #1 deferred by owner choice), phase5_3i_plan closed as accepted-as-shipped. Fatigue calibration guardrails: no per-muscle threshold tuning without ≥2 same-direction real-use disagreements; no edits to `utils/fatigue.py::MUSCLE_VOLUME_LANDMARKS` / `SESSION_FATIGUE_BANDS` / `WEEKLY_FATIGUE_BANDS`; no `tests/test_fatigue.py` boundary-test edits; no `scripts/fatigue_calibration_report.py::SCENARIOS` tuning without a fresh owner override. See [docs/fatigue_meter/PHASE2_PLANNING.md](fatigue_meter/PHASE2_PLANNING.md) Stage 4 + §10 for evidence-collection guidance.
 

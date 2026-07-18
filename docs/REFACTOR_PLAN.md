@@ -1,11 +1,12 @@
 # Deep Refactor Plan — v3 (2026-07-04, full-scan grounded)
 
 **Status: Track A, Phases -1 through 3, and Phase-4 packets WP4.-1, WP4.0a,
-WP4.0, and WP4.1 are complete. WP2.2 is committed as `c461840`; optional WP3.6 is
+WP4.0, WP4.1, and WP4.2 are complete. WP2.2 is committed as `c461840`; optional WP3.6 is
 committed as `0cbedac`. WP4.0 measurement provenance remains unchanged head
 `e46b67e`, with its ledger committed as `ca725c2`. Local integration verification
-is complete through WP4.0; WP4.2 is next but has not started. Track B is mostly shipped;
-WPB.4 remains unimplemented and product-risk gated.**
+is complete through WP4.1; WP4.2 is committed locally for review and integration,
+and WP4.3 has not started. Track B is mostly shipped; WPB.4 remains unimplemented
+and product-risk gated.**
 
 This supersedes v2. It incorporates:
 
@@ -891,6 +892,21 @@ and is not included in this packet.
   `pages-workout-plan.css`.
 - Delete only template/JS/E2E-proven dead selectors.
 - Treat this as cascade-sensitive structural movement with full visual gates.
+
+**Completed 2026-07-18 in the isolated `wt/wp4-2-shared-frame-dedupe`
+worktree.** The shared block is owned once in `components.css` under
+`:where(#workout, .workout-log-page, .summary-frame)`; route-specific log and
+summary surfaces remain later in their route bundles. A diagnostic rejected the
+initial document-wide `html:has(...)` gate: it changed masked Chromium
+compositing on Progression despite no changed matched rule or computed value.
+Direct container scope restores byte-identical Progression output. The five CSS
+files shrink by a net **3,668 lines**. Contracts **12/12**, affected Chromium
+**84/84**, required Chromium **407/407**, pytest **1,733 + 2 known catalog reds**,
+and update-free visual locks all match. Stylelint falls from the 7,202 baseline
+to **6,444** with unchanged selector ceiling warning counts and zero parse/config
+errors. All 156 snapshots, generated Bootstrap, and protected DBs are unchanged.
+Evidence: [`CSS_PHASE4_WP4_2_EVIDENCE.md`](CSS_PHASE4_WP4_2_EVIDENCE.md). WP4.3
+has not started.
 
 ### WP4.3 Page dark-mode/token cleanup
 
