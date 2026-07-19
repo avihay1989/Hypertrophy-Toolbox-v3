@@ -5,9 +5,9 @@ WP4.0, WP4.1, WP4.2, WP4.3a, WP4.3b, WP4.3c, and WP4.3d are complete. WP2.2 is c
 committed as `0cbedac`. WP4.0 measurement provenance remains unchanged head
 `e46b67e`, with its ledger committed as `ca725c2`. Local integration verification
 is complete through WP4.3d: its history-preserving local merge is `40bc09f` and
-the narrow post-merge gates passed. Nothing was pushed. WP4.3e (Welcome) is
-complete in isolated `wt/wp4-3-welcome-dark-token-cleanup` and awaits owner
-integration direction; Session Summary and later packets have not started.
+the narrow post-merge gates passed. Nothing was pushed through WP4.3d. WP4.3e (Welcome) shipped to origin/main via
+PR #160 (`5e7d290`), and WP4.3f (Session Summary) shipped via PR on top of it;
+Weekly Summary and later packets have not started.
 Track B is mostly shipped; WPB.4 remains unimplemented
 and product-risk gated.**
 
@@ -1025,10 +1025,35 @@ Welcome variants pass; all twelve committed Welcome images and every integrity
 lock are unchanged. Full visuals reproduce only the exact WP4.0 known reds
 (workout-plan desktop-dark 1,039 px; plan-desktop-light-advanced 6,262 px).
 Evidence: [`CSS_PHASE4_WP4_3E_EVIDENCE.md`](CSS_PHASE4_WP4_3E_EVIDENCE.md). The
-packet is committed on its isolated branch and **not yet integrated**; awaiting
-owner direction on the history-preserving merge and whether to push. Leave the
-worktree and branch for review and wait for explicit direction before Session
-Summary or another packet.
+packet shipped to origin/main via PR #160 (squash `5e7d290`, all 14 CI checks
+green).
+
+**WP4.3f Session Summary completed 2026-07-19 in isolated
+`wt/wp4-3-session-summary-dark-token-cleanup`.** The repeated solid-color
+dark-mode, ink, and border literals in the session-summary-only bundle now use
+eleven page-local semantic tokens (a `:root` block for the two light tokens and a
+`[data-theme='dark']` block for the nine dark tokens, mirroring the WP4.3d
+volume-splitter pattern). Distinct roles keep distinct tokens even when values
+coincide (`#495057` backs both `--ss-label-ink` light ink and
+`--ss-dark-border-strong` dark border, split by CSS property). Pure value-
+preserving extraction — no custom property removed, no rule deleted; the shared
+volume-badge colors, light striping, glass overlays, and all nine breakpoints
+stay untouched. Two hygiene findings were **deferred** (documented, not acted on):
+the dead `#weekly-summary-container`/`-table` selector arms (those ids live only
+in `weekly_summary.html`, which loads its own bundle) and the two parallel dark
+table systems on the shared `.summary-*` classes — both better handled with
+WP4.3g Weekly Summary or a shared-frame dedupe. Pinned Stylelint falls
+**6,331 → 6,294** (focused Session Summary **183 → 146**, all -37 in hardcoded
+values), with important, specificity, and duplicate counts unchanged. Contracts
+**18/18**, focused Session Summary Chromium visual **6/6** update-free, required
+Chromium **426/426**, and pytest **1,739 + 2 catalog known-reds** match the
+expected gates. All six Windows Session Summary variants pass; all twelve
+committed Session Summary images and every integrity lock are unchanged. Full
+visuals reproduce only the exact WP4.0 known reds (workout-plan desktop-dark
+1,039 px; plan-desktop-light-advanced 6,262 px). Evidence:
+[`CSS_PHASE4_WP4_3F_EVIDENCE.md`](CSS_PHASE4_WP4_3F_EVIDENCE.md). Shipped to
+origin/main via PR. Next is WP4.3g Weekly Summary; wait for explicit direction
+before starting it.
 
 ### WP4.4 Shared bundles, navbar, and `theme-dark.css`
 

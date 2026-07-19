@@ -560,3 +560,66 @@ def test_welcome_tokens_extract_exact_values_without_dead_custom_properties() ->
     for breakpoint in ("1024px", "768px", "480px"):
         assert css.count(f"@media (max-width: {breakpoint})") == 1
     assert 'id="welcome" data-page="welcome"' in template
+
+
+def test_session_summary_tokens_extract_exact_values_value_preserving() -> None:
+    base = (ROOT / "templates" / "base.html").read_text(encoding="utf-8")
+    template = (ROOT / "templates" / "session_summary.html").read_text(
+        encoding="utf-8"
+    )
+    css = (ROOT / "static" / "css" / "pages-session-summary.css").read_text(
+        encoding="utf-8"
+    )
+
+    # Route bundle loads in the page_css block, after a11y and before the late
+    # motion/theme boundary; no document-wide :has() scope is introduced.
+    assert base.index("css/a11y.css") < base.index("{% block page_css %}")
+    assert base.index("{% block page_css %}") < base.index("css/motion.css")
+    assert base.index("css/motion.css") < base.index("css/theme-dark.css")
+    assert "html:has(" not in css
+
+    # New page-local semantic tokens: each defined once and consumed by the exact
+    # count of the repeated literal it replaced. Distinct roles keep distinct
+    # tokens even when values coincide (--ss-label-ink vs --ss-dark-border-strong
+    # are both #495057 but light label ink vs dark border).
+    for token, consumers in (
+        ("--ss-table-border", 6),
+        ("--ss-label-ink", 2),
+        ("--ss-dark-ink", 9),
+        ("--ss-dark-ink-bright", 12),
+        ("--ss-dark-border", 5),
+        ("--ss-dark-border-strong", 6),
+        ("--ss-dark-surface", 3),
+        ("--ss-dark-surface-deep", 2),
+        ("--ss-dark-elevated", 3),
+        ("--ss-dark-cell", 2),
+        ("--ss-dark-hover", 2),
+    ):
+        assert css.count(f"{token}:") == 1
+        assert css.count(f"var({token})") == consumers
+
+    # Every extracted literal now survives only in its single token definition;
+    # #495057 backs two distinct-role tokens so it appears exactly twice.
+    for literal in (
+        "#e0e0e0",
+        "#404040",
+        "#d0d0d0",
+        "#212529",
+        "#343a40",
+        "#2d2d2d",
+        "#3d3d3d",
+        "#1a1a1a",
+    ):
+        assert css.count(literal) == 1
+    assert css.count("#495057") == 2
+    assert "--ss-dark-ink-bright: #fff;" in css
+    assert "color: #fff;" not in css
+    assert "color: #fff !important;" not in css
+
+    # Shared volume-badge classification colors and the light striping/glass
+    # literals are deliberately left untouched (single-use / shared semantics).
+    for shared in ("#dc3545", "#fd7e14", "#198754", "#6f42c1"):
+        assert shared in css
+    assert "background-color: #ffffff !important;" in css
+    assert css.count("@media") == 9
+    assert 'id="session-summary-container"' in template

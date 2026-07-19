@@ -1,6 +1,24 @@
 /* Shared volume status tokens, badges, and legend content.
    Summary pages and the volume splitter can both depend on this file
    without redefining the indicator colors or badge chrome locally. */
+
+:root {
+    --ss-table-border: #d0d0d0;
+    --ss-label-ink: #495057;
+}
+
+[data-theme='dark'] {
+    --ss-dark-ink: #e0e0e0;
+    --ss-dark-ink-bright: #fff;
+    --ss-dark-border: #404040;
+    --ss-dark-border-strong: #495057;
+    --ss-dark-surface: #212529;
+    --ss-dark-surface-deep: #1a1a1a;
+    --ss-dark-elevated: #343a40;
+    --ss-dark-cell: #2d2d2d;
+    --ss-dark-hover: #3d3d3d;
+}
+
 .volume-indicator {
     width: clamp(16px, 1.5vw, 20px);
     height: clamp(16px, 1.5vw, 20px);
@@ -57,27 +75,27 @@
 
 /* Dark mode for volume legend */
 [data-theme='dark'] .volume-legend {
-    color: #e0e0e0;
+    color: var(--ss-dark-ink);
 }
 
 [data-theme='dark'] .volume-legend h5,
 [data-theme='dark'] .volume-legend .text-muted,
 [data-theme='dark'] .volume-legend span {
-    color: #e0e0e0 !important;
+    color: var(--ss-dark-ink) !important;
 }
 
 [data-theme='dark'] .volume-legend .legend-item span {
-    color: #e0e0e0;
+    color: var(--ss-dark-ink);
 }
 
 /* Dark mode volume indicator border */
 [data-theme='dark'] .volume-indicator {
-    border: 1px solid #404040;
+    border: 1px solid var(--ss-dark-border);
 }
 
 /* Dark mode volume classification text */
 [data-theme='dark'] .volume-classification span:not(.volume-badge) {
-    color: #e0e0e0;
+    color: var(--ss-dark-ink);
 }
 
 /*
@@ -107,7 +125,7 @@
 #session-summary-container .table td,
 #weekly-summary-container .table th,
 #weekly-summary-container .table td {
-    border: 1px solid #d0d0d0 !important;
+    border: 1px solid var(--ss-table-border) !important;
 }
 
 /* Override Bootstrap's table-striped box-shadow approach with solid backgrounds */
@@ -141,7 +159,7 @@
     --bs-table-accent-bg: transparent !important;
     box-shadow: none !important;
     background: #252525 !important;
-    color: #e0e0e0 !important;
+    color: var(--ss-dark-ink) !important;
 }
 
 [data-theme='dark'] .summary-frame .table-striped > tbody > tr:nth-of-type(even) > *,
@@ -149,8 +167,8 @@
 [data-theme='dark'] .summary-tables .table-striped > tbody > tr:nth-of-type(even) > * {
     --bs-table-accent-bg: transparent !important;
     box-shadow: none !important;
-    background: #2d2d2d !important;
-    color: #e0e0e0 !important;
+    background: var(--ss-dark-cell) !important;
+    color: var(--ss-dark-ink) !important;
 }
 
 /* Dark mode table headers */
@@ -159,9 +177,9 @@
 [data-theme='dark'] .summary-tables .table thead th,
 [data-theme='dark'] #session-summary-container .table thead th,
 [data-theme='dark'] #weekly-summary-container .table thead th {
-    background: #1a1a1a !important;
-    color: #e0e0e0 !important;
-    border-color: #404040 !important;
+    background: var(--ss-dark-surface-deep) !important;
+    color: var(--ss-dark-ink) !important;
+    border-color: var(--ss-dark-border) !important;
     box-shadow: none !important;
 }
 
@@ -171,9 +189,9 @@
 [data-theme='dark'] .summary-tables .table td,
 [data-theme='dark'] #session-summary-container .table td,
 [data-theme='dark'] #weekly-summary-container .table td {
-    background: #2d2d2d !important;
-    color: #e0e0e0 !important;
-    border-color: #404040 !important;
+    background: var(--ss-dark-cell) !important;
+    color: var(--ss-dark-ink) !important;
+    border-color: var(--ss-dark-border) !important;
     box-shadow: none !important;
 }
 
@@ -182,14 +200,14 @@
 [data-theme='dark'] #session-summary-container .table td,
 [data-theme='dark'] #weekly-summary-container .table th,
 [data-theme='dark'] #weekly-summary-container .table td {
-    border: 1px solid #404040 !important;
+    border: 1px solid var(--ss-dark-border) !important;
 }
 
 /* Dark mode table hover */
 [data-theme='dark'] .summary-frame .table tbody tr:hover td,
 [data-theme='dark'] .summary-section .table tbody tr:hover td,
 [data-theme='dark'] .summary-tables .table tbody tr:hover td {
-    background-color: #3d3d3d !important;
+    background-color: var(--ss-dark-hover) !important;
 }
 
 /* Dark mode volume legend */
@@ -219,14 +237,14 @@
 
 /* Dark mode summary frame */
 [data-theme='dark'] .summary-frame {
-    background-color: #1a1a1a !important;
-    border-color: #404040 !important;
+    background-color: var(--ss-dark-surface-deep) !important;
+    border-color: var(--ss-dark-border) !important;
 }
 
 /* Dark mode method selector */
 [data-theme='dark'] .method-selector label,
 [data-theme='dark'] .method-selector .form-label {
-    color: #e0e0e0 !important;
+    color: var(--ss-dark-ink) !important;
 }
 
 [data-theme='dark'] .method-selector .form-text {
@@ -287,8 +305,8 @@
 .summary-frame .table,
 .summary-section .table,
 .summary-tables .table {
-    border-color: #d0d0d0 !important;
-    --bs-table-border-color: #d0d0d0 !important;
+    border-color: var(--ss-table-border) !important;
+    --bs-table-border-color: var(--ss-table-border) !important;
     border-collapse: separate;
     border-spacing: 0;
 }
@@ -296,7 +314,7 @@
 .summary-frame .table > :not(caption) > * > *,
 .summary-section .table > :not(caption) > * > *,
 .summary-tables .table > :not(caption) > * > * {
-    border-color: #d0d0d0 !important;
+    border-color: var(--ss-table-border) !important;
 }
 
 .summary-frame .table th,
@@ -305,7 +323,7 @@
 .summary-section .table td,
 .summary-tables .table th,
 .summary-tables .table td {
-    border-color: #d0d0d0 !important;
+    border-color: var(--ss-table-border) !important;
 }
 
 .summary-section .table-container {
@@ -321,7 +339,7 @@
 /* Table Header Styling */
 .summary-section thead th {
     background-color: #f5f5f5;
-    border-bottom: 2px solid #d0d0d0;
+    border-bottom: 2px solid var(--ss-table-border);
     padding: 1rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -433,21 +451,21 @@
     -webkit-backdrop-filter: blur(12px) saturate(180%);
     border-color: rgba(255, 255, 255, 0.1);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    color: #fff;
+    color: var(--ss-dark-ink-bright);
 }
 
 [data-theme='dark'] .summary-header label,
 [data-theme='dark'] .summary-header .form-label,
 [data-theme='dark'] .summary-header h5,
 [data-theme='dark'] .summary-header .text-muted {
-    color: #fff !important;
+    color: var(--ss-dark-ink-bright) !important;
 }
 
 [data-theme='dark'] .summary-header select,
 [data-theme='dark'] .summary-header .form-select {
-    background-color: #343a40;
-    border-color: #495057;
-    color: #fff;
+    background-color: var(--ss-dark-elevated);
+    border-color: var(--ss-dark-border-strong);
+    color: var(--ss-dark-ink-bright);
 }
 
 [data-theme='dark'] .summary-header .volume-legend {
@@ -465,7 +483,7 @@
 
 .method-selector .form-label {
     font-weight: 600;
-    color: #495057;
+    color: var(--ss-label-ink);
     margin-bottom: 0.5rem;
 }
 
@@ -486,7 +504,7 @@
 }
 
 .volume-legend h5 {
-    color: #495057;
+    color: var(--ss-label-ink);
     margin-bottom: 1rem;
     font-weight: 600;
 }
@@ -523,31 +541,31 @@
 
 /* Dark mode for summary tables */
 [data-theme='dark'] .summary-tables {
-    background: #212529 !important;
-    border-color: #495057 !important;
-    color: #fff !important;
+    background: var(--ss-dark-surface) !important;
+    border-color: var(--ss-dark-border-strong) !important;
+    color: var(--ss-dark-ink-bright) !important;
 }
 
 [data-theme='dark'] .summary-tables .table {
-    background-color: #212529 !important;
+    background-color: var(--ss-dark-surface) !important;
 }
 
 [data-theme='dark'] .summary-tables .table thead th {
-    background: #343a40 !important;
-    color: #fff !important;
-    border-color: #495057 !important;
+    background: var(--ss-dark-elevated) !important;
+    color: var(--ss-dark-ink-bright) !important;
+    border-color: var(--ss-dark-border-strong) !important;
     box-shadow: none !important;
 }
 
 [data-theme='dark'] .summary-tables .table tbody td {
-    background: #212529 !important;
-    color: #fff !important;
-    border-color: #495057 !important;
+    background: var(--ss-dark-surface) !important;
+    color: var(--ss-dark-ink-bright) !important;
+    border-color: var(--ss-dark-border-strong) !important;
     box-shadow: none !important;
 }
 
 [data-theme='dark'] .summary-tables .table tbody tr:hover td {
-    background-color: #3d3d3d !important;
+    background-color: var(--ss-dark-hover) !important;
 }
 
 [data-theme='dark'] .summary-tables .table tbody tr:nth-of-type(odd) td {
@@ -555,28 +573,28 @@
 }
 
 [data-theme='dark'] .summary-tables .card {
-    background-color: #343a40;
-    border-color: #495057;
+    background-color: var(--ss-dark-elevated);
+    border-color: var(--ss-dark-border-strong);
 }
 
 [data-theme='dark'] .summary-tables .card-header {
     background-color: #2c3034;
-    border-color: #495057;
-    color: #fff;
+    border-color: var(--ss-dark-border-strong);
+    color: var(--ss-dark-ink-bright);
 }
 
 [data-theme='dark'] .summary-tables .card-body {
-    color: #fff;
+    color: var(--ss-dark-ink-bright);
 }
 
 /* Dark mode for section titles */
 [data-theme='dark'] .text-center.mb-4 {
-    color: #fff;
+    color: var(--ss-dark-ink-bright);
 }
 
 /* Dark mode for table section headers */
 [data-theme='dark'] h4.text-center.mb-4 {
-    color: #fff;
+    color: var(--ss-dark-ink-bright);
     font-weight: 600;
 }
 
@@ -593,11 +611,11 @@
     background: rgba(40, 44, 52, 0.6) !important;
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    color: #fff !important;
+    color: var(--ss-dark-ink-bright) !important;
 }
 
 [data-theme='dark'] .summary-section h2,
 [data-theme='dark'] .summary-section h3,
 [data-theme='dark'] .summary-section h4 {
-    color: #fff;
+    color: var(--ss-dark-ink-bright);
 }
