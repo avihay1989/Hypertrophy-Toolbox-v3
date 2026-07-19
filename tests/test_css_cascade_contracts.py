@@ -496,3 +496,67 @@ def test_volume_splitter_tokens_preserve_runtime_ownership_and_dark_winners() ->
     assert "card.dataset.type = suggestion.type" in volume_js
     assert "'volume-value-pill--excessive'" in volume_js
     assert "getPropertyValue('--volume-track-bg')" in volume_js
+
+
+def test_welcome_tokens_extract_exact_values_without_dead_custom_properties() -> None:
+    base = (ROOT / "templates" / "base.html").read_text(encoding="utf-8")
+    template = (ROOT / "templates" / "welcome.html").read_text(encoding="utf-8")
+    css = (ROOT / "static" / "css" / "pages-welcome.css").read_text(encoding="utf-8")
+
+    # Route bundle loads in the page_css block, after a11y and before the late
+    # motion/theme boundary; no document-wide :has() scope is introduced.
+    assert base.index("css/a11y.css") < base.index("{% block page_css %}")
+    assert base.index("{% block page_css %}") < base.index("css/motion.css")
+    assert base.index("css/motion.css") < base.index("css/theme-dark.css")
+    assert "html:has(" not in css
+
+    # New page-local semantic tokens: each defined once and consumed by the
+    # exact-repeat white-ink / translucent-white-overlay sites it replaced.
+    for token, minimum_consumers in (
+        ("--wl-on-accent", 21),
+        ("--wl-overlay-soft", 3),
+        ("--wl-overlay-strong", 5),
+        ("--wl-overlay-border", 2),
+    ):
+        assert css.count(f"{token}:") == 1
+        assert css.count(f"var({token})") >= minimum_consumers
+
+    # Dead (unreferenced) custom properties were removed outright: the featured
+    # token trio the cards never consumed, plus the orphaned glow/info/duration.
+    for dead in (
+        "--wl-featured-gradient",
+        "--wl-featured-start",
+        "--wl-featured-end",
+        "--wl-accent-glow",
+        "--wl-shadow-glow",
+        "--wl-info",
+        "--wl-duration-slow",
+    ):
+        assert dead not in css
+
+    # No raw white literal survives outside the token definitions.
+    for literal in (
+        "color: #ffffff !important;",
+        "color: #ffffff;",
+        "border-color: #ffffff !important;",
+        "rgba(255, 255, 255, 0.25) !important;",
+        "rgba(255, 255, 255, 0.15) !important;",
+        "rgba(255, 255, 255, 0.4) !important;",
+    ):
+        assert literal not in css
+    assert css.count("rgba(255, 255, 255, 0.25)") == 1
+    assert css.count("rgba(255, 255, 255, 0.15)") == 1
+    assert css.count("rgba(255, 255, 255, 0.4)") == 1
+    # #ffffff now lives only in the --wl-surface and --wl-on-accent definitions.
+    assert css.count("#ffffff") == 2
+
+    # The live featured brand rules keep their own hardcoded !important gradient;
+    # the dark override, responsive breakpoints, and page hook stay intact.
+    assert (
+        "background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%) !important;"
+        in css
+    )
+    assert "[data-theme='dark'] #welcome .bento-featured {" in css
+    for breakpoint in ("1024px", "768px", "480px"):
+        assert css.count(f"@media (max-width: {breakpoint})") == 1
+    assert 'id="welcome" data-page="welcome"' in template

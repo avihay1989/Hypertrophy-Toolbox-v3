@@ -5,7 +5,9 @@ WP4.0, WP4.1, WP4.2, WP4.3a, WP4.3b, WP4.3c, and WP4.3d are complete. WP2.2 is c
 committed as `0cbedac`. WP4.0 measurement provenance remains unchanged head
 `e46b67e`, with its ledger committed as `ca725c2`. Local integration verification
 is complete through WP4.3d: its history-preserving local merge is `40bc09f` and
-the narrow post-merge gates passed. Nothing was pushed. Welcome and later packets have not started.
+the narrow post-merge gates passed. Nothing was pushed. WP4.3e (Welcome) is
+complete in isolated `wt/wp4-3-welcome-dark-token-cleanup` and awaits owner
+integration direction; Session Summary and later packets have not started.
 Track B is mostly shipped; WPB.4 remains unimplemented
 and product-risk gated.**
 
@@ -1001,6 +1003,32 @@ integrated into local `main` as merge `40bc09f`; narrow post-merge gates passed,
 all protected identities remained unchanged, and nothing was pushed. Leave its
 isolated worktree and branch for review and wait for explicit direction before
 another packet.
+
+**WP4.3e Welcome completed 2026-07-19 in isolated
+`wt/wp4-3-welcome-dark-token-cleanup`.** The exact repeated white-ink and
+translucent-white overlay expressions now use four page-local semantic tokens
+(`--wl-on-accent`, `--wl-overlay-soft`, `--wl-overlay-strong`,
+`--wl-overlay-border`); no near-match brand accent/gradient literal was
+normalized. Seven dead (zero-`var()`-consumer) custom properties were removed
+outright — the `--wl-featured-start`/`-end`/`-gradient` trio (the cards paint
+their hardcoded `!important` gradients directly), the
+`--wl-accent-glow`/`--wl-shadow-glow` chain, `--wl-info`, and
+`--wl-duration-slow`. Every substitution is exact-value and every removal is an
+unused variable, so no rendered element's cascade winner moved; the live
+featured gradients, dark override, and all three breakpoints remain. Pinned
+Stylelint falls **6,364 → 6,331** (focused Welcome **144 → 111**, all -33 in
+hardcoded values), with important, specificity, and duplicate counts unchanged.
+Contracts **17/17**, focused Welcome Chromium visual **6/6** update-free,
+required Chromium **426/426** (the list grew from 407 as later specs landed), and
+pytest **1,738 + 2 catalog known-reds** match the expected gates. All six Windows
+Welcome variants pass; all twelve committed Welcome images and every integrity
+lock are unchanged. Full visuals reproduce only the exact WP4.0 known reds
+(workout-plan desktop-dark 1,039 px; plan-desktop-light-advanced 6,262 px).
+Evidence: [`CSS_PHASE4_WP4_3E_EVIDENCE.md`](CSS_PHASE4_WP4_3E_EVIDENCE.md). The
+packet is committed on its isolated branch and **not yet integrated**; awaiting
+owner direction on the history-preserving merge and whether to push. Leave the
+worktree and branch for review and wait for explicit direction before Session
+Summary or another packet.
 
 ### WP4.4 Shared bundles, navbar, and `theme-dark.css`
 
