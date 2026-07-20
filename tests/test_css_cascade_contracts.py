@@ -623,3 +623,87 @@ def test_session_summary_tokens_extract_exact_values_value_preserving() -> None:
     assert "background-color: #ffffff !important;" in css
     assert css.count("@media") == 9
     assert 'id="session-summary-container"' in template
+
+
+def test_weekly_summary_tokens_extract_values_and_drop_dead_session_arms() -> None:
+    base = (ROOT / "templates" / "base.html").read_text(encoding="utf-8")
+    template = (ROOT / "templates" / "weekly_summary.html").read_text(
+        encoding="utf-8"
+    )
+    css = (ROOT / "static" / "css" / "pages-weekly-summary.css").read_text(
+        encoding="utf-8"
+    )
+
+    # Route bundle loads in the page_css block, after a11y and before the late
+    # motion/theme boundary; no document-wide :has() scope is introduced.
+    assert base.index("css/a11y.css") < base.index("{% block page_css %}")
+    assert base.index("{% block page_css %}") < base.index("css/motion.css")
+    assert base.index("css/motion.css") < base.index("css/theme-dark.css")
+    assert "html:has(" not in css
+
+    # New page-local semantic tokens mirror the WP4.3f Session Summary set (the
+    # two bundles were byte-identical for this region). Each is defined once and
+    # consumed by the exact count of the repeated literal it replaced. Distinct
+    # roles keep distinct tokens even when values coincide (--wk-label-ink vs
+    # --wk-dark-border-strong are both #495057 but light label ink vs dark
+    # border, split by CSS property).
+    for token, consumers in (
+        ("--wk-table-border", 6),
+        ("--wk-label-ink", 2),
+        ("--wk-dark-ink", 9),
+        ("--wk-dark-ink-bright", 12),
+        ("--wk-dark-border", 5),
+        ("--wk-dark-border-strong", 6),
+        ("--wk-dark-surface", 3),
+        ("--wk-dark-surface-deep", 2),
+        ("--wk-dark-elevated", 3),
+        ("--wk-dark-cell", 2),
+        ("--wk-dark-hover", 2),
+    ):
+        assert css.count(f"{token}:") == 1
+        assert css.count(f"var({token})") == consumers
+
+    # Every extracted literal now survives only in its single token definition,
+    # except two intentional keeps: #d0d0d0 also backs the weekly-only
+    # #isolated_muscles_filter form-control border (a distinct single-use role),
+    # and #495057 backs two distinct-role tokens.
+    for literal in (
+        "#e0e0e0",
+        "#404040",
+        "#212529",
+        "#343a40",
+        "#2d2d2d",
+        "#3d3d3d",
+        "#1a1a1a",
+    ):
+        assert css.count(literal) == 1
+    assert css.count("#d0d0d0") == 2
+    assert css.count("#495057") == 2
+    assert "--wk-dark-ink-bright: #fff;" in css
+    assert "color: #fff;" not in css
+    assert "color: #fff !important;" not in css
+
+    # Finding (a): the dead #session-summary-* selector arms — those ids render
+    # only on session_summary.html — were dropped; the live #weekly-summary
+    # arms and every declaration remain.
+    assert "#session-summary" not in css
+    assert "#weekly-summary-container" in css
+    assert 'id="weekly-summary-container"' in template
+
+    # The weekly-only filter block stays route-owned and value-untouched
+    # (single-use literals: form border #d0d0d0, label ink #505050).
+    assert "#isolated_muscles_filter" in css
+    assert css.count("#505050") == 1
+
+    # Finding (b): the two parallel dark table systems both retain live owners
+    # (audited in both themes), so their single-use dark literals are left
+    # untouched rather than folded into tokens.
+    for kept_dark in ("#252525", "#2a2a2a", "#2c3034", "#b0b0b0"):
+        assert kept_dark in css
+
+    # Shared volume-badge classification colors and the light striping literal
+    # are deliberately left untouched (shared semantics); breakpoints preserved.
+    for shared in ("#dc3545", "#fd7e14", "#198754", "#6f42c1"):
+        assert shared in css
+    assert "background-color: #ffffff !important;" in css
+    assert css.count("@media") == 9

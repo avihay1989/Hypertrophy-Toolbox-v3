@@ -6,8 +6,9 @@ committed as `0cbedac`. WP4.0 measurement provenance remains unchanged head
 `e46b67e`, with its ledger committed as `ca725c2`. Local integration verification
 is complete through WP4.3d: its history-preserving local merge is `40bc09f` and
 the narrow post-merge gates passed. Nothing was pushed through WP4.3d. WP4.3e (Welcome) shipped to origin/main via
-PR #160 (`5e7d290`), and WP4.3f (Session Summary) shipped via PR on top of it;
-Weekly Summary and later packets have not started.
+PR #160 (`5e7d290`), WP4.3f (Session Summary) shipped via PR #161 (`08256f0`),
+and WP4.3g (Weekly Summary) shipped via PR on top of it;
+User Profile and later packets have not started.
 Track B is mostly shipped; WPB.4 remains unimplemented
 and product-risk gated.**
 
@@ -1054,6 +1055,39 @@ visuals reproduce only the exact WP4.0 known reds (workout-plan desktop-dark
 [`CSS_PHASE4_WP4_3F_EVIDENCE.md`](CSS_PHASE4_WP4_3F_EVIDENCE.md). Shipped to
 origin/main via PR. Next is WP4.3g Weekly Summary; wait for explicit direction
 before starting it.
+
+**WP4.3g Weekly Summary completed 2026-07-20 in isolated
+`wt/wp4-3-weekly-summary-dark-token-cleanup`.** The repeated solid-color
+dark-mode, ink, and border literals in the weekly-summary-only bundle now use
+eleven page-local `--wk-*` semantic tokens (a `:root` block for the two light
+tokens and a `[data-theme='dark']` block for the nine dark tokens), mirroring
+the WP4.3f session-summary set — the two bundles were byte-identical for this
+region. Distinct roles keep distinct tokens even when values coincide (`#495057`
+backs both `--wk-label-ink` light ink and `--wk-dark-border-strong` dark border,
+split by CSS property); the substitution is exact-value and self-verified by
+`var()`-expansion. The two WP4.3f-deferred findings were resolved: **(a)** the
+twelve dead `#session-summary-*` selector arms — those ids render only on
+`session_summary.html` — were dropped, each affected rule keeping its live
+`#weekly-summary`/class arms so no declaration was lost; **(b)** a browser
+computed-declaration-owner audit in both themes across the page's three tables
+proved both parallel dark table systems retain live winners (Table 1 governed by
+the ID-bearing System-1 rules, Tables 2/3 by System-2 thead-bg/border + odd-row
+bg and System-1 striping even-row bg / non-ID row text color, with a shared
+components.css rule owning non-ID thead text color), so no whole dark rule is
+safely removable — the systems were left intact and documented. The weekly-only
+`#isolated_muscles_filter` block and single-use dark literals
+(`#252525`/`#2a2a2a`/`#2c3034`/`#b0b0b0`) stay untouched. Pinned Stylelint falls
+**6,294 → 6,254** (focused Weekly Summary **184 → 144**: hardcoded values -37,
+descending-specificity -3), with important and duplicate counts unchanged.
+Contracts **19/19**, focused Weekly Summary Chromium visual **6/6** update-free,
+required Chromium **426/426**, and pytest **1,740 + 2 catalog known-reds** match
+the expected gates. All six Windows Weekly Summary variants pass; all twelve
+committed Weekly Summary images and every integrity lock are unchanged. Full
+visuals reproduce only the exact WP4.0 known reds (workout-plan desktop-dark
+1,039 px; plan-desktop-light-advanced 6,262 px). Evidence:
+[`CSS_PHASE4_WP4_3G_EVIDENCE.md`](CSS_PHASE4_WP4_3G_EVIDENCE.md). Shipped to
+origin/main via PR. Next is WP4.3h User Profile (audit/minimal); wait for
+explicit direction before starting it.
 
 ### WP4.4 Shared bundles, navbar, and `theme-dark.css`
 
