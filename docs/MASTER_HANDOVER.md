@@ -17,6 +17,30 @@
 > `automation-qa` acceptance tests; council review). The `wt/agent-workflow`
 > worktree branch is fully merged and can be retired.
 >
+> **2026-07-21 — WP4.3h User Profile is an audit-confirmed ZERO-production-CSS-
+> change packet (isolated worktree; stops at owner gate, not pushed).** The audit
+> found `static/css/pages-user-profile.css` already fully tokenized on the shared
+> design-token system: 254 of 274 hex occurrences are `var(--token, #fallback)`
+> fallbacks and every ink/border/surface/line role is already carried that way, so
+> there are no bare literals of that category to extract. The 20 bare hex uses are
+> brand/classification/status hues where each candidate fails a criterion —
+> `#2f9e44`/`#1f2937` are SHARED with other bundles (workout-plan / layout /
+> volume-splitter / bootstrap); the page-local coverage-band + autosave-status
+> hues are a coherent palette whose other members are shared/accent/single-use
+> (extracting fragments would leave an inconsistent half-tokenized palette); and a
+> measured trial `#1f2937` → token RAISED the focused hardcoded-value count
+> 226→227 and was reverted. Per the "audit/minimal — do NOT force" mandate, no
+> `--up-*` token was created; production CSS SHA-256 is unchanged
+> (`3EF8AC5A…2951`). Ships a pinning cascade contract + docs only. Stylelint
+> focused delta **0**. Gates: contracts **20/20**, Flake8 **0**, tsc, Node
+> **64/64**, Vitest **105/105**, focused User Profile Chromium visual **6/6**
+> update-free, User Profile functional **24/24**, required Chromium **426/426**,
+> pytest **1,743 passed / 0 failed** (2 catalog invariants green here → no new
+> reds). Full visuals reproduce only the exact **1,039/6,262** WP4.0 known reds on
+> the untouched workout-plan page. Evidence:
+> `docs/CSS_PHASE4_WP4_3H_EVIDENCE.md`. **Wait for explicit direction before
+> beginning WP4.3i workout-plan, WP4.3j workout-log, or WP4.4.**
+>
 > **2026-07-19 — WP4.3d Volume Splitter dark/token cleanup integrated locally as
 > merge `40bc09f`.** Exact repeated status,
 > accent, heading, and dark-surface values now use page-local semantic tokens.

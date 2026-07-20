@@ -707,3 +707,77 @@ def test_weekly_summary_tokens_extract_values_and_drop_dead_session_arms() -> No
         assert shared in css
     assert "background-color: #ffffff !important;" in css
     assert css.count("@media") == 9
+
+
+def test_user_profile_bundle_is_already_token_clean_after_wp43h_audit() -> None:
+    """WP4.3h is an audit/minimal packet.
+
+    The User Profile route bundle was audited and found to already carry every
+    ink / border / surface / line role on the SHARED design tokens (as var()
+    fallbacks). The only remaining bare literals are either SHARED across other
+    bundles or a coherent page-local classification/status colour palette whose
+    other members are shared / the accent / single-use -- so no fragment can be
+    extracted without producing an inconsistent half-tokenised palette or
+    increasing the hardcoded-value count. No ``--up-*`` extraction is warranted;
+    this contract pins that audited, zero-production-change outcome.
+    """
+    base = (ROOT / "templates" / "base.html").read_text(encoding="utf-8")
+    template = (ROOT / "templates" / "user_profile.html").read_text(
+        encoding="utf-8"
+    )
+    css = (ROOT / "static" / "css" / "pages-user-profile.css").read_text(
+        encoding="utf-8"
+    )
+    css_nc = COMMENT_RE.sub("", css)
+
+    # The bundle is genuinely page-local: only user_profile.html loads it (in the
+    # page_css block, after a11y and before the late motion/theme boundary); it is
+    # NOT globally referenced by base.html. No document-wide :has() scope exists.
+    assert "pages-user-profile.css" in template
+    assert "pages-user-profile.css" not in base
+    assert base.index("css/a11y.css") < base.index("{% block page_css %}")
+    assert base.index("{% block page_css %}") < base.index("css/motion.css")
+    assert base.index("css/motion.css") < base.index("css/theme-dark.css")
+    assert "html:has(" not in css
+
+    # No page-local --up-* tokens were manufactured: the audit found nothing
+    # warranting extraction, so the bundle stays on the shared token system.
+    assert "--up-" not in css
+
+    # Every ink / border / surface / line role is already carried by the SHARED
+    # design tokens with fallbacks (representative sample), not bare literals.
+    for shared_token in (
+        "var(--ink-1, #22283a)",
+        "var(--ink-2, #4a5170)",
+        "var(--ink-3, #7c849c)",
+        "var(--surface-1, #161a2d)",
+        "var(--surface-2, #f5f7fb)",
+        "var(--line-1, #e2e5ee)",
+        "var(--accent, #4c6ef5)",
+    ):
+        assert shared_token in css
+
+    # SHARED literals also used by other bundles stay bare and page-untouched:
+    # #2f9e44 (the "fully"/success green shared with pages-workout-plan.css) and
+    # #1f2937 (a slate ink shared with layout.css / pages-volume-splitter.css /
+    # bootstrap). Extracting either into a page token would wrongly page-scope a
+    # shared value.
+    assert css_nc.count("#2f9e44") == 4
+    assert css_nc.count("#1f2937") == 2
+
+    # The page-local coverage-band + autosave-status hues are a coherent
+    # classification/status palette left intact (per the WP4.3f/g precedent of
+    # leaving classification colours): amber #f59f00, the fixed "mostly" accent
+    # hue #4c6ef5 (theme-independent by design), and the saved/error status
+    # colours. The single-use members stay single-use.
+    assert css_nc.count("#f59f00") == 4
+    assert css_nc.count("#2eb872") == 2
+    assert css_nc.count("#d93b3b") == 2
+    assert css_nc.count("#1f7a4d") == 1
+    assert css_nc.count("#b02a2a") == 1
+    assert "color-mix(in srgb, #4c6ef5 70%" in css
+    assert "color-mix(in srgb, #4c6ef5 18%" in css
+
+    # Breakpoints and the dark-theme scope are preserved unchanged.
+    assert "[data-theme='dark']" in css
+    assert css.count("@media") == 14

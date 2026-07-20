@@ -7,8 +7,11 @@ committed as `0cbedac`. WP4.0 measurement provenance remains unchanged head
 is complete through WP4.3d: its history-preserving local merge is `40bc09f` and
 the narrow post-merge gates passed. Nothing was pushed through WP4.3d. WP4.3e (Welcome) shipped to origin/main via
 PR #160 (`5e7d290`), WP4.3f (Session Summary) shipped via PR #161 (`08256f0`),
-and WP4.3g (Weekly Summary) shipped via PR on top of it;
-User Profile and later packets have not started.
+and WP4.3g (Weekly Summary) shipped via PR on top of it.
+WP4.3h (User Profile) is complete in an isolated worktree as an audit-confirmed
+ZERO-production-CSS-change packet (bundle already token-clean; contract + docs
+only) and stops at the owner gate — not pushed. WP4.3i/j and later packets have
+not started.
 Track B is mostly shipped; WPB.4 remains unimplemented
 and product-risk gated.**
 
@@ -1088,6 +1091,40 @@ visuals reproduce only the exact WP4.0 known reds (workout-plan desktop-dark
 [`CSS_PHASE4_WP4_3G_EVIDENCE.md`](CSS_PHASE4_WP4_3G_EVIDENCE.md). Shipped to
 origin/main via PR. Next is WP4.3h User Profile (audit/minimal); wait for
 explicit direction before starting it.
+
+**WP4.3h User Profile completed 2026-07-21 in an isolated worktree — audit found
+the bundle already token-clean, so it is a ZERO-production-CSS-change packet.**
+The audit of `static/css/pages-user-profile.css` found it already fully tokenized
+on the shared design-token system: 254 of its 274 hex occurrences are
+`var(--token, #fallback)` fallbacks and every ink / border / surface / line role
+is already carried that way, so there are **no bare ink/border/surface literals
+to extract**. The only 20 bare hex occurrences (8 values) are brand /
+classification / status hues used as `color-mix()` inputs, and each fails an
+extraction criterion: `#2f9e44` (shared with `pages-workout-plan.css`) and
+`#1f2937` (shared with `layout.css` / `pages-volume-splitter.css` / bootstrap)
+are **shared, not page-owned**; the page-local coverage-band + autosave-status
+hues (`#f59f00`, `#2eb872`, `#d93b3b`, with `#1f7a4d`/`#b02a2a` single-use) are a
+**coherent classification/status palette** whose other members are shared / the
+accent / single-use, so extracting fragments would leave an inconsistent
+half-tokenized palette (worse than the intact palette WP4.3f/g deliberately
+kept); and a trial `#1f2937` → `:root` token was measured to **raise** the
+focused hardcoded-value count 226 → 227 (the consumers already carry
+`var(--accent)` fallbacks) so it was reverted. Per the packet's explicit
+"audit/minimal — do NOT force extractions" mandate, **no `--up-*` token was
+created and the production CSS is byte-identical to `main`** (SHA-256
+`3EF8AC5A…2951` unchanged). The packet ships the audit as a pinning cascade
+contract (`--up-` absent, shared-token roles intact, classification palette kept)
+plus documentation. Pinned Stylelint focused delta is **0** (226 hardcoded /
+0 important / 18 descending-specificity / 2 duplicate, all unchanged; zero parse
+errors). Contracts **20/20**, focused User Profile Chromium visual **6/6**
+update-free, User Profile functional **24/24**, required Chromium **426/426**,
+and pytest **1,743 passed / 0 failed** (the 2 catalog invariants are green
+against this worktree's seed, so no new reds). Full visuals reproduce only the
+exact WP4.0 known reds (workout-plan desktop-dark **1,039 px**;
+plan-desktop-light-advanced **6,262 px**). Evidence:
+[`CSS_PHASE4_WP4_3H_EVIDENCE.md`](CSS_PHASE4_WP4_3H_EVIDENCE.md). Stops at the
+owner gate — not pushed, not merged. Next is WP4.3i workout-plan (sectioned),
+then WP4.3j workout-log; wait for explicit direction before starting.
 
 ### WP4.4 Shared bundles, navbar, and `theme-dark.css`
 
