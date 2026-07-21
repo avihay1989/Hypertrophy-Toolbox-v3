@@ -1,3 +1,23 @@
+/* Page-local semantic tokens (WP4.3h User Profile). Exact-value extractions
+   of the repeated color-mix operands and status/region literals used across
+   this route bundle. Each token holds the literal it replaced, so computed
+   styles are byte-identical in both themes. The coverage-band and
+   autosave-status colors are intentionally fixed hues (not `var(--accent)`),
+   so they stay constant across themes exactly as the raw operands did. */
+:root {
+    --up-band-partial: #f59f00;
+    --up-band-mostly: #4c6ef5;
+    --up-band-fully: #2f9e44;
+    --up-autosave-saved: #2eb872;
+    --up-autosave-error: #d93b3b;
+    --up-region-faint: rgba(150, 150, 150, 0.10);
+}
+
+[data-theme='dark'] {
+    --up-dark-shadow-ink: rgba(0, 0, 0, 0.25);
+    --up-dark-region-faint: rgba(180, 186, 208, 0.06);
+}
+
 .user-profile-page {
     padding-bottom: 2rem;
 }
@@ -82,7 +102,7 @@
     background: color-mix(in srgb, var(--surface-1, #161a2d) 80%, black);
     border-color: color-mix(in srgb, var(--accent, #6d8dff) 30%, transparent);
     color: var(--ink-2, #b4bad0);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25), 0 2px 6px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 1px 2px var(--up-dark-shadow-ink), 0 2px 6px var(--up-dark-shadow-ink);
 }
 
 [data-theme='dark'] .user-profile-page .frame-header-2025 .collapse-toggle:hover:not(:disabled) {
@@ -420,8 +440,8 @@
 }
 
 .profile-autosave-status[data-autosave-status="saved"] {
-    background: color-mix(in srgb, #2eb872 14%, var(--surface-2, #ffffff));
-    border-color: color-mix(in srgb, #2eb872 45%, transparent);
+    background: color-mix(in srgb, var(--up-autosave-saved) 14%, var(--surface-2, #ffffff));
+    border-color: color-mix(in srgb, var(--up-autosave-saved) 45%, transparent);
     color: color-mix(in srgb, #1f7a4d 75%, var(--ink-1, #22283a));
 }
 
@@ -433,8 +453,8 @@
 }
 
 .profile-autosave-status[data-autosave-status="error"] {
-    background: color-mix(in srgb, #d93b3b 12%, var(--surface-2, #ffffff));
-    border-color: color-mix(in srgb, #d93b3b 50%, transparent);
+    background: color-mix(in srgb, var(--up-autosave-error) 12%, var(--surface-2, #ffffff));
+    border-color: color-mix(in srgb, var(--up-autosave-error) 50%, transparent);
     color: color-mix(in srgb, #b02a2a 80%, var(--ink-1, #22283a));
 }
 
@@ -992,15 +1012,15 @@
 }
 
 .profile-insights[data-band="partial"] .profile-insights-band-fill {
-    background: color-mix(in srgb, #f59f00 75%, var(--ink-1, #22283a));
+    background: color-mix(in srgb, var(--up-band-partial) 75%, var(--ink-1, #22283a));
 }
 
 .profile-insights[data-band="mostly"] .profile-insights-band-fill {
-    background: color-mix(in srgb, #4c6ef5 70%, var(--ink-1, #22283a));
+    background: color-mix(in srgb, var(--up-band-mostly) 70%, var(--ink-1, #22283a));
 }
 
 .profile-insights[data-band="fully"] .profile-insights-band-fill {
-    background: color-mix(in srgb, #2f9e44 75%, var(--ink-1, #22283a));
+    background: color-mix(in srgb, var(--up-band-fully) 75%, var(--ink-1, #22283a));
 }
 
 .profile-insights-band-text {
@@ -1024,18 +1044,18 @@
 }
 
 .profile-insights[data-band="partial"] .profile-insights-band-pill {
-    background: color-mix(in srgb, #f59f00 18%, transparent);
-    border-color: color-mix(in srgb, #f59f00 40%, transparent);
+    background: color-mix(in srgb, var(--up-band-partial) 18%, transparent);
+    border-color: color-mix(in srgb, var(--up-band-partial) 40%, transparent);
 }
 
 .profile-insights[data-band="mostly"] .profile-insights-band-pill {
-    background: color-mix(in srgb, #4c6ef5 18%, transparent);
-    border-color: color-mix(in srgb, #4c6ef5 40%, transparent);
+    background: color-mix(in srgb, var(--up-band-mostly) 18%, transparent);
+    border-color: color-mix(in srgb, var(--up-band-mostly) 40%, transparent);
 }
 
 .profile-insights[data-band="fully"] .profile-insights-band-pill {
-    background: color-mix(in srgb, #2f9e44 18%, transparent);
-    border-color: color-mix(in srgb, #2f9e44 40%, transparent);
+    background: color-mix(in srgb, var(--up-band-fully) 18%, transparent);
+    border-color: color-mix(in srgb, var(--up-band-fully) 40%, transparent);
 }
 
 .profile-insights-band-count {
@@ -1168,13 +1188,13 @@
     stroke: color-mix(in srgb, var(--ink-3, #7c849c) 60%, transparent);
 }
 .profile-insights[data-band="partial"] .profile-insights-donut-fill {
-    stroke: color-mix(in srgb, #f59f00 75%, var(--ink-1, #22283a));
+    stroke: color-mix(in srgb, var(--up-band-partial) 75%, var(--ink-1, #22283a));
 }
 .profile-insights[data-band="mostly"] .profile-insights-donut-fill {
-    stroke: color-mix(in srgb, #4c6ef5 70%, var(--ink-1, #22283a));
+    stroke: color-mix(in srgb, var(--up-band-mostly) 70%, var(--ink-1, #22283a));
 }
 .profile-insights[data-band="fully"] .profile-insights-donut-fill {
-    stroke: color-mix(in srgb, #2f9e44 75%, var(--ink-1, #22283a));
+    stroke: color-mix(in srgb, var(--up-band-fully) 75%, var(--ink-1, #22283a));
 }
 
 .profile-insights-donut-label {
@@ -1574,7 +1594,7 @@
 
 .profile-bodymap-svg .muscle-region.non-selectable {
     cursor: default;
-    fill: rgba(150, 150, 150, 0.10);
+    fill: var(--up-region-faint);
     stroke: rgba(150, 150, 150, 0.20);
 }
 
@@ -1598,7 +1618,7 @@
 }
 
 .profile-bodymap-svg .muscle-region.state-not_assessed {
-    fill: rgba(150, 150, 150, 0.10);
+    fill: var(--up-region-faint);
     stroke: rgba(150, 150, 150, 0.30);
     cursor: default;
 }
@@ -1746,7 +1766,7 @@
 }
 
 [data-theme='dark'] .profile-bodymap-swatch {
-    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+    box-shadow: inset 0 0 0 1px var(--up-dark-shadow-ink);
 }
 
 [data-theme='dark'] .profile-bodymap-swatch.state-not_assessed {
@@ -1832,12 +1852,12 @@
 }
 
 [data-theme='dark'] .profile-bodymap-svg .muscle-region.state-cold_start_only {
-    fill: rgba(180, 186, 208, 0.06);
+    fill: var(--up-dark-region-faint);
     stroke: color-mix(in srgb, var(--accent, #6d8dff) 36%, rgba(180, 186, 208, 0.45));
 }
 
 [data-theme='dark'] .profile-bodymap-svg .muscle-region.state-not_assessed {
-    fill: rgba(180, 186, 208, 0.06);
+    fill: var(--up-dark-region-faint);
     stroke: rgba(180, 186, 208, 0.20);
 }
 
