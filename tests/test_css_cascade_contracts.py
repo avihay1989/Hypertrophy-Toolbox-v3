@@ -796,3 +796,61 @@ def test_user_profile_tokens_extract_repeated_operands_value_preserving() -> Non
     # Template runtime hooks intact.
     assert 'class="user-profile-page"' in template
     assert 'id="profile-lifts-form"' in template
+
+
+def test_workout_plan_dormant_filter_glass_cluster_removed() -> None:
+    template = (ROOT / "templates" / "workout_plan.html").read_text(
+        encoding="utf-8"
+    )
+    css = (ROOT / "static" / "css" / "pages-workout-plan.css").read_text(
+        encoding="utf-8"
+    )
+    dropdown_js = (
+        ROOT / "static" / "js" / "modules" / "workout-dropdowns.js"
+    ).read_text(encoding="utf-8")
+    view_mode_js = (
+        ROOT / "static" / "js" / "modules" / "filter-view-mode.js"
+    ).read_text(encoding="utf-8")
+
+    # WP4.3i-i supersedes the abandoned i-a token extraction: browser
+    # declaration-owner proof showed that the old light/dark glass surfaces
+    # never win after workout-dropdown enhancement. No soon-to-be-deleted
+    # --wp-dark-* vocabulary is introduced.
+    assert "--wp-dark-" not in css
+    for dead_pattern in (
+        r"(?m)^\.filter-dropdown:hover\s*\{\s*box-shadow:",
+        r"(?m)^\.filter-dropdown\.filter-active,",
+        r"(?m)^\.routine-dropdown",
+        r"(?m)^#exercise-search\.uniform-input",
+        r"(?m)^\.filter-view-toggle",
+        r"(?m)^\[data-theme='dark'\] \.filters-section",
+        r"(?m)^\[data-theme='dark'\] \.filter-dropdown \{",
+        r"(?m)^\[data-theme='dark'\] \.exercise-dropdown",
+    ):
+        assert not re.search(dead_pattern, css)
+
+    # The few declarations that did own computed values remain: the hidden
+    # native filter's positioning/focus mechanics and pseudo highlight, plus
+    # the short-lived exercise animation hook. Layout rules and both existing
+    # cascade layers are deliberately outside the removal.
+    assert re.search(
+        r"\.filter-dropdown\s*\{\s*position:\s*relative;\s*\}", css
+    )
+    assert "select.filter-dropdown:focus {\n    z-index: 1050 !important;" in css
+    assert css.count(".filter-dropdown::before") == 2
+    assert ".exercise-dropdown.filter-applied {\n    animation: glowPulse" in css
+    assert "@keyframes glowPulse" in css
+    assert "#filters-form .form-label" in css
+    assert css.count("@media") == 45
+    assert "@layer workout-dropdowns {" in css
+    assert "@layer workout {" in css
+
+    # The route still renders native select hooks and the enhancement still
+    # converts them to wpdd controls. The retired naming toggle has no template
+    # consumer and its legacy factory has no in-repo invocation (definition
+    # only), which is why route-bundle toggle CSS had zero matched elements.
+    assert 'class="form-select uniform-dropdown filter-dropdown' in template
+    assert 'class="form-select uniform-dropdown exercise-dropdown' in template
+    assert "select.classList.add('wpdd-native')" in dropdown_js
+    assert "filter-view-toggle" not in template
+    assert view_mode_js.count("createToggleButton(") == 1
