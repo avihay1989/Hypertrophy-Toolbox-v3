@@ -841,7 +841,7 @@ def test_workout_plan_dormant_filter_glass_cluster_removed() -> None:
     assert ".exercise-dropdown.filter-applied {\n    animation: glowPulse" in css
     assert "@keyframes glowPulse" in css
     assert "#filters-form .form-label" in css
-    assert css.count("@media") == 45
+    assert css.count("@media") == 44
     assert "@layer workout-dropdowns {" in css
     assert "@layer workout {" in css
 
@@ -854,3 +854,89 @@ def test_workout_plan_dormant_filter_glass_cluster_removed() -> None:
     assert "select.classList.add('wpdd-native')" in dropdown_js
     assert "filter-view-toggle" not in template
     assert view_mode_js.count("createToggleButton(") == 1
+
+
+def test_workout_plan_wpdd_route_ownership_cleanup() -> None:
+    css = (ROOT / "static" / "css" / "pages-workout-plan.css").read_text(
+        encoding="utf-8"
+    )
+    components = (ROOT / "static" / "css" / "components.css").read_text(
+        encoding="utf-8"
+    )
+    a11y = (ROOT / "static" / "css" / "a11y.css").read_text(encoding="utf-8")
+    dropdown_js = (
+        ROOT / "static" / "js" / "modules" / "workout-dropdowns.js"
+    ).read_text(encoding="utf-8")
+
+    layer_start = css.index("@layer workout-dropdowns {")
+    global_popover_start = css.index("Global Popover Styles", layer_start)
+    dropdown_layer = css[layer_start:global_popover_start]
+    global_popover = css[
+        global_popover_start : css.index("@layer workout {", global_popover_start)
+    ]
+
+    # Runtime appends every popover to body, so the old #workout-descendant copy
+    # and its mobile selector arm could never match. The global owner stays live.
+    assert "document.body.appendChild(popover)" in dropdown_js
+    assert '#workout[data-page="workout-plan"] .wpdd-popover' not in dropdown_layer
+    assert ".wpdd-search" not in dropdown_layer
+    assert ".wpdd-count-indicator" not in dropdown_layer
+    assert ".wpdd-popover {" in global_popover
+    assert "@media (max-width: 768px)" in global_popover
+
+    # No route consumer generates a routine-flavored wpdd button. The rendered
+    # filter/exercise surface and state declarations are owned by calm-glass
+    # components, while keyboard focus is owned by the global a11y contract.
+    assert ".wpdd-routine" not in dropdown_layer
+    assert ".wpdd-button.wpdd-filter" not in dropdown_layer
+    assert ".wpdd-button.wpdd-exercise" not in dropdown_layer
+    assert ".wpdd-button:hover:not(:disabled)" not in dropdown_layer
+    assert ".wpdd-button:focus-visible" not in dropdown_layer
+    assert ".wpdd-button:disabled" not in dropdown_layer
+    assert '.wpdd-button[aria-expanded="true"] {' not in dropdown_layer
+    assert '#workout[data-page="workout-plan"] .wpdd-button,' in components
+    assert ".wpdd-button:hover:not(:disabled)," in components
+    assert ".wpdd-button:disabled," in components
+    assert ".wpdd-button.wpdd-filter.filter-active {" in components
+    assert "*:focus-visible," in a11y
+
+    # Route-owned mechanics remain: native-select anchoring/hiding, button
+    # transition/truncation/active behavior, and placeholder/caret state.
+    for live_contract in (
+        '#workout[data-page="workout-plan"] .wpdd {',
+        "position: relative;",
+        '#workout[data-page="workout-plan"] .wpdd-native {',
+        "pointer-events: none;",
+        "z-index: -1;",
+        '#workout[data-page="workout-plan"] .wpdd-button {',
+        "gap: var(--wpdd-gap);",
+        "transition: background var(--wpdd-transition)",
+        "text-overflow: ellipsis;",
+        ".wpdd-button:active:not(:disabled)",
+        ".wpdd-button .wpdd-placeholder",
+        ".wpdd-button .wpdd-caret",
+        '.wpdd-button[aria-expanded="true"] .wpdd-caret',
+        "@media (prefers-reduced-motion: reduce)",
+        "@media (prefers-contrast: high)",
+    ):
+        assert live_contract in dropdown_layer
+
+    # Two pre-existing zero-consumer tokens are removed. Every remaining wpdd
+    # token has at least one consumer beyond its definition/override.
+    assert "--wpdd-accent-hover" not in css
+    assert "--wpdd-radius" not in css
+    for token in (
+        "--wpdd-font",
+        "--wpdd-fs",
+        "--wpdd-bg",
+        "--wpdd-surface",
+        "--wpdd-text",
+        "--wpdd-muted",
+        "--wpdd-border",
+        "--wpdd-accent",
+        "--wpdd-gap",
+        "--wpdd-shadow",
+        "--wpdd-shadow-lg",
+        "--wpdd-transition",
+    ):
+        assert css.count(token) >= 2
