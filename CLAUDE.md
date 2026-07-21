@@ -23,9 +23,9 @@ A local-first Flask web app for designing, logging, and analyzing hypertrophy (m
 |---|---|
 | RIR | Reps In Reserve — how many reps short of failure |
 | RPE | Rate of Perceived Exertion — 1–10 effort scale |
-| Effective sets | Raw sets × effort factor × rep-range factor × muscle contribution weight (`utils/effective_sets.py:44-68`) |
-| CountingMode | `RAW` or `EFFECTIVE` — which set number to display (`utils/effective_sets.py:20-23`) |
-| ContributionMode | `DIRECT_ONLY` (primary only) or `TOTAL` (weighted secondary/tertiary) (`utils/effective_sets.py:26-29`) |
+| Effective sets | Raw sets × effort factor × rep-range factor × muscle contribution weight (`calculate_effective_sets()` in `utils/effective_sets.py`) |
+| CountingMode | `RAW` or `EFFECTIVE` — which set number to display (`utils/effective_sets.py`) |
+| ContributionMode | `DIRECT_ONLY` (primary only) or `TOTAL` (weighted secondary/tertiary) (`utils/effective_sets.py`) |
 | Routine | Named exercise group, e.g. `"GYM - Full Body - Workout A"` |
 | Movement pattern | Biomechanical classification: squat, hinge, horizontal_push, etc. (`utils/movement_patterns.py`) |
 | Superset | Two exercises linked for back-to-back performance — stored in `user_selection.superset_group` |
@@ -36,7 +36,7 @@ Any change to core workflow behavior (plan/log/analyze/progress/distribute/backu
 ### Non-goals
 - No user accounts or authentication — single-user local only.
 - No cloud sync or remote database.
-- Effective sets are **informational only** — never auto-adjust or block user actions (`utils/effective_sets.py:6-7`).
+- Effective sets are **informational only** — never auto-adjust or block user actions (module docstring, `utils/effective_sets.py`).
 
 ---
 
@@ -55,7 +55,7 @@ initialize_exercise_order()     ← routes/workout_plan.py — ALTERs user_selec
 init_backup_tables()            ← routes/program_backup.py → utils/program_backup.py
 create_startup_backup()         ← utils/auto_backup.py — snapshots live DB to data/auto_backup/
 ```
-Then registers 13 blueprints (`app.py:84-98`), plus one direct route: `POST /erase-data` (`app.py:158`).
+Then registers 13 blueprints (`register_blueprint` calls in `app.py`), plus one direct route: `POST /erase-data` (`erase_data()` in `app.py`).
 
 ### Module boundaries
 ```
@@ -67,11 +67,11 @@ app.py                 ← startup + middleware only; no business logic
 
 - Routes import from utils; utils never import from routes.
 - Prefer concrete module imports such as `utils.db_initializer`; `utils/__init__.py` is no longer the authoritative facade for new code.
-- All DB access via `DatabaseHandler` context manager (class at `utils/database.py:185`; `__enter__` / `__exit__` at `utils/database.py:414`).
-- All JSON responses via `success_response()` / `error_response()` (`utils/errors.py:22,67`).
-- All logging via `get_logger()` (`utils/logger.py:121`).
+- All DB access via `DatabaseHandler` context manager (class + `__enter__` / `__exit__` in `utils/database.py`).
+- All JSON responses via `success_response()` / `error_response()` (`utils/errors.py`).
+- All logging via `get_logger()` (`utils/logger.py`).
 
-### Blueprints (`app.py:60-71`)
+### Blueprints (registered in `app.py`)
 | Blueprint | File | Key routes |
 |---|---|---|
 | `main_bp` | `routes/main.py` | `GET /` |
@@ -104,7 +104,7 @@ app.py                 ← startup + middleware only; no business logic
 from utils.logger import get_logger
 logger = get_logger()
 ```
-Returns the `'hypertrophy_toolbox'` named logger (`utils/logger.py:37`). Logs to `logs/app.log` (rotating 10MB × 5) and console (INFO+).
+Returns the `'hypertrophy_toolbox'` named logger (`utils/logger.py`). Logs to `logs/app.log` (rotating 10MB × 5) and console (INFO+).
 
 ### DatabaseHandler pattern
 ```python
@@ -122,7 +122,7 @@ with DatabaseHandler() as db:
 | Variable | Default | Effect |
 |---|---|---|
 | `DB_FILE` | `data/database.db` | SQLite path. Tests patch `utils.config.DB_FILE` directly. |
-| `FLASK_DEBUG` | `'0'` in `app.py:259`; `'1'` in `database.py:90` | Controls Flask debug AND journal mode |
+| `FLASK_DEBUG` | `'0'` in `app.py`; `'1'` in `utils/database.py` | Controls Flask debug AND journal mode |
 | `FLASK_USE_RELOADER` | `'0'` | Auto-reload (off by default — avoids WAL corruption) |
 | `TESTING` | unset | Set to `'1'` by `tests/conftest.py` |
 | `MAX_EXPORT_ROWS` | `1000000` | Export cap |
@@ -172,63 +172,20 @@ npx playwright test --project=chromium --reporter=line
 
 ## 5. Current State & Risks
 
-> **2026-07-19 UPDATE — everything below is now PUSHED. `main` == `origin/main` at `bdec996`.**
-> The per-WP "Nothing was pushed" notes below are **historical point-in-time records**, no longer the current state. The full WP4.0–WP4.3d line + the origin-only security fix #157 landed on `origin/main` via **PR #158** (`ae081cd`); the Agent Workflow v2 line (agent charters + KI-005 controls-persistence feature) landed via **PR #156** (`bdec996`). Local `main` was fast-forwarded to match; no worktree divergence remains. **Phase 5 of Agent Workflow v2 (end-to-end dry-run on KI-005) ran and shipped** — evidence in `docs/ki005_controls_persistence/PLANNING.md` (Gate 0 2026-07-12, Gate 1 rulings 2026-07-12/07-13, blind automation-qa tests, council review).
+> **Point-in-time status (branch/PR/WP progress, test counts, "what shipped when") lives in [`docs/MASTER_HANDOVER.md`](docs/MASTER_HANDOVER.md) — read it first for long-running work.** Keep this section to *durable* facts only: architecture gotchas that stay true across sessions. Do not add timestamped status logs here — they go stale and mislead.
 
-### Verified test counts (2026-07-19 — Phase 3 through WP4.3d; now pushed to origin/main via #158)
-- WP4.2 was integrated into local `main` by history-preserving merge `d695188`;
-  its documentation closeout is `e9062bc`. Nothing was pushed.
-- WP4.3a is complete in isolated `wt/wp4-3-backup-dark-token-cleanup`: contracts
-  **13**, flake8 **0**, tsc pass, Node syntax **64/64**, Vitest **105**, pytest
-  **1734 + 2 catalog known-reds**, focused Backup Chromium **20/20**, and required
-  Chromium **407/407**. Both visual reds exactly match WP4.0 at 1,039 and 6,262
-  pixels; all six Backup variants and all 156 screenshot hashes are unchanged.
-- WP4.3a was integrated into local `main` by history-preserving merge `dc607fe`;
-  its narrow post-merge gates passed and all protected identities remained
-  unchanged. Nothing was pushed.
-- WP4.3b is complete in isolated `wt/wp4-3-body-composition-dark-token-cleanup`:
-  contracts **14**, Flake8 **0**, tsc pass, Node syntax **64/64**, Vitest **105**,
-  pytest **1735 + 2 catalog known-reds**, focused Body Composition Chromium
-  **9/9**, and required Chromium **407/407**. Both visual reds exactly match
-  WP4.0 at 1,039 and 6,262 pixels; all twelve Body Composition images and all
-  156 screenshot hashes are unchanged.
-- WP4.3b was integrated into local `main` by history-preserving merge `92291ed`;
-  its narrow post-merge gates passed and all protected identities remained
-  unchanged. Nothing was pushed and Progression had not started.
-- WP4.3c is complete in isolated `wt/wp4-3-progression-dark-token-cleanup`:
-  contracts **15**, Flake8 **0**, tsc pass, Node syntax **64/64**, Vitest **105**,
-  pytest **1736 + 2 catalog known-reds**, focused Progression Chromium **26/26**,
-  and required Chromium **407/407**. Both visual reds exactly match WP4.0 at
-  1,039 and 6,262 pixels; all twelve Progression images and all 156 screenshot
-  hashes are unchanged.
-- WP4.3c was integrated into local `main` by history-preserving merge `e7feffa`;
-  its narrow post-merge gates passed and all protected identities remained
-  unchanged. Nothing was pushed, and no later packet started.
-- WP4.3d completed in isolated
-  `wt/wp4-3-volume-splitter-dark-token-cleanup`: contracts **16/16**, Flake8
-  **0**, tsc pass, Node syntax **64/64**, Vitest **105/105**, pytest **1,737 + 2
-  catalog known-reds**, focused Volume Splitter Chromium **27/27**, and required
-  Chromium **407/407**. Both visual reds remain exactly 1,039 and 6,262 pixels;
-  all twelve route images and all 156 screenshot hashes are unchanged.
-- WP4.3d was integrated into local `main` by history-preserving merge `40bc09f`;
-  its narrow post-merge gates passed and all protected identities remained
-  unchanged. Nothing was pushed, and no later packet started.
-- Phases -1–3 and WP4.-1/0a/0/1/2/3a/3b/3c/3d are complete. **WPB.4 is
-  unimplemented** pending one `Unassigned` session, unresolved denominator behavior, and golden review.
-Historical baselines live in `docs/MASTER_HANDOVER.md`. Re-verify after significant changes.
-
-### Known response-contract exceptions (2026-05-21)
+### Known response-contract exceptions
 None. The pattern-coverage and replace-exercise fallback paths were migrated to `success_response()` / `error_response()` (2026-05-21). The replace-exercise "no result" cases (`NO_CANDIDATES`, `DUPLICATE`, `SELECTION_FAILED`) keep HTTP 200 by passing `status_code=200` to `error_response()` — they're user-facing "couldn't be processed" outcomes that pytest + the JS swap handler treat as 200 + `ok:false`.
 
 ### exercise_order column
-Added at startup by `initialize_exercise_order()` (`routes/workout_plan.py:634`) via `ALTER TABLE`. `get_workout_plan` (line 247) defensively checks `column_exists()` for pre-migration DBs.
+Added at startup by `initialize_exercise_order()` (defined in `utils/schema_registry.py`, re-exported from `routes/workout_plan.py`) via `ALTER TABLE`. `get_workout_plan()` in `routes/workout_plan.py` defensively checks `column_exists()` for pre-migration DBs.
 
 ### session_summary vs weekly_summary — not duplicates
-- `utils/session_summary.py:21` — `calculate_session_summary(routine, time_window, ...)`: groups by routine, optional date filter, per-session averages from `workout_log` join.
-- `utils/weekly_summary.py:35` — `calculate_weekly_summary(method, ...)`: aggregates across all routines weekly, no date filter, tracks frequency.
+- `calculate_session_summary(routine, time_window, ...)` in `utils/session_summary.py`: groups by routine, optional date filter, per-session averages from `workout_log` join.
+- `calculate_weekly_summary(method, ...)` in `utils/weekly_summary.py`: aggregates across all routines weekly, no date filter, tracks frequency.
 
-`session_summary.py` imports only `EFFECTIVE_STATUS_MAP` from `weekly_summary.py`
-(`utils/session_summary.py:9`); the calculations remain independent.
+`session_summary.py` imports only `EFFECTIVE_STATUS_MAP` from `weekly_summary.py`;
+the calculations remain independent.
 
 ### Historical audit trail
 Full audit history and resolved violations: `docs/CLAUDE_MD_AUDIT.md`.
