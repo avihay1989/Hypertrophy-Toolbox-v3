@@ -4,8 +4,17 @@
 
 ## Current State
 
-> **2026-07-19 (LATEST) — everything below is now PUSHED; `main` == `origin/main`
-> at `bdec996`.** The dated entries below that end with "Nothing was pushed" are
+> **2026-07-21 (LATEST) — WP4.3e/f/g SHIPPED; everything below is PUSHED;
+> `main` == `origin/main` at `bc9da14`.** The three remaining WP4.3 route
+> packets reached `origin/main` as squash-merges — **WP4.3e Welcome** via
+> **PR #160** (`5e7d290`), **WP4.3f Session Summary** via **PR #161**
+> (`08256f0`), and **WP4.3g Weekly Summary** via **PR #162** (`bc9da14`, current
+> HEAD). Local `main` == `origin/main`; no worktree divergence remains. The three
+> dated entries immediately below record each packet. **Wait for explicit
+> direction before beginning WP4.4.**
+>
+> **2026-07-19 — everything through WP4.3d is PUSHED; `main` == `origin/main`
+> at `bdec996` (superseded as to HEAD by the 2026-07-21 note above).** The dated entries below that end with "Nothing was pushed" are
 > **historical point-in-time records**, superseded by this note. The whole
 > WP4.0–WP4.3d line plus the origin-only security fix #157 reached `origin/main`
 > via **PR #158** (`ae081cd`); the Agent Workflow v2 line — agent charters and the
@@ -16,6 +25,70 @@
 > (Gate 0 2026-07-12; Gate 1 owner rulings 2026-07-12 and 2026-07-13; blind
 > `automation-qa` acceptance tests; council review). The `wt/agent-workflow`
 > worktree branch is fully merged and can be retired.
+>
+> **2026-07-21 — WP4.3g Weekly Summary dark/token cleanup merged to
+> `origin/main` via PR #162 (`bc9da14`, current HEAD).** Only
+> `static/css/pages-weekly-summary.css` changed in production, plus the
+> cascade-contract test (evidence doc dated 2026-07-20; PR merged 2026-07-21).
+> The repeated weekly-summary dark-mode, ink, and border literals were extracted
+> into eleven page-local `--wk-*` semantic tokens (a `:root` block for two light
+> tokens and a `[data-theme='dark']` block for nine dark tokens, mirroring the
+> WP4.3f session-summary set — the two bundles were byte-identical for this
+> region); every substitution is exact-value and self-verified by var()
+> expansion, so no rendered element changes. The two findings WP4.3f deferred
+> were resolved: (a) the twelve dead `#session-summary-*` selector arms were
+> dropped, each affected rule keeping its live `#weekly-summary`/class arms so no
+> declaration is lost; (b) a browser computed-declaration-owner audit in both
+> themes across the page's three tables proved both parallel dark table systems
+> retain live winners, so neither whole dark rule is safely removable — they were
+> left intact and the audit documented. Stylelint **6,294 → 6,254** (focused
+> **184 → 144**); important and duplicate counts unchanged, specificity **-3**.
+> Gates: combined cascade contracts **19/19**, focused Weekly Summary Chromium
+> visual **6/6** update-free, required Chromium **426/426**, pytest **1,740 + 2
+> catalog known-reds**; full visuals reproduce only the two WP4.0 known reds on
+> the untouched workout-plan page. Evidence:
+> `docs/CSS_PHASE4_WP4_3G_EVIDENCE.md`. **Wait for explicit direction before
+> beginning WP4.4.**
+>
+> **2026-07-19 — WP4.3f Session Summary dark/token cleanup merged to
+> `origin/main` via PR #161 (`08256f0`).** Only
+> `static/css/pages-session-summary.css` changed in production, plus the
+> cascade-contract test. The repeated solid-color dark-mode, ink, and border
+> literals in the session-summary-only bundle were extracted into eleven
+> page-local semantic tokens (two light `:root` tokens, nine `[data-theme='dark']`
+> tokens, mirroring the WP4.3d volume-splitter pattern); distinct roles keep
+> distinct tokens even when values coincide (`#495057` backs both a light label
+> ink and a dark strong border, split by CSS property). Pure value-preserving
+> extraction — no custom property removed, no rule deleted; shared volume-badge
+> colors, light striping, glass overlays, and all breakpoints untouched. Stylelint
+> focused **183 → 146 (-37 hardcoded**; no important/specificity/duplicate
+> increase), total **6,331 → 6,294**. Gates: contracts **18/18**, focused Session
+> Summary Chromium visual **6/6** update-free, required Chromium **426/426**,
+> pytest **1,739 + 2 permitted catalog known-reds**, Vitest **105/105**, tsc pass.
+> All six Windows variants render byte-identical; the full visual suite reproduces
+> only the exact WP4.0 known reds (workout-plan desktop-dark **1,039 px**;
+> plan-desktop-light-advanced **6,262 px**). Two findings were documented and
+> deferred to WP4.3g: dead `#weekly-*` selector arms and the two parallel dark
+> table systems on shared `.summary-*` classes. Evidence:
+> `docs/CSS_PHASE4_WP4_3F_EVIDENCE.md`.
+>
+> **2026-07-19 — WP4.3e Welcome dark/token cleanup merged to `origin/main` via
+> PR #160 (`5e7d290`).** Only `static/css/pages-welcome.css` changed in
+> production, plus the cascade-contract test (working diff +100 / -44). Four
+> exact-repeat white-ink and translucent-white overlay expressions were extracted
+> to page-local semantic tokens (`--wl-on-accent`, `--wl-overlay-soft/-strong/`
+> `-border`), and seven dead zero-consumer custom properties were removed (the
+> `--wl-featured-start/-end/-gradient` trio, the `--wl-accent-glow`/
+> `--wl-shadow-glow` chain, `--wl-info`, `--wl-duration-slow`). Every substitution
+> is exact-value and every removal is an unused variable, so no cascade winner
+> moves. Stylelint focused **144 → 111 (-33 hardcoded values**; no
+> important/specificity/duplicate increase), total **6,364 → 6,331**. Gates:
+> contracts **17/17**, focused Welcome Chromium visual **6/6** update-free,
+> required Chromium **426/426**, pytest **1,738 + 2 permitted catalog known-reds**,
+> Vitest **105/105**, tsc pass. All six Windows Welcome variants render
+> byte-identical; the full visual suite reproduces only the exact WP4.0 known reds
+> (workout-plan desktop-dark **1,039 px**; plan-desktop-light-advanced
+> **6,262 px**). Evidence: `docs/CSS_PHASE4_WP4_3E_EVIDENCE.md`.
 >
 > **2026-07-19 — WP4.3d Volume Splitter dark/token cleanup integrated locally as
 > merge `40bc09f`.** Exact repeated status,
