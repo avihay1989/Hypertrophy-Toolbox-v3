@@ -707,3 +707,92 @@ def test_weekly_summary_tokens_extract_values_and_drop_dead_session_arms() -> No
         assert shared in css
     assert "background-color: #ffffff !important;" in css
     assert css.count("@media") == 9
+
+
+def test_user_profile_tokens_extract_repeated_operands_value_preserving() -> None:
+    base = (ROOT / "templates" / "base.html").read_text(encoding="utf-8")
+    template = (ROOT / "templates" / "user_profile.html").read_text(
+        encoding="utf-8"
+    )
+    css = (ROOT / "static" / "css" / "pages-user-profile.css").read_text(
+        encoding="utf-8"
+    )
+
+    # Route bundle loads in the page_css block, after a11y and before the late
+    # motion/theme boundary; no document-wide :has() scope is introduced.
+    assert base.index("css/a11y.css") < base.index("{% block page_css %}")
+    assert base.index("{% block page_css %}") < base.index("css/motion.css")
+    assert base.index("css/motion.css") < base.index("css/theme-dark.css")
+    assert "html:has(" not in css
+
+    # WP4.3h is a pure value-preserving extraction. Unlike the summary bundles
+    # (which carried repeated *direct* hex values), this bundle was authored on
+    # the shared token system: nearly every hex is a var(--token, #fallback)
+    # fallback and is left untouched. Only the genuinely repeated *raw* operands
+    # were extracted into page-local tokens, each defined once and consumed by
+    # the exact count of the literal it replaced.
+    theme_independent = (
+        ("--up-band-partial", 4),
+        ("--up-band-mostly", 4),
+        ("--up-band-fully", 4),
+        ("--up-autosave-saved", 2),
+        ("--up-autosave-error", 2),
+        ("--up-region-faint", 2),
+    )
+    dark_scoped = (
+        ("--up-dark-shadow-ink", 3),
+        ("--up-dark-region-faint", 2),
+    )
+    for token, consumers in theme_independent + dark_scoped:
+        assert css.count(f"{token}:") == 1
+        assert css.count(f"var({token})") == consumers
+
+    # Theme-independent tokens live in :root; the dark-only shadow/region tokens
+    # live in the [data-theme='dark'] block so they resolve only under the dark
+    # root, exactly where their consuming rules apply.
+    root_block = css[css.index(":root {"):css.index("}", css.index(":root {"))]
+    for token, _ in theme_independent:
+        assert token in root_block
+    dark_start = css.index("[data-theme='dark'] {")
+    dark_block = css[dark_start:css.index("}", dark_start)]
+    for token, _ in dark_scoped:
+        assert token in dark_block
+
+    # Every extracted literal now survives only in its single token definition.
+    # The coverage-band "mostly" hue coincides with the accent value, but it is a
+    # distinct fixed classification role: #4c6ef5 still appears as the 68 shared
+    # var(--accent, #4c6ef5) fallbacks plus the one --up-band-mostly definition.
+    for extracted in (
+        "#f59f00",
+        "#2f9e44",
+        "#2eb872",
+        "#d93b3b",
+        "rgba(150, 150, 150, 0.10)",
+        "rgba(0, 0, 0, 0.25)",
+        "rgba(180, 186, 208, 0.06)",
+    ):
+        assert css.count(extracted) == 1
+    assert "--up-band-mostly: #4c6ef5;" in css
+    assert css.count("#4c6ef5") == 69
+
+    # #1f2937 is a repeated raw operand (2x) that is deliberately left inline:
+    # both its declarations also carry the shared var(--accent, #4c6ef5) fallback,
+    # so tokenizing it would keep those declarations flagged while adding a token
+    # definition warning — a net increase. Every extracted token is net-neutral
+    # or better, keeping the hardcoded-value category non-increasing.
+    assert css.count("#1f2937") == 2
+
+    # The color-mix darkening/lightening keyword operands are intentionally kept:
+    # the disallowed-value rule does not flag the `black`/`white` keywords, they
+    # are mixing primitives rather than semantic colors, and no prior bundle
+    # tokenized them. Their counts are pinned so the extraction stays minimal.
+    assert css.count(", black)") == 10
+    assert css.count(", white)") == 3
+
+    # The bundle stays !important-free and its breakpoints are preserved.
+    assert "!important" not in css
+    assert css.count("@media") == 14
+
+    # Template runtime hooks intact.
+    assert 'class="user-profile-page"' in template
+    assert 'id="profile-lifts-form"' in template
