@@ -940,3 +940,108 @@ def test_workout_plan_wpdd_route_ownership_cleanup() -> None:
         "--wpdd-transition",
     ):
         assert css.count(token) >= 2
+
+
+def test_workout_plan_page_header_and_collapsible_frame_ownership_cleanup() -> None:
+    css = (ROOT / "static" / "css" / "pages-workout-plan.css").read_text(
+        encoding="utf-8"
+    )
+    components = (ROOT / "static" / "css" / "components.css").read_text(
+        encoding="utf-8"
+    )
+    theme_dark = (ROOT / "static" / "css" / "theme-dark.css").read_text(
+        encoding="utf-8"
+    )
+    template = (ROOT / "templates" / "workout_plan.html").read_text(
+        encoding="utf-8"
+    )
+    page_js = (
+        ROOT / "static" / "js" / "modules" / "workout-plan-page.js"
+    ).read_text(encoding="utf-8")
+
+    start = css.index("Page Header - 2026 Glass/Neumorphic Style")
+    end = css.index("Collapse Toggle Buttons - Modern 2025 Refresh", start)
+    cluster = css[start:end]
+
+    # Browser declaration-removal proof showed these route declarations never
+    # win over Bootstrap utilities or the shared unlayered/calm-glass owners.
+    # The direct page header has no h2 consumer; the table h2 is nested below a
+    # separate .table-header and never matched this selector arm.
+    for dormant in (
+        "margin-bottom: var(--wp-gap-lg);",
+        "text-align: center;",
+        '>.container-fluid>.table-header h2',
+        "font-size: var(--wp-fs-title);",
+        "width: 60px;",
+        "width: 80px;",
+        '.unified-frames-container {',
+        '.collapsible-frame:hover {',
+        '.frame-header::before {',
+        '.frame-header.frame-header-2025 {',
+        '.frame-header-2025 .frame-header-right {',
+        '.frame-title::after,',
+        "[data-theme='dark'] #workout[data-page=\"workout-plan\"] .collapsible-frame",
+        "[data-theme='dark'] #workout[data-page=\"workout-plan\"] .frame-header::before",
+    ):
+        assert dormant not in cluster
+
+    # The shared component system remains the actual surface/layout/pseudo
+    # owner; the late dark theme is why the route retains one explicit dark
+    # frame-header blur override.
+    for shared_owner in (
+        '#workout[data-page="workout-plan"] .frame-calm-glass,',
+        '#workout[data-page="workout-plan"] .frame-calm-glass .frame-header,',
+        '#workout[data-page="workout-plan"] .frame-calm-glass .frame-header.frame-header-2025 {',
+        '#workout[data-page="workout-plan"] .frame-calm-glass .frame-header-right {',
+        ".collapsible-frame {",
+        ".frame-header::before {",
+        ".frame-title::after,",
+    ):
+        assert shared_owner in components
+    assert ':where([data-theme="dark"] .frame-header) {' in theme_dark
+    assert "backdrop-filter: blur(8px) !important;" in theme_dark
+
+    # Live route ownership is retained: page-header positioning/surface and
+    # hover transition, frame/title repaint safeguards, and the dark title
+    # values that still win the important cascade.
+    for live_contract in (
+        "margin-top: -55px;",
+        "padding: var(--wp-padding-sm) var(--wp-padding-xl);",
+        "backdrop-filter: blur(8px);",
+        "position: relative;",
+        "overflow: hidden;",
+        ">.container-fluid>.table-header::before {",
+        ">.container-fluid>.table-header h1 {",
+        "letter-spacing: -0.02em;",
+        "box-shadow: 0 2px 8px rgba(79, 140, 255, 0.3);",
+        "transition: width var(--wp-transition), box-shadow var(--wp-transition);",
+        "box-shadow: 0 4px 12px rgba(79, 140, 255, 0.4);",
+        "border-color: rgba(255, 255, 255, 0.08);",
+        "backdrop-filter: none !important;",
+        "color: var(--wp-text) !important;",
+        "border-radius: 0 !important;",
+        "padding-bottom: 0 !important;",
+    ):
+        assert live_contract in cluster
+    assert len(
+        re.findall(r"(?m)^\s+backdrop-filter: none !important;$", cluster)
+    ) == 3
+    assert len(
+        re.findall(r"(?m)^\s+-webkit-backdrop-filter: none !important;$", cluster)
+    ) == 3
+
+    # No artificial packet-local token is introduced: the remaining repeated
+    # raw values have different roles (gleam, shadow, border, or text shadow).
+    assert "--wp-header-" not in cluster
+    assert "--wp-frame-" not in cluster
+
+    # Runtime topology and collapse semantics remain wired.
+    assert template.count('class="collapsible-frame') == 3
+    assert template.count("frame-header-2025") == 3
+    assert template.count('class="collapse-toggle"') == 3
+    assert '<header class="table-header text-center"' in template
+    assert '<h1>Workout Plan</h1>' in template
+    assert '<h2 id="workout-plan-table-heading"' in template
+    assert "const toggleButtons = document.querySelectorAll('.collapse-toggle');" in page_js
+    assert "frame.classList.toggle('collapsed');" in page_js
+    assert "this.setAttribute('aria-expanded', !isExpanded);" in page_js
