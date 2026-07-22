@@ -830,9 +830,7 @@ select.filter-dropdown:focus {
      Page Header - 2026 Glass/Neumorphic Style
      ======================================================================== */
   #workout[data-page="workout-plan"]>.container-fluid>.table-header {
-    margin-bottom: var(--wp-gap-lg);
     margin-top: -55px;
-    text-align: center;
     padding: var(--wp-padding-sm) var(--wp-padding-xl);
     background: linear-gradient(135deg,
       rgba(255, 255, 255, 0.9) 0%,
@@ -862,32 +860,18 @@ select.filter-dropdown:focus {
       transparent 100%);
   }
 
-  #workout[data-page="workout-plan"]>.container-fluid>.table-header h1,
-  #workout[data-page="workout-plan"]>.container-fluid>.table-header h2 {
-    font-size: var(--wp-fs-title);
-    font-weight: var(--wp-fw-semibold);
-    color: var(--wp-text);
-    margin-bottom: var(--wp-gap-sm);
-    line-height: 1.3;
+  #workout[data-page="workout-plan"]>.container-fluid>.table-header h1 {
     letter-spacing: -0.02em;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     position: relative;
   }
 
   #workout[data-page="workout-plan"]>.container-fluid>.table-header .table-header-underline {
-    height: 3px;
-    width: 60px;
-    background: linear-gradient(90deg,
-      var(--wp-accent) 0%,
-      rgba(79, 140, 255, 0.6) 100%);
-    margin: var(--wp-gap-sm) auto 0;
-    border-radius: 3px;
     box-shadow: 0 2px 8px rgba(79, 140, 255, 0.3);
     transition: width var(--wp-transition), box-shadow var(--wp-transition);
   }
 
   #workout[data-page="workout-plan"]>.container-fluid>.table-header:hover .table-header-underline {
-    width: 80px;
     box-shadow: 0 4px 12px rgba(79, 140, 255, 0.4);
   }
 
@@ -900,7 +884,7 @@ select.filter-dropdown:focus {
       0 8px 32px rgba(0, 0, 0, 0.3),
       0 2px 8px rgba(0, 0, 0, 0.2),
       inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.08);
   }
 
   [data-theme='dark'] #workout[data-page="workout-plan"]>.container-fluid>.table-header::before {
@@ -910,161 +894,41 @@ select.filter-dropdown:focus {
       transparent 100%);
   }
 
-  [data-theme='dark'] #workout[data-page="workout-plan"]>.container-fluid>.table-header h1,
-  [data-theme='dark'] #workout[data-page="workout-plan"]>.container-fluid>.table-header h2 {
+  [data-theme='dark'] #workout[data-page="workout-plan"]>.container-fluid>.table-header h1 {
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   }
 
   /* ========================================================================
-     Frames Container
+     Collapsible Frame Overrides
      ======================================================================== */
-  #workout[data-page="workout-plan"] .unified-frames-container {
-    margin-bottom: var(--wp-gap-xl);
-  }
-
-  /* Modernized Collapsible Frame - 2026 Glass Style */
+  /* Shared calm-glass owns the frame surface. Keep blur disabled to avoid
+     repaints during input interactions. */
   #workout[data-page="workout-plan"] .collapsible-frame {
-    background: linear-gradient(135deg,
-        rgba(255, 255, 255, 0.95) 0%,
-        rgba(248, 250, 252, 0.98) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    border-radius: var(--wp-radius);
-    margin-bottom: var(--wp-gap-lg);
-    overflow: visible;
-    box-shadow:
-        0 4px 20px rgba(79, 140, 255, 0.06),
-        0 1px 4px rgba(0, 0, 0, 0.03),
-        inset 0 1px 0 rgba(255, 255, 255, 0.7);
-    /* Explicitly disable backdrop-filter to prevent glitches during input interactions */
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
   }
 
-  /* Hover effect disabled to prevent visual glitches during input interactions */
-  #workout[data-page="workout-plan"] .collapsible-frame:hover {
-    /* Keep same as non-hover to prevent repaint glitches */
-  }
-
-  /* Frame Header - 2026 Glass Style */
-  #workout[data-page="workout-plan"] .frame-header {
-    background: linear-gradient(135deg,
-        rgba(255, 255, 255, 0.9) 0%,
-        rgba(248, 250, 252, 0.95) 100%);
-    padding: var(--wp-padding);
-    border-bottom: 1px solid rgba(229, 231, 235, 0.5);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    /* Explicitly disable backdrop-filter to prevent glitches during input interactions */
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    position: relative;
-  }
-
-  #workout[data-page="workout-plan"] .frame-header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg,
-        transparent 0%,
-        rgba(79, 140, 255, 0.15) 50%,
-        transparent 100%);
-  }
-
-  #workout[data-page="workout-plan"] .frame-header.frame-header-2025 {
-    gap: calc(var(--wp-gap) * 1.5);
-  }
-
-  #workout[data-page="workout-plan"] .frame-header-2025 .frame-header-right {
-    padding-left: calc(var(--wp-gap) * 2);
-    justify-content: flex-end;
-  }
-
+  /* Shared frame-title declarations own typography and underline geometry.
+     The route keeps blur disabled for the same input repaint safeguard. */
   #workout[data-page="workout-plan"] .frame-title,
   #workout[data-page="workout-plan"] .filters-title {
-    font-size: var(--wp-fs-body);
-    font-weight: var(--wp-fw-semibold);
-    color: var(--wp-text);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    position: relative;
-    background: none !important;
-    padding: 0;
-    padding-bottom: 8px;
-    border-radius: 0;
-    box-shadow: none;
-    /* Disable backdrop-filter to prevent glitches during input interactions */
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
   }
 
-  #workout[data-page="workout-plan"] .frame-title::after,
-  #workout[data-page="workout-plan"] .filters-title::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    height: 2px;
-    width: 40px;
-    background: linear-gradient(90deg,
-        var(--wp-accent) 0%,
-        rgba(79, 140, 255, 0.5) 100%);
-    border-radius: 2px;
-    /* box-shadow and transition removed to prevent glitches during input interactions */
-  }
-
-  /* Dark Mode - Collapsible Frame Glass Style */
-  [data-theme='dark'] #workout[data-page="workout-plan"] .collapsible-frame {
-    background: linear-gradient(135deg,
-        rgba(26, 32, 44, 0.9) 0%,
-        rgba(20, 25, 35, 0.95) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    box-shadow:
-        0 4px 20px rgba(0, 0, 0, 0.25),
-        0 1px 4px rgba(0, 0, 0, 0.15),
-        inset 0 1px 0 rgba(255, 255, 255, 0.04);
-    /* Explicitly disable backdrop-filter to prevent glitches during input interactions */
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-  }
-
-  [data-theme='dark'] #workout[data-page="workout-plan"] .collapsible-frame:hover {
-    /* Hover effect disabled to prevent visual glitches during input interactions */
-  }
-
-  /* Dark Mode - Frame Header Glass Style */
+  /* The late global dark theme adds header blur; retain the route's explicit
+     dark override so collapse/expand input interactions remain repaint-safe. */
   [data-theme='dark'] #workout[data-page="workout-plan"] .frame-header {
-    background: linear-gradient(135deg,
-        rgba(26, 32, 44, 0.85) 0%,
-        rgba(20, 25, 35, 0.9) 100%);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    /* Explicitly disable backdrop-filter to prevent glitches during input interactions */
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
   }
 
-  [data-theme='dark'] #workout[data-page="workout-plan"] .frame-header::before {
-    background: linear-gradient(90deg,
-        transparent 0%,
-        rgba(79, 140, 255, 0.1) 50%,
-        transparent 100%);
-  }
-
-  /* Dark Mode - Remove squared dark backgrounds from titles */
+  /* Dark title corrections that still win the shared/global cascade. */
   [data-theme='dark'] #workout[data-page="workout-plan"] .frame-title,
   [data-theme='dark'] #workout[data-page="workout-plan"] .filters-title {
-    background: none !important;
-    background-color: transparent !important;
     color: var(--wp-text) !important;
     border-radius: 0 !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    /* Disable backdrop-filter to prevent glitches during input interactions */
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
+    padding-bottom: 0 !important;
   }
 
   /* ========================================================================
