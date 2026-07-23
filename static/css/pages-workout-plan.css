@@ -5576,7 +5576,7 @@ svg[id^="body-posterior-hypertrophy-advanced"] .muscle-region.partial {
     border-color: var(--bs-border-color, #495057) var(--bs-border-color, #495057) var(--bs-body-bg, #212529);
 }
 .workout-estimate-provenance {
-    color: var(--ink-3, #6d7488);
+    color: var(--ink-3);
     font-size: 0.82rem;
     font-weight: 600;
     margin: 0.65rem 0 0;
@@ -5584,11 +5584,11 @@ svg[id^="body-posterior-hypertrophy-advanced"] .muscle-region.partial {
 }
 
 [data-theme='dark'] .workout-estimate-provenance {
-    color: var(--ink-3, #939bb2);
+    color: var(--ink-3);
 }
 
 .weight-hand-hint {
-    color: var(--ink-3, #6d7488);
+    color: var(--ink-3);
     font-size: 0.72rem;
     font-style: italic;
     font-weight: 400;
@@ -5600,7 +5600,7 @@ svg[id^="body-posterior-hypertrophy-advanced"] .muscle-region.partial {
 }
 
 [data-theme='dark'] .weight-hand-hint {
-    color: var(--ink-3, #939bb2);
+    color: var(--ink-3);
 }
 
 /* Issue #17 — per-suggestion "show the math" expander next to the
@@ -5619,10 +5619,10 @@ svg[id^="body-posterior-hypertrophy-advanced"] .muscle-region.partial {
 
 .workout-estimate-trace-toggle {
     align-items: center;
-    background: color-mix(in srgb, var(--surface-2, #f5f7fb) 70%, transparent);
-    border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 22%, transparent);
+    background: color-mix(in srgb, var(--surface-2) 70%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
     border-radius: 999px;
-    color: var(--ink-2, #4a5170);
+    color: var(--ink-2);
     cursor: pointer;
     display: inline-flex;
     font-size: 0.82rem;
@@ -5637,13 +5637,13 @@ svg[id^="body-posterior-hypertrophy-advanced"] .muscle-region.partial {
 }
 
 .workout-estimate-trace-toggle:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--accent, #4c6ef5) 14%, transparent);
-    border-color: color-mix(in srgb, var(--accent, #4c6ef5) 36%, transparent);
-    color: var(--ink-1, #22283a);
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    border-color: color-mix(in srgb, var(--accent) 36%, transparent);
+    color: var(--ink-1);
 }
 
 .workout-estimate-trace-toggle:focus-visible {
-    outline: 2px solid var(--accent, #4c6ef5);
+    outline: 2px solid var(--accent);
     outline-offset: 2px;
 }
 
@@ -5657,8 +5657,8 @@ svg[id^="body-posterior-hypertrophy-advanced"] .muscle-region.partial {
 }
 
 .workout-estimate-trace {
-    background: color-mix(in srgb, var(--surface-2, #f5f7fb) 90%, transparent);
-    border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 18%, transparent);
+    background: color-mix(in srgb, var(--surface-2) 90%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
     border-radius: 10px;
     margin-top: 0.55rem;
     padding: 0.65rem 0.85rem;
@@ -5669,14 +5669,14 @@ svg[id^="body-posterior-hypertrophy-advanced"] .muscle-region.partial {
 }
 
 .workout-estimate-trace-headline {
-    color: var(--ink-1, #22283a);
+    color: var(--ink-1);
     font-size: 0.92rem;
     font-weight: 650;
     margin: 0 0 0.4rem;
 }
 
 .workout-estimate-trace-steps {
-    color: var(--ink-2, #4a5170);
+    color: var(--ink-2);
     font-size: 0.88rem;
     list-style: none;
     margin: 0;
@@ -5684,7 +5684,7 @@ svg[id^="body-posterior-hypertrophy-advanced"] .muscle-region.partial {
 }
 
 .workout-estimate-trace-steps li {
-    border-bottom: 1px dashed color-mix(in srgb, var(--accent, #4c6ef5) 14%, transparent);
+    border-bottom: 1px dashed color-mix(in srgb, var(--accent) 14%, transparent);
     padding: 0.3rem 0;
 }
 
@@ -5693,28 +5693,28 @@ svg[id^="body-posterior-hypertrophy-advanced"] .muscle-region.partial {
 }
 
 .workout-estimate-trace-step-label {
-    color: var(--ink-1, #22283a);
+    color: var(--ink-1);
     font-weight: 600;
 }
 
 .workout-estimate-trace-step-value {
-    color: var(--ink-2, #4a5170);
+    color: var(--ink-2);
     font-variant-numeric: tabular-nums;
     margin-left: 0.4rem;
 }
 
 .workout-estimate-trace-step-detail {
-    color: var(--ink-3, #6d7488);
+    color: var(--ink-3);
     display: block;
     font-size: 0.82rem;
     margin-top: 0.15rem;
 }
 
 .workout-estimate-trace-hint {
-    background: color-mix(in srgb, var(--accent, #4c6ef5) 10%, transparent);
-    border-left: 3px solid color-mix(in srgb, var(--accent, #4c6ef5) 55%, transparent);
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    border-left: 3px solid color-mix(in srgb, var(--accent) 55%, transparent);
     border-radius: 4px;
-    color: var(--ink-1, #22283a);
+    color: var(--ink-1);
     font-size: 0.88rem;
     line-height: 1.45;
     margin-top: 0.5rem;
@@ -5722,43 +5722,43 @@ svg[id^="body-posterior-hypertrophy-advanced"] .muscle-region.partial {
 }
 
 .workout-estimate-trace-hint a {
-    color: color-mix(in srgb, var(--accent, #4c6ef5) 75%, var(--ink-1, #22283a));
+    color: color-mix(in srgb, var(--accent) 75%, var(--ink-1));
     font-weight: 650;
 }
 
 [data-theme='dark'] .workout-estimate-trace-toggle {
-    background: color-mix(in srgb, var(--surface-1, #161a2d) 80%, black);
-    border-color: color-mix(in srgb, var(--accent, #6d8dff) 30%, transparent);
-    color: var(--ink-2, #b4bad0);
+    background: color-mix(in srgb, var(--surface-1) 80%, black);
+    border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+    color: var(--ink-2);
 }
 
 [data-theme='dark'] .workout-estimate-trace {
-    background: color-mix(in srgb, var(--surface-1, #161a2d) 75%, black);
-    border-color: color-mix(in srgb, var(--accent, #6d8dff) 26%, transparent);
+    background: color-mix(in srgb, var(--surface-1) 75%, black);
+    border-color: color-mix(in srgb, var(--accent) 26%, transparent);
 }
 
 [data-theme='dark'] .workout-estimate-trace-headline,
 [data-theme='dark'] .workout-estimate-trace-step-label,
 [data-theme='dark'] .workout-estimate-trace-hint {
-    color: var(--ink-1, #eef1f6);
+    color: var(--ink-1);
 }
 
 [data-theme='dark'] .workout-estimate-trace-steps,
 [data-theme='dark'] .workout-estimate-trace-step-value {
-    color: var(--ink-2, #b4bad0);
+    color: var(--ink-2);
 }
 
 [data-theme='dark'] .workout-estimate-trace-step-detail {
-    color: var(--ink-3, #939bb2);
+    color: var(--ink-3);
 }
 
 /* Learned Calibration — source badge + Apply/Keep/Reset actions. */
 .workout-estimate-learned-badge {
     align-items: center;
-    background: color-mix(in srgb, var(--accent, #4c6ef5) 14%, transparent);
-    border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 32%, transparent);
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 32%, transparent);
     border-radius: 999px;
-    color: color-mix(in srgb, var(--accent, #4c6ef5) 78%, var(--ink-1, #22283a));
+    color: color-mix(in srgb, var(--accent) 78%, var(--ink-1));
     display: inline-flex;
     font-size: 0.76rem;
     font-weight: 700;
@@ -5772,15 +5772,15 @@ svg[id^="body-posterior-hypertrophy-advanced"] .muscle-region.partial {
 }
 
 .workout-estimate-learned-badge[data-confidence="high"] {
-    background: color-mix(in srgb, var(--success, #2f9e44) 16%, transparent);
-    border-color: color-mix(in srgb, var(--success, #2f9e44) 38%, transparent);
-    color: color-mix(in srgb, var(--success, #2f9e44) 70%, var(--ink-1, #22283a));
+    background: color-mix(in srgb, var(--success) 16%, transparent);
+    border-color: color-mix(in srgb, var(--success) 38%, transparent);
+    color: color-mix(in srgb, var(--success) 70%, var(--ink-1));
 }
 
 .workout-estimate-learned-badge[data-confidence="low"] {
-    background: color-mix(in srgb, var(--warning, #e8590c) 14%, transparent);
-    border-color: color-mix(in srgb, var(--warning, #e8590c) 34%, transparent);
-    color: color-mix(in srgb, var(--warning, #e8590c) 72%, var(--ink-1, #22283a));
+    background: color-mix(in srgb, var(--warning) 14%, transparent);
+    border-color: color-mix(in srgb, var(--warning) 34%, transparent);
+    color: color-mix(in srgb, var(--warning) 72%, var(--ink-1));
 }
 
 .workout-estimate-learned-badge .fa-wand-magic-sparkles {
@@ -5792,10 +5792,10 @@ svg[id^="body-posterior-hypertrophy-advanced"] .muscle-region.partial {
    "the number was adjusted". */
 .workout-estimate-fatigue-chip {
     align-items: center;
-    background: color-mix(in srgb, var(--ink-2, #4a5170) 10%, transparent);
-    border: 1px solid color-mix(in srgb, var(--ink-2, #4a5170) 26%, transparent);
+    background: color-mix(in srgb, var(--ink-2) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--ink-2) 26%, transparent);
     border-radius: 999px;
-    color: var(--ink-2, #4a5170);
+    color: var(--ink-2);
     display: inline-flex;
     font-size: 0.74rem;
     font-weight: 600;
@@ -5813,13 +5813,13 @@ svg[id^="body-posterior-hypertrophy-advanced"] .muscle-region.partial {
 }
 
 .workout-estimate-fatigue {
-    border-top: 1px dashed color-mix(in srgb, var(--ink-2, #4a5170) 22%, transparent);
+    border-top: 1px dashed color-mix(in srgb, var(--ink-2) 22%, transparent);
     margin-top: 0.7rem;
     padding-top: 0.6rem;
 }
 
 .workout-estimate-fatigue-eyebrow {
-    color: var(--ink-2, #4a5170);
+    color: var(--ink-2);
     font-size: 0.72rem;
     font-weight: 700;
     letter-spacing: 0.05em;
@@ -5828,31 +5828,31 @@ svg[id^="body-posterior-hypertrophy-advanced"] .muscle-region.partial {
 }
 
 .workout-estimate-fatigue-headline {
-    color: var(--ink-1, #22283a);
+    color: var(--ink-1);
     font-size: 0.88rem;
     font-weight: 600;
     margin: 0 0 0.15rem;
 }
 
 .workout-estimate-fatigue-advisory {
-    color: var(--ink-2, #4a5170);
+    color: var(--ink-2);
     display: block;
     font-size: 0.78rem;
 }
 
 [data-theme='dark'] .workout-estimate-fatigue-chip {
-    background: color-mix(in srgb, var(--ink-2, #b4bad0) 14%, transparent);
-    border-color: color-mix(in srgb, var(--ink-2, #b4bad0) 28%, transparent);
-    color: var(--ink-2, #b4bad0);
+    background: color-mix(in srgb, var(--ink-2) 14%, transparent);
+    border-color: color-mix(in srgb, var(--ink-2) 28%, transparent);
+    color: var(--ink-2);
 }
 
 [data-theme='dark'] .workout-estimate-fatigue-headline {
-    color: var(--ink-1, #e8ebf5);
+    color: var(--ink-1);
 }
 
 [data-theme='dark'] .workout-estimate-fatigue-advisory,
 [data-theme='dark'] .workout-estimate-fatigue-eyebrow {
-    color: var(--ink-2, #b4bad0);
+    color: var(--ink-2);
 }
 
 /* Phase 2D-C — neutral manual nudge inside the fatigue context section.
@@ -5863,7 +5863,7 @@ svg[id^="body-posterior-hypertrophy-advanced"] .muscle-region.partial {
 }
 
 .workout-estimate-fatigue-nudge-label {
-    color: var(--ink-2, #4a5170);
+    color: var(--ink-2);
     font-size: 0.72rem;
     font-weight: 700;
     letter-spacing: 0.05em;
@@ -5886,17 +5886,17 @@ svg[id^="body-posterior-hypertrophy-advanced"] .muscle-region.partial {
 }
 
 .workout-estimate-fatigue-nudge-name {
-    color: var(--ink-2, #4a5170);
+    color: var(--ink-2);
     font-size: 0.8rem;
     font-weight: 600;
     margin-right: 0.1rem;
 }
 
 .workout-estimate-fatigue-nudge-btn {
-    background: color-mix(in srgb, var(--surface-2, #f5f7fb) 70%, transparent);
-    border: 1px solid color-mix(in srgb, var(--ink-2, #4a5170) 26%, transparent);
+    background: color-mix(in srgb, var(--surface-2) 70%, transparent);
+    border: 1px solid color-mix(in srgb, var(--ink-2) 26%, transparent);
     border-radius: 7px;
-    color: var(--ink-2, #4a5170);
+    color: var(--ink-2);
     cursor: pointer;
     font-size: 0.95rem;
     font-weight: 700;
@@ -5907,28 +5907,28 @@ svg[id^="body-posterior-hypertrophy-advanced"] .muscle-region.partial {
 }
 
 .workout-estimate-fatigue-nudge-btn:hover {
-    background: color-mix(in srgb, var(--ink-2, #4a5170) 12%, transparent);
-    color: var(--ink-1, #22283a);
+    background: color-mix(in srgb, var(--ink-2) 12%, transparent);
+    color: var(--ink-1);
 }
 
 .workout-estimate-fatigue-nudge-btn:focus-visible {
-    outline: 2px solid var(--accent, #4c6ef5);
+    outline: 2px solid var(--accent);
     outline-offset: 2px;
 }
 
 [data-theme='dark'] .workout-estimate-fatigue-nudge-label,
 [data-theme='dark'] .workout-estimate-fatigue-nudge-name {
-    color: var(--ink-2, #b4bad0);
+    color: var(--ink-2);
 }
 
 [data-theme='dark'] .workout-estimate-fatigue-nudge-btn {
-    background: color-mix(in srgb, var(--surface-1, #161a2d) 80%, black);
-    border-color: color-mix(in srgb, var(--ink-2, #b4bad0) 28%, transparent);
-    color: var(--ink-2, #b4bad0);
+    background: color-mix(in srgb, var(--surface-1) 80%, black);
+    border-color: color-mix(in srgb, var(--ink-2) 28%, transparent);
+    color: var(--ink-2);
 }
 
 [data-theme='dark'] .workout-estimate-fatigue-nudge-btn:hover {
-    color: var(--ink-1, #e8ebf5);
+    color: var(--ink-1);
 }
 
 .workout-estimate-trace-actions {
@@ -5939,10 +5939,10 @@ svg[id^="body-posterior-hypertrophy-advanced"] .muscle-region.partial {
 }
 
 .workout-estimate-trace-action {
-    background: color-mix(in srgb, var(--surface-2, #f5f7fb) 70%, transparent);
-    border: 1px solid color-mix(in srgb, var(--accent, #4c6ef5) 24%, transparent);
+    background: color-mix(in srgb, var(--surface-2) 70%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
     border-radius: 8px;
-    color: var(--ink-2, #4a5170);
+    color: var(--ink-2);
     cursor: pointer;
     font-size: 0.84rem;
     font-weight: 600;
@@ -5951,41 +5951,41 @@ svg[id^="body-posterior-hypertrophy-advanced"] .muscle-region.partial {
 }
 
 .workout-estimate-trace-action:hover {
-    background: color-mix(in srgb, var(--accent, #4c6ef5) 12%, transparent);
-    color: var(--ink-1, #22283a);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    color: var(--ink-1);
 }
 
 .workout-estimate-trace-action:focus-visible {
-    outline: 2px solid var(--accent, #4c6ef5);
+    outline: 2px solid var(--accent);
     outline-offset: 2px;
 }
 
 .workout-estimate-trace-action.is-primary {
-    background: color-mix(in srgb, var(--accent, #4c6ef5) 88%, white);
+    background: color-mix(in srgb, var(--accent) 88%, white);
     border-color: transparent;
     color: #fff;
 }
 
 .workout-estimate-trace-action.is-primary:hover {
-    background: var(--accent, #4c6ef5);
+    background: var(--accent);
     color: #fff;
 }
 
 .workout-estimate-trace-action.is-reset {
     margin-left: auto;
-    color: color-mix(in srgb, var(--danger, #e03131) 78%, var(--ink-2, #4a5170));
+    color: color-mix(in srgb, var(--danger) 78%, var(--ink-2));
 }
 
 .workout-estimate-trace-action.is-reset:hover {
-    background: color-mix(in srgb, var(--danger, #e03131) 12%, transparent);
-    border-color: color-mix(in srgb, var(--danger, #e03131) 34%, transparent);
-    color: var(--danger, #e03131);
+    background: color-mix(in srgb, var(--danger) 12%, transparent);
+    border-color: color-mix(in srgb, var(--danger) 34%, transparent);
+    color: var(--danger);
 }
 
 [data-theme='dark'] .workout-estimate-trace-action {
-    background: color-mix(in srgb, var(--surface-1, #161a2d) 80%, black);
-    border-color: color-mix(in srgb, var(--accent, #6d8dff) 30%, transparent);
-    color: var(--ink-2, #b4bad0);
+    background: color-mix(in srgb, var(--surface-1) 80%, black);
+    border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+    color: var(--ink-2);
 }
 
 [data-theme='dark'] .workout-estimate-trace-action.is-primary {
