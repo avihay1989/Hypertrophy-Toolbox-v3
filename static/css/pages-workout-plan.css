@@ -2822,9 +2822,9 @@ select.filter-dropdown:focus {
   margin-left: 8px;
   padding: 2px 8px;
   font-size: 0.7rem;
-  font-weight: var(--wp-fw-medium, 500);
-  color: var(--wp-text-muted, #6b7280);
-  background: var(--wp-border, rgba(0, 0, 0, 0.06));
+  font-weight: var(--wp-fw-medium);
+  color: var(--wp-text-muted);
+  background: var(--wp-border);
   border-radius: 10px;
   vertical-align: middle;
 }
@@ -4379,9 +4379,9 @@ tr.superset-partner-dragging {
 
 /* Cascade dropdown styling */
 .cascade-dropdown {
-    height: var(--input-height-md, 38px);
-    padding: var(--input-padding-y, 0.375rem) var(--input-padding-x, 0.625rem);
-    font-size: var(--input-font-size, 0.9rem);
+    height: var(--input-height-md);
+    padding: var(--input-padding-y) var(--input-padding-x);
+    font-size: var(--input-font-size);
     border-radius: 6px;
     border: 1px solid #ced4da;
     background-color: #fff;

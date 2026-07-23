@@ -1174,3 +1174,47 @@ def test_workout_plan_table_drops_dead_global_token_fallbacks() -> None:
         "color-mix(in srgb, var(--surface-1) 84%, var(--accent) 16%) !important",
     ):
         assert bare in region
+
+
+def test_workout_plan_drops_remaining_dead_defined_token_fallbacks() -> None:
+    css = (ROOT / "static" / "css" / "pages-workout-plan.css").read_text(
+        encoding="utf-8"
+    )
+    tokens = (ROOT / "static" / "css" / "tokens.css").read_text(encoding="utf-8")
+
+    # These page-local (@layer workout) tokens are defined before use, so their
+    # var(--token, fallback) fallbacks never rendered.
+    for token_def in ("--wp-fw-medium: 500;", "--wp-text-muted: #6b7280;",
+                      "--wp-border: #e5e7eb;"):
+        assert token_def in css
+    # The --input-* sizing tokens are always defined at :root in tokens.css.
+    for token_def in ("--input-height-md: 38px;", "--input-padding-x:",
+                      "--input-padding-y:", "--input-font-size:"):
+        assert token_def in tokens
+
+    # The specific consumption sites are now bare.
+    for bare in (
+        "font-weight: var(--wp-fw-medium);",
+        "color: var(--wp-text-muted);",
+        "background: var(--wp-border);",
+        "height: var(--input-height-md);",
+        "padding: var(--input-padding-y) var(--input-padding-x);",
+        "font-size: var(--input-font-size);",
+    ):
+        assert bare in css
+
+    # Milestone invariant: the non-Bootstrap dead-fallback removal arc
+    # (WP4.3i-d/-e/-f/-g) is complete. Every remaining non-`--bs-*` var() fallback
+    # in the bundle is one of the two intentionally-LIVE ones:
+    #   - var(--superset-row-color, …): assigned dynamically inline per row.
+    #   - var(--wpdd-shadow-lg, …): references an undefined token.
+    fallbacks = [
+        m.group(0)
+        for m in re.finditer(r"var\(\s*--[a-z0-9-]+\s*,", css)
+        if "--bs-" not in m.group(0)
+    ]
+    offenders = [
+        f for f in fallbacks
+        if "--superset-row-color" not in f and "--wpdd-shadow-lg" not in f
+    ]
+    assert offenders == [], offenders
