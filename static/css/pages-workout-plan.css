@@ -582,17 +582,17 @@ select.filter-dropdown:focus {
   min-width: 220px;
   overflow-y: auto;
   overflow-x: hidden;
-  background: var(--wpdd-bg, #ffffff);
-  color: var(--wpdd-text, #1a1f2e);
-  border: 1px solid var(--wpdd-border, #e5e7eb);
+  background: var(--wpdd-bg);
+  color: var(--wpdd-text);
+  border: 1px solid var(--wpdd-border);
   border-radius: 20px !important;
-  box-shadow: var(--wpdd-shadow, 0 10px 26px rgba(0, 0, 0, 0.12));
+  box-shadow: var(--wpdd-shadow);
   padding: 6px;
   list-style: none;
   margin-block-start: 0;
   margin-block-end: 0;
   padding-inline-start: 0;
-  font-family: var(--wpdd-font, ui-sans-serif, system-ui, "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif);
+  font-family: var(--wpdd-font);
 }
 
 .wpdd-popover[hidden] {
@@ -617,12 +617,12 @@ select.filter-dropdown:focus {
 .wpdd-popover .wpdd-option:hover,
 .wpdd-popover [role="option"].is-active,
 .wpdd-popover .wpdd-option.is-active {
-  background: color-mix(in srgb, var(--wpdd-accent, #4f8cff) 24%, transparent);
+  background: color-mix(in srgb, var(--wpdd-accent) 24%, transparent);
 }
 
 .wpdd-popover [role="option"][aria-selected="true"],
 .wpdd-popover .wpdd-option[aria-selected="true"] {
-  background: color-mix(in srgb, var(--wpdd-accent, #4f8cff) 18%, transparent);
+  background: color-mix(in srgb, var(--wpdd-accent) 18%, transparent);
   font-weight: 500;
 }
 
@@ -638,7 +638,7 @@ select.filter-dropdown:focus {
   padding: 8px 12px 4px;
   font-size: 0.875em;
   font-weight: 600;
-  color: var(--wpdd-muted, #6b7280);
+  color: var(--wpdd-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-top: 4px;
@@ -661,29 +661,29 @@ select.filter-dropdown:focus {
   flex: 1;
   padding: 8px 12px;
   min-height: 36px;
-  background: var(--wpdd-surface, #f8f9fa);
-  border: 1px solid var(--wpdd-border, #e5e7eb);
+  background: var(--wpdd-surface);
+  border: 1px solid var(--wpdd-border);
   border-radius: 14px !important;
-  color: var(--wpdd-text, #1a1f2e);
+  color: var(--wpdd-text);
   font-family: inherit;
   font-size: inherit;
 }
 
 .wpdd-popover .wpdd-search:focus {
   outline: none;
-  border-color: var(--wpdd-accent, #4f8cff);
+  border-color: var(--wpdd-accent);
   box-shadow: 0 0 0 2px rgba(79, 140, 255, 0.1);
 }
 
 /* Count indicator */
 .wpdd-popover .wpdd-count-indicator {
   font-size: 0.75rem;
-  color: var(--wpdd-muted, #6b7280);
+  color: var(--wpdd-muted);
   white-space: nowrap;
   padding: 4px 8px;
-  background: var(--wpdd-surface, #f8f9fa);
+  background: var(--wpdd-surface);
   border-radius: 10px;
-  border: 1px solid var(--wpdd-border, #e5e7eb);
+  border: 1px solid var(--wpdd-border);
   min-width: fit-content;
 }
 
