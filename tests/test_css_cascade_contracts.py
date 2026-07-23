@@ -1094,3 +1094,41 @@ def test_workout_plan_muscle_selector_drops_dead_local_token_fallbacks() -> None
 
     # No artificial packet-local token was invented; the fix is pure removal.
     assert "--wp-ms-" not in region
+
+
+def test_workout_plan_wpdd_popover_drops_dead_local_token_fallbacks() -> None:
+    css = (ROOT / "static" / "css" / "pages-workout-plan.css").read_text(
+        encoding="utf-8"
+    )
+
+    # The --wpdd-* dropdown tokens are page-local: this bundle defines them in its
+    # own :root (light) and [data-theme="dark"] blocks, loaded once before use, so
+    # the .wpdd-popover component's var(--wpdd-*, fallback) fallbacks never
+    # rendered. Removing them is exact-value (each fallback equalled the light
+    # token). Non-remapped tokens (--wpdd-accent/-font) inherit :root in dark.
+    for token_def in (
+        "--wpdd-bg: #ffffff;",
+        "--wpdd-surface: #f8f9fa;",
+        "--wpdd-text: #1a1f2e;",
+        "--wpdd-muted: #6b7280;",
+        "--wpdd-border: #e5e7eb;",
+        "--wpdd-accent: #4f8cff;",
+    ):
+        assert token_def in css
+
+    # The live popover component remains (its class is set in workout-dropdowns.js).
+    assert ".wpdd-popover {" in css
+
+    # No dead local-token fallback (hex, shadow, or font stack) remains for any
+    # --wpdd-* consumption site.
+    assert re.search(r"var\(\s*--wpdd-[a-z]+\s*,", css) is None
+
+    # Tokens are now consumed bare, matching the sibling Enhanced Dropdown block.
+    for bare in (
+        "background: var(--wpdd-bg);",
+        "color: var(--wpdd-text);",
+        "box-shadow: var(--wpdd-shadow);",
+        "font-family: var(--wpdd-font);",
+        "color-mix(in srgb, var(--wpdd-accent) 24%, transparent)",
+    ):
+        assert bare in css
