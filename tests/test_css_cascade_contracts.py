@@ -1045,3 +1045,52 @@ def test_workout_plan_page_header_and_collapsible_frame_ownership_cleanup() -> N
     assert "const toggleButtons = document.querySelectorAll('.collapse-toggle');" in page_js
     assert "frame.classList.toggle('collapsed');" in page_js
     assert "this.setAttribute('aria-expanded', !isExpanded);" in page_js
+
+
+def test_workout_plan_muscle_selector_drops_dead_local_token_fallbacks() -> None:
+    css = (ROOT / "static" / "css" / "pages-workout-plan.css").read_text(
+        encoding="utf-8"
+    )
+    tokens = (ROOT / "static" / "css" / "tokens.css").read_text(encoding="utf-8")
+
+    region = css[css.index("MUSCLE SELECTOR STYLES v3.0"):]
+
+    # tokens.css always defines these Calm-Glass tokens at :root (light), so the
+    # component's inline var(--token, #hex) fallbacks never rendered. Removing
+    # them is exact-value: the token is always the used value.
+    for token_def in (
+        "--accent: #4c6ef5;",
+        "--surface-1: #f4f6fa;",
+        "--surface-2: #ffffff;",
+        "--ink-1: #0f1220;",
+        "--ink-2: #4a5170;",
+        "--success: #10b981;",
+        "--warning: #f59e0b;",
+        "--danger: #ef4444;",
+    ):
+        assert token_def in tokens
+
+    # No dead local-token hex fallback remains in the muscle-selector section.
+    local_fallback = re.compile(
+        r"var\(\s*--(?:accent|accent-ink|surface-0|surface-1|surface-2"
+        r"|ink-1|ink-2|ink-3|success|warning|danger)\s*,\s*#[0-9a-fA-F]{3,8}\s*\)"
+    )
+    assert local_fallback.search(region) is None
+
+    # The tokens are now consumed bare, matching the sibling-bundle convention.
+    for bare in (
+        "background: var(--accent);",
+        "color: var(--ink-2);",
+        "color-mix(in srgb, var(--accent) 75%, var(--ink-1))",
+        "color-mix(in srgb, var(--danger) 78%, var(--ink-2))",
+        "background: color-mix(in srgb, var(--surface-1) 80%, black)",
+    ):
+        assert bare in region
+
+    # Scope boundary: Bootstrap-integrated var(--bs-*, #hex) fallbacks are a
+    # separate concern and were deliberately left intact.
+    assert "var(--bs-body-color, #212529)" in region
+    assert "var(--bs-secondary-color, #6c757d)" in region
+
+    # No artificial packet-local token was invented; the fix is pure removal.
+    assert "--wp-ms-" not in region
