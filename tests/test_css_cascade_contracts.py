@@ -1132,3 +1132,45 @@ def test_workout_plan_wpdd_popover_drops_dead_local_token_fallbacks() -> None:
         "color-mix(in srgb, var(--wpdd-accent) 24%, transparent)",
     ):
         assert bare in css
+
+
+def test_workout_plan_table_drops_dead_global_token_fallbacks() -> None:
+    css = (ROOT / "static" / "css" / "pages-workout-plan.css").read_text(
+        encoding="utf-8"
+    )
+    tokens = (ROOT / "static" / "css" / "tokens.css").read_text(encoding="utf-8")
+
+    # The Calm-Glass tokens the Workout Plan Table section consumes are always
+    # defined at :root (light) in tokens.css, loaded before this bundle, so the
+    # section's var(--token, #hex) fallbacks never rendered. Several fallbacks did
+    # not even match the active token (e.g. var(--surface-1, #1a2332) in a dark
+    # rule while --surface-1 is #f4f6fa light), i.e. misleading dead code; removal
+    # preserves the current rendered value (the token).
+    for token_def in (
+        "--accent: #4c6ef5;",
+        "--surface-1: #f4f6fa;",
+        "--surface-2: #ffffff;",
+        "--ink-1: #0f1220;",
+        "--ink-2: #4a5170;",
+    ):
+        assert token_def in tokens
+
+    # Scope the assertion to the Workout Plan Table section.
+    start = css.index("Workout Plan Table - 2026 Glass")
+    region = css[start:css.index("Responsive Design", start)]
+
+    dead = re.compile(
+        r"var\(\s*--(?:accent|ink-1|ink-2|surface-0|surface-1|surface-2)"
+        r"\s*,\s*#[0-9a-fA-F]{3,8}\s*\)"
+    )
+    assert dead.search(region) is None
+
+    # Tokens are now consumed bare inside their color-mix()/direct usages; the
+    # per-rule !important weighting is unchanged (fallback removal only).
+    for bare in (
+        "color-mix(in srgb, var(--surface-2) 90%, var(--accent) 10%) !important",
+        "border: 1px solid color-mix(in srgb, var(--accent) 26%, transparent) !important",
+        "color: var(--ink-2) !important",
+        "color-mix(in srgb, var(--surface-1) 84%, var(--accent) 16%) !important",
+    ):
+        assert bare in region
