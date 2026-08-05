@@ -1337,7 +1337,7 @@ def blind_spot_repair_sizing(helper_path: Path | None = None) -> dict[str, objec
 
 
 # ---------------------------------------------------------------------------
-# The nineteen committed tools
+# The committed tools
 # ---------------------------------------------------------------------------
 
 # Curated verdicts, cross-checked mechanically against the directory listing by
@@ -1509,6 +1509,21 @@ TOOL_ASSESSMENT: tuple[dict[str, str], ...] = (
         "committed tool in the directory.",
     },
     {
+        "tool": "scale_btn_census.mjs",
+        "role": "bare `.scale-btn` family census, per-member certification and "
+        "post-deletion flip for static/css/a11y.css",
+        "verdict": "NOT reusable for theme-dark — family-scoped by construction",
+        "why": "Registered here only because `tool_assessment()` enumerates the "
+        "committed directory and reds on any tool without a verdict; that "
+        "gate is doing its job and this is its designed remedy, not a "
+        "reopening of P3, which stays terminated at a0. The tool is keyed "
+        "to one class token and to a11y.css's own breakpoint, so it "
+        "carries no theme-dark deletion authority and prices nothing. It "
+        "is, however, the first committed harness that demonstrates a "
+        "post-deletion flip by CDP source range for every member of a "
+        "family, which is the record shape a census would need.",
+    },
+    {
         "tool": "stylelint_surfaces.mjs",
         "role": "seven-surface Stylelint, per-file per-rule counts",
         "verdict": "reuse unmodified",
@@ -1530,7 +1545,7 @@ TOOL_ASSESSMENT: tuple[dict[str, str], ...] = (
 
 
 def tool_assessment(directory: Path | None = None) -> dict[str, object]:
-    """The nineteen committed tools, assessed, with coverage checked mechanically."""
+    """The committed tools, assessed, with coverage checked mechanically."""
     directory = directory or (ROOT / "scripts" / "css_audit")
 
     committed = sorted(

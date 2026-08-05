@@ -121,69 +121,6 @@ html[data-scale="8"] {
 }
 
 /* ========================================================================
-   Scale Control Styling
-   ======================================================================== */
-
-
-.scale-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    padding: 0;
-    border: none;
-    background: transparent;
-    color: var(--nav-text-muted, #a8b2c1);
-    font-size: 0.75rem;
-    font-weight: 600;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all var(--nav-transition-fast, 150ms) ease;
-}
-
-.scale-btn:hover {
-    background: var(--nav-surface-hover, #1a202c);
-    color: var(--nav-text, #e9eef7);
-}
-
-.scale-btn:focus {
-    outline: 2px solid var(--nav-accent, #4f8cff);
-    outline-offset: 1px;
-}
-
-.scale-btn.active {
-    background: var(--nav-accent, #4f8cff);
-    color: #ffffff;
-    box-shadow: 0 2px 4px rgba(79, 140, 255, 0.3);
-}
-
-.scale-btn.active:hover {
-    background: var(--nav-accent-hover, #6ba3ff);
-}
-
-/* Size indicators on buttons */
-.scale-btn[data-scale="1"] {
-    font-size: 0.65rem;
-}
-
-.scale-btn[data-scale="2"] {
-    font-size: 0.7rem;
-}
-
-.scale-btn[data-scale="3"] {
-    font-size: 0.75rem;
-}
-
-.scale-btn[data-scale="4"] {
-    font-size: 0.8rem;
-}
-
-.scale-btn[data-scale="5"] {
-    font-size: 0.85rem;
-}
-
-/* ========================================================================
    Accessibility Menu Dropdown
    ======================================================================== */
 .accessibility-dropdown {
@@ -307,14 +244,13 @@ html[data-scale="8"] {
    Responsive Adjustments
    ======================================================================== */
 @media (max-width: 991.98px) {
-
-
-    .scale-btn {
-        flex: 1;
-        max-width: 36px;
-    }
-
-
+    /* Deliberately empty. This block's last rule was the bare scale-button
+       breakpoint override, deleted with the rest of that family after all
+       eleven members were certified unreachable; WP4.4-d1 had already removed
+       its siblings. The shell is retained rather than collapsed because
+       removing an at-rule is structural work, not deletion of dead
+       declarations — the same call WP4.3j-b made for its five empty media
+       shells. Evidence: docs/css_scale_btn_cleanup/EVIDENCE.md */
 }
 
 /* ========================================================================
